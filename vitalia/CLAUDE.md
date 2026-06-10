@@ -99,7 +99,7 @@ Vitalia es **brand activa con mayor volumen** post-multibrand-reorg (27 done + 7
 |---|---|---|
 | `vitalia/` propio (archivos + capabilities + learnings) | `vitalia/docs/archive/*/stories/`, `vitalia/docs/product/capabilities/`, `vitalia/docs/learnings/` | SIEMPRE — applies previos aprendizajes propios |
 | `comunify/` live | `comunify/docs/{archive,product/capabilities,learnings}/` | SIEMPRE — 18 capabilities + 4 learnings + 2 archived stories pueden tener pattern paralelo |
-| `core/luana-core-*/` engine (26 packages) | `core/luana-core-*/src/luana_core_*/` | SIEMPRE — consumir vía import, NUNCA recrear |
+| `core/luana-core-*/` engine (27 packages) | `core/luana-core-*/src/luana_core_*/` | SIEMPRE — consumir vía import, NUNCA recrear |
 | `nicolify` snapshot (referencia arqueológica) | `docs/archive/2026/snapshot-pre-multibrand-pm-redesign/` | Como referencia histórica para patterns shipped pre-reorg (CRM ciclo largo, B2B agencias). NO live work — frozen 2026-05-15 |
 | `lupulo/` + 6 futuras | n/a | NO consultar (placeholder/bootstrap pendientes) |
 
@@ -158,10 +158,8 @@ curl http://127.0.0.1:8002/health
 ## Referencias
 
 - `vitalia/docs/product/vision.md` — full vision (verticales + HIPAA-lite + competidores + personas + GTM)
-- `vitalia/docs/product/checkpoint.md` — state brand actual
 - `vitalia/docs/architecture/` — ADRs brand-specific
 - `vitalia/docs/learnings/` — captured learnings vitalia
-- `nicolify/` — cross-brand prior-art source principal
-- `core/luana-core-compliance/` (cuando se materialice) — HIPAA-lite engine
+- `core/luana-core-compliance/` — HIPAA-lite engine (prior-art: § Cross-brand learning sources)
 - `.claude/rules/anti-duplication-refining.md` — enforcement prior-art scan
 - `.claude/rules/claude-md-overlay.md` — schema de este overlay

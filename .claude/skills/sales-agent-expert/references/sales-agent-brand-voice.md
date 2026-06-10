@@ -112,18 +112,16 @@ Sin esto, drift al cambiar modelo (DeepSeek V3→V4, Kimi K2.5→K2.6) invisible
 - Streamlit admin `/voice-fidelity`: score weekly per tenant, drift alerts.
 - Reference: Confident AI, Langfuse, PersonaGym EMNLP Findings 2025.
 
-## Tests obligatorios
+## Tests obligatorios (estado post-reorg 2026-05-15 · verificado HB-65 2026-06-09)
 
-- `tests/modules/brand/test_personality_compiler_output.py` — Bloques 1-6 presentes. Bloque 3 = pares contrastivos.
-- `tests/modules/brand/test_personality_compiler_contrastive_pairs.py` — cada negative_constraint tiene positive_prescription gemela.
-- `tests/modules/sales_agent/prompts/test_brand_voice_in_slot_5.py` — slot 5 = personality_profile.system_instruction.
-- `tests/modules/sales_agent/prompts/test_agent_identity_no_personality_block.py` — slot 4 sin `personality_instruction` ni `style_anchors`.
-- `tests/modules/sales_agent/test_brand_voice_differentiation.py` — warm_close vs minimalist con mismo input → outputs distinguibles (golden).
-- `tests/modules/sales_agent/test_per_turn_micro_anchor.py` — HumanMessage envelope contiene línea anchor.
-- `tests/modules/sales_agent/test_prompt_cache_key_per_tenant.py` — LLM caller setea `prompt_cache_key=tenant_id`.
-- `tests/architecture/test_brand_voice_no_summary_table.py` — falla si alguien crea tabla `brand_voice_*` o repo `BrandVoiceSummary*`.
-- `tests/architecture/test_no_voice_rewriter_pass.py` — falla si hay `polish_brand_voice` o equivalente post-generation.
+Guards VIVOS (paths verificados):
+- `core/luana-core-brand-studio/tests/test_personality_compiler_output.py` — Bloques 1-6 presentes. Bloque 3 = pares contrastivos. (+ `test_personality_compiler_v2.py`)
+- `core/luana-core-sales-agent/tests/prompts/test_brand_voice_slot.py` — slot 5 = personality_profile.system_instruction (renombrado de test_brand_voice_in_slot_5).
+- `core/luana-core-sales-agent/tests/application/prompts/test_compose_prompt_voice_port.py` — composición del prompt via voice port.
 - Voice fidelity grader CI gate (Fase C).
+
+⚠️ Guards RETIRADOS en la reorg (los INVARIANTES siguen siendo doctrina — verificá por grep al tocar la superficie; recrearlos = candidato a pase dedicado):
+- contrastive_pairs (negative_constraint ↔ positive_prescription gemela) · agent_identity sin personality block en slot 4 · brand_voice_differentiation golden · per_turn_micro_anchor en envelope · `prompt_cache_key=tenant_id` · ban tabla `brand_voice_*`/repo `BrandVoiceSummary*` · ban rewriter-pass `polish_brand_voice` post-generation.
 
 ## Anchor
 

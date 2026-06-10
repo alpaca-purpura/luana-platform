@@ -1,6 +1,6 @@
 # Copilot Observability
 
-Módulo cohesivo: `backend/src/modules/copilot/observability/`. Subscribe vía LangChain callbacks + domain event bus. **Copilot no la invoca**; observability se conecta sola.
+Módulo cohesivo: `backend/core/luana-core-copilot/src/luana_core_copilot/observability/`. Subscribe vía LangChain callbacks + domain event bus. **Copilot no la invoca**; observability se conecta sola.
 
 > Diseño completo: `docs/domains/copilot/observability-rebuild-2026-04/`. Antes de modificar, leer `ARCHITECTURE.md` + `PRINCIPLES.md`.
 
@@ -28,11 +28,11 @@ Módulo cohesivo: `backend/src/modules/copilot/observability/`. Subscribe vía L
 
 ## Cómo agregar un domain event
 
-1. Definir subclase de `DomainEvent` en `src/modules/copilot/domain/events.py` con classmethod `create(...)`.
+1. Definir subclase de `DomainEvent` en `core/luana-core-copilot/src/luana_core_copilot/domain/events.py` con classmethod `create(...)`.
 2. Agregar literal `EVENT_*` arriba del archivo.
 3. Publicar desde el productor via `event_bus.publish(MyEvent.create(...), session=None)` (dispatch inmediato — copilot no tiene transaction "principal" durante stream).
 4. Si querés persistirlo a `copilot_trace_event`, agregar handler en `observability/recording/domain_subscribers.py::register_subscribers`. Si NO (ej: telemetría futura), dejá sin subscriber — los eventos son opt-in para consumers.
-5. Test: `tests/modules/copilot/domain/test_events.py` cubre la classmethod, `tests/modules/copilot/observability/test_domain_subscribers.py` cubre el handler.
+5. Test: `core/luana-core-copilot/tests/domain/test_events.py` cubre la classmethod, `core/luana-core-copilot/tests/observability/test_domain_subscribers.py` cubre el handler.
 
 **Prohibido:** pasar `session=db` al `event_bus.publish` desde el orchestrator. Defiere dispatch a `after_commit` de una transacción ambigua.
 
@@ -116,7 +116,7 @@ Los índices están armados para que ningún tenant scan full table:
 
 ## Costo del callback handler
 
-<10ms p99 medido contra `tests/modules/copilot/observability/test_e2e_isolated.py`. Si una sub-routine empieza a tardar más:
+<10ms p99 medido contra `core/luana-core-copilot/tests/observability/test_e2e_isolated.py`. Si una sub-routine empieza a tardar más:
 
 1. Verificar PII regex (usa `re.compile` cacheado al import).
 2. Verificar pricing resolver — usa cache in-memory keyed por `(provider, model)`.
@@ -131,7 +131,7 @@ Los índices están armados para que ningún tenant scan full table:
 | `purge_expired_trace_rows` | daily 04:00 UTC | DELETE rows pasada retención | Sí |
 | `run_cost_alerts` | daily 12:00 UTC | Walk `tenant_billing_config` con threshold > 0; structlog warning si cycle cost lo excede | Sí |
 
-Registradas en `backend/src/workers/settings.py` (en `WorkerSettings.functions`, `SchedulerSettings.functions` y `SchedulerSettings.cron_jobs`).
+Registradas en `{brand}/backend/src/modules/{brand}/_shared/workers/arq_settings.py` (vitalia verificado; en `WorkerSettings.functions`, `SchedulerSettings.functions` y `SchedulerSettings.cron_jobs`).
 
 ## Prohibido
 

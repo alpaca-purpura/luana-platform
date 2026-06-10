@@ -393,7 +393,7 @@ Antes codear, si:
 
 ## Docs anchor
 
-- ⚠️ `docs/domains/brand/INDEX.md` + `docs/refactors/field-contract-platform/{DESIGN,LEARNINGS}.md` PURGADOS en el SDD reorg (pre-2026-05-04) — no existen. La arq Brand Studio vive hoy en `core/luana-core-brand-studio/` + `.claude/rules/brand-*` (esta skill es pre-reorg, ver HB-65 topology-alignment)
+- ⚠️ `docs/domains/brand/INDEX.md` + `docs/refactors/field-contract-platform/{DESIGN,LEARNINGS}.md` PURGADOS en el SDD reorg (pre-2026-05-04) — no existen (queda solo `docs/domains/brand/communication-style.md`). La arq Brand Studio vive hoy en `core/luana-core-brand-studio/` + `.claude/rules/brand-*` (alineado HB-65 2026-06-09)
 - `~/.claude/projects/.../memory/feedback_personality_3_pillars.md` (PersonalityProfile arq)
 - `~/.claude/projects/.../memory/feedback_form_runtime_autosave.md` (form-runtime no-negociable)
 - `.claude/rules/spanish-text.md` (neutro LATAM)

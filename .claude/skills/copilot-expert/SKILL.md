@@ -51,15 +51,15 @@ Queries esenciales: ver `.claude/rules/copilot-resilience.md` §"Debug copilot".
 
 ## Arquitectura inmutable — NO tocar sin entender
 
-**Topología F0-F11 (cementada):**
+**Topología F0-F11 (cementada · post-reorg multibrand 2026-05-15 el módulo canónico = ENGINE `core/luana-core-copilot/src/luana_core_copilot/`; brand extensions en `{brand}/backend/src/modules/{brand}/copilot/` — superficie exclusiva `builder-agentic`, engine requiere `/pm-luana` lift gate):**
 
-| Capa | Owns | Editar = riesgo |
+| Capa (base = `luana_core_copilot/`) | Owns | Editar = riesgo |
 |---|---|---|
-| `copilot/domain/` | ports (CopilotProvider, DataAccessProvider, BaseCopilotProvider), workflow, output_channels, module_registry | Cambios cascada al ratchet + tests fitness |
-| `copilot/infrastructure/` | repos (conv, inspirations, pinned_memory, mutation_journal, workflow_metric, marketing_kb_store), persisters, qdrant | Schema drift |
-| `copilot/application/` | orchestrator (chat, deep_agent, system_prompt_layout, graph), tools, workflows engine, observability (judge, node_trace, rag_goldens), data_access | Lógica de negocio |
-| `copilot/api/` | FastAPI thin routes | Contract |
-| `copilot/observability/` | recording (callback + sanitization + turn_envelope), pricing, cost, persistence, reporting, workers | Hot-path latency |
+| `domain/` | ports (CopilotProvider, DataAccessProvider, BaseCopilotProvider), workflow, output_channels, module_registry | Cambios cascada al ratchet + tests fitness |
+| `infrastructure/` | repos (conv, inspirations, pinned_memory, mutation_journal, workflow_metric, marketing_kb_store), persisters, qdrant | Schema drift |
+| `application/` | orchestrator (chat, deep_agent, system_prompt_layout, graph), tools, workflows engine, observability (judge, node_trace, rag_goldens), data_access | Lógica de negocio |
+| `api/` | FastAPI thin routes | Contract |
+| `observability/` | recording (callback + sanitization + turn_envelope), pricing, cost, persistence, reporting, workers | Hot-path latency |
 
 **Registries (no hardcodear):**
 - `module_registry` (F1) — descubre `src.modules.{name}.copilot_provider:provider`
@@ -71,7 +71,7 @@ Queries esenciales: ver `.claude/rules/copilot-resilience.md` §"Debug copilot".
 - `WorkflowProvider.workflows()` aggregator (F6)
 - `EXTRACTION_CONTRACTS` (analytics, ortogonal)
 
-**Anchors (`[COPILOT-*]`):** registry tiene cap 36/36 desde F11. Agregar 1+ requiere bumpear `tests/architecture/test_copilot_anchors.py:96`.
+**Anchors (`[COPILOT-*]`):** el test de registry con cap (`test_copilot_anchors.py`) fue RETIRADO en la reorg — los anchors siguen en el código del engine (grep `COPILOT-` en `core/luana-core-copilot/`); verificá presencia con grep, no contra un cap numérico.
 
 **Ratchet `copilot → módulo` import: 22 frozen.** Solo shrinks. Nuevo provider = no toca el ratchet (consume domain abstracción, no concreción).
 
@@ -91,7 +91,7 @@ Queries esenciales: ver `.claude/rules/copilot-resilience.md` §"Debug copilot".
 [11 volatile per-turn] deep_agent_suffix  ← F2 (siempre al final)
 ```
 
-Reordenar = romper cache + cascada en goldens (`test_system_prompt_order.py`, `test_brand_lighthouse_in_system_prompt.py`).
+Reordenar = romper cache + cascada en goldens (`core/luana-core-copilot/tests/test_system_prompt_layout.py`, `test_brand_lighthouse_in_system_prompt.py`).
 
 ---
 
@@ -103,7 +103,7 @@ Reordenar = romper cache + cascada en goldens (`test_system_prompt_order.py`, `t
 
 3. **Bajo acoplamiento.** Cross-module imports prohibidos fuera de `core/luana-core-platform/src/luana_core_platform/links/` o `_PROVIDER_CONTRACT_IMPORTS`. Necesitás data de otro módulo → port en `links/ports/` o domain event. Provider pattern existe para no acoplar.
 
-4. **No premature refactor.** Bug se arregla con N líneas → fix con N líneas. Refactor paralelo va a `docs/mejoras-proceso/to-do.md`. Cada fase entrega UNA cosa.
+4. **No premature refactor.** Bug se arregla con N líneas → fix con N líneas. Refactor paralelo va a `docs/process/tech-debt.md (CIL carril L3)`. Cada fase entrega UNA cosa.
 
 5. **No hardcoded.** Field names ← `schema_introspection`. Routes ← `navigation_map`. Tools ← `tools/registry`. Models ← `module_registry`. Pricing ← `model_pricing_snapshot`. Si encontrás hardcoded, raíz del bug está cerca.
 
@@ -157,7 +157,7 @@ Reordenar = romper cache + cascada en goldens (`test_system_prompt_order.py`, `t
 5. GREEN: test verde + suite afectada verde + arch tests verdes
 6. Quality gates: ruff check + ruff format + pytest del módulo + pytest architecture
 7. Replay end-to-end: si síntoma original era live, reproducir manualmente
-8. Si emerge tech debt → docs/mejoras-proceso/to-do.md
+8. Si emerge tech debt → docs/process/tech-debt.md (CIL carril L3)
 9. Commit conventional: type(scope-id): summary
 ```
 
@@ -299,11 +299,9 @@ Block types canónicos: `text`, `image`, `audio`, `document`, `video`, `citation
 
 - [ ] Test reproductor RED → GREEN (commitado en mismo PR)
 - [ ] Suite afectada verde aislada
-- [ ] `test_copilot_anchors.py` verde (cap respetado)
-- [ ] `test_no_new_copilot_module_imports.py` verde (ratchet 22 frozen)
-- [ ] `test_copilot_provider_compliance.py` verde
-- [ ] `test_deep_agent_harness_invariants.py` verde si tocaste harness
-- [ ] `test_system_prompt_order.py` verde si tocaste prompt
+- [ ] Suite engine verde: `cd ${WS}/core/luana-core-copilot && ${WS}/.venv/bin/pytest tests/ -q` (los tests pre-reorg `test_copilot_anchors`/`test_no_new_copilot_module_imports`/`test_copilot_provider_compliance` fueron retirados/renombrados en la reorg)
+- [ ] `test_deep_agent_harness.py` verde si tocaste harness
+- [ ] `test_system_prompt_layout.py` verde si tocaste prompt
 - [ ] Goldens regenerados con `UPDATE_GOLDEN=1` si cambiaste `_BASE_TOOL_GROUPS` / `ALWAYS_AVAILABLE_GROUPS` / `ROUTE_TOOL_MAP` / route resolver
 - [ ] Lint + format clean (`ruff check` + `ruff format --check`)
 - [ ] Docker container healthy post-restart
@@ -311,7 +309,7 @@ Block types canónicos: `text`, `image`, `audio`, `document`, `video`, `citation
 - [ ] Spanish neutro verificado (`_VOSEO_RE` sweep si user-facing)
 - [ ] PII sanitizada si tocaste `recording/` (regex en `sanitization.py`)
 - [ ] Trace recorder honest (`set_turn_error` si catcheaste exception)
-- [ ] Tech debt nuevo → `docs/mejoras-proceso/to-do.md`
+- [ ] Tech debt nuevo → `docs/process/tech-debt.md (CIL carril L3)`
 
 ---
 
@@ -319,27 +317,25 @@ Block types canónicos: `text`, `image`, `audio`, `document`, `video`, `citation
 
 ```bash
 WS=$(git rev-parse --show-toplevel)
-BRAND=nicolify   # o vitalia/comunify/lupulo — el brand que tiene el módulo copilot
+BRAND=vitalia   # brand con extensión copilot (vitalia/comunify; nicolify reseteada)
 
-# Suite copilot completa (sin flakies aislados)
-cd ${WS}/${BRAND}/backend && ${WS}/.venv/bin/pytest tests/modules/copilot/ tests/architecture/ tests/admin/ tests/quality/ \
-  -q -o addopts="" --timeout=120 \
-  --ignore=tests/modules/copilot/test_streaming_integration.py
+# Suite ENGINE completa (el módulo canónico vive en core/luana-core-copilot)
+cd ${WS}/core/luana-core-copilot && ${WS}/.venv/bin/pytest tests/ -q -o addopts="" --timeout=120
 
-# Streaming aislado (heredado flaky F0+)
-cd ${WS}/${BRAND}/backend && ${WS}/.venv/bin/pytest tests/modules/copilot/test_streaming_integration.py -q
-
-# Goldens
-cd ${WS}/${BRAND}/backend && ${WS}/.venv/bin/pytest tests/modules/copilot/golden/ -q
+# Goldens engine
+cd ${WS}/core/luana-core-copilot && ${WS}/.venv/bin/pytest tests/golden/ -q
 
 # Regenerar goldens (cambio intencional)
-cd ${WS}/${BRAND}/backend && UPDATE_GOLDEN=1 ${WS}/.venv/bin/pytest tests/modules/copilot/golden/ -q
+cd ${WS}/core/luana-core-copilot && UPDATE_GOLDEN=1 ${WS}/.venv/bin/pytest tests/golden/ -q
 
-# Arch tests fitness
-cd ${WS}/${BRAND}/backend && ${WS}/.venv/bin/pytest tests/architecture/test_copilot_*.py tests/architecture/test_no_new_copilot_module_imports.py tests/architecture/test_workflow_compliance.py tests/architecture/test_channel_formatter_compliance.py -q
+# Brand extension (tests del módulo copilot del brand)
+cd ${WS}/${BRAND}/backend && ${WS}/.venv/bin/pytest tests/modules/${BRAND}/copilot/ -q
 
-# Real LLM judge (weekly opt-in)
-cd ${WS}/${BRAND}/backend && RUN_LLM_JUDGE=1 ${WS}/.venv/bin/pytest tests/quality/golden/ -q
+# Arch fitness brand (mirror ban + boundaries)
+cd ${WS}/${BRAND}/backend && ${WS}/.venv/bin/pytest tests/architecture/ -q
+
+# Real LLM judge (weekly opt-in — corre dentro de la suite engine)
+cd ${WS}/core/luana-core-copilot && RUN_LLM_JUDGE=1 ${WS}/.venv/bin/pytest tests/golden/ -q
 
 # Trazas de una conv específica
 docker exec luana-dev-luana_postgres_dev-1 psql -U postgres -d ${BRAND}_dev -c "
@@ -412,9 +408,7 @@ if not decision.allowed:
 
 **MV stale soft cap:** si `mv_refresh_log.get_last_refresh('mv_daily_llm_cost_per_tenant_v2')` > 1h → `BudgetGuard` aplica soft cap 105% (admite 5% overrun para no bloquear). Documented in PR-2 CONTRACT.md §7.2.
 
-**Detalle vivo en PR-2 CONTRACT.md (legacy paradigma).** Skill solo agrega anchor — ver:
-`docs/archive/2026/legacy-pis/PI-1-campaigns-module/sprints/S0-foundation/prs/PR-2-billing-and-compliance/CONTRACT.md`
-(Archived as part of Wave 2 pm-redesign 2026-05-06; PR.md / CONTRACT.md format superseded by `docs/product/stories/{id}/{01-spec.md, 03-arch.md}`.)
+**Detalle:** el CONTRACT.md legacy de PR-2 fue purgado del repo (legacy-pis cleanup) — la fuente viva de las primitivas es el código del engine `core/luana-core-billing/src/` (BudgetGuard + plan_config) y sus tests.
 
 ## Project invariants (read on demand)
 
