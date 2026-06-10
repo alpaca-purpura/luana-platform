@@ -5,7 +5,7 @@ description: Growth Studio metrics pipeline architecture — stage services, cac
 
 # Analytics Metrics Architecture
 
-> ETL extraction questions (*what/where/when*) → `docs/etl/extraction-contract.md` + `.claude/rules/etl-extraction-contract.md`.
+> ETL extraction questions (*what/where/when*) → `core/luana-core-analytics-engine/docs/extraction-contract.md` + `.claude/rules/etl-extraction-contract.md`.
 >
 > **This file:** runtime metrics pipeline — stage services, group mappings, channel registry, progressive loading.
 
@@ -61,7 +61,7 @@ Stage Services (stage_services/*.py)   ← SSoT stage data
 1. Def en `STAGE_CHANNEL_MAP` (`channel_registry.py`)
 2. Nuevo `channel_type` → agregar a `*_GROUP_MAP` en `constants.py`
 3. Nuevo `provider_name` → agregar a `PROVIDER_TO_CHANNEL_TYPES`
-4. FE config: `frontend/.../config/channel-display-registry.ts`
+4. FE config: `{brand}/frontend/src/features/.../config/channel-display-registry.ts` (⚠️ no existe hoy en ninguna marca — FE growth-studio pendiente rebuild)
 5. No changes overview/group_detail/MetricsService
 
 ## Agregar Stage Group

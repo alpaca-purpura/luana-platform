@@ -13,15 +13,15 @@ Two files together describe the analytics system. **Both must stay in sync**:
 |---|---|
 | `core/luana-core-analytics-engine/src/luana_core_analytics_engine/domain/metric_catalog.py` | Semantic catalog: what each metric means, its aggregation type, unit, providers that *can* emit it. **Used at runtime.** |
 | `core/luana-core-analytics-engine/src/luana_core_analytics_engine/domain/extraction_contract.py` | Extraction contract: which provider actually emits which metric, from which API endpoint, into which channel slug, when, and where it lands. **Documentation + tests.** |
-| `docs/etl/extraction-contract.md` | Auto-generated human-readable rendering of the contract. **Read this FIRST when answering "where does X come from".** |
+| `core/luana-core-analytics-engine/docs/extraction-contract.md` | Auto-generated human-readable rendering of the contract. **Read this FIRST when answering "where does X come from".** |
 
 **Workflow rules** for any change to the analytics module live in `.claude/rules/etl-extraction-contract.md`. Read it before you start.
 
 **Mandatory final step of any change** that touches a provider, the pipeline, the scheduler, the workers, or the catalog:
 
 ```bash
-make extraction-contract                                                # regenerate the markdown
-WS=$(git rev-parse --show-toplevel) && cd ${WS}/core/luana-core-analytics-engine && ${WS}/.venv/bin/pytest tests/architecture/test_extraction_contract.py -x -q  # verify no drift
+make extraction-contract    # regenerate core/luana-core-analytics-engine/docs/extraction-contract.md
+WS=$(git rev-parse --show-toplevel) && cd ${WS}/core/luana-core-analytics-engine && ${WS}/.venv/bin/pytest tests/ -x -q   # suite engine (el test dedicado de drift fue retirado en la reorg)
 ```
 
 Both must pass. The provider/pipeline change, the contract update, AND the regenerated Markdown go in the same commit.
@@ -48,15 +48,15 @@ Cache warming: overview miss → _warm_stage_cache() → stage service
 
 | File | Role |
 |---|---|
-| `[engine]/stage_services/constants.py` | Single source of truth for ALL shared constants |
-| `[engine]/channel_registry.py` | Channel definitions per stage + provider mapping |
-| `[engine]/stage_services/{stage}_stage.py` | One per stage — computes metrics, writes cache |
-| `[engine]/stage_services/overview_stage.py` | Thin cache reader for Tier 1 |
-| `[engine]/stage_services/group_detail.py` | Thin cache reader for Tier 2 |
+| `[engine]/application/services/stage_services/constants.py` | Single source of truth for ALL shared constants |
+| `[engine]/application/services/channel_registry.py` | Channel definitions per stage + provider mapping |
+| `[engine]/application/services/stage_services/{stage}_stage.py` | One per stage — computes metrics, writes cache |
+| `[engine]/application/services/stage_services/overview_stage.py` | Thin cache reader for Tier 1 |
+| `[engine]/application/services/stage_services/group_detail.py` | Thin cache reader for Tier 2 |
 | `[engine]/api/metrics.py` | API routes — uses stage services directly |
-| `[engine]/metrics_service.py` | Legacy (sankey, bowtie summary, timeseries ONLY) |
-| `[brand FE]/config/channel-display-registry.ts` | Frontend channel display config (per brand) |
-| `[brand FE]/config/dashboard-sections.ts` | Deep-link section registry (per brand) |
+| `[engine]/application/services/metrics_service.py` | Legacy (sankey, bowtie summary, timeseries ONLY) |
+| `[brand FE]/config/channel-display-registry.ts` | ⚠️ NO existe hoy en ninguna marca (FE growth-studio pre-reorg no reconstruido). Al construir el FE del dashboard en una marca, crear este registry per brand |
+| `[brand FE]/config/dashboard-sections.ts` | ⚠️ ídem — deep-link registry per brand, pendiente de rebuild FE |
 
 ## SOP: Adding a New Channel
 
@@ -109,8 +109,8 @@ If `channel_type` is new (not already in a GROUP_MAP), add it:
 
 ### 5. Tests
 
-- Backend: test in `tests/modules/analytics/` that the channel appears in the correct group
-- Frontend: test in `config/__tests__/channel-display-registry.test.ts`
+- Backend: test en `core/luana-core-analytics-engine/tests/` (suite engine) que el channel aparece en el grupo correcto
+- Frontend: test junto al registry per-brand cuando exista (⚠️ FE growth-studio pendiente de rebuild)
 
 ### 6. What you DON'T touch
 
@@ -183,7 +183,7 @@ This is rare (8 stages cover the full Bowtie). If needed:
 4. Add API endpoint in `api/metrics.py` using the new stage service
 5. Add to `_warm_stage_cache()` in `api/metrics.py`
 6. Add to `FunnelStage` enum in `api/metrics.py`
-7. Export from `stage_services/__init__.py`
+7. Export from `application/services/stage_services/__init__.py`
 
 ## Debugging: Channel Not Appearing
 

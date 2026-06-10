@@ -220,9 +220,7 @@ PR-2 expone primitivas, **NO modifica specialists**. S2 wirea:
 
 §3 protected surfaces (Closer Studio, SmartBufferService, OutputManager.process_response chunking) NO se tocan — el gate vive antes del entry point.
 
-**Detalle vivo en PR-2 CONTRACT.md (legacy paradigma).** Skill solo agrega anchor — ver:
-`docs/archive/2026/legacy-pis/PI-1-campaigns-module/sprints/S0-foundation/prs/PR-2-billing-and-compliance/CONTRACT.md`
-(Archived as part of Wave 2 pm-redesign 2026-05-06; PR.md / CONTRACT.md format superseded by `docs/product/stories/{id}/{01-spec.md, 03-arch.md}`.)
+**Detalle:** el CONTRACT.md legacy de PR-2 fue purgado del repo (legacy-pis cleanup) — la fuente viva de las primitivas es el código del engine `core/luana-core-billing/src/` (BudgetGuard + plan_config) y sus tests.
 
 ## Project invariants (read on demand)
 

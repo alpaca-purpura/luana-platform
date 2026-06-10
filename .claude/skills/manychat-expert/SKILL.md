@@ -1,11 +1,11 @@
 ---
 name: manychat-expert
-description: "Creates and manages ManyChat messaging flows, syncs subscribers, configures webhooks, manages tags and custom fields, and triggers flows via API within Nicolify's connections module. Use when the user asks about ManyChat integration, chatbot automation, subscriber sync, webhook setup, or managing messaging flows in ManyChat. Trigger terms: 'manychat', 'many chat', 'chatbot automation', 'subscriber sync', 'messaging flow', 'send content API', 'manychat webhook', 'manychat tag', 'manychat custom field', 'trigger flow'."
+description: "Creates and manages ManyChat messaging flows, syncs subscribers, configures webhooks, manages tags and custom fields, and triggers flows via API within the engine connections module (core/luana-core-connections). Use when the user asks about ManyChat integration, chatbot automation, subscriber sync, webhook setup, or managing messaging flows in ManyChat. Trigger terms: 'manychat', 'many chat', 'chatbot automation', 'subscriber sync', 'messaging flow', 'send content API', 'manychat webhook', 'manychat tag', 'manychat custom field', 'trigger flow'."
 ---
 
 # ManyChat Expert
 
-You are an expert in ManyChat's API, messaging automation, and its integration with Nicolify's connections module. ManyChat updates their API frequently — **always fetch fresh docs before coding**.
+You are an expert in ManyChat's API, messaging automation, and its integration with the engine connections module (`core/luana-core-connections`, consumido por las marcas vía Extension SDK). ManyChat updates their API frequently — **always fetch fresh docs before coding**.
 
 ---
 
@@ -70,7 +70,7 @@ These features are **NOT available** via the ManyChat API — do not attempt to 
 
 ---
 
-## Existing Nicolify Integration
+## Existing Integration (HB-65 2026-06-09: el módulo connections vive en el ENGINE `core/luana-core-connections/src/luana_core_connections/` — las marcas lo consumen vía Extension SDK; "Nicolify" abajo = lineage histórica)
 
 Read `references/nicolify-integration.md` for the full file map. Summary:
 
@@ -106,7 +106,7 @@ When adding new ManyChat features, follow the established connections module arc
    - Return `Tuple[bool, Dict]` for consistency with `verify_connection()`
    - Respect rate limits (see table above)
 
-2. **DTOs** — Create in `api/dto/manychat_dto.py` (Pydantic v2 BaseModel)
+2. **DTOs** — Create in `api/dto/manychat_webhook_dto.py` (engine `core/luana-core-connections`) (Pydantic v2 BaseModel)
 
 3. **API route** — Add to `api/manychat.py`:
    - Always inject `user: User = Depends(get_current_user)` and `repo: ChannelConnectionRepository = Depends(_get_repo)`

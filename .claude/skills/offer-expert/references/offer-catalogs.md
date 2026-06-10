@@ -24,10 +24,10 @@ Pickers en `actions/placeholders.tsx` hasta Sprint port.
 
 | Axis | BE SSoT | API | FE hook |
 |---|---|---|---|
-| **ExpertBusinessType** | `backend/src/shared/domain/expert_business_type.py` | `GET /api/v1/catalogs/business-types` | `useBusinessTypesCatalog` (features/tenant-profile) |
-| **OfferValueLevel** | `backend/src/modules/offer/domain/value_level_catalog.py` | `GET /api/v1/offer/value-levels/catalog` | `useValueLevelCatalog` / `useValueLevelMetadata` |
-| **SectionCatalog** | `backend/src/modules/offer/domain/section_catalog.py` | `GET /api/v1/offer/archetypes/catalog` (extended) | `useSectionCatalog` / `useSectionMetadata` |
-| **VariantStructure** | `backend/src/modules/offer/domain/variant_structure_catalog.py` | `GET /api/v1/offer/variant-structures/catalog` | `useVariantStructureCatalog` / `useVariantStructureMetadata` |
+| **ExpertBusinessType** | `core/luana-core-platform/src/luana_core_platform/domain/expert_business_type.py` | `GET /api/v1/catalogs/business-types` | `useBusinessTypesCatalog` (features/tenant-profile) |
+| **OfferValueLevel** | `core/luana-core-offer-studio/src/luana_core_offer_studio/domain/value_level_catalog.py` | `GET /api/v1/offer/value-levels/catalog` | `useValueLevelCatalog` / `useValueLevelMetadata` |
+| **SectionCatalog** | `core/luana-core-offer-studio/src/luana_core_offer_studio/domain/section_catalog.py` | `GET /api/v1/offer/archetypes/catalog` (extended) | `useSectionCatalog` / `useSectionMetadata` |
+| **VariantStructure** | `core/luana-core-offer-studio/src/luana_core_offer_studio/domain/variant_structure_catalog.py` | `GET /api/v1/offer/variant-structures/catalog` | `useVariantStructureCatalog` / `useVariantStructureMetadata` |
 
 > `business_types` NO vive en `BrandIdentity` desde 2026-04-20. Vive en `tenant_profile` BC. Leer via port `src.shared.links.ports.tenant_profile` o hook `useTenantProfile`. Docs: `docs/domains/tenant-profile/`.
 
@@ -35,15 +35,15 @@ Pickers en `actions/placeholders.tsx` hasta Sprint port.
 
 | Axis | BE SSoT | Depende | API | FE hook |
 |---|---|---|---|---|
-| **OfferArchetype** | `backend/src/modules/offer/domain/archetype_catalog.py` | `SectionKey`; `VariantStructure` (Sprint 8+) | `GET /api/v1/offer/archetypes/catalog` | `useArchetypeCatalog` / `useArchetypeCapabilities` / `useArchetypeDisplay` |
+| **OfferArchetype** | `core/luana-core-offer-studio/src/luana_core_offer_studio/domain/archetype_catalog.py` | `SectionKey`; `VariantStructure` (Sprint 8+) | `GET /api/v1/offer/archetypes/catalog` | `useArchetypeCatalog` / `useArchetypeCapabilities` / `useArchetypeDisplay` |
 
 ### Composite
 
 | Catalog | BE SSoT | Depende | API | FE hook |
 |---|---|---|---|---|
-| **OfferFormat** | `backend/src/modules/offer/domain/format_catalog.py` | `OfferArchetype`; `ExpertBusinessType` (`suitable_for: dict[EBT, float]`) | `GET /api/v1/offer/formats/catalog?archetype=&business_types=` | `useFormatCatalog` / `useFormatMetadata` |
-| **OfferLadderHints** | `backend/src/modules/offer/domain/offer_ladder_hints.py` | `EBT` + `OfferValueLevel` (tuple key) | `GET /api/v1/offer/ladder-hints/catalog` | `useOfferLadderHints` / `useLadderHint` / `useLadderHintsForType` |
-| **OfferTypePreset** | `backend/src/modules/offer/domain/offer_type_preset_catalog.py` | `EBT` + `OfferArchetype` + `SectionCatalog` | `GET /api/v1/offer/type-presets/catalog?business_types=` | `useOfferTypePresetCatalog` / `useOfferTypePreset` / `usePresetsByArchetype` |
+| **OfferFormat** | `core/luana-core-offer-studio/src/luana_core_offer_studio/domain/format_catalog.py` | `OfferArchetype`; `ExpertBusinessType` (`suitable_for: dict[EBT, float]`) | `GET /api/v1/offer/formats/catalog?archetype=&business_types=` | `useFormatCatalog` / `useFormatMetadata` |
+| **OfferLadderHints** | `core/luana-core-offer-studio/src/luana_core_offer_studio/domain/offer_ladder_hints.py` | `EBT` + `OfferValueLevel` (tuple key) | `GET /api/v1/offer/ladder-hints/catalog` | `useOfferLadderHints` / `useLadderHint` / `useLadderHintsForType` |
+| **OfferTypePreset** | `core/luana-core-offer-studio/src/luana_core_offer_studio/domain/offer_type_preset_catalog.py` | `EBT` + `OfferArchetype` + `SectionCatalog` | `GET /api/v1/offer/type-presets/catalog?business_types=` | `useOfferTypePresetCatalog` / `useOfferTypePreset` / `usePresetsByArchetype` |
 
 ### DAG
 
@@ -79,7 +79,7 @@ FK typed Python (enums/frozen records), never duplicated. `OfferFormat.suitable_
    ```bash
    cd frontend && npx vitest run src/__tests__/architecture/test-no-catalog-duplicates.test.ts
    ```
-5. Nuevo icon → registrar en `frontend/src/features/offer-studio/lib/icon-name-resolver.ts`.
+5. Nuevo icon → registrar en `{brand}/frontend/src/features/offer-studio/lib/icon-name-resolver.ts (⚠️ FE offer-studio pre-reset, rebuild pendiente per brand)`.
 
 ## Forbidden
 

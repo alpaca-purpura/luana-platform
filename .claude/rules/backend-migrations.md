@@ -1,9 +1,6 @@
----
-globs: "**/backend/alembic/versions/**/*.py"
-description: Idempotent Alembic migrations
----
-
 # Migrations
+
+> **Always-on DEFINITIVO (decisión 2026-06-09 — sesión integración, Tier-2 evaluado y DESCARTADO).** El read-trigger `paths:` NO cubre el flujo real: una migración nueva puede nacer vía `Write` from-scratch con `down_revision` obtenido por `alembic current` (bash, HB-37) — cero `Read` de `alembic/versions/**` → la rule no cargaría justo en el write que debe proteger (#23478: `paths:` es read-only). El flujo autogenerate+Edit SÍ leería, pero la cobertura parcial no alcanza para un gate de DDL idempotente (riesgo = prod). Backstops existentes (builder-backend prompt verbatim + arch tests) son defensa-en-profundidad, no reemplazo. El `globs:` previo era frontmatter MUERTO (mecanismo confirmado ignorado).
 
 Idempotentes. Raw SQL `IF NOT EXISTS`.
 

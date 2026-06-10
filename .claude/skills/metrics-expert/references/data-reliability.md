@@ -31,8 +31,8 @@ Non-negotiable para Growth Studio pipeline changes. 4-Layer Protocol = only way 
 | `frontend/src/features/growth-studio/components/**` | 3 |
 | `frontend/src/features/growth-studio/api/*.ts` | 3 |
 | `frontend/src/features/growth-studio/hooks/*.ts` | 3 |
-| `frontend/src/lib/format-money.ts` | 3 |
-| `frontend/src/lib/format-date.ts` | 3 |
+| `{brand}/frontend/src/lib/format/formatMoney.ts` | 3 |
+| `{brand}/frontend/src/lib/format/formatTenantDate.ts` | 3 |
 
 ## Workflow
 

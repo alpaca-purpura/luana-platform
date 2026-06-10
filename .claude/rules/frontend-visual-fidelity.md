@@ -1,7 +1,14 @@
+---
+paths:
+  - "**/frontend/src/**"
+  - "core/@luana/**"
+  - "**/mockups/**"
+description: Visual fidelity FE — D1 design-system-first + D2 mockup adherence + D3 scope + canon binding
+---
+
 # Frontend Visual Fidelity (átomos/moléculas + mockup adherence + scope discipline)
 
-
-> **Slim stub (context-rot pass 2026-05-30).** Cuerpo operativo completo en `.claude/skills/frontend-expert/references/visual-fidelity.md` — carga on-demand cuando `frontend-expert` / `builder-frontend` / `auditor-frontend` se activan. **Origen:** sesión 2026-05-28. **Cement-date:** 2026-05-28.
+> **Tier-2 `paths:` (2026-06-09 — sesión integración).** Carga POSTREAD al leer `frontend/src`/`@luana`/`mockups/`. Cobertura write-time verificada por canal propio de cada actor: `/po-ux` SKILL § canon checklist Step 5 (HARD) · `/architect` SKILL L193 (FE sin canon → NO ready) · `builder-frontend` agent § technical_design D1 · `auditor-frontend` agent Cat visual-fidelity. **Slim stub (context-rot 2026-05-30).** Cuerpo operativo en `.claude/skills/frontend-expert/references/visual-fidelity.md`. **Origen:** 2026-05-28.
 
 ## Regla cardinal
 

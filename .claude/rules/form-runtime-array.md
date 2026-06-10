@@ -1,6 +1,6 @@
 # Form-runtime Array Field
 
-> **Slim pointer (W1-Phase2 eviction 2026-06-09 · tier: project).** Cuerpo operativo + ex-always-on body en `brand-expert` skill → `references/form-runtime-array.md` (copia en `offer-expert` — ver nota mirror en harness-backlog).
+> **Slim pointer (W1-Phase2 eviction 2026-06-09 · tier: project).** Cuerpo operativo + ex-always-on body en `brand-expert` skill → `references/form-runtime-array.md` (copia ÚNICA — mirror en offer-expert consolidado a pointer, HB-67 2026-06-09).
 
 Trigger: array fields en form-runtime (brand-studio / offer-studio).
 

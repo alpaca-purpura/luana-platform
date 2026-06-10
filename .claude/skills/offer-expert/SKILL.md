@@ -126,7 +126,7 @@ Eliminadas: `METHODOLOGY`, `CREDENTIALS` (duplicaban brand).
 1. Decidir EBT + archetype (preset = facade del archetype).
 2. Editar `OFFER_TYPE_PRESET_CATALOG` en `offer_type_preset_catalog.py`.
 3. Bump `_CATALOG_VERSION` en `{brand}/backend/src/modules/{brand}/offer/api/offer_type_presets.py`.
-4. Run arch tests (187+) en `tests/architecture/test_offer_type_preset_catalog_completeness.py`.
+4. Run suite engine: `cd core/luana-core-offer-studio && pytest tests/ -q` (incluye `test_catalogs_dag_smoke.py`; el arch test dedicado `test_offer_type_preset_catalog_completeness.py` fue retirado en la reorg).
 5. Update doc `docs/domains/offer/offer-type-preset-catalog.md`.
 6. Review consumers: `sales_agent.knowledge_builder` + `landing_service._select_landing_archetype_from_preset` + `PresetBadge.tsx`.
 7. **Copilot: zero-touch.** Preset_label/description leen del catalog en runtime via `shared/links/ports/offer.get_offer_type_preset(id)`. Catalog reactive.
@@ -186,7 +186,7 @@ Workflow refactor field-contract-platform:
    ),
    ```
 5. Migration Alembic idempotente (`ADD COLUMN IF NOT EXISTS`) si Pydantic field se persiste como column. Si vive en JSONB (specific_details, platform_details), zero migration.
-6. Run arch tests `tests/architecture/test_field_contract_platform.py` + `tests/architecture/test_field_contract_completeness.py`. Pydantic ⊆ FieldContract enforced.
+6. Run `core/luana-core-offer-studio/tests/api/test_field_contract_endpoint.py` + suite engine (los arch tests dedicados field_contract_{platform,completeness} fueron retirados en la reorg). Pydantic ⊆ FieldContract enforced.
 7. **FE schema** (`{brand}/frontend/src/features/offer-studio/schemas/<section>.schema.ts`) — agregar field declaración Zod. Schema FE NO se deriva auto; debe alinearse manual.
 8. **Copilot: zero-touch** si solo agregás. `propose_field_updates` valida con catalog derivado, picks up auto. `next_question` algoritmo Fase 09 ranking deja entrar el field auto. Si gate / priority te interesa = setealo en Override.
 9. Documentar en `docs/domains/offer/`.
@@ -316,7 +316,7 @@ Agregar:
 WS=$(git rev-parse --show-toplevel)
 # Engine (L2-L10 catalogs):
 cd ${WS}/core/luana-core-offer-studio && ${WS}/.venv/bin/pytest tests/architecture/ -x -q --tb=short
-cd ${WS}/core/luana-core-offer-studio && ${WS}/.venv/bin/pytest tests/architecture/test_offer_type_preset_catalog_completeness.py -x -q
+cd ${WS}/core/luana-core-offer-studio && ${WS}/.venv/bin/pytest tests/test_catalogs_dag_smoke.py tests/api/test_field_contract_endpoint.py -x -q
 # Brand backend (L0-L1 + copilot):
 cd ${WS}/{brand}/backend && ${WS}/.venv/bin/pytest tests/architecture/ -x -q --tb=short
 cd ${WS}/{brand}/backend && ${WS}/.venv/bin/pytest tests/modules/{brand}/copilot/test_conversational_questioning.py tests/modules/{brand}/copilot/test_guided_question_hint.py -x -q
@@ -350,7 +350,7 @@ Antes de codear, si:
 - `docs/domains/offer/catalogs-consolidation.md` (5 axes base)
 - `docs/domains/offer/offer-type-preset-catalog.md` (preset layer)
 - `docs/domains/offer/variant-structure-catalog.md` (variants)
-- ⚠️ `docs/domains/offer/INDEX.md` + `docs/_archive/pre-sdd-2026-05-04/refactors/field-contract-platform/{DESIGN,LEARNINGS}.md` PURGADOS (SDD reorg) — no existen. Catálogos engine viven en `core/luana-core-offer-studio/` (esta skill es pre-reorg, ver HB-65 topology-alignment)
+- ⚠️ `docs/domains/offer/INDEX.md` + `docs/_archive/pre-sdd-2026-05-04/refactors/field-contract-platform/{DESIGN,LEARNINGS}.md` PURGADOS (SDD reorg) — no existen. Catálogos engine viven en `core/luana-core-offer-studio/` (alineado HB-65 2026-06-09)
 - `.claude/rules/offer-catalogs.md` (DAG rules)
 - `.claude/rules/spanish-text.md` (neutro LATAM sin voseo)
 - `.claude/rules/tdd-mandatory.md` (test antes impl)
