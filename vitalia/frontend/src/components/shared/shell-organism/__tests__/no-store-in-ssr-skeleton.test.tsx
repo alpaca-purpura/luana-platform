@@ -43,24 +43,22 @@ vi.mock("../TenantSwitcher", () => ({
 // ─── Mock useShellStore with a spy tracking calls ──────────────────────────────
 // Use vi.hoisted to create the spy before vi.mock hoisting occurs.
 // This allows the mock factory to reference the spy safely.
-const { useShellStoreSpy, mockSetValeriaState, mockSetShellMode, mockSetMobileDrawerOpen } =
-  vi.hoisted(() => {
-    const mockSetValeriaState = vi.fn();
-    const mockSetShellMode = vi.fn();
-    const mockSetMobileDrawerOpen = vi.fn();
-    const useShellStoreSpy = vi.fn().mockImplementation(
-      (selector: (s: unknown) => unknown) => {
-        const store = {
-          setValeriaState: mockSetValeriaState,
-          setShellMode: mockSetShellMode,
-          mobileDrawerOpen: false,
-          setMobileDrawerOpen: mockSetMobileDrawerOpen,
-        };
-        return selector ? selector(store) : store;
-      }
-    );
-    return { useShellStoreSpy, mockSetValeriaState, mockSetShellMode, mockSetMobileDrawerOpen };
-  });
+// T-2 (vitalia-shell-core-hardening): setValeriaState/setShellMode removed from the
+// store (new machine closed|chat; shellMode eliminated AC-1). The skeleton guard only
+// cares that useShellStore is NOT called — the concrete setter set is irrelevant here.
+const { useShellStoreSpy, mockSetMobileDrawerOpen } = vi.hoisted(() => {
+  const mockSetMobileDrawerOpen = vi.fn();
+  const useShellStoreSpy = vi.fn().mockImplementation(
+    (selector: (s: unknown) => unknown) => {
+      const store = {
+        mobileDrawerOpen: false,
+        setMobileDrawerOpen: mockSetMobileDrawerOpen,
+      };
+      return selector ? selector(store) : store;
+    }
+  );
+  return { useShellStoreSpy, mockSetMobileDrawerOpen };
+});
 
 vi.mock("@/stores/shell-store", () => ({
   useShellStore: useShellStoreSpy,
@@ -75,8 +73,6 @@ import { TopBarGlobal } from "../TopBarGlobal";
 describe("TopBarGlobal variant='skeleton' — store-free (D4 arch guard)", () => {
   beforeEach(() => {
     useShellStoreSpy.mockClear();
-    mockSetValeriaState.mockClear();
-    mockSetShellMode.mockClear();
     mockSetMobileDrawerOpen.mockClear();
   });
 
@@ -130,8 +126,6 @@ describe("TopBarGlobal variant='skeleton' — store-free (D4 arch guard)", () =>
 describe("TopBarGlobal variant='interactive' (default) — store access preserved (regression guard)", () => {
   beforeEach(() => {
     useShellStoreSpy.mockClear();
-    mockSetValeriaState.mockClear();
-    mockSetShellMode.mockClear();
     mockSetMobileDrawerOpen.mockClear();
   });
 

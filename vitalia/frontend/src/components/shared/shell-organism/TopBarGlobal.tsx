@@ -19,7 +19,10 @@
  *
  * Client Component (converted T-6 — hamburger onClick handler requires it).
  * Height: h-12 (48px). Positions fixed at top, z-50.
- * Contains: [hamburger <md] + LogoMark (left) + TenantSwitcher (center) + ThemeToggle (right).
+ * Updated vitalia-shell-core-hardening — T-2 (RN-2):
+ *   Right cluster order [ThemeToggle][TenantSwitcher] (switcher al borde derecho).
+ *   No web/agentic chip (ShellModeToggle eliminated — AC-1).
+ * Layout: left = [hamburger <lg] + LogoMark · right = [ThemeToggle][TenantSwitcher].
  *
  * ThemeToggle and TenantSwitcher are also Client Components.
  *
@@ -109,12 +112,13 @@ function TopBarGlobalInteractive({ className }: Pick<TopBarGlobalProps, "classNa
         </Button>
         <LogoMark variant="full" size="md" className="hidden lg:inline-flex" />
         <LogoMark variant="mark" size="md" className="inline-flex lg:hidden" />
-        <TenantSwitcher />
       </div>
 
-      {/* Right: actions */}
+      {/* Right: actions — order [ThemeToggle][TenantSwitcher] (T-2 RN-2: switcher
+          al borde derecho, después del toggle de tema). Sin chip web/agéntico. */}
       <div className="flex items-center gap-2">
         <ThemeToggle />
+        <TenantSwitcher />
       </div>
     </header>
   );
@@ -178,12 +182,13 @@ function TopBarGlobalSkeleton({ className }: Pick<TopBarGlobalProps, "className"
         </Button>
         <LogoMark variant="full" size="md" className="hidden lg:inline-flex" />
         <LogoMark variant="mark" size="md" className="inline-flex lg:hidden" />
-        <TenantSwitcher />
       </div>
 
-      {/* Right: actions */}
+      {/* Right: actions — order [ThemeToggle][TenantSwitcher] (T-2 RN-2). Skeleton
+          keeps the same DOM order as interactive for layout-shift parity. */}
       <div className="flex items-center gap-2">
         <ThemeToggle />
+        <TenantSwitcher />
       </div>
     </header>
   );

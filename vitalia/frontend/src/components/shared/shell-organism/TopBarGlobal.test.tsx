@@ -57,16 +57,14 @@ vi.mock("./TenantSwitcher", () => ({
 
 // Mock useShellStore — TopBarGlobal interactive reads setters only (no state read).
 // Pattern: mock the module and capture setter calls via vi.fn().
-// T-2/D5: Added mockSetMobileDrawerOpen — burger now uses independent mobile slice.
-const mockSetValeriaState = vi.fn();
-const mockSetShellMode = vi.fn();
+// T-2 (vitalia-shell-core-hardening): setValeriaState/setShellMode REMOVED from the
+// store (new machine closed|chat + historyOpen; shellMode eliminated AC-1). Burger
+// uses ONLY the independent mobile slice (setMobileDrawerOpen — D5).
 const mockSetMobileDrawerOpen = vi.fn();
 
 vi.mock("@/stores/shell-store", () => ({
   useShellStore: (selector: (s: unknown) => unknown) => {
     const store = {
-      setValeriaState: mockSetValeriaState,
-      setShellMode: mockSetShellMode,
       mobileDrawerOpen: false,
       setMobileDrawerOpen: mockSetMobileDrawerOpen,
     };
@@ -115,8 +113,6 @@ describe("TopBarGlobal — named export contract", () => {
 
 describe("TopBarGlobal — hamburger button mobile (T-6, D7)", () => {
   beforeEach(() => {
-    mockSetValeriaState.mockClear();
-    mockSetShellMode.mockClear();
     mockSetMobileDrawerOpen.mockClear();
   });
 
@@ -158,9 +154,48 @@ describe("TopBarGlobal — hamburger button mobile (T-6, D7)", () => {
     // New D5 behavior: only setMobileDrawerOpen called
     expect(mockSetMobileDrawerOpen).toHaveBeenCalledOnce();
     expect(mockSetMobileDrawerOpen).toHaveBeenCalledWith(true);
-    // NOT called (D5 decouples from valeriaState desktop slice)
-    expect(mockSetValeriaState).not.toHaveBeenCalled();
-    expect(mockSetShellMode).not.toHaveBeenCalled();
+  });
+});
+
+// ─── T-2: right cluster order [ThemeToggle][TenantSwitcher] (03-arch-fe § 3, RN-2) ──
+//
+// Point 1+2: switcher moves to the RIGHT cluster, AFTER ThemeToggle (pegado al borde
+// derecho). No web/agentic chip (eliminated with ShellModeToggle). Logo stays left.
+
+describe("TopBarGlobal — right cluster order [ThemeToggle][TenantSwitcher] (T-2, RN-2)", () => {
+  it("[T-2] TenantSwitcher lives in the right cluster, after ThemeToggle (switcher al borde derecho)", () => {
+    const { getByTestId } = render(<TopBarGlobal />);
+    const theme = getByTestId("theme-toggle");
+    const switcher = getByTestId("tenant-switcher-mock");
+    // Both must share the same parent (the right actions cluster).
+    expect(switcher.parentElement).toBe(theme.parentElement);
+    // ThemeToggle precedes TenantSwitcher in DOM order → switcher is the rightmost.
+    const order = theme.compareDocumentPosition(switcher);
+    expect(order & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("[T-2] TenantSwitcher is NOT in the left cluster (logo cluster)", () => {
+    const { getByTestId, getAllByTestId } = render(<TopBarGlobal />);
+    const switcher = getByTestId("tenant-switcher-mock");
+    const logos = getAllByTestId("logo-mark");
+    // The switcher's parent must not contain any LogoMark (i.e. it is not the left cluster).
+    logos.forEach((logo) => {
+      expect(switcher.parentElement?.contains(logo)).toBe(false);
+    });
+  });
+
+  it("[T-2/skeleton] skeleton variant also places TenantSwitcher in the right cluster after ThemeToggle", () => {
+    const { getByTestId } = render(<TopBarGlobal variant="skeleton" />);
+    const theme = getByTestId("theme-toggle");
+    const switcher = getByTestId("tenant-switcher-mock");
+    expect(switcher.parentElement).toBe(theme.parentElement);
+    const order = theme.compareDocumentPosition(switcher);
+    expect(order & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("[T-2] no shell-mode chip rendered (ShellModeToggle eliminated AC-1)", () => {
+    const { queryByTestId } = render(<TopBarGlobal />);
+    expect(queryByTestId("shell-mode-toggle")).toBeNull();
   });
 });
 
@@ -183,8 +218,6 @@ describe("TopBarGlobal — burger aria-expanded + dynamic aria-label (T-4, SC-8 
     vi.doMock("@/stores/shell-store", () => ({
       useShellStore: (selector: (s: unknown) => unknown) => {
         const store = {
-          setValeriaState: vi.fn(),
-          setShellMode: vi.fn(),
           mobileDrawerOpen: false,
           setMobileDrawerOpen: mockSetMobileDrawerOpenT4,
         };
