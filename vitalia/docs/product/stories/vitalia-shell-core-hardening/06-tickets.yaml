@@ -56,6 +56,7 @@ tickets:
     title: "Chrome layout: TopBar switcher derecha + sin chip · clamp 320 · drawer <1024 · quitar web-mode/rail · historial empuja 260"
     surface: FE
     production_code: true
+    state: pushed                      # ★ 2026-06-10 builder-frontend · gates GREEN (tsc 0 · eslint clean · vitest shell-organism 515/515 · arch grep shellMode/ShellModeToggle=0 prod) · commits b19a227d (topbar) + b522043a (layout/guard/historial)
     depends_on: [T-1]
     owner_eligibility: [opencode, sonnet, opus]
     assignment:
