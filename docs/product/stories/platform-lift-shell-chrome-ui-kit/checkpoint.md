@@ -15,8 +15,8 @@ cap_change_type: fix
 parent_story: null
 predecessor_story: vitalia-shell-core-hardening   # done 2026-06-11 — chrome hardened, handoff en proposal § Estado post
 
-state: developed
-phase: HANDOFF_TO_AUDITOR       # autonomous: G saltada (opt-in Chris verbatim) · 7 tickets T-K1..K3+T-V1..V2+T-N1+T-G GREEN
+state: reviewing
+phase: AUDIT_IN_PROGRESS        # /auditor pickup 2026-06-11 (autonomous, G saltada) · 7 tickets GREEN
 ratified_by_chris: true
 last_artifact: 06-tickets.yaml
 module: shell
