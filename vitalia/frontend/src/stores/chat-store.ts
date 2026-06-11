@@ -38,6 +38,10 @@ import {
   MOCK_MESSAGES,
   MOCK_RESPONSES_BY_AGENT,
 } from "@/components/shared/shell-organism/_mock-messages";
+import {
+  MOCK_CONVERSATIONS,
+  type MockConversation,
+} from "@/components/shared/shell-organism/_mock-conversations";
 
 /** Message role — determines rendering variant */
 export type MessageRole = "bot" | "user" | "delegate" | "thinking";
@@ -66,6 +70,12 @@ export type ChatStatus = "idle" | "thinking" | "streaming";
 /** Chat store interface */
 export interface ChatStore {
   messages: ChatMessage[];
+  /**
+   * UI-local conversation history (T-3, RN-13). Archive-on-"+" target.
+   * NOT backed by BE/agentic persistence — chrome-only, seeded from MOCK_CONVERSATIONS.
+   * Real persistence is out of T-3 scope (would require /pm-vitalia escalate).
+   */
+  conversations: MockConversation[];
   /** Active agent for new messages. Default: 'valeria'. No UI consumer F1-S6. */
   activeAgent: AgentSlug;
   status: ChatStatus;
@@ -77,6 +87,15 @@ export interface ChatStore {
   sendMessage(content: string): void;
   /** Reset chat — used for empty state testing and clear feature. */
   clearMessages(): void;
+  /**
+   * New conversation (T-3, "+", RN-13 / SC-8). UI-local only:
+   *  1. If the current chat has messages → archive a generic non-PHI entry to
+   *     the TOP of `conversations` (newest first, group 'today').
+   *  2. Clear the chat (messages=[], status='idle') for a fresh start.
+   * No-op archive when chat already empty (no phantom entry).
+   * Title is generic ("Conversación HH:MM") — NEVER echoes message content (HIPAA-lite).
+   */
+  newConversation(): void;
   /**
    * Update active agent. API exists but NO UI consumer in F1-S6.
    * Prepared for future "AgentSwitcher dropdown in ChatHeader" sub-story.
@@ -132,6 +151,8 @@ function resolveInitialMessages(): ChatMessage[] {
 export const useChatStore = create<ChatStore>((set, get) => ({
   // ── State ──────────────────────────────────────────────────────────────────
   messages: resolveInitialMessages(),
+  // UI-local history seed (T-3). Spread → mutation-safe, empty-able for SC-13.
+  conversations: [...MOCK_CONVERSATIONS],
   activeAgent: DEFAULT_CHAT_AGENT,
   status: "idle",
 
@@ -199,6 +220,23 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   },
 
   clearMessages: () => set({ messages: [], status: "idle" }),
+
+  newConversation: () => {
+    const { messages } = get();
+    // Only archive when there is something to archive (no phantom entry).
+    if (messages.length > 0) {
+      const archived: MockConversation = {
+        id: crypto.randomUUID(),
+        // Generic, non-PHI title — NEVER echoes message content (HIPAA-lite chrome guard).
+        title: `Conversación ${getNowHHMM()}`,
+        meta: `${getNowHHMM()} · ${messages.length} mensajes`,
+        group: "today",
+      };
+      set((s) => ({ conversations: [archived, ...s.conversations] }));
+    }
+    // Fresh start.
+    set({ messages: [], status: "idle" });
+  },
 
   setActiveAgent: (agent: AgentSlug) => set({ activeAgent: agent }),
 }));
