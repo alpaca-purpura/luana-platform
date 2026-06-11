@@ -105,6 +105,7 @@ export function ShellOrganismLayoutClient({
   // T-3 (vitalia-shell-core-hardening): binary machine drives the panel width.
   // closed (state A) → panel shrinks to the 44px tira-avatar; chat (B/C) → restore.
   const valeriaOpen = useShellStore((s) => s.valeriaOpen);
+  const historyOpen = useShellStore((s) => s.historyOpen);
   // Bug #2 fix (vitalia-bugfix-shell-nav-scroll-errors T-4): el tenant-store usa
   // createSsrSafePersistedStore con skipHydration:true; su doc pide rehidratarlo
   // desde el primer componente cliente que lo consume — y nadie lo hacía. Sin esto,
@@ -195,6 +196,10 @@ export function ShellOrganismLayoutClient({
   // 30/70 default). Still resizable + persisted (useDefaultLayout / valeriaPct) — this
   // is only the fresh default. T-2: no shellMode branch (web mode eliminated).
   const defaultValeriaPct = 30;
+  // ★ Live-fix 2026-06-11 (RN-7 push REAL): el historial (260px fijo) debe ENSANCHAR
+  // el panel de Valeria (empujar al agente), NO robarle ancho al chat. % del push:
+  const HISTORY_PX = 260;
+  const histPct = (HISTORY_PX / Math.max(containerWidth, 1)) * 100;
 
   // ── Imperative Group ref for snap-up (Fix A — C3 bug mitigation) ─────────
   const groupRef = useGroupRef();
@@ -249,9 +254,36 @@ export function ShellOrganismLayoutClient({
     // to minSize and leaves a ~274px gap (BUG #2). collapse() ignores minSize and
     // goes directly to collapsedSize per the v4 API contract.
     if (valeriaOpen === "closed") {
-      valeriaPanelRef.current?.collapse();
+      // ★ Live-fix 2026-06-11 (round 3): un único collapse() inmediato es no-op en
+      // la transición runtime — el Group re-aplica el layout PERSISTIDO
+      // (useDefaultLayout) al panel remontado y pisa el collapse si llega antes
+      // del registro. Retry por rAF hasta que isCollapsed() (max ~30 frames):
+      // converge en cuanto el Group registró el panel. En page-mount el primer
+      // intento ya pega (containerWidth llega tarde → race ganada).
+      let cancelled = false;
+      let raf = 0;
+      const tryCollapse = (attempt: number) => {
+        if (cancelled) return;
+        const handle = valeriaPanelRef.current;
+        if (handle) {
+          if (handle.isCollapsed()) {
+            setShellReady(true);
+            return;
+          }
+          handle.collapse();
+        }
+        if (attempt < 30) {
+          raf = requestAnimationFrame(() => tryCollapse(attempt + 1));
+        } else {
+          setShellReady(true); // no bloquear el shell si la lib nunca registra
+        }
+      };
+      tryCollapse(0);
       setShellReady(true);
-      return;
+      return () => {
+        cancelled = true;
+        cancelAnimationFrame(raf);
+      };
     }
     // Open (state B/C): if panel is currently collapsed (e.g. just came from state
     // A via a click on the strip), call expand() FIRST so the library marks the
@@ -272,6 +304,32 @@ export function ShellOrganismLayoutClient({
     }
     setShellReady(true);
   }, [containerWidth, minValeriaPct, groupRef, valeriaPanelRef, isLg, valeriaOpen, stripPct]);
+
+  // ★ Live-fix 2026-06-11 — RN-7 push REAL del historial.
+  // Antes: el historial (260px) se renderizaba DENTRO del panel robándole ancho al
+  // chat (panel fijo → chat podía quedar en ~58px ilegible). RN-7 manda: "el
+  // historial EMPUJA (ensancha el panel de Valeria, angosta el agente) — NO come
+  // del ancho del chat". Al flip de historyOpen: setLayout(actual ± histPct).
+  // Sin remount → sin race con la persistencia (el panel ya está registrado).
+  // Floor en C: minValeriaPct + histPct (chat nunca < min legible con historial).
+  const prevHistoryOpenRef = useRef(historyOpen);
+  useEffect(() => {
+    const prev = prevHistoryOpenRef.current;
+    prevHistoryOpenRef.current = historyOpen;
+    if (prev === historyOpen) return; // solo en el flip
+    if (!isLg || valeriaOpen !== "chat" || !groupRef.current) return;
+    const layout = groupRef.current.getLayout();
+    const current = layout[VALERIA_PANEL_ID];
+    if (current === undefined) return;
+    const maxPct = 100 - minAppPct;
+    const target = historyOpen
+      ? Math.min(maxPct, Math.max(current + histPct, minValeriaPct + histPct))
+      : Math.max(minValeriaPct, current - histPct);
+    groupRef.current.setLayout({
+      [VALERIA_PANEL_ID]: target,
+      [APP_PANEL_ID]: 100 - target,
+    });
+  }, [historyOpen, isLg, valeriaOpen, groupRef, histPct, minValeriaPct, minAppPct]);
 
   // Persist layout across page reloads via localStorage.
   // Safe to call directly: this component is client-only via dynamic({ssr:false}).
@@ -351,7 +409,22 @@ export function ShellOrganismLayoutClient({
              */}
             <Panel
               id={VALERIA_PANEL_ID}
-              defaultSize={isLg ? defaultValeriaPct : 0}
+              // ★ Live-fix 2026-06-11 (Chris repro): react-resizable-panels v4 captura
+              // collapsible/collapsedSize AL MONTAR — la transición runtime
+              // open↔closed con props dinámicas era INERTE (collapse() no hacía nada:
+              // panel quedaba 382px con strip adentro = gap). El key fuerza REMOUNT
+              // del Panel en cada cambio de estado → la lib registra las props
+              // frescas y el effect collapse() corre en mount-path (verificado OK).
+              // Bonus: remount limpia el drag-state interno → resize vivo post-ciclo.
+              key={`valeria-${!isLg ? "mobile" : valeriaOpen === "closed" ? "A" : "BC"}`}
+              // ★ Live-fix 2026-06-11 (round 2): el collapse() imperativo post-remount
+              // corre ANTES de que el Group registre el panel nuevo (race) → no-op en
+              // transición runtime (en page-mount sí funcionaba). Vía determinista: el
+              // panel remontado NACE en el tamaño destino — closed → defaultSize=stripPct
+              // (< minSize + collapsible=true → la lib AUTO-COLAPSA a collapsedSize=44px
+              // por contrato v4: "a collapsible panel will collapse when its size is
+              // less than minSize"). El collapse() del effect queda como backup.
+              defaultSize={!isLg ? 0 : valeriaOpen === "closed" ? stripPct : defaultValeriaPct}
               minSize={`${minValeriaPct}%`}
               // T-7 drag-clamp (RN-8/RN-9): collapsible is dynamic.
               // - state A ("closed") or drawer mode (!isLg): true → panel.collapse()
@@ -359,9 +432,10 @@ export function ShellOrganismLayoutClient({
               // - state B/C (chat, open): false → library clamps at minSize on drag,
               //   never auto-collapses → RN-8 and RN-9 are satisfied natively.
               collapsible={valeriaCollapsible}
-              // T-3 strip fix: on desktop collapsedSize=stripPct (44px tira-avatar).
-              // collapse() targets this value. On mobile: 0.
-              collapsedSize={isLg ? stripPct : 0}
+              // ★ Live-fix 2026-06-11: v4 units — number = PX, string "NN%" = %.
+              // collapsedSize={stripPct} (3.4375) era 3.4 PX, no 44px (strip invisible).
+              // PX directo del const STRIP_VALERIA_PX.
+              collapsedSize={isLg ? STRIP_VALERIA_PX : 0}
               // BUG #1/#2 fix: imperative ref so we can call collapse() / expand()
               // correctly (setLayout was insufficient — see effect comment above).
               panelRef={valeriaPanelRef}
@@ -382,6 +456,11 @@ export function ShellOrganismLayoutClient({
               id="shell-handle"
               className={cn(
                 "hidden lg:block",
+                // ★ Live-fix 2026-06-11: en estado A (closed) NO hay resize — drag
+                // del seam expandiría el panel collapsed SIN pasar por el store
+                // (estado inconsistente = gap con strip adentro). RN-9: reabrir
+                // SOLO por avatar. Seam oculto en A.
+                valeriaOpen === "closed" && "lg:hidden",
                 // ★ Fix 2026-05-24: 1px visible (mockup parity) pero 8px hit area.
                 "group relative w-2 shrink-0 bg-transparent cursor-col-resize outline-none",
                 "after:absolute after:left-1/2 after:top-0 after:h-full after:w-px after:-translate-x-1/2",

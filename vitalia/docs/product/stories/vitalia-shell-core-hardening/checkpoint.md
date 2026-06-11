@@ -78,6 +78,26 @@ dod_evidence:
     observed: "Workspace monta con EntitySubNavBar core; leafs disabled sin entidad (spec n3-directory-disabled, run suite completa)"
     backend_log: "0 errores BE (fetch entidades reales 2xx)"
 verified_at: 2026-06-11T03:09:00Z
+
+# ── chris_verify (ronda live de Chris 2026-06-11 — autonomous saltó G pero Chris probó = ronda de facto) ──
+chris_verify:
+  required: true
+  signoff: null                        # pendiente — Chris re-prueba con los fixes
+  rounds:
+    - date: 2026-06-11
+      reported_by: Chris
+      issues:
+        - "resize del chat de Valeria falla"
+        - "al colapsar queda un espacio vacío (gap)"
+        - "ampliación: historial expandido + TODOS los casos del resizer — en cualquier escenario debe verse bien"
+      root_causes_found:
+        - "react-resizable-panels v4 captura collapsible/collapsedSize en MOUNT — transición runtime inerte (panel quedaba 380px con strip adentro = gap 274px + drag muerto post-ciclo)"
+        - "collapsedSize en unidades equivocadas (number=px en v4: stripPct 3.4375 era 3.4px, no 44px)"
+        - "la persistencia del Group (useDefaultLayout) re-aplica el layout guardado pisando collapse()/defaultSize → retry rAF until-collapsed"
+        - "RN-7 VIOLADA: el historial robaba 260px al chat (panel fijo, chat hasta ~58px) — el spec manda push real (panel se ensancha)"
+      fixes:
+        - "key-remount del Panel por estado + collapsedSize=44px + seam oculto en A (RN-9) + rAF retry collapse + push real ±histPct en flip de historyOpen con floor min+hist"
+      verification: "matriz exhaustiva 22/22 PASS (estados A/B/C × drags crece/clamp/below-min × ciclos colapsar/reabrir × historial push × persistencia reload × viewports 1280/1100/800/round-trip · 0 errores consola) + spec permanente resizer-matrix.spec.ts 7/7 + no-regresión 25/25 (collapse-strip/default-30-70/history-push/drawer/resize-and-state)"
 autonomous_mode: true                   # ★ RATIFICADO Chris 2026-06-10 verbatim: "arranca /architect y continúa hasta el done" — corre architect→build→auditor→merge sin pausa G. El architect valida criterios HARD-false en dispatch-plan; si detecta uno, ESCALA a Chris en vez de proceder. Live-verify #37 + dod_evidence siguen obligatorios (autonomous no relaja el DoD).
 
 # ─────────────────────────────────────────────────────────────
