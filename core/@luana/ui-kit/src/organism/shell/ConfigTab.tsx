@@ -12,7 +12,7 @@
 
 import { forwardRef } from "react";
 import { Settings } from "lucide-react";
-import { Tooltip, TooltipTrigger, TooltipContent } from "../../tooltip";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "../../tooltip";
 import { cn } from "@luana/format/utils";
 
 export interface ConfigTabProps {
@@ -27,6 +27,7 @@ export interface ConfigTabProps {
 export const ConfigTab = forwardRef<HTMLButtonElement, ConfigTabProps>(
   function ConfigTab({ label, active, tabIndex, onClick, onFocus }, ref) {
     return (
+      <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <button
@@ -55,6 +56,7 @@ export const ConfigTab = forwardRef<HTMLButtonElement, ConfigTabProps>(
           {label}
         </TooltipContent>
       </Tooltip>
+      </TooltipProvider>
     );
   },
 );
