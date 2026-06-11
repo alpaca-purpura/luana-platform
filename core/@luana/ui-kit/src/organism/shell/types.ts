@@ -86,14 +86,55 @@ export interface ShellStoreState extends SsrSafeHydration {
   setMobileDrawerOpen: (open: boolean) => void;
 }
 
+// ── Chat store contract (the chat sub-tree reads this; brand provides impl) ────
+/** Message role — determines the bubble render variant. */
+export type ShellMessageRole = "bot" | "user" | "delegate" | "thinking";
+
+/** A chat message (covers all role variants). Brand-agnostic shape. */
+export interface ShellChatMessage {
+  id: string;
+  role: ShellMessageRole;
+  /** bot/user/thinking text content. */
+  content?: string;
+  /** 'HH:MM' display time. */
+  time?: string;
+  /** bot/thinking source agent slug. */
+  agent?: string;
+  /** delegate only — who delegates. */
+  fromAgent?: string;
+  /** delegate only — who receives the delegation. */
+  toAgent?: string;
+  /** delegate only — mode label ('Mantener'/'Reactivar'/'Multiplicar'). */
+  delegateMode?: string;
+}
+
+/** Chat status. */
+export type ShellChatStatus = "idle" | "thinking" | "streaming";
+
+/** A history conversation entry (UI-local archive · zero PHI by construction). */
+export interface ShellConversationMeta {
+  id: string;
+  title: string;
+  meta?: string;
+  /** time bucket the history groups by. */
+  group: "today" | "yesterday" | "this_week";
+}
+
 /**
- * Generic chat store API the chat sub-tree reads (brand provides the impl;
- * vitalia's is a MOCK conversational store today). Shape is intentionally open
- * here — the chat sub-tree (T-K2) refines it; T-K1 only declares the contract.
+ * Generic chat store state the chat sub-tree reads (brand provides the impl;
+ * vitalia's is a MOCK conversational store today). The kit consumes this typed
+ * surface — no brand names leak in (RN-2).
  */
 export interface ShellChatStoreApi {
-  // messages, conversations, status, newConversation, ...
-  [key: string]: unknown;
+  messages: ShellChatMessage[];
+  conversations: ShellConversationMeta[];
+  /** active agent slug for new messages. */
+  activeAgent: string;
+  status: ShellChatStatus;
+  sendMessage: (content: string) => void;
+  clearMessages: () => void;
+  newConversation: () => void;
+  setActiveAgent: (agent: string) => void;
 }
 
 /**
@@ -117,6 +158,46 @@ export interface CreateShellStoreOptions {
   migrate?: (persisted: unknown, version: number) => Partial<ShellStoreState>;
 }
 
+// ── Agent class injection (JIT-static literal classes are brand-coupled) ──────
+/**
+ * Per-agent Tailwind class bundle the chrome atoms render. The brand owns the
+ * JIT-static literal switch (its color tokens) and injects it as a function;
+ * the kit ships ZERO brand color literals (RN-2). Slug → class names.
+ */
+export interface AgentClassBundle {
+  /** solid accent bg (e.g. ribbon active pill). */
+  accentBg: string;
+  /** soft/tint bg (e.g. avatar ring, hover). */
+  softBg: string;
+  /** accent text/foreground. */
+  accentText: string;
+  /** accent border. */
+  accentBorder: string;
+}
+
+export type GetAgentClasses = (slug: string) => AgentClassBundle;
+
+// ── data-testid bundle (brand owns the literals its e2e asserts) ──────────────
+/**
+ * The chrome's data-testid values are part of the brand's e2e contract (vitalia
+ * asserts `valeria-sidebar`, etc.). The kit ships ZERO brand-named testids
+ * (RN-2): the brand injects this bundle and the kit renders the values verbatim.
+ * Every field is optional; the kit only sets the attribute when provided.
+ */
+export interface ShellTestIds {
+  supervisorSidebar?: string;
+  supervisorCollapsedStrip?: string;
+  supervisorStripStatusDot?: string;
+  supervisorDrawerBackdrop?: string;
+  supervisorDrawerClose?: string;
+  composerPlaceholder?: string;
+  chat?: string;
+  chatHeader?: string;
+  chatAvatar?: string;
+  chatStatusDot?: string;
+  chatModePill?: string;
+}
+
 // ── Root organism props ───────────────────────────────────────────────────────
 export interface ShellLayoutLabels {
   openSupervisor: string;
@@ -131,15 +212,21 @@ export interface ShellLayoutProps {
   // Brand identity (NO defaults that name a brand) ----------------------------
   /** e.g. "Valeria" | "Luana" — REQUIRED, no default. */
   supervisorName: string;
+  /** The supervisor agent's slug (for class injection + chat). */
+  supervisorSlug: string;
   /** slot; falls back to <initial> circle. */
   supervisorAvatar?: ReactNode;
   /** e.g. "V" | "L". */
   supervisorInitial?: string;
+  /** Optional thumbnail URL for the supervisor's avatar. */
+  supervisorThumbnail?: string;
   agentCatalog: ShellAgentDescriptor[];
   /** agent slugs in ribbon order. */
   ribbonOrder: string[];
   subTabsByAgent: Record<string, readonly ShellSubTabMeta[]>;
   shippedStaticSubtabs?: ReadonlySet<string>;
+  /** brand-injected per-agent class bundle (JIT-static literals stay brand-side). */
+  getAgentClasses: GetAgentClasses;
   // Store injection (brand instantiates) -------------------------------------
   useShellStore: ShellStore;
   useChatStore: ShellChatStore;
@@ -157,7 +244,22 @@ export interface ShellLayoutProps {
   // Copy / labels (Spanish neutro — brand may override) ----------------------
   labels?: Partial<ShellLayoutLabels>;
   // Routing helpers (or kit defaults from agentCatalog) ----------------------
+  /**
+   * Current pathname (brand passes `usePathname()`). The kit derives the active
+   * agent / sub-tab / sub-sub-tab from it via routing.ts helpers and builds
+   * hrefs from segment[0] (tenant) — it never imports next/navigation (RN-2).
+   */
+  pathname: string;
+  /** the special (non-agent) tab slug, e.g. "config"/"settings". */
+  configTabSlug?: string;
+  /** label for the special config tab (Spanish neutro; brand may override). */
+  configTabLabel?: string;
   onNavigate?: (href: string) => void;
+  // data-testid contract (brand owns the literals — RN-2) -------------------
+  /** brand e2e testid bundle; kit renders values verbatim, omits when absent. */
+  testIds?: ShellTestIds;
+  /** status-dot Tailwind bg class (brand token, e.g. "bg-emerald-500"). */
+  statusDotClass?: string;
 }
 
 // ── Routing helper options (catalog injected by the brand) ────────────────────
