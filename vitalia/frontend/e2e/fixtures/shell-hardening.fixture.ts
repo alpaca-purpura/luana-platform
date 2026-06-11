@@ -67,9 +67,11 @@ async function seedNewMachine(
     split = [30, 70],
   } = opts;
 
+  // T-V2 lift: shape del kit — supervisorOpen/splitPct (v2). El param del
+  // fixture conserva el nombre `valeriaOpen` (API estable para los specs).
   const shellState = JSON.stringify({
-    state: { valeriaOpen, valeriaPct: null, mobileDrawerOpen: false },
-    version: 1,
+    state: { supervisorOpen: valeriaOpen, splitPct: null, mobileDrawerOpen: false },
+    version: 2,
   });
   const splitStr = JSON.stringify(split);
 

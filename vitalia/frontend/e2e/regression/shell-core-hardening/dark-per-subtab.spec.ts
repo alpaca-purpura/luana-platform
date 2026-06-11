@@ -47,17 +47,21 @@ test.describe("SC-20 — dark per-subtab (RN-15 · AC-12)", () => {
       const pom = new ShellLayoutPage(darkShellPage);
       await pom.waitForShellReady();
 
-      // Verify dark class is on <html>
-      const isDark = await darkShellPage.evaluate(() =>
-        document.documentElement.classList.contains("dark"),
-      );
-      // next-themes may take a tick to apply the class — give it a moment
+      // Verify dark theme is active on <html>.
+      // T-V2 lift (harness fix): la app usa next-themes attribute="data-theme"
+      // (providers.tsx, F1-S1) — la clase `.dark` nunca se pone. Contrato real:
+      // <html data-theme="dark"> + tokens [data-theme="dark"] de globals.css.
+      const isDarkActive = () =>
+        darkShellPage.evaluate(
+          () =>
+            document.documentElement.getAttribute("data-theme") === "dark" ||
+            document.documentElement.classList.contains("dark"),
+        );
+      const isDark = await isDarkActive();
+      // next-themes may take a tick to apply the attribute — give it a moment
       if (!isDark) {
         await darkShellPage.waitForTimeout(500);
-        const isDarkAfterWait = await darkShellPage.evaluate(() =>
-          document.documentElement.classList.contains("dark"),
-        );
-        expect(isDarkAfterWait, `${label}: classe dark deve estar no html`).toBe(true);
+        expect(await isDarkActive(), `${label}: data-theme=dark debe estar en html`).toBe(true);
       } else {
         expect(isDark).toBe(true);
       }

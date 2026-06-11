@@ -25,7 +25,10 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-import { bareTenantLandingRedirect } from "@/lib/shell-routes";
+import {
+  bareTenantLandingRedirect,
+  shellInRenderRedirectTarget,
+} from "@/lib/shell-routes";
 
 const isPublicRoute = createRouteMatcher([
   "/sign-in(.*)",
@@ -73,6 +76,17 @@ export const proxy = clerkMiddleware(async (auth, request) => {
   const landingRedirect = bareTenantLandingRedirect(request.nextUrl.pathname);
   if (landingRedirect) {
     return NextResponse.redirect(new URL(landingRedirect, request.url));
+  }
+
+  // T-V2 (platform-lift-shell-chrome-ui-kit, 2026-06-11): la nota T-4 de arriba
+  // ("el único redirect in-render es el landing") quedó FALSA — el censo del lift
+  // encontró 4 redirect() in-render más (lisa/marca, [agent] bare, staff/[id],
+  // embudo/[id]). Con el chrome consumido del kit el "Rendered more hooks" pasó
+  // de flaky a determinista en esas rutas → TODOS al edge (307), mismo patrón.
+  // Los page.tsx quedan como fallback defensivo. SSoT: lib/shell-routes.ts.
+  const shellRedirect = shellInRenderRedirectTarget(request.nextUrl.pathname);
+  if (shellRedirect) {
+    return NextResponse.redirect(new URL(shellRedirect, request.url));
   }
 });
 

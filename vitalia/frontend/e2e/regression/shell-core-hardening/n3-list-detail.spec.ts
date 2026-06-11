@@ -37,16 +37,22 @@ test.describe("SC-11 — N3 EntityWorkspaceLayout (RN-10)", () => {
     const ewp = new EntityWorkspacePage(shellPage);
     await ewp.gotoStaffDirectory(tenantId);
 
-    // Page loaded: either a list of doctors or an empty state
+    // Page loaded: either a list of doctors or an empty state.
+    // T-V2 lift (harness fix): isVisible() retorna INMEDIATO (ignora timeout) —
+    // race con el fetch RQ post-networkidle. waitFor sí espera (misma semántica).
     const hasCards = await shellPage
       .locator('[data-testid^="entity-info-card-"]')
       .first()
-      .isVisible({ timeout: 10_000 })
+      .waitFor({ state: "visible", timeout: 10_000 })
+      .then(() => true)
       .catch(() => false);
-    const hasEmptyState = await shellPage
-      .locator('[data-testid="staff-empty"]')
-      .isVisible({ timeout: 2_000 })
-      .catch(() => false);
+    const hasEmptyState =
+      hasCards ||
+      (await shellPage
+        .locator('[data-testid="staff-empty"]')
+        .waitFor({ state: "visible", timeout: 2_000 })
+        .then(() => true)
+        .catch(() => false));
 
     // At least one of the two states renders
     expect(hasCards || hasEmptyState, "staff directory: lista o empty-state debe renderizar").toBe(true);
@@ -66,7 +72,10 @@ test.describe("SC-11 — N3 EntityWorkspaceLayout (RN-10)", () => {
     const firstCard = shellPage
       .locator('[data-testid^="entity-info-card-"]')
       .first();
-    const hasDoctor = await firstCard.isVisible({ timeout: 5_000 }).catch(() => false);
+    const hasDoctor = await firstCard
+      .waitFor({ state: "visible", timeout: 5_000 })
+      .then(() => true)
+      .catch(() => false);
 
     if (hasDoctor) {
       await firstCard.click();
@@ -93,15 +102,19 @@ test.describe("SC-11 — N3 EntityWorkspaceLayout (RN-10)", () => {
     const ewp = new EntityWorkspacePage(shellPage);
     await ewp.gotoEmbudoDirectory(tenantId);
 
-    // Embudo board or empty state
+    // Embudo board or empty state (T-V2 lift harness fix: waitFor, no isVisible racy)
     const hasBoard = await shellPage
       .locator('[data-testid="embudo-board"]')
-      .isVisible({ timeout: 10_000 })
+      .waitFor({ state: "visible", timeout: 10_000 })
+      .then(() => true)
       .catch(() => false);
-    const hasEmptyState = await shellPage
-      .locator('[data-testid="embudo-empty"]')
-      .isVisible({ timeout: 2_000 })
-      .catch(() => false);
+    const hasEmptyState =
+      hasBoard ||
+      (await shellPage
+        .locator('[data-testid="embudo-empty"]')
+        .waitFor({ state: "visible", timeout: 2_000 })
+        .then(() => true)
+        .catch(() => false));
 
     expect(hasBoard || hasEmptyState, "embudo directory: board o empty-state debe renderizar").toBe(true);
   });
@@ -118,7 +131,10 @@ test.describe("SC-11 — N3 EntityWorkspaceLayout (RN-10)", () => {
     const firstLead = shellPage
       .locator('[data-testid^="lead-card-"]')
       .first();
-    const hasLead = await firstLead.isVisible({ timeout: 5_000 }).catch(() => false);
+    const hasLead = await firstLead
+      .waitFor({ state: "visible", timeout: 5_000 })
+      .then(() => true)
+      .catch(() => false);
 
     if (hasLead) {
       await firstLead.click();

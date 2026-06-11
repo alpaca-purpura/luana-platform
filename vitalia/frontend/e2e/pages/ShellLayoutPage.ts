@@ -257,8 +257,12 @@ export class ShellLayoutPage {
       try {
         const raw = localStorage.getItem(key);
         if (!raw) return "chat";
-        const parsed = JSON.parse(raw) as { state?: { valeriaOpen?: string } };
-        const v = parsed.state?.valeriaOpen;
+        // T-V2 lift: el shape persistido del kit es `supervisorOpen` (v2);
+        // fallback a `valeriaOpen` para seeds legacy de los tests de migración.
+        const parsed = JSON.parse(raw) as {
+          state?: { supervisorOpen?: string; valeriaOpen?: string };
+        };
+        const v = parsed.state?.supervisorOpen ?? parsed.state?.valeriaOpen;
         if (v === "closed" || v === "chat") return v;
         return "chat";
       } catch {
@@ -292,13 +296,20 @@ export class ShellLayoutPage {
   }
 
   /**
-   * Get the computed background color of the shell (html element class dark/light).
-   * Returns 'dark' or 'light' based on the class on <html>.
+   * Get the active theme of the shell.
+   * T-V2 lift (harness fix): la app usa next-themes `attribute="data-theme"`
+   * (providers.tsx, estable desde F1-S1) — la clase `.dark` NUNCA se pone en
+   * <html>. El check anterior por classList medía un atributo inexistente.
+   * Contrato real: `<html data-theme="dark|light">` + tokens [data-theme="dark"]
+   * de globals.css (verificado live: computed bg cambia con el atributo).
    */
   async getComputedBg(): Promise<"dark" | "light"> {
     return await this.page.evaluate(() => {
       const html = document.documentElement;
-      return html.classList.contains("dark") ? "dark" : "light";
+      return html.getAttribute("data-theme") === "dark" ||
+        html.classList.contains("dark")
+        ? "dark"
+        : "light";
     });
   }
 
@@ -421,13 +432,14 @@ export class ShellLayoutPage {
           const data = raw
             ? (JSON.parse(raw) as { state?: Record<string, unknown>; version?: number })
             : { state: {}, version: 1 };
-          data.state = { ...(data.state ?? {}), valeriaOpen: v };
-          data.version = 1;
+          // T-V2 lift: shape del kit (supervisorOpen, v2).
+          data.state = { ...(data.state ?? {}), supervisorOpen: v };
+          data.version = 2;
           localStorage.setItem(key, JSON.stringify(data));
         } catch {
           localStorage.setItem(
             key,
-            JSON.stringify({ state: { valeriaOpen: v }, version: 1 }),
+            JSON.stringify({ state: { supervisorOpen: v }, version: 2 }),
           );
         }
       },
