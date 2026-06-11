@@ -18,7 +18,9 @@
 
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { useChatStore } from "@/stores/chat-store";
+import { MOCK_CONVERSATIONS } from "./_mock-conversations";
 import { ValeriaHistory } from "./ValeriaHistory";
 
 // ─── Helper props ───────────────────────────────────────────────────────────
@@ -27,6 +29,13 @@ const defaultProps = {
   onNewConversation: vi.fn(),
   onCollapseToRail: vi.fn(),
 };
+
+// T-3: ValeriaHistory now reads conversations from chat-store (UI-local archive).
+// Reset to the full 8-item seed before each test so the existing SC-1/SC-6/SC-9
+// assertions (which assume 8 items) stay valid.
+beforeEach(() => {
+  useChatStore.setState({ conversations: [...MOCK_CONVERSATIONS] });
+});
 
 // ─── SC-1 happy · header + 8 mock items grouped 3+2+3 ───────────────────────
 
@@ -136,6 +145,45 @@ describe("ValeriaHistory — search filter logic (SC-6 empty state)", () => {
     // Items restored after clear
     const items = screen.getAllByTestId("history-item");
     expect(items).toHaveLength(8);
+  });
+});
+
+// ─── T-3 · empty conversations state (SC-13) ─────────────────────────────────
+// DISTINCT from empty-SEARCH ("Sin resultados"): when there are zero archived
+// conversations at all, show "Aún no hay conversaciones".
+
+describe("ValeriaHistory — empty conversations (T-3 · SC-13)", () => {
+  it("shows 'Aún no hay conversaciones' when chat-store has 0 conversations", () => {
+    useChatStore.setState({ conversations: [] });
+    render(<ValeriaHistory {...defaultProps} />);
+    expect(screen.getByText("Aún no hay conversaciones")).toBeDefined();
+    expect(screen.queryAllByTestId("history-item")).toHaveLength(0);
+  });
+
+  it("empty-conversations copy differs from empty-search copy", () => {
+    useChatStore.setState({ conversations: [] });
+    render(<ValeriaHistory {...defaultProps} />);
+    // not the search empty state
+    expect(screen.queryByText("Sin resultados")).toBeNull();
+    expect(screen.getByText("Aún no hay conversaciones")).toBeDefined();
+  });
+
+  it("renders the archived conversations from chat-store (not the static mock)", () => {
+    useChatStore.setState({
+      conversations: [
+        {
+          id: "archived-1",
+          title: "Conversación archivada de prueba",
+          meta: "10:00 · 3 mensajes",
+          group: "today",
+        },
+      ],
+    });
+    render(<ValeriaHistory {...defaultProps} />);
+    expect(
+      screen.getByText("Conversación archivada de prueba"),
+    ).toBeDefined();
+    expect(screen.getAllByTestId("history-item")).toHaveLength(1);
   });
 });
 

@@ -25,7 +25,7 @@ import { ChevronLeft, Plus, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MOCK_CONVERSATIONS } from "./_mock-conversations";
+import { useChatStore } from "@/stores/chat-store";
 import { EmptyStateInline } from "./EmptyStateInline";
 import { HistoryGroup } from "./HistoryGroup";
 
@@ -62,14 +62,21 @@ export function ValeriaHistory({
   // Default active item is id='1' per spec mockup
   const [activeId, setActiveId] = useState<string | null>("1");
 
+  // T-3: conversations come from the UI-local chat-store archive (RN-13), not a
+  // static mock — so the "+" archive shows up live and SC-13 empty is reachable.
+  const conversations = useChatStore((s) => s.conversations);
+
   // Filter conversations by search query (case-insensitive, trimmed)
   const filtered = useMemo(
     () =>
-      MOCK_CONVERSATIONS.filter((c) =>
+      conversations.filter((c) =>
         c.title.toLowerCase().includes(searchQuery.toLowerCase().trim()),
       ),
-    [searchQuery],
+    [conversations, searchQuery],
   );
+
+  // SC-13: zero archived conversations at all (distinct from empty-search).
+  const noConversations = conversations.length === 0;
 
   // Group filtered conversations by time period
   const grouped = useMemo(
@@ -145,7 +152,13 @@ export function ValeriaHistory({
 
       {/* ── Scrollable list ── */}
       <div className="flex-1 min-h-0 overflow-y-auto px-2 pb-3 flex flex-col gap-3">
-        {filtered.length === 0 ? (
+        {noConversations ? (
+          // SC-13: zero archived conversations — distinct copy from empty-search.
+          <EmptyStateInline
+            heading="Aún no hay conversaciones"
+            description="Inicia una nueva conversación con Valeria"
+          />
+        ) : filtered.length === 0 ? (
           <EmptyStateInline
             heading="Sin resultados"
             description="Intenta con otra palabra"
