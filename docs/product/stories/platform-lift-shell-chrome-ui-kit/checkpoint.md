@@ -15,10 +15,10 @@ cap_change_type: fix
 parent_story: null
 predecessor_story: vitalia-shell-core-hardening   # done 2026-06-11 — chrome hardened, handoff en proposal § Estado post
 
-state: refined
-phase: SPEC_RATIFIED            # ratificación = criterios verbatim Chris 2026-06-11 (autonomous_mode — sin loop)
+state: ready
+phase: READY_PACKAGE_CLOSED     # /architect cerró: 03-arch(+fe) · 04-validators · 05-guidelines · 06-tickets · dispatch-plan
 ratified_by_chris: true
-last_artifact: 01-spec.md
+last_artifact: 06-tickets.yaml
 module: shell
 cross_module_scope: [shell]             # core/@luana/ui-kit + vitalia FE shell + nicolify FE shell
 agent_owner: null
@@ -70,10 +70,19 @@ prior_art_scan:
   decision: "LIFT (mover chrome hardened de vitalia al kit, parametrizar brand-specific) + CONVERGER nicolify al modelo hardened consumiendo kit (mata mirror). N3 NO se rehace (ya en kit)."
 
 next_action: >-
-  /architect brand=platform → ready package (03-arch corte exacto file-by-file del chrome, API
-  brand-agnostic props+CSS vars, SEMVER, sequencing kit→vitalia→nicolify, 04-validators con
-  verification_nature + 06-tickets con assignment) → /dev-team → /auditor → /pm-luana merge +
-  proposal → migrated.
+  /dev-team brand=platform → autonomous build (DAG T-K1→T-K2→T-K3→T-V1→T-V2→T-N1→T-G,
+  model inherit) → /auditor → /pm-luana merge + proposal → migrated. autonomous_mode: true
+  (Chris verbatim). Caps {max_iterations_per_ticket:10, max_audit_iterations:4, walltime:240min};
+  cap excedido → parquear pieza + HANDOFF + seguir.
+
+# ── Ready package decisions cerradas por /architect 2026-06-11 ──
+arch_decisions:
+  cut: "máquina/layout/chrome primitives → KIT (genérico, props); brand data (agent-catalog/avatares/tokens/mock-chat/Tenant*/LogoMark) → BRAND queda; coupling a useChatStore/useShellStore/AGENT_CATALOG → inyectado por prop"
+  api: "ShellLayout (kit) + sub-exports; supervisorName/agentCatalog/ribbonOrder/subTabsByAgent/useShellStore/useChatStore/splitGroupId/logoSlot/rightClusterSlot/skeletonSlot por prop; cero 'Valeria'/'vitalia'/#01B2F8 en lógica"
+  store: "createShellStore factory (kit, consume @luana/hooks createSsrSafePersistedStore); instancia brand conserva key 'vitalia-shell-state'+'vitalia-shell-split-agentic' (SC-6, e2e harness intacto); nicolify migrate luanaState→supervisorOpen"
+  ssr_false: "wrapper dynamic({ssr:false}) vive en el KIT (ShellLayout); skeleton por prop — mata duplicación per-brand del patrón frágil react-resizable-panels v4"
+  semver: "0.3.0 → 0.4.0 (minor additivo); deps react-resizable-panels+zustand agregadas; barrel NO re-exporta react-resizable-panels Group (colisión con form Group del kit)"
+  tailwind_scan: "DELIVERABLE real: vitalia NO auto-escanea el kit (@config v3) → agregar @source del kit organism en globals.css; sin él las clases JIT @[24rem]/grid-cols-[minmax] del shell se rompen (gate = resizer-matrix + live-verify, NO tsc)"
 ---
 
 # platform-lift-shell-chrome-ui-kit — checkpoint
