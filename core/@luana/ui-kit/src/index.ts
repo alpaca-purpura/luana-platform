@@ -56,3 +56,100 @@ export * from "./tabs";
 export * from "./textarea";
 export * from "./timezone-select";
 export * from "./tooltip";
+
+// ── Shell organism (T-K3 — brand-agnostic shell chrome, 0.4.0) ───────────────
+// ⛔ react-resizable-panels Group/Panel/Separator NOT re-exported (shell barrel guards).
+// ⛔ EmptyState / EmptyStateInline / EmptyStateProps / EmptyStateInlineProps are
+//    aliased as Shell* to avoid clash with ./layout exports (pre-existing in ./layout/states.tsx).
+//    Consumers that need the SHELL-variant import directly: @luana/ui-kit/organism/shell.
+export type {
+  AgentClassBundle,
+  GetAgentClasses,
+  ShellAgentDescriptor,
+  ShellLayoutLabels,
+  ShellLayoutProps,
+  ShellPersistedState,
+  ShellStore,
+  ShellChatStore,
+  ShellChatMessage,
+  ShellChatStatus,
+  ShellConversationMeta,
+  ShellMessageRole,
+  ShellStoreState,
+  ShellChatStoreApi,
+  ShellTestIds,
+  ShellSubTabMeta,
+  ShellRoutingOptions,
+  CreateShellStoreOptions,
+  SupervisorOpen,
+  AgentClassBundle as AgentTwBundle,
+} from "./organism/shell";
+export {
+  createShellStore,
+  extractAgentFromPath,
+  extractSubtabFromPath,
+  extractSubSubTabFromPath,
+  ShellLayout,
+  ShellLayoutClient,
+  SupervisorSidebar,
+  SupervisorCollapsedStrip,
+  SupervisorHistory,
+  Ribbon,
+  RibbonTab,
+  SubTabsBar,
+  SubTab,
+  SubSubTabsBar,
+  AppPanelSlot,
+  ChatPanel,
+  ChatHeader,
+  ChatComposer,
+  ChatMessages,
+  MessageBubble,
+  TypingIndicator,
+  DelegateMarker,
+  TogglePill,
+  TogglePillContent,
+  TopBarShell,
+  StatusDot,
+  ConfigTab,
+  HistoryGroup,
+  HistoryItem,
+  PlaceholderCard,
+  useKeyboardShortcuts,
+  useViewportGuard,
+} from "./organism/shell";
+export type {
+  SupervisorSidebarProps,
+  SupervisorCollapsedStripProps,
+  RibbonProps,
+  SubTabsBarProps,
+  SubTabProps,
+  SubSubTabsBarProps,
+  ShellSubSubTabMeta,
+  AppPanelSlotProps,
+  ChatPanelProps,
+  ChatHeaderProps,
+  ChatComposerProps,
+  ChatMessagesProps,
+  MessageBubbleProps,
+  TypingIndicatorProps,
+  DelegateMarkerProps,
+  TogglePillProps,
+  TogglePillItem,
+  TopBarShellProps,
+  StatusDotProps,
+  StatusDotVariant,
+  ConfigTabProps,
+  HistoryGroupProps,
+  HistoryItemProps,
+  PlaceholderCardProps,
+} from "./organism/shell";
+// Shell-specific EmptyState variants aliased to avoid clash with ./layout EmptyState.
+export {
+  EmptyState as ShellEmptyState,
+  EmptyStateInline as ShellEmptyStateInline,
+} from "./organism/shell";
+export type {
+  EmptyStateProps as ShellEmptyStateProps,
+  EmptyStateInlineProps as ShellEmptyStateInlineProps,
+} from "./organism/shell";

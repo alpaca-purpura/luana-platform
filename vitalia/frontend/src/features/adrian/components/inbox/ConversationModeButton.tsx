@@ -8,11 +8,11 @@
  * Remembers prior valeriaState (rail | full) in inbox-store.
  * On re-click: restores prior valeriaState.
  *
- * per 03-arch-fe.md § 6 + RN-11/RN-12:
- *   - uses useShellStore (REUSE, DO NOT modify)
- *   - uses useInboxStore.priorValeriaState (T-4 EXTEND)
- *   - calls setValeriaState('collapsed') on activate
- *   - calls setValeriaState(priorValeriaState ?? 'rail') on deactivate
+ * T-V2 (platform-lift-shell-chrome-ui-kit): migrated from useShellStore (legacy)
+ * to useShellStoreKit (canonical kit API). Mapping:
+ *   valeriaOpen → supervisorOpen
+ *   openValeria → openSupervisor
+ *   collapseValeria → collapseSupervisor
  *
  * aria-pressed conveys toggle state (WCAG 2.1 AA).
  *
@@ -27,7 +27,7 @@
 "use client";
 
 import { useCallback } from "react";
-import { useShellStore } from "@/stores/shell-store";
+import { useShellStoreKit } from "@/stores/shell-store";
 import { useInboxStore } from "../../store/inbox-store";
 import { cn } from "@/lib/cn";
 
@@ -48,24 +48,25 @@ interface ConversationModeButtonProps {
 export function ConversationModeButton({
   className,
 }: ConversationModeButtonProps) {
-  const valeriaState = useShellStore((s) => s.valeriaState);
-  const setValeriaState = useShellStore((s) => s.setValeriaState);
-  const priorValeriaState = useInboxStore((s) => s.priorValeriaState);
+  // T-V2 (platform-lift-shell-chrome-ui-kit): migrated to kit store canonical API.
+  // "Conversation mode" = supervisor closed so the inbox takes full width.
+  const supervisorOpen = useShellStoreKit((s) => s.supervisorOpen);
+  const openSupervisor = useShellStoreKit((s) => s.openSupervisor);
+  const collapseSupervisor = useShellStoreKit((s) => s.collapseSupervisor);
   const setPriorValeriaState = useInboxStore((s) => s.setPriorValeriaState);
 
-  const isConversationMode = valeriaState === "collapsed";
+  const isConversationMode = supervisorOpen === "closed";
 
   const handleToggle = useCallback(() => {
     if (isConversationMode) {
-      // Restore prior state (rail → full fallback)
-      setValeriaState(priorValeriaState ?? "rail");
+      // Restore: reopen supervisor in chat (RN-5 — history never auto-restored)
+      openSupervisor();
       setPriorValeriaState(null);
     } else {
-      // Save current state before collapsing
-      setPriorValeriaState(valeriaState);
-      setValeriaState("collapsed");
+      // Collapse supervisor → inbox full width
+      collapseSupervisor();
     }
-  }, [isConversationMode, valeriaState, priorValeriaState, setValeriaState, setPriorValeriaState]);
+  }, [isConversationMode, openSupervisor, collapseSupervisor, setPriorValeriaState]);
 
   return (
     <button

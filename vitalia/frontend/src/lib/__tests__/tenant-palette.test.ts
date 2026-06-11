@@ -28,16 +28,20 @@ describe("PALETTE const", () => {
     }
   });
 
-  it("amber and lime entries have dark text for WCAG AA contrast", () => {
+  it("amber, lime and cyan entries have dark text for WCAG AA contrast", () => {
     const amberEntry = PALETTE.find((p) => p.bg === "bg-amber-500");
     const limeEntry = PALETTE.find((p) => p.bg === "bg-lime-500");
+    // T-V2 lift fix-loop: cyan-500 #00b8db + white = 2.36 (AA fail) — destapado
+    // por axe real post edge-redirect (el run del hardening escaneaba DOM colgado).
+    const cyanEntry = PALETTE.find((p) => p.bg === "bg-cyan-500");
     expect(amberEntry?.text).toBe("text-amber-950");
     expect(limeEntry?.text).toBe("text-lime-950");
+    expect(cyanEntry?.text).toBe("text-cyan-950");
   });
 
   it("other entries use text-white", () => {
     const whiteTextEntries = PALETTE.filter((p) => p.text === "text-white");
-    expect(whiteTextEntries).toHaveLength(4);
+    expect(whiteTextEntries).toHaveLength(3);
   });
 });
 

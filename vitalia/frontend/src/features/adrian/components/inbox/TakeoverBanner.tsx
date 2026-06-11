@@ -88,7 +88,7 @@ export function TakeoverBanner({
         aria-label="Devolver el control a Adrián en esta conversación"
         className={cn(
           "shrink-0 inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold transition-opacity",
-          "bg-amber-500 text-white hover:opacity-90 cursor-pointer border border-amber-500",
+          "bg-amber-500 dark:bg-amber-600 text-white hover:opacity-90 cursor-pointer border border-amber-500 dark:border-amber-600",
         )}
       >
         🤖 Devolver a Adrián

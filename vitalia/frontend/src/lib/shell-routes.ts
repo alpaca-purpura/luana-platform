@@ -72,6 +72,62 @@ export function bareTenantLandingRedirect(pathname: string): string | null {
   return match ? `/${match[1]}/${DEFAULT_LANDING_SUBPATH}` : null;
 }
 
+// ── Edge redirects para los redirect() in-render del shell (T-V2 lift 2026-06-11) ──
+//
+// El censo del lift (platform-lift-shell-chrome-ui-kit T-V2) encontró que el
+// supuesto del hardening "0 redirects in-render fuera del landing" era FALSO:
+// existen 4 redirect() server in-render intra-route-group (lisa/marca → identidad,
+// [agent] bare → defaultSubtab, staff/[doctor-id] → perfil, embudo/[leadId] →
+// resumen). Con el chrome consumido del kit, el trigger del learning
+// 2026-06-03-next16-softnav-redirect-rendered-more-hooks pasó de flaky (~40%)
+// a DETERMINISTA → mover TODOS al edge (mismo patrón Decisión A). Los
+// page.tsx con redirect() quedan como fallback defensivo (tenant no-UUID).
+
+const UUID_SEG = "[0-9a-f-]{36}";
+
+/** N3-static defaults: ruta sin leaf → leaf default (SSoT junto a AGENT_SUBSUBTABS). */
+const N3_DEFAULT_LEAF: ReadonlyArray<readonly [RegExp, string]> = [
+  [new RegExp(`^/(${UUID_SEG})/lisa/marca/?$`, "i"), "identidad"],
+  [new RegExp(`^/(${UUID_SEG})/lisa/staff/(${UUID_SEG})/?$`, "i"), "perfil"],
+  [new RegExp(`^/(${UUID_SEG})/adrian/embudo/(${UUID_SEG})/?$`, "i"), "resumen"],
+];
+
+/** Agente bare (`/{uuid}/{agent}`) → su defaultSubtab (espejo de [agent]/page.tsx). */
+const BARE_AGENT_PATH = new RegExp(`^/(${UUID_SEG})/([a-z]+)/?$`, "i");
+
+/** defaultSubtab por agente — espejo del AGENT_CATALOG (mantener sincronizado;
+ *  el fallback in-render de [agent]/page.tsx cubre cualquier drift). */
+const AGENT_DEFAULT_SUBTAB: Readonly<Record<string, string>> = {
+  lisa: "marca",
+  valeria: "agenda",
+  adrian: "inbox",
+  lucas: "lanzar",
+  camila: "voz",
+  mateo: "agenda",
+};
+
+/**
+ * Returns the edge-redirect target for shell paths whose page.tsx would do an
+ * in-render `redirect()` (N3-static default leaf / bare agent default subtab),
+ * or `null` when `pathname` needs no redirect.
+ */
+export function shellInRenderRedirectTarget(pathname: string): string | null {
+  for (const [re, leaf] of N3_DEFAULT_LEAF) {
+    if (re.test(pathname)) {
+      return `${pathname.replace(/\/$/, "")}/${leaf}`;
+    }
+  }
+  const agentMatch = pathname.match(BARE_AGENT_PATH);
+  if (agentMatch) {
+    const agent = agentMatch[2].toLowerCase();
+    const subtab = AGENT_DEFAULT_SUBTAB[agent];
+    if (subtab) {
+      return `/${agentMatch[1]}/${agent}/${subtab}`;
+    }
+  }
+  return null;
+}
+
 export interface SubSubTabMeta {
   /** URL segment identifier — kebab-case static segment (e.g., "identidad", "voz-y-tono"). */
   id: string;

@@ -1,99 +1,75 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: platform-lift-shell-chrome-ui-kit T-V2
 /**
- * Architecture test — Shell Store Schema Invariant (F1-S5 Read-Only Enforce)
+ * Architecture test — Shell Store Schema Invariant (kit store enforce, T-V2).
  *
- * T-7 of vitalia-fase1-valeria-rail-history (F1-S5 Wave 3)
+ * T-V2 (platform-lift-shell-chrome-ui-kit) removes the legacy useShellStore
+ * (valeriaOpen API) and exposes only useShellStoreKit (kit API).
  *
- * Purpose: regression guard that F1-S5 did NOT modify the shell-store.ts schema
- * established in F1-S4. ValeriaSidebar and sibling components are READ-ONLY
- * consumers of the store — they MUST NOT add new state, change union types,
- * or rename/remove existing fields.
+ * This test enforces the kit-store invariants:
+ *   - supervisorOpen: 'closed' | 'chat'  (A=closed tira-avatar · B=chat split)
+ *   - historyOpen: boolean               (additive push — NOT a conflated third state)
+ *   - splitPct: number | null            (split %)
+ *   - mobileDrawerOpen: boolean          (independent slice)
+ *   - valeriaOpen / shellMode / valeriaState / cycleValeriaState ELIMINATED.
  *
- * If this test fails after F1-S5 changes, it means shell-store.ts was illegally
- * modified. Fix: revert the store change, not this test.
- *
- * Ratchet-style: allowlist is the F1-S4 cementado schema. Any deviation = FAIL.
+ * If a consumer re-introduces valeriaOpen/shellMode → FAIL.
+ * Storage key 'vitalia-shell-state' MUST stay (E2E addInitScript + persisted migration, SC-6).
  *
  * downstream-regression-na: brand-local arch fitness test; no cross-brand consumers
  */
 
 import { describe, it, expect } from "vitest";
+import type { SsrSafeHydration } from "@luana/hooks/create-ssr-safe-persisted-store";
 import {
-  useShellStore,
-  type ValeriaState,
-  type ShellMode,
+  useShellStoreKit,
   SHELL_STORAGE_KEY,
 } from "@/stores/shell-store";
 
-describe("Architecture: shell-store schema invariant (F1-S5 read-only enforce)", () => {
-  it("exports ValeriaState union: collapsed | rail | full", () => {
-    // Verify the union type values are stable (compile-time + runtime check)
-    const validStates: ValeriaState[] = ["collapsed", "rail", "full"];
-    expect(validStates).toEqual(["collapsed", "rail", "full"]);
-  });
-
-  it("exports ShellMode union: agentic | web", () => {
-    const validModes: ShellMode[] = ["agentic", "web"];
-    expect(validModes).toEqual(["agentic", "web"]);
-  });
-
-  it("SHELL_STORAGE_KEY equals vitalia-shell-state", () => {
-    // Storage key cementado F1-S4 — must NOT change (breaks E2E addInitScript + existing persisted state)
+describe("Architecture: shell-store schema invariant (T-V2 kit store readonly)", () => {
+  it("SHELL_STORAGE_KEY is vitalia-shell-state (SC-6 — must never change)", () => {
     expect(SHELL_STORAGE_KEY).toBe("vitalia-shell-state");
   });
 
-  it("useShellStore exposes setValeriaState setter", () => {
-    const state = useShellStore.getState();
-    expect(typeof state.setValeriaState).toBe("function");
+  it("kit store uses canonical key vitalia-shell-state", () => {
+    expect(useShellStoreKit.persist.getOptions().name).toBe("vitalia-shell-state");
   });
 
-  it("useShellStore exposes setShellMode setter", () => {
-    const state = useShellStore.getState();
-    expect(typeof state.setShellMode).toBe("function");
+  it("supervisorOpen valid states are closed | chat", () => {
+    const validStates = ["closed", "chat"] as const;
+    for (const s of validStates) {
+      useShellStoreKit.getState().setSupervisorOpen(s);
+      expect(useShellStoreKit.getState().supervisorOpen).toBe(s);
+    }
   });
 
-  it("useShellStore exposes cycleValeriaState setter", () => {
-    const state = useShellStore.getState();
-    expect(typeof state.cycleValeriaState).toBe("function");
+  it("historyOpen is a boolean slice (additive, not conflated with supervisorOpen)", () => {
+    useShellStoreKit.getState().setSupervisorOpen("chat");
+    useShellStoreKit.getState().setHistoryOpen(true);
+    expect(useShellStoreKit.getState().historyOpen).toBe(true);
+    expect(typeof useShellStoreKit.getState().historyOpen).toBe("boolean");
   });
 
-  it("default valeriaState is full (F1-S4 architect override cementado)", () => {
-    // Reset store to initial state (without persisted localStorage override)
-    useShellStore.setState({ valeriaState: "full", shellMode: "agentic" });
-    const state = useShellStore.getState();
-    expect(state.valeriaState).toBe("full");
+  it("legacy fields valeriaOpen + shellMode + cycleValeriaState + valeriaState ELIMINATED (AC-1)", () => {
+    const state = useShellStoreKit.getState() as unknown as Record<string, unknown>;
+    expect(state.valeriaOpen).toBeUndefined();
+    expect(state.shellMode).toBeUndefined();
+    expect(state.setShellMode).toBeUndefined();
+    expect(state.cycleValeriaState).toBeUndefined();
+    expect(state.valeriaState).toBeUndefined();
+    expect(state.setValeriaState).toBeUndefined();
+    expect(state.setValeriaOpen).toBeUndefined();
+    expect(state.openValeria).toBeUndefined();
+    expect(state.collapseValeria).toBeUndefined();
+    expect(state.valeriaPct).toBeUndefined();
+    expect(state.setValeriaPct).toBeUndefined();
   });
 
-  it("default shellMode is agentic (F1-S4 cementado)", () => {
-    useShellStore.setState({ valeriaState: "full", shellMode: "agentic" });
-    const state = useShellStore.getState();
-    expect(state.shellMode).toBe("agentic");
-  });
-
-  it("setValeriaState correctly updates to each valid state", () => {
-    useShellStore.getState().setValeriaState("rail");
-    expect(useShellStore.getState().valeriaState).toBe("rail");
-
-    useShellStore.getState().setValeriaState("full");
-    expect(useShellStore.getState().valeriaState).toBe("full");
-
-    useShellStore.getState().setValeriaState("collapsed");
-    expect(useShellStore.getState().valeriaState).toBe("collapsed");
-  });
-
-  it("setShellMode correctly updates to each valid mode", () => {
-    useShellStore.getState().setShellMode("web");
-    expect(useShellStore.getState().shellMode).toBe("web");
-
-    useShellStore.getState().setShellMode("agentic");
-    expect(useShellStore.getState().shellMode).toBe("agentic");
-  });
-
-  it("cycleValeriaState cycles rail ↔ full (collapsed unreachable via cycle)", () => {
-    useShellStore.setState({ valeriaState: "full", shellMode: "agentic" });
-    useShellStore.getState().cycleValeriaState();
-    expect(useShellStore.getState().valeriaState).toBe("rail");
-
-    useShellStore.getState().cycleValeriaState();
-    expect(useShellStore.getState().valeriaState).toBe("full");
+  it("_hasHydrated exposed (SsrSafeHydration interface)", () => {
+    // Type check: SsrSafeHydration interface is exported from shell-store
+    const state = useShellStoreKit.getState();
+    expect(typeof state._hasHydrated).toBe("boolean");
+    const _typeCheck: SsrSafeHydration = state;
+    expect(_typeCheck).toBeDefined();
   });
 });

@@ -1,11 +1,9 @@
 // cap: shell-organism.shell-vitalia
 // story-origin: vitalia-fase1-s3-TBD
 /**
- * types.ts — TypeScript types for F1-S3 tenant-switcher shell-organism components.
- * F1-S3 vitalia-fase1-tenant-switcher
- *
- * These types are co-located in shell-organism since they are shared between
- * TenantBadge, TenantOption, TenantSwitcher, AddClinicPlaceholderModal.
+ * types.ts — TypeScript types for tenant-switcher shell-organism components.
+ * Kept after T-V2: TenantBadge, TenantOption, TenantSwitcher, TenantStoreBootstrap,
+ * AddClinicPlaceholderModal, and hooks (useTenants, tenant-store) all use these types.
  *
  * Mirrors 03-arch.md § 2.2 TypeScript interfaces (camelCase, ISO 8601 datetimes as string).
  * All fields readonly per immutable domain pattern.

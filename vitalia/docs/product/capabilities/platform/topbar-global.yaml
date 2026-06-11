@@ -27,7 +27,7 @@ user_facing_description: >
 dev_preview:
   route: null
   how_to_navigate: "Visible en todas las páginas post-login en la barra superior."
-  main_component: "vitalia/frontend/src/components/shared/shell-organism/TopBarGlobal.tsx"
+  main_component: "core/@luana/ui-kit/src/organism/shell/TopBarShell.tsx"
   api_endpoints: []
   e2e_test: "vitalia/frontend/e2e/regression/topbar-global/topbar-interaction.smoke.spec.ts"
   fixtures_required: []

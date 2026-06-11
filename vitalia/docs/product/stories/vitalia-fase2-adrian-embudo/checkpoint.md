@@ -7,6 +7,8 @@ map_box: adrian
 module: crm                          # ★ corregido 2026-06-03 (era sales_pipeline — duplicaba crm shipped; Chris ratificó EXTEND crm)
 capability: crm/adrian-embudo
 state: developed                       # ★ 2026-06-04 dod_live_verified=true (T-DEMO-2 writes confirmed); → AUTO-HANDOFF /auditor
+defer_audit: true                      # ★ 2026-06-10 ratificado Chris (gate shell-core-hardening, opción a)
+defer_audit_reason: "Chris ratificó 2026-06-10 priorizar vitalia-shell-core-hardening (consolidación chrome + lift @luana/ui-kit). Embudo queda developed + dod_live_verified=true esperando: gate FE compartido RED (sesión inbox) + demo_signoff Chris → /auditor → merge. El hardening toca crm (punto 7 N3) → auditar embudo DESPUÉS evita re-audit por rebase del chrome."
 build_status:                          # ★ 2026-06-03 — 6/8 tickets DONE (resumido tras coordinación Chris)
   completed:                           # implementación COMPLETA, gates GREEN, committeado + pushed
     - {id: T-BE-1, commit: "811f01b6 (entangled inbox T-5)", gates: "60/60 unit + ruff"}

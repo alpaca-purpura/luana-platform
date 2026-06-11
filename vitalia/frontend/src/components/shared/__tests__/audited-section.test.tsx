@@ -263,7 +263,10 @@ describe("AuditedSection — T-2 fix: uses useTenantId() instead of useOrganizat
       userId: VALID_USER_ID,
     });
     mockUseTenantId.mockReturnValue(VALID_TENANT_UUID);
-    mockUseClinicId.mockReturnValue(null);
+    // ★ 2026-06-11 (auditor): clinicId VÁLIDO — el componente exige dual-filter
+    // tenant+clinic (hipaa-lite) y con null hace early-return SIN fetchear; este
+    // test prueba el silent-fail DEL FETCH, así que el fetch debe disparar.
+    mockUseClinicId.mockReturnValue(VALID_CLINIC_ID);
     mockFetch.mockRejectedValue(new Error("Network error"));
 
     const { getByTestId } = render(

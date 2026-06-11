@@ -6,9 +6,12 @@ map_zone: agentes
 map_box: lisa
 module: offer
 capability: lisa.servicios
-state: refining
+state: parked                      # ★ 2026-06-10 PAUSADA ratificado Chris (gate shell-core-hardening — libera slot refining cap≤3 para la umbrella)
+prior_state_before_park: refining
+parked_at: 2026-06-10T00:00:00-05:00
+parked_reason: "Pausa ratificada Chris 2026-06-10. Razón técnica: su N3 workspace (servicios/[treatment-id] + ladder/[slot-id]) depende del contrato EntityWorkspaceLayout que vitalia-shell-core-hardening va a cambiar (port de nicolify + lift @luana/ui-kit) — refinar ahora produciría spec contra contrato N3 viejo. Además soft-dep en lisa-doctores (también pausada). FIRMA 1 (input_spec_signed 2026-06-06) se PRESERVA — al reanudar se retoma desde RONDA 2 contra el contrato N3 nuevo."
 architecture_pattern: ADR-vitalia-004
-last_modified: '2026-06-06T22:20:00.000Z'
+last_modified: '2026-06-10T00:00:00-05:00'
 agentic_reframe: 2026-06-06
 input_spec_signed: true            # ✍ FIRMA 1 (intención) Chris 2026-06-06
 mockup_final_signed: false

@@ -160,14 +160,17 @@ export function WeekCalendar({
                 isCurrentDay && "bg-primary/5",
               )}
             >
-              <span className="text-[11px] font-medium text-muted-foreground">
+              {/* T-V2 fix-loop (axe): muted #71717a sobre col hoy #eff8fc = 4.48 (<4.5 AA) */}
+              <span className="text-[11px] font-medium text-foreground/75">
                 {DAY_ABBRS[colIdx]}
               </span>
               <span
                 className={cn(
                   "flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold",
+                  // T-V2 fix-loop (axe destapado por edge-redirect): white sobre
+                  // --primary cyan #01aef9 = 2.49 (AA fail). Texto oscuro fijo.
                   isCurrentDay
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-primary text-cyan-950"
                     : "text-foreground",
                 )}
               >
@@ -193,6 +196,9 @@ export function WeekCalendar({
                 isCurrentDay && "bg-primary/5",
               )}
               data-testid={`week-day-col-${colIdx}`}
+              /* T-V2 fix-loop (axe): aria-label requiere role que lo permita
+                 (div genérico = aria-prohibited-attr). group = columna de slots. */
+              role="group"
               aria-label={`${DAY_ABBRS[colIdx]} ${formatDayNumber(day)}`}
             >
               {daySlots.map((slot) => (

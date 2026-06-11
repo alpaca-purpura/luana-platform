@@ -15,6 +15,15 @@
 
 @import "tailwindcss";
 
+/*
+ * @source directive — Tailwind v4 JIT: scan @luana/ui-kit organism/shell for
+ * classes not reachable from src/ (e.g. grid-cols-[minmax(...)], arbitrary
+ * breakpoint variants used inside kit chrome atoms).
+ * Without this, JIT purges those classes silently (tsc green but visual broken).
+ * Lesson from T-V1 (vitalia): always add @source after consuming kit organism.
+ */
+@source "../../../../../core/@luana/ui-kit/src/organism/shell";
+
 /* ─── Tailwind v4 @theme — tokens que generan utilidades ─────────────────── */
 @theme {
   /* Fuentes — League Spartan (display/UI) + Bree Serif (acento serif) */

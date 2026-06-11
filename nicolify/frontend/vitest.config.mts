@@ -16,6 +16,10 @@ const FRONTEND_NM = path.resolve(__dirname, 'node_modules')
 const lanaAliases = {
   '@luana/hooks/create-ssr-safe-persisted-store': path.join(LUANA_HOOKS_SRC, 'create-ssr-safe-persisted-store.ts'),
   '@luana/hooks/use-store-hydration': path.join(LUANA_HOOKS_SRC, 'use-store-hydration.ts'),
+  '@luana/hooks/use-copilot-offset': path.join(LUANA_HOOKS_SRC, 'use-copilot-offset.ts'),
+  '@luana/hooks/use-shell-mutex': path.join(LUANA_HOOKS_SRC, 'use-shell-mutex.ts'),
+  '@luana/hooks/use-is-mounted': path.join(LUANA_HOOKS_SRC, 'use-is-mounted.ts'),
+  '@luana/hooks/use-viewport': path.join(LUANA_HOOKS_SRC, 'use-viewport.ts'),
   '@luana/hooks': path.join(LUANA_HOOKS_SRC, 'index.ts'),
   // Force zustand to resolve from nicolify/frontend so workspace src files can find it
   'zustand': path.join(FRONTEND_NM, 'zustand'),

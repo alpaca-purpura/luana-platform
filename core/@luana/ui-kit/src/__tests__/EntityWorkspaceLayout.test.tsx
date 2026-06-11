@@ -135,4 +135,45 @@ describe("EntityWorkspaceLayout (canon @luana/ui-kit)", () => {
       expect(screen.getByTestId("entity-workspace-layout")).toBeInTheDocument();
     });
   });
+
+  describe("activeLeaf override prop (static route segments — vitalia pattern)", () => {
+    it("uses activeLeaf prop over URL-derived param when provided", () => {
+      // URL param has 'datos' but prop says 'buyer-a1b2' → prop wins
+      mockLeaf = "datos";
+      render(
+        <EntityWorkspaceLayout {...baseProps} entity={entity} activeLeaf="buyer-a1b2">
+          <div>content</div>
+        </EntityWorkspaceLayout>,
+      );
+      const tabs = screen.getAllByRole("tab");
+      // root + datos + buyer-a1b2; prop 'buyer-a1b2' (idx 2) should be active
+      expect(tabs[2]).toHaveAttribute("aria-selected", "true");
+      expect(tabs[1]).toHaveAttribute("aria-selected", "false");
+    });
+
+    it("falls back to URL-derived param when activeLeaf prop not provided", () => {
+      mockLeaf = "datos";
+      render(
+        <EntityWorkspaceLayout {...baseProps} entity={entity}>
+          <div>content</div>
+        </EntityWorkspaceLayout>,
+      );
+      const tabs = screen.getAllByRole("tab");
+      // URL param 'datos' (idx 1) should be active
+      expect(tabs[1]).toHaveAttribute("aria-selected", "true");
+    });
+
+    it("handles null activeLeaf prop (master/loading state)", () => {
+      mockLeaf = "datos";
+      render(
+        <EntityWorkspaceLayout {...baseProps} entity={entity} activeLeaf={null}>
+          <div>content</div>
+        </EntityWorkspaceLayout>,
+      );
+      const tabs = screen.getAllByRole("tab");
+      // null override → no content leaf active, root is active
+      expect(tabs[0]).toHaveAttribute("aria-selected", "true");
+      expect(tabs[1]).toHaveAttribute("aria-selected", "false");
+    });
+  });
 });

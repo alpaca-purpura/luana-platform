@@ -7,7 +7,8 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
-vi.mock("@/components/shared/shell-organism/EntitySubNavBar", () => ({
+// NewLeadPage migrated to @luana/ui-kit EntitySubNavBar (T-5)
+vi.mock("@luana/ui-kit", () => ({
   EntitySubNavBar: ({ rootLabel }: { rootLabel: string }) => (
     <nav data-testid="entity-sub-nav-bar">
       <span>{rootLabel}</span>

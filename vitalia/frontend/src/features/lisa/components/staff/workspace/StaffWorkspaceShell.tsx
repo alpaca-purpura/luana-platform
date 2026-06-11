@@ -5,13 +5,14 @@
  * StaffWorkspaceShell.tsx — Staff workspace layout wrapper.
  *
  * Renders:
- *   1. EntitySubNavBar (sticky) — N3-dynamic nav per D-1
+ *   1. EntityWorkspaceLayout (@luana/ui-kit) — N3 canon ribbon + content slot
  *   2. Children slot — perfil/horarios/servicios page content
  *
  * Builds leaf hrefs relative to doctor workspace.
- * Derives activeLeaf from current URL pathname.
+ * activeLeaf passed explicitly (vitalia uses static leaf segments, not [leaf] param).
  *
  * Per ADR-vitalia-004 § 3: Client Component (needs usePathname for active leaf).
+ * MIGRATED to @luana/ui-kit EntityWorkspaceLayout (vitalia-shell-core-hardening T-5).
  *
  * T-FE-2 vitalia-fase2-lisa-doctores
  * spec_anchor: 03-arch-fe.md § FSD-Lite + § EntitySubNavBar
@@ -21,8 +22,8 @@
 import { usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
-import { EntitySubNavBar } from "@/components/shared/shell-organism/EntitySubNavBar";
-import type { EntitySubNavLeaf } from "@/components/shared/shell-organism/EntitySubNavBar";
+import { EntityWorkspaceLayout } from "@luana/ui-kit";
+import type { EntitySubNavLeaf } from "@luana/ui-kit";
 import { staffKeys, useStaffActorHeaders } from "../../../api/staff";
 import { fetchClient } from "@/lib/api/fetchClient";
 import { useClinicId } from "@/hooks/useClinicId";
@@ -50,6 +51,7 @@ const LEAF_DEFS = [
 /**
  * Extracts the active leaf from the URL pathname.
  * Pattern: /{tenantId}/lisa/staff/{doctorId}/{leaf}
+ * Used as activeLeaf override since vitalia uses static leaf segments (not [leaf] param).
  */
 function extractLeafFromPath(pathname: string | null): string | null {
   if (!pathname) return null;
@@ -81,10 +83,12 @@ export function StaffWorkspaceShell({
     href: `/${tenantId}/lisa/staff/${doctorId}/${def.id}`,
   }));
 
+  // Vitalia uses static leaf segments (/perfil, /horarios, /servicios) — not [leaf] dynamic
+  // param. Pass explicitly as override so EntityWorkspaceLayout resolves the active tab.
   const activeLeaf = extractLeafFromPath(pathname);
 
   // Hydrate doctor detail (SSR initialData from layout)
-  const { data: doctor } = useQuery({
+  const { data: doctor, isLoading: isDoctorLoading } = useQuery({
     queryKey: staffKeys.detail(doctorId),
     queryFn: async () => {
       const token = await getToken();
@@ -109,15 +113,15 @@ export function StaffWorkspaceShell({
     : null;
 
   return (
-    <div className="flex flex-col min-h-full">
-      <EntitySubNavBar
-        rootHref={`/${tenantId}/lisa/staff`}
-        rootLabel="Staff"
-        entity={entity}
-        leaves={leaves}
-        activeLeaf={activeLeaf}
-      />
-      <div className="flex-1">{children}</div>
-    </div>
+    <EntityWorkspaceLayout
+      rootHref={`/${tenantId}/lisa/staff`}
+      rootLabel="Staff"
+      entity={entity}
+      leaves={leaves}
+      activeLeaf={activeLeaf}
+      isLoading={isDoctorLoading && !initialDoctor}
+    >
+      {children}
+    </EntityWorkspaceLayout>
   );
 }
