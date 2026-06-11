@@ -66,6 +66,7 @@ import {
   Separator,
   useDefaultLayout,
   useGroupRef,
+  usePanelRef,
 } from "react-resizable-panels";
 import { cn } from "@/lib/utils";
 import { useShellStore } from "@/stores/shell-store";
@@ -198,6 +199,12 @@ export function ShellOrganismLayoutClient({
   // ── Imperative Group ref for snap-up (Fix A — C3 bug mitigation) ─────────
   const groupRef = useGroupRef();
 
+  // ── Imperative Panel ref for collapse/expand (BUG #1/#2 fix) ─────────────
+  // react-resizable-panels v4: `collapse()` collapses to collapsedSize (bypasses
+  // minSize correctly). `setLayout(stripPct)` was wrong — it clamps to minSize.
+  // `expand()` restores from collapsed state so drag works again after reopen.
+  const valeriaPanelRef = usePanelRef();
+
   // ── T-7 drag-clamp (RN-8/RN-9) ───────────────────────────────────────────
   // root cause: `collapsible={true}` on the Panel means react-resizable-panels
   // auto-collapses to collapsedSize when user drags below minSize. That violates
@@ -214,6 +221,16 @@ export function ShellOrganismLayoutClient({
 
   // Fix A: snap-up when containerWidth or minValeriaPct changes (hydration race +
   // valeriaState change cycle). Signals readiness once layout reconciled.
+  //
+  // BUG #2 fix: use `valeriaPanelRef.current.collapse()` for the closed (state A)
+  // path instead of `groupRef.current.setLayout({valeria: stripPct})`.
+  // react-resizable-panels v4 clamps `setLayout` to minSize, so setLayout(stripPct)
+  // with stripPct < minSize left the panel at ~318px (minSize), creating a 274px
+  // gap. `collapse()` correctly targets `collapsedSize` (44px strip) bypassing minSize.
+  //
+  // BUG #1 fix: after a collapse→reopen cycle, the panel's internal collapsed state
+  // was true even after setLayout(minValeriaPct). `expand()` must be called BEFORE
+  // any setLayout so the library marks the panel as non-collapsed and re-enables drag.
   useEffect(() => {
     if (containerWidth <= 0 || !groupRef.current) return;
     // Point 3: below lg, collapse Valeria to 0 so the agent panel takes full width
@@ -227,21 +244,26 @@ export function ShellOrganismLayoutClient({
       setShellReady(true);
       return;
     }
-    // T-3 state A: Valeria closed → pin the panel to the 44px tira-avatar so the
-    // strip is visible (not 0, which would hide it) and the agent panel takes the
-    // rest. Bypasses minSize via the `collapsible` Panel.
+    // T-3 state A: Valeria closed → collapse() to collapsedSize (44px strip).
+    // Must use imperative collapse() — NOT setLayout(stripPct). setLayout clamps
+    // to minSize and leaves a ~274px gap (BUG #2). collapse() ignores minSize and
+    // goes directly to collapsedSize per the v4 API contract.
     if (valeriaOpen === "closed") {
-      groupRef.current.setLayout({
-        [VALERIA_PANEL_ID]: stripPct,
-        [APP_PANEL_ID]: 100 - stripPct,
-      });
+      valeriaPanelRef.current?.collapse();
       setShellReady(true);
       return;
     }
+    // Open (state B/C): if panel is currently collapsed (e.g. just came from state
+    // A via a click on the strip), call expand() FIRST so the library marks the
+    // panel as non-collapsed. Without expand(), the panel stays "collapsed" internally
+    // even after setLayout — the drag handle silently ignores input (BUG #1).
+    if (valeriaPanelRef.current?.isCollapsed()) {
+      valeriaPanelRef.current.expand();
+    }
     const layout = groupRef.current.getLayout();
     const valeriaPct = layout[VALERIA_PANEL_ID];
-    // Open (state B/C): if the persisted/current width is below the floor (e.g. left
-    // over from the strip), snap up to minValeriaPct so the chat is legible.
+    // Snap up to minValeriaPct if the current (or restored-from-expand) width is
+    // below the legibility floor (e.g. still at the strip width post-expand).
     if (valeriaPct !== undefined && valeriaPct < minValeriaPct) {
       groupRef.current.setLayout({
         [VALERIA_PANEL_ID]: minValeriaPct,
@@ -249,7 +271,7 @@ export function ShellOrganismLayoutClient({
       });
     }
     setShellReady(true);
-  }, [containerWidth, minValeriaPct, groupRef, isLg, valeriaOpen, stripPct]);
+  }, [containerWidth, minValeriaPct, groupRef, valeriaPanelRef, isLg, valeriaOpen, stripPct]);
 
   // Persist layout across page reloads via localStorage.
   // Safe to call directly: this component is client-only via dynamic({ssr:false}).
@@ -332,14 +354,17 @@ export function ShellOrganismLayoutClient({
               defaultSize={isLg ? defaultValeriaPct : 0}
               minSize={`${minValeriaPct}%`}
               // T-7 drag-clamp (RN-8/RN-9): collapsible is dynamic.
-              // - state A ("closed") or drawer mode (!isLg): true → setLayout(stripPct)
-              //   can bypass minSize to park the panel at 44px strip.
+              // - state A ("closed") or drawer mode (!isLg): true → panel.collapse()
+              //   targets collapsedSize (44px) bypassing minSize (BUG #2 fix).
               // - state B/C (chat, open): false → library clamps at minSize on drag,
               //   never auto-collapses → RN-8 and RN-9 are satisfied natively.
               collapsible={valeriaCollapsible}
-              // T-3 strip fix: on desktop collapsedSize=stripPct so setLayout(stripPct)
-              // holds at the 44px tira-avatar (not collapses to 0). On mobile: 0.
+              // T-3 strip fix: on desktop collapsedSize=stripPct (44px tira-avatar).
+              // collapse() targets this value. On mobile: 0.
               collapsedSize={isLg ? stripPct : 0}
+              // BUG #1/#2 fix: imperative ref so we can call collapse() / expand()
+              // correctly (setLayout was insufficient — see effect comment above).
+              panelRef={valeriaPanelRef}
             >
               {/* ValeriaSidebar stays mounted at all widths (its drawer portals to
                   document.body); the inline aside hides itself < lg (hidden lg:grid),

@@ -180,4 +180,86 @@ test.describe("SC-5 — colapsar → strip → reabrir (RN-5 · RN-9 · RN-12)",
     const storedOpen = await pom.getValeriaOpen();
     expect(storedOpen, "localStorage debe tener valeriaOpen='closed'").toBe("closed");
   });
+
+  // ── BUG fixes (vitalia-shell-core-hardening bugfix-shell-collapse-gap) ─────
+  // RED tests: these assert behavior that was broken before the imperative
+  // panel.collapse() / panel.expand() fix.
+
+  test("BUG #2: panel Valeria colapsado ≤ 60px (sin gap vacío ~274px)", async ({
+    shellPage,
+    tenantId,
+  }) => {
+    const pom = new ShellLayoutPage(shellPage);
+    await pom.gotoShell(tenantId, { useProdRoute: true });
+    await pom.waitForShellReady();
+
+    // Collapse to strip
+    await pom.collapseToStripBtn.waitFor({ state: "visible", timeout: 15_000 });
+    await pom.collapseToStripBtn.click();
+    // Wait for collapse animation + react-resizable-panels layout settle
+    await shellPage.waitForTimeout(500);
+
+    // The Valeria panel itself (data-panel="valeria-panel") must be ≤ 60px
+    // when collapsed. Before the fix it was clamped to minSize (~318px) leaving
+    // a ~274px gap of empty space.
+    const valeriaWidth = await shellPage.evaluate(() => {
+      const el = document.querySelector<HTMLElement>('[data-panel="valeria-panel"]');
+      if (!el) return -1;
+      return el.getBoundingClientRect().width;
+    });
+    expect(
+      valeriaWidth,
+      `Valeria panel debe ser ≤ 60px al colapsar (era ${valeriaWidth}px — gap bug #2)`,
+    ).toBeLessThanOrEqual(60);
+  });
+
+  test("BUG #1: resize handle funciona DESPUÉS de ciclo colapsar→reabrir", async ({
+    shellPage,
+    tenantId,
+  }) => {
+    const pom = new ShellLayoutPage(shellPage);
+    await pom.gotoShell(tenantId, { useProdRoute: true });
+    await pom.waitForShellReady();
+
+    // Record initial Valeria width in open state
+    const widthBefore = await pom.getValeriaWidth();
+    expect(widthBefore, "should start with Valeria visible").toBeGreaterThan(100);
+
+    // ── Cycle: collapse ──────────────────────────────────────────────────────
+    await pom.collapseToStripBtn.waitFor({ state: "visible", timeout: 15_000 });
+    await pom.collapseToStripBtn.click();
+    await shellPage.waitForTimeout(400);
+    await expect(pom.collapsedStrip).toBeVisible({ timeout: 8_000 });
+
+    // ── Cycle: reopen ────────────────────────────────────────────────────────
+    await shellPage.evaluate(() => {
+      const strip = document.querySelector<HTMLButtonElement>(
+        '[data-testid="valeria-collapsed-strip"]',
+      );
+      strip?.click();
+    });
+    await shellPage
+      .locator('[aria-label="Chat con Valeria"]')
+      .waitFor({ state: "visible", timeout: 8_000 });
+    await shellPage.waitForTimeout(400);
+
+    // Wait for shell to be ready after re-open
+    await shellPage
+      .locator('main#main-content[data-shell-ready="true"]')
+      .waitFor({ state: "visible", timeout: 10_000 });
+
+    // ── Drag resize handle ────────────────────────────────────────────────────
+    // If expand() was NOT called, the panel is still internally "collapsed" and
+    // the drag silently does nothing → widthAfter ≈ widthBefore.
+    // After the fix, drag must move the panel by ≥ 50px.
+    const widthBeforeDrag = await pom.getValeriaWidth();
+    await pom.dragResizeHandle(150);
+    await shellPage.waitForTimeout(200);
+    const widthAfterDrag = await pom.getValeriaWidth();
+
+    expect(
+      Math.abs(widthAfterDrag - widthBeforeDrag),
+      `Drag post-reabrir debe cambiar ancho ≥ 50px (cambió solo ${Math.abs(widthAfterDrag - widthBeforeDrag)}px — bug #1 resize muerto)`,
+    ).toBeGreaterThanOrEqual(50);
+  });
 });

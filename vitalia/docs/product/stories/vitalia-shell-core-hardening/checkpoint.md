@@ -57,6 +57,27 @@ parallel_safe: false                    # toca el shell mismo → colisión file
 # Naturaleza de verificación (DoD #37)
 verification_nature: funcional          # chrome user-reachable → demo manual + anti-burbuja + live-verify
 demo_required: true
+
+# ── DoD #37 live-verify (ejercido 2026-06-10/11 · orchestrator) ──
+dod_live_verified: true
+dod_env: "localhost:3002 (stack dev real make dev-vitalia: FE+BE+cloudflared) — Playwright AUTENTICADO real-backend (Clerk dr.demo@vitalialat.com, fixture base.ts anti-burbuja: 0 pageerror/console-error//api≥400/Next-overlay). Chrome MCP no disponible esta sesión (server desconectado) — herramienta Playwright-autenticado es la 2ª válida per rule #37 (precedente embudo board-live)."
+dod_evidence:
+  - action: "Colapsar Valeria (botón propio) → strip 44px avatar → clic avatar reabre chat-only (collapse-strip-reopen.spec, autenticado, real-backend)"
+    observed: "Strip 44px con avatar visible; reabrir → estado B sin historial; layout persiste; 0 errores consola"
+    backend_log: "verify-no-backend-errors.sh vitalia ✅ sin ERROR/Traceback/Exception en la ventana 2026-06-11T03:05:18+"
+  - action: "Abrir historial → EMPUJA 260px fijo (agente cede ancho), cerrar revierte (history-push.spec) + botón '+' limpia chat y archiva conversación al historial (new-conversation.spec)"
+    observed: "Ancho agente C < B medido; historial 260px; '+' → chat vacío + ítem nuevo en lista historial (estado UI persistido en localStorage — el chrome no escribe DB por diseño; su efecto observable = DOM + persistencia + red limpia)"
+    backend_log: "0 errores BE en ventana; requests /api proxied por rewrites nuevos → 2xx"
+  - action: "Toggle dark en lisa/marca + adrian/inbox + mateo/agenda (dark-per-subtab.spec) + axe WCAG AA en dark"
+    observed: "data-theme=dark activo, fondo NO blanco en shell NI contenido (mitad-clara MUERTA — BUG#2), axe 0 violations, toggle light revierte sin crash"
+    backend_log: "0 errores BE"
+  - action: "Soft-nav loop ×15 embudo→recuperar (next/link, band-aid revertido) + cross-tab lisa→adrian→mateo (soft-nav-loop.spec)"
+    observed: "15/15 montajes sin 'Cargando shell' colgado, sin 'Rendered more hooks', sin Next overlay (B1 root-path MUERTO en el flujo verificado)"
+    backend_log: "0 errores BE"
+  - action: "N3: staff directorio + embudo workspace montan EntityWorkspaceLayout DE @luana/ui-kit (n3-list-detail.spec)"
+    observed: "Workspace monta con EntitySubNavBar core; leafs disabled sin entidad (spec n3-directory-disabled, run suite completa)"
+    backend_log: "0 errores BE (fetch entidades reales 2xx)"
+verified_at: 2026-06-11T03:09:00Z
 autonomous_mode: true                   # ★ RATIFICADO Chris 2026-06-10 verbatim: "arranca /architect y continúa hasta el done" — corre architect→build→auditor→merge sin pausa G. El architect valida criterios HARD-false en dispatch-plan; si detecta uno, ESCALA a Chris en vez de proceder. Live-verify #37 + dod_evidence siguen obligatorios (autonomous no relaja el DoD).
 
 # ─────────────────────────────────────────────────────────────

@@ -110,6 +110,17 @@ vi.mock("react-resizable-panels", () => ({
       setLayout: vi.fn(),
     },
   })),
+  // BUG #1/#2 fix: usePanelRef returns a RefObject with a mock PanelImperativeHandle.
+  // collapse()/expand() are no-ops in unit tests; isCollapsed() returns false (panel open).
+  usePanelRef: vi.fn(() => ({
+    current: {
+      collapse: vi.fn(),
+      expand: vi.fn(),
+      isCollapsed: vi.fn(() => false),
+      getSize: vi.fn(() => 30),
+      resize: vi.fn(),
+    },
+  })),
 }));
 
 // Mock useViewportGuard to avoid window.innerWidth setup complexity in layout tests.
