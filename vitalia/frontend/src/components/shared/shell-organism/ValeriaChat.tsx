@@ -50,7 +50,13 @@ export function ValeriaChat() {
       role="region"
       aria-label="Chat con Valeria"
       data-testid="valeria-chat"
-      className="grid grid-rows-[auto_1fr_auto] overflow-hidden h-full bg-background"
+      // ★ Ronda Chris 2026-06-11 (000.png): grid-rows sin cols explícitas crea una
+      // columna implícita `auto` que trackea al CONTENIDO más ancho (604px) en vez
+      // del contenedor → mensajes/composer quedaban renderizados anchos y RECORTADOS
+      // por el overflow-hidden al achicar el panel. `grid-cols-[minmax(0,1fr)]`
+      // fuerza el track al ancho real → los textos re-wrappean. + min-w-0 (item del
+      // grid del aside no shrinkeaba bajo su contenido).
+      className="@container grid min-w-0 grid-rows-[auto_1fr_auto] grid-cols-[minmax(0,1fr)] overflow-hidden h-full bg-background"
     >
       <ChatHeader agent="valeria" status="online" mode="agent" />
       <ChatMessages />

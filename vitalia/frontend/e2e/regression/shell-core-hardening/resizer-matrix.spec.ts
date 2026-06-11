@@ -65,6 +65,21 @@ test.describe("resizer-matrix — estados × drag siempre se ve bien", () => {
     const clamped = await valeriaW(page);
     expect(clamped).toBeGreaterThanOrEqual(290); // RN-8: clamp, NUNCA colapso por drag (RN-9)
     expect(clamped).toBeLessThanOrEqual(360);
+    // ★ Ronda Chris 2026-06-11 (000.png): al mínimo, el CONTENIDO del chat re-wrappea
+    // — nada sobresale del box (antes: columna grid implícita `auto` trackeaba al
+    // contenido → mensajes/composer renderizados a 604px y RECORTADOS).
+    const overhang = await page.evaluate(() => {
+      const chat = document.querySelector('[data-testid="valeria-chat"]');
+      if (!chat) return -1;
+      const cb = chat.getBoundingClientRect();
+      let worst = 0;
+      chat.querySelectorAll("*").forEach((el) => {
+        const r = el.getBoundingClientRect();
+        if (r.width > 0) worst = Math.max(worst, Math.round(r.right - cb.right));
+      });
+      return worst;
+    });
+    expect(overhang).toBeLessThanOrEqual(2); // SIN RECORTE (wrap real)
     await dragHandle(page, 60);
     expect(await valeriaW(page)).toBeGreaterThanOrEqual(340); // drag vivo post-clamp
     expect(await noOverflowX(page)).toBe(true);
@@ -100,9 +115,11 @@ test.describe("resizer-matrix — estados × drag siempre se ve bien", () => {
     // drag en C funciona
     await dragHandle(page, 150);
     expect((await valeriaW(page))!).toBeGreaterThanOrEqual(wC! + 80);
-    // drag below min en C clampa (no colapsa, no rompe)
+    // drag below min en C clampa al min EFECTIVO (chat-min + historial 280 — ronda
+    // Chris 2026-06-11 001.png: antes clampeaba al min de B y el historial se comía
+    // el chat hasta ~60px)
     await dragHandle(page, -700);
-    expect((await valeriaW(page))!).toBeGreaterThanOrEqual(290);
+    expect((await valeriaW(page))!).toBeGreaterThanOrEqual(560); // ~318 chat + 280 hist
     expect(await noOverflowX(page)).toBe(true);
     // colapsar DESDE C → A (historial también cierra, RN-5) → reabrir = B chat-only
     await page.locator('[aria-label*="Colapsar a Valeria"]').first().click();

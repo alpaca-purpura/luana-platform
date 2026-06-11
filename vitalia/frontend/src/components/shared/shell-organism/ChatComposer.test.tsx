@@ -110,12 +110,13 @@ describe("ChatComposer", () => {
       expect(textarea.tagName.toLowerCase()).toBe("textarea");
     });
 
-    it("placeholder 'Escribe a Valeria… (Enter envía · Shift+Enter salto de línea)'", () => {
+    it("placeholder corto 'Escribe a Valeria…' + hint Enter/Shift+Enter en title (ronda Chris 2026-06-11: el placeholder largo envolvía 4 líneas con el panel al mínimo)", () => {
       render(<ChatComposer />);
       const textarea = screen.getByRole("textbox");
+      expect(textarea).toHaveAttribute("placeholder", "Escribe a Valeria…");
       expect(textarea).toHaveAttribute(
-        "placeholder",
-        "Escribe a Valeria… (Enter envía · Shift+Enter salto de línea)",
+        "title",
+        "Enter envía · Shift+Enter salto de línea",
       );
     });
   });

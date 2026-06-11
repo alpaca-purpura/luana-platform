@@ -106,8 +106,10 @@ export function ChatHeader({
         />
       </div>
 
-      {/* Name + status text */}
-      <div className="flex flex-col min-w-0 flex-1">
+      {/* Name + status text — min-w-[72px]: "Valeria" siempre completo aunque el
+          panel esté al mínimo (ronda Chris 2026-06-11: quedaba "V."); el pill y el
+          subtitle truncan primero. */}
+      <div className="flex flex-col min-w-[72px] flex-1">
         <span className="text-sm font-medium text-foreground leading-tight truncate">
           {descriptor.name}
         </span>
@@ -121,7 +123,10 @@ export function ChatHeader({
       <Badge
         variant="outline"
         data-testid="chat-mode-pill"
-        className="shrink-0 text-[11px]"
+        // Ronda Chris 2026-06-11: con el panel al mínimo el pill no cabe (header
+        // sobresalía 45px) — container query (Tailwind v4): visible solo ≥ 24rem
+        // del panel del chat (no del viewport).
+        className="hidden min-w-0 max-w-[110px] truncate text-[11px] @[24rem]:inline-flex"
       >
         {modeLabel}
       </Badge>

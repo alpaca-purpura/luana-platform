@@ -138,7 +138,8 @@ export function ChatComposer({ className }: { className?: string }) {
           value={localValue}
           onChange={(e) => setLocalValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Escribe a Valeria… (Enter envía · Shift+Enter salto de línea)"
+          placeholder="Escribe a Valeria…"
+          title="Enter envía · Shift+Enter salto de línea"
           className="flex-1 resize-none rounded-md border border-input bg-background px-3 py-2 text-sm leading-relaxed placeholder:text-muted-foreground focus:outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 max-h-[100px] overflow-y-auto"
         />
 

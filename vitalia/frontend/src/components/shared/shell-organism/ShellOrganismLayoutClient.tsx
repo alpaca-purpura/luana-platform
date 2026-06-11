@@ -196,10 +196,19 @@ export function ShellOrganismLayoutClient({
   // 30/70 default). Still resizable + persisted (useDefaultLayout / valeriaPct) — this
   // is only the fresh default. T-2: no shellMode branch (web mode eliminated).
   const defaultValeriaPct = 30;
-  // ★ Live-fix 2026-06-11 (RN-7 push REAL): el historial (260px fijo) debe ENSANCHAR
-  // el panel de Valeria (empujar al agente), NO robarle ancho al chat. % del push:
-  const HISTORY_PX = 260;
+  // ★ Live-fix 2026-06-11 (RN-7 push REAL): el historial debe ENSANCHAR el panel
+  // de Valeria (empujar al agente), NO robarle ancho al chat. 280px = la columna
+  // REAL del grid de ValeriaSidebar (state C: `280px 1fr`) — usar 260 dejaba al
+  // chat 20px más angosto en cada push.
+  const HISTORY_PX = 280;
   const histPct = (HISTORY_PX / Math.max(containerWidth, 1)) * 100;
+  // ★ Ronda Chris 2026-06-11 (001.png): el MIN del panel en estado C debe incluir
+  // el historial — si no, el drag clampea al min de B (320) y el historial (280)
+  // se come el chat (~60px). Floor efectivo: chat-min + historial cuando C.
+  const inStateC = isLg && valeriaOpen === "chat" && historyOpen;
+  const minValeriaEffectivePct = inStateC
+    ? Math.min(80, minValeriaPct + histPct)
+    : minValeriaPct;
 
   // ── Imperative Group ref for snap-up (Fix A — C3 bug mitigation) ─────────
   const groupRef = useGroupRef();
@@ -325,10 +334,28 @@ export function ShellOrganismLayoutClient({
     const target = historyOpen
       ? Math.min(maxPct, Math.max(current + histPct, minValeriaPct + histPct))
       : Math.max(minValeriaPct, current - histPct);
-    groupRef.current.setLayout({
-      [VALERIA_PANEL_ID]: target,
-      [APP_PANEL_ID]: 100 - target,
-    });
+    // ★ Retry rAF (ronda Chris 2026-06-11): el toggle B↔C REMONTA el panel (key
+    // incluye hist-state para que la lib registre el minSize dinámico) y la
+    // persistencia del Group re-aplica el layout viejo pisando el primer
+    // setLayout — mismo patrón que el collapse de estado A. Reintentar hasta
+    // converger (~30 frames máx).
+    let cancelled = false;
+    let raf = 0;
+    const apply = (attempt: number) => {
+      if (cancelled || !groupRef.current) return;
+      const now = groupRef.current.getLayout()[VALERIA_PANEL_ID];
+      if (now !== undefined && Math.abs(now - target) <= 0.5) return; // convergió
+      groupRef.current.setLayout({
+        [VALERIA_PANEL_ID]: target,
+        [APP_PANEL_ID]: 100 - target,
+      });
+      if (attempt < 30) raf = requestAnimationFrame(() => apply(attempt + 1));
+    };
+    apply(0);
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(raf);
+    };
   }, [historyOpen, isLg, valeriaOpen, groupRef, histPct, minValeriaPct, minAppPct]);
 
   // Persist layout across page reloads via localStorage.
@@ -416,7 +443,11 @@ export function ShellOrganismLayoutClient({
               // del Panel en cada cambio de estado → la lib registra las props
               // frescas y el effect collapse() corre en mount-path (verificado OK).
               // Bonus: remount limpia el drag-state interno → resize vivo post-ciclo.
-              key={`valeria-${!isLg ? "mobile" : valeriaOpen === "closed" ? "A" : "BC"}`}
+              // ★ Ronda Chris 2026-06-11: key incluye B|C — la lib captura minSize en
+              // MOUNT (igual que collapsible); el min dinámico de C (chat-min + 280)
+              // solo aplica si el panel REMONTA al togglear historial. El push/restore
+              // del ancho lo hace el effect RN-7 (retry rAF contra la persistencia).
+              key={`valeria-${!isLg ? "mobile" : valeriaOpen === "closed" ? "A" : historyOpen ? "C" : "B"}`}
               // ★ Live-fix 2026-06-11 (round 2): el collapse() imperativo post-remount
               // corre ANTES de que el Group registre el panel nuevo (race) → no-op en
               // transición runtime (en page-mount sí funcionaba). Vía determinista: el
@@ -425,7 +456,7 @@ export function ShellOrganismLayoutClient({
               // por contrato v4: "a collapsible panel will collapse when its size is
               // less than minSize"). El collapse() del effect queda como backup.
               defaultSize={!isLg ? 0 : valeriaOpen === "closed" ? stripPct : defaultValeriaPct}
-              minSize={`${minValeriaPct}%`}
+              minSize={`${minValeriaEffectivePct}%`}
               // T-7 drag-clamp (RN-8/RN-9): collapsible is dynamic.
               // - state A ("closed") or drawer mode (!isLg): true → panel.collapse()
               //   targets collapsedSize (44px) bypassing minSize (BUG #2 fix).
