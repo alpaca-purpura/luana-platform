@@ -413,3 +413,128 @@ func escapeHTML(s string) string {
 func timeNow() string {
 	return time.Now().Format("15:04:05")
 }
+
+// ============================================================================
+// Fase 2 · Drift, Learnings, Harness
+// ============================================================================
+
+// loadLearnings carga {brand}/docs/learnings/*.md.
+func loadLearnings(root, brand string) []Learning {
+	dir := filepath.Join(root)
+	if brand != platformSlug {
+		dir = filepath.Join(root, brand)
+	}
+	dir = filepath.Join(dir, "docs", "learnings")
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return nil
+	}
+	var out []Learning
+	for _, e := range entries {
+		if e.IsDir() || !strings.HasSuffix(e.Name(), ".md") {
+			continue
+		}
+		b, err := os.ReadFile(filepath.Join(dir, e.Name()))
+		if err != nil {
+			continue
+		}
+		fm := parseFrontmatter(b)
+		out = append(out, Learning{
+			ID:         strings.TrimSuffix(e.Name(), ".md"),
+			Brand:      brand,
+			Date:       scalar(fm["date"]),
+			Title:      scalar(fm["title"]),
+			Type:       scalar(fm["type"]),
+			Promotable: scalar(fm["promotable"]),
+			Body:       string(b),
+		})
+	}
+	return out
+}
+
+// loadHarnessItems carga items de harness-backlog.md (L1), learnings (L2), tech-debt.md (L3), drift (L4).
+func loadHarnessItems(root, brand string) map[string][]HarnessItem {
+	out := make(map[string][]HarnessItem)
+	out["L1"] = loadHarnessBacklog(root)           // HB-N
+	out["L2"] = loadHarnessLearnings(root, brand)  // promotables
+	out["L3"] = loadHarnessTechDebt(root)          // tech-debt.md
+	out["L4"] = loadHarnessDrift(root, brand)      // orphans + islands
+	return out
+}
+
+func loadHarnessBacklog(root string) []HarnessItem {
+	file := filepath.Join(root, "docs", "process", "harness-backlog.md")
+	b, err := os.ReadFile(file)
+	if err != nil {
+		return nil
+	}
+	lines := strings.Split(string(b), "\n")
+	var out []HarnessItem
+	for _, line := range lines {
+		if strings.Contains(line, "HB-") && strings.Contains(line, "- ") {
+			parts := strings.Split(line, " | ")
+			if len(parts) > 0 {
+				hb := strings.TrimSpace(parts[0])
+				hb = strings.TrimPrefix(hb, "- ")
+				out = append(out, HarnessItem{
+					ID:     hb,
+					Carril: "L1",
+					Title:  line,
+					Status: "open",
+				})
+			}
+		}
+	}
+	return out
+}
+
+func loadHarnessLearnings(root, brand string) []HarnessItem {
+	learnings := loadLearnings(root, brand)
+	var out []HarnessItem
+	for _, l := range learnings {
+		if l.Promotable == "candidate" || l.Promotable == "yes" {
+			out = append(out, HarnessItem{
+				ID:       l.ID,
+				Carril:   "L2",
+				Title:    l.Title,
+				Status:   "open",
+				Severity: "high",
+			})
+		}
+	}
+	return out
+}
+
+func loadHarnessTechDebt(root string) []HarnessItem {
+	file := filepath.Join(root, "docs", "process", "tech-debt.md")
+	b, err := os.ReadFile(file)
+	if err != nil {
+		return nil
+	}
+	lines := strings.Split(string(b), "\n")
+	var out []HarnessItem
+	for _, line := range lines {
+		if strings.HasPrefix(line, "- ") && (strings.Contains(line, "BE") || strings.Contains(line, "FE")) {
+			out = append(out, HarnessItem{
+				ID:       fmt.Sprintf("TD-%d", len(out)),
+				Carril:   "L3",
+				Title:    line,
+				Status:   "open",
+				Severity: "medium",
+			})
+		}
+	}
+	return out
+}
+
+func loadHarnessDrift(root, brand string) []HarnessItem {
+	// Placeholder: en Fase 3 esto se obtiene del drift detector.
+	return []HarnessItem{}
+}
+
+// detectDrift compara caps YAML vs referencias `# cap:` en código.
+func detectDrift(root, brand string) []DriftIssue {
+	// TODO Fase 3: grep `# cap:` en {brand}/backend + {brand}/frontend,
+	// compara con capabilities/*.yaml.
+	return nil
+}

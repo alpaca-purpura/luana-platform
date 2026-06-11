@@ -153,24 +153,192 @@ if brand == "" || !s.brandValid(brand) {
 	s.tmpl["arquitectura"].Execute(w, data)
 }
 
-// Tabs de Fase 2-3 (stubs / "coming soon")
+// Fase 2 handlers
 func (s *server) handleDrift(w http.ResponseWriter, r *http.Request) {
 	brand := r.URL.Query().Get("brand")
 	if brand == "" || !s.brandValid(brand) {
 		brand = defaultBrand(s.brands)
 	}
-	fmt.Fprintf(w, `<h1>Drift</h1><p>Coming soon (Fase 2)</p><p>brand=%s</p>`, brand)
+
+	drift := detectDrift(s.root, brand)
+	tabs := make([]string, len(s.brands))
+	for i, b := range s.brands {
+		tabs[i] = b
+	}
+
+	data := TabPageData{
+		Brand:       brand,
+		Brands:      tabs,
+		Active:      brand,
+		DriftIssues: drift,
+		Root:        s.root,
+		Generated:   timeNow(),
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	s.tmpl["drift"].Execute(w, data)
 }
 
 func (s *server) handleLearnings(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, `<h1>Learnings</h1><p>Coming soon (Fase 2)</p>`)
+	brand := r.URL.Query().Get("brand")
+	if brand == "" || !s.brandValid(brand) {
+		brand = defaultBrand(s.brands)
+	}
+
+	learnings := loadLearnings(s.root, brand)
+	byType := make(map[string][]Learning)
+	for _, l := range learnings {
+		byType[l.Type] = append(byType[l.Type], l)
+	}
+
+	tabs := make([]string, len(s.brands))
+	for i, b := range s.brands {
+		tabs[i] = b
+	}
+
+	data := TabPageData{
+		Brand:           brand,
+		Brands:          tabs,
+		Active:          brand,
+		LearningsByType: byType,
+		Root:            s.root,
+		Generated:       timeNow(),
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	s.tmpl["learnings"].Execute(w, data)
 }
 
 func (s *server) handleHarness(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, `<h1>Harness (CIL)</h1><p>Coming soon (Fase 2)</p>`)
+	brand := r.URL.Query().Get("brand")
+	if brand == "" || !s.brandValid(brand) {
+		brand = defaultBrand(s.brands)
+	}
+
+	items := loadHarnessItems(s.root, brand)
+	tabs := make([]string, len(s.brands))
+	for i, b := range s.brands {
+		tabs[i] = b
+	}
+
+	data := TabPageData{
+		Brand:        brand,
+		Brands:       tabs,
+		Active:       brand,
+		HarnessItems: items,
+		Root:         s.root,
+		Generated:    timeNow(),
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	s.tmpl["harness"].Execute(w, data)
 }
 
-// API
+// API · Fase 3 (Edit)
+func (s *server) handleTransition(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "POST only", http.StatusMethodNotAllowed)
+		return
+	}
+	storyID := r.FormValue("story_id")
+	brand := r.FormValue("brand")
+	newState := r.FormValue("state")
+	rationale := r.FormValue("rationale")
+
+	if !s.brandValid(brand) {
+		http.Error(w, "brand inválida", http.StatusBadRequest)
+		return
+	}
+
+	// Update checkpoint
+	if err := writeCheckpoint(s.root, brand, storyID, "state", newState); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Git push
+	if err := gitPush(s.root); err != nil {
+		// Log pero no bloquea
+		log.Printf("git push error: %v", err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(w, `{"status":"ok","story_id":"%s","state":"%s"}`, storyID, newState)
+}
+
+func (s *server) handleChrisInputWrite(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "POST only", http.StatusMethodNotAllowed)
+		return
+	}
+	storyID := r.FormValue("story_id")
+	brand := r.FormValue("brand")
+	verdict := r.FormValue("verdict")
+	notes := r.FormValue("notes")
+
+	if !s.brandValid(brand) {
+		http.Error(w, "brand inválida", http.StatusBadRequest)
+		return
+	}
+
+	if err := appendChrisInput(s.root, brand, storyID, verdict, notes); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := gitPush(s.root); err != nil {
+		log.Printf("git push error: %v", err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(w, `{"status":"ok","verdict":"%s"}`, verdict)
+}
+
+func (s *server) handleReleaseMerge(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "POST only", http.StatusMethodNotAllowed)
+		return
+	}
+	releaseID := r.FormValue("release_id")
+	brand := r.FormValue("brand")
+
+	if !s.brandValid(brand) {
+		http.Error(w, "brand inválida", http.StatusBadRequest)
+		return
+	}
+
+	// Load release
+	releases := loadReleases(s.root, brand)
+	var rel *Release
+	for i := range releases {
+		if releases[i].ID == releaseID {
+			rel = &releases[i]
+			break
+		}
+	}
+	if rel == nil {
+		http.Error(w, "release not found", http.StatusNotFound)
+		return
+	}
+
+	// Archive each story
+	for _, storyID := range rel.Stories {
+		if err := archiveStory(s.root, brand, storyID); err != nil {
+			log.Printf("archive %s error: %v", storyID, err)
+		}
+	}
+
+	// Update release status
+	if err := writeCheckpoint(s.root, brand, releaseID, "status", "shipped"); err != nil {
+		log.Printf("update release error: %v", err)
+	}
+
+	if err := gitPush(s.root); err != nil {
+		log.Printf("git push error: %v", err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(w, `{"status":"ok","release_id":"%s","archived":%d}`, releaseID, len(rel.Stories))
+}
+
+// API · Salud
 func (s *server) handleHealth(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "ok · brands=%d · root=%s\n", len(s.brands), s.root)
 }
@@ -225,6 +393,9 @@ func parseTemplates() map[string]*template.Template {
 	out["roadmap"] = template.Must(template.New("roadmap").Parse(roadmapHTML))
 	out["map"] = template.Must(template.New("map").Parse(mapHTML))
 	out["arquitectura"] = template.Must(template.New("arquitectura").Parse(arquitecturaHTML))
+	out["drift"] = template.Must(template.New("drift").Parse(driftHTML))
+	out["learnings"] = template.Must(template.New("learnings").Parse(learningsHTML))
+	out["harness"] = template.Must(template.New("harness").Parse(harnessHTML))
 	return out
 }
 
@@ -239,6 +410,7 @@ func main() {
 	srv := &server{root: root, brands: brands, tmpl: tmpl}
 
 	mux := http.NewServeMux()
+	// Tabs
 	mux.HandleFunc("/", srv.handleRoot)
 	mux.HandleFunc("/board", srv.handleBoard)
 	mux.HandleFunc("/roadmap", srv.handleRoadmap)
@@ -247,8 +419,13 @@ func main() {
 	mux.HandleFunc("/drift", srv.handleDrift)
 	mux.HandleFunc("/learnings", srv.handleLearnings)
 	mux.HandleFunc("/harness", srv.handleHarness)
+	// APIs
 	mux.HandleFunc("/health", srv.handleHealth)
 	mux.HandleFunc("/events", srv.handleEvents)
+	// Fase 3 · Edit
+	mux.HandleFunc("POST /api/transition", srv.handleTransition)
+	mux.HandleFunc("POST /api/chris-input", srv.handleChrisInputWrite)
+	mux.HandleFunc("POST /api/release/merge", srv.handleReleaseMerge)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -420,6 +597,75 @@ const arquitecturaHTML = baseNav + `
     <div class="title">{{.ID}} — {{.Title}}</div>
     <div class="meta">Status: <span class="tag">{{.Status}}</span></div>
   </div>
+  {{end}}
+</div>
+<footer>{{.Generated}}</footer>
+<script>
+  const es = new EventSource('/events?brand={{.Active}}');
+  document.getElementById('conn').textContent = '● watching {{.Active}}';
+  es.onerror = () => document.getElementById('conn').textContent = '● reconectando…';
+  es.onmessage = (e) => { if (e.data === 'reload') location.reload(); };
+</script>
+`
+
+const driftHTML = baseNav + `
+<div class="content">
+  <h2>Drift (Cap ↔ Código)</h2>
+  {{if .DriftIssues}}
+  <table>
+    <tr><th>Capability</th><th>Issue</th><th>Severity</th></tr>
+    {{range .DriftIssues}}
+    <tr><td>{{.CapID}}</td><td>{{.Issue}}</td><td><span class="tag" style="background:{{if eq .Severity "critical"}}#ef4444{{else if eq .Severity "high"}}#f59e0b{{else}}#eab308{{end}}">{{.Severity}}</span></td></tr>
+    {{end}}
+  </table>
+  {{else}}
+  <p class="empty">Sin divergencias detectadas.</p>
+  {{end}}
+</div>
+<footer>{{.Generated}}</footer>
+<script>
+  const es = new EventSource('/events?brand={{.Active}}');
+  document.getElementById('conn').textContent = '● watching {{.Active}}';
+  es.onerror = () => document.getElementById('conn').textContent = '● reconectando…';
+  es.onmessage = (e) => { if (e.data === 'reload') location.reload(); };
+</script>
+`
+
+const learningsHTML = baseNav + `
+<div class="content">
+  <h2>Learnings</h2>
+  {{range $type, $items := .LearningsByType}}
+  <h3>{{$type}}</h3>
+  {{range $items}}
+  <div class="adr-item">
+    <div class="title">{{.Title}}</div>
+    <div class="meta">{{.Date}} {{if .Promotable}}<span class="tag" style="background:#22c55e">promotable: {{.Promotable}}</span>{{end}}</div>
+  </div>
+  {{end}}
+  {{end}}
+</div>
+<footer>{{.Generated}}</footer>
+<script>
+  const es = new EventSource('/events?brand={{.Active}}');
+  document.getElementById('conn').textContent = '● watching {{.Active}}';
+  es.onerror = () => document.getElementById('conn').textContent = '● reconectando…';
+  es.onmessage = (e) => { if (e.data === 'reload') location.reload(); };
+</script>
+`
+
+const harnessHTML = baseNav + `
+<div class="content">
+  <h2>Harness · CIL 4 Carriles</h2>
+  {{range $carril, $items := .HarnessItems}}
+  {{if $items}}
+  <h3>{{$carril}} · {{len $items}} items</h3>
+  <table>
+    <tr><th>ID</th><th>Title</th><th>Status</th><th>Severity</th></tr>
+    {{range $items}}
+    <tr><td>{{.ID}}</td><td>{{.Title}}</td><td><span class="tag">{{.Status}}</span></td><td>{{.Severity}}</td></tr>
+    {{end}}
+  </table>
+  {{end}}
   {{end}}
 </div>
 <footer>{{.Generated}}</footer>
