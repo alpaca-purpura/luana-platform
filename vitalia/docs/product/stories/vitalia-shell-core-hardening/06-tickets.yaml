@@ -96,6 +96,7 @@ tickets:
     title: "Valeria: tira-avatar estado A (RN-12) + cabecera (+ nueva conv / historial / colapsar propio)"
     surface: FE
     production_code: true
+    state: pushed                      # ★ 2026-06-10 commits incrementales aea54462+a394ccba+2ab62914+0b0dca16 · gates GREEN (tsc 0 · vitest 620 · eslint clean) — finalize orchestrator
     depends_on: [T-1]
     owner_eligibility: [opencode, sonnet, opus]
     assignment:
