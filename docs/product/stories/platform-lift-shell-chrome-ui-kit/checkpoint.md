@@ -15,8 +15,8 @@ cap_change_type: fix
 parent_story: null
 predecessor_story: vitalia-shell-core-hardening   # done 2026-06-11 — chrome hardened, handoff en proposal § Estado post
 
-state: developing
-phase: BUILD_T-K1               # /dev-team pickup 2026-06-11 (autonomous chain) · ready package: 03-arch(+fe) · 04-validators · 05-guidelines · 06-tickets · dispatch-plan
+state: developed
+phase: HANDOFF_TO_AUDITOR       # autonomous: G saltada (opt-in Chris verbatim) · 7 tickets T-K1..K3+T-V1..V2+T-N1+T-G GREEN
 ratified_by_chris: true
 last_artifact: 06-tickets.yaml
 module: shell
@@ -52,10 +52,20 @@ chris_verify:
   rounds: []
 reconciled: false
 
-# ── DoD #37 live-verify (obligatorio per criterios Chris — autonomous NO lo relaja) ──
-dod_live_verified: false                # → true al ejercer colapsar/reabrir/historial/drag live en vitalia :3002 contra chrome del kit
-dod_env: null
-dod_evidence: []
+# ── DoD #37 live-verify (ejercida 2026-06-11 · orchestrator) ──
+dod_live_verified: true
+dod_env: "localhost:3002 (stack dev real make dev-vitalia FE+BE) — Playwright AUTENTICADO real-backend (Clerk dr.demo@vitalialat.com, fixture base.ts anti-burbuja: pageerror/console-error//api≥400/Next-overlay). 2ª herramienta válida #37 (precedente hardening — Chrome MCP no usado)."
+dod_evidence:
+  - action: "Colapsar Valeria → strip 44px sin gap → reabrir por avatar + drag clamp 320 / below-min / vivo post-ciclo + historial EMPUJA 280 + persistencia reload + viewports 1100/800/1280 — TODO contra el chrome CONSUMIDO de @luana/ui-kit (resizer-matrix.spec 7/7 sin retries + collapse-strip-reopen + history-push + resize-and-state)"
+    observed: "84 passed / 1 fixme-deuda / 0 failed (2.5m, run bcahr2m2j 2026-06-11); strip 44px, push real, overhang 0; estado A sobrevive reload (probe: localStorage supervisorOpen='closed' v2 escrito y restaurado)"
+    backend_log: "0 tracebacks + 0 5xx en ventana 60min del run (1741 requests GET/POST servidos)"
+  - action: "'+' nueva conversación archiva al historial + dark per-subtab (lisa/marca + mateo/agenda) + axe AA light/dark + soft-nav loop ×15 embudo→recuperar + cross-tab"
+    observed: "specs verdes en el mismo run; data-theme=dark aplica tokens (computed bg rgb(9,9,11) verificado por probe); 15/15 montajes sin 'Rendered more hooks' (edge-redirects N3 nuevos)"
+    backend_log: "idem — ventana limpia"
+  - action: "Nicolify converge: shell del kit montado con catálogo Luana/Abel/Brenda/Christian/Sara/Norvil (Bif-2: stack :3001 no levantado — criterio degradado per spec)"
+    observed: "tsc 0 + vitest 514/514 (34 files) + arch 46/46 + render component-level del Wire; 30 archivos del mirror legacy BORRADOS (máquina luanaState retirada)"
+    backend_log: "n/a (component-level)"
+verified_at: 2026-06-11T19:05:00Z
 
 # ─────────────────────────────────────────────────────────────
 # Prior-art scan (anti-duplication-refining)
@@ -70,10 +80,10 @@ prior_art_scan:
   decision: "LIFT (mover chrome hardened de vitalia al kit, parametrizar brand-specific) + CONVERGER nicolify al modelo hardened consumiendo kit (mata mirror). N3 NO se rehace (ya en kit)."
 
 next_action: >-
-  /dev-team brand=platform → autonomous build (DAG T-K1→T-K2→T-K3→T-V1→T-V2→T-N1→T-G,
-  model inherit) → /auditor → /pm-luana merge + proposal → migrated. autonomous_mode: true
-  (Chris verbatim). Caps {max_iterations_per_ticket:10, max_audit_iterations:4, walltime:240min};
-  cap excedido → parquear pieza + HANDOFF + seguir.
+  /auditor brand=platform story=platform-lift-shell-chrome-ui-kit (AUTONOMOUS — G saltada,
+  reconciled=false PERO autonomous_mode=true). Lee T-{K1..G}-results + T-V2 § HALLAZGO
+  verde-fantasma hardening (upstream deficiency) + suite 84/85+fixme + dod_evidence.
+  APPROVED → /pm-luana merge + proposal → migrated + archive.
 
 # ── Ready package decisions cerradas por /architect 2026-06-11 ──
 arch_decisions:

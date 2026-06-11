@@ -2,7 +2,9 @@
 
 # Shell-Organism Design Contract — SSoT
 
-> **Versión:** 1.4 · **Fecha:** 2026-06-10 (base 1.0 2026-05-22) · **Estado:** ratificado por Chris · **Branch:** wip/vitalia
+> **Versión:** 1.5 · **Fecha:** 2026-06-11 (base 1.0 2026-05-22) · **Estado:** ratificado por Chris · **Branch:** wip/vitalia
+>
+> **★ v1.5 — EL CHROME VIVE EN `@luana/ui-kit` (lift `platform-lift-shell-chrome-ui-kit`, proposal 2026-06-01 migrated):** la implementación canónica del chrome (ShellLayout(Client) ex-ShellOrganismLayout, Supervisor{Sidebar,CollapsedStrip,History} ex-Valeria*, ChatPanel/ChatHeader/Chat*, Ribbon(Tab), SubTabsBar/SubTab/SubSubTabsBar, TopBarShell, AppPanelSlot, useViewportGuard, createShellStore) vive en `core/@luana/ui-kit/src/organism/shell/` (v0.4.0, brand-agnostic por props+CSS vars). Vitalia lo consume vía `ShellLayoutWire` (`app/[tenantId]/(shell-organism)/_components/`) que inyecta brand data (AGENT_CATALOG, supervisorName='Valeria', testIds legacy, tokens). Este contrato sigue siendo el SSoT del COMPORTAMIENTO + brand data de vitalia; la implementación se versiona en el kit (CHANGELOG 0.4.0). Quedan brand-local: LogoMark, ThemeToggle, Tenant*, SubTabContent (dispatcher), _agent-tw-classes, AddClinicPlaceholderModal.
 >
 > **Propósito:** documento canónico que cementa CADA átomo · molécula · organismo · template del shell-organism agéntico Vitalia. TODA historia de usuario Fase 1 y Fase 2 cita este doc como referencia técnica. Sin este doc, las historias serían textos sueltos sin contrato visual ni funcional verificable.
 >
