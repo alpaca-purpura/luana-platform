@@ -15,8 +15,8 @@ cap_change_type: fix
 parent_story: null
 predecessor_story: vitalia-shell-core-hardening   # done 2026-06-11 — chrome hardened, handoff en proposal § Estado post
 
-state: ready
-phase: READY_PACKAGE_CLOSED     # /architect cerró: 03-arch(+fe) · 04-validators · 05-guidelines · 06-tickets · dispatch-plan
+state: developing
+phase: BUILD_T-K1               # /dev-team pickup 2026-06-11 (autonomous chain) · ready package: 03-arch(+fe) · 04-validators · 05-guidelines · 06-tickets · dispatch-plan
 ratified_by_chris: true
 last_artifact: 06-tickets.yaml
 module: shell
