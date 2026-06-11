@@ -22,7 +22,7 @@
  * Without this, JIT purges those classes silently (tsc green but visual broken).
  * Lesson from T-V1 (vitalia): always add @source after consuming kit organism.
  */
-@source "../../../../../core/@luana/ui-kit/src/organism/shell";
+@source "../../../../core/@luana/ui-kit/src/organism/shell";
 
 /* ─── Tailwind v4 @theme — tokens que generan utilidades ─────────────────── */
 @theme {
