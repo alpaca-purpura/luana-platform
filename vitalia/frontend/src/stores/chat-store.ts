@@ -37,11 +37,11 @@ import { AGENT_CATALOG, DEFAULT_CHAT_AGENT } from "@/lib/agent-catalog";
 import {
   MOCK_MESSAGES,
   MOCK_RESPONSES_BY_AGENT,
-} from "@/components/shared/shell-organism/_mock-messages";
+} from "@/stores/_mock-messages";
 import {
   MOCK_CONVERSATIONS,
   type MockConversation,
-} from "@/components/shared/shell-organism/_mock-conversations";
+} from "@/stores/_mock-conversations";
 
 /** Message role — determines rendering variant */
 export type MessageRole = "bot" | "user" | "delegate" | "thinking";

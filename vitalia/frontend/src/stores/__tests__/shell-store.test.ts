@@ -187,8 +187,10 @@ describe("useShellStore — new state machine (closed|chat + historyOpen additiv
       expect(useShellStore.persist).toBeDefined();
     });
 
-    it("storage key is vitalia-shell-state", () => {
-      expect(useShellStore.persist.getOptions().name).toBe("vitalia-shell-state");
+    // T-V1 dual-store: useShellStore is the @deprecated legacy store.
+    // Its key moved to 'vitalia-shell-state-legacy' (canonical 'vitalia-shell-state' → useShellStoreKit).
+    it("storage key is vitalia-shell-state-legacy (T-V1: legacy key; kit store owns canonical)", () => {
+      expect(useShellStore.persist.getOptions().name).toBe("vitalia-shell-state-legacy");
     });
 
     it("partialize persists valeriaOpen, valeriaPct, mobileDrawerOpen — NOT historyOpen (RN-5/11)", () => {

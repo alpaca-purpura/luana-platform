@@ -25,7 +25,12 @@
 
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import { act } from "@testing-library/react";
-import { useShellStore, SHELL_STORAGE_KEY } from "../shell-store";
+// T-V1 dual-store: useShellStore is the @deprecated legacy store (valeriaOpen API).
+// It now uses SHELL_STORAGE_KEY_LEGACY ('vitalia-shell-state-legacy').
+// SHELL_STORAGE_KEY is the canonical key owned by useShellStoreKit after T-V1.
+// These tests verify legacy SSR-safe hydration + migration (still needed until T-V2).
+import { useShellStore, SHELL_STORAGE_KEY_LEGACY } from "../shell-store";
+const SHELL_STORAGE_KEY = SHELL_STORAGE_KEY_LEGACY;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
