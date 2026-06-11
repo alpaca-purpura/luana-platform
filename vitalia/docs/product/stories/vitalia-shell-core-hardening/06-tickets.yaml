@@ -160,6 +160,7 @@ tickets:
       checks:
         - "arch: frozen-kpi-badge usa next/link, NO <a href> (AC-13)"
         - "e2e SC-21: board→recuperar soft + loop ×15 → montaje + consola limpia (base.ts)"
+    state: pushed                      # ★ 2026-06-10 builder-frontend · AC-13 GREEN (tsc 0 · eslint clean · vitest EmbudoMetrics 6/6 + shell-routes 8/8 + embudo dir 37/37) · revert band-aid <a>→next/link + verify proxy 307 coverage · commit 523fe7c8 · e2e SC-21 ×15 = T-7 (e2e_functional) · Next bump NO (WebSearch/WebFetch disabled en contexto → no verificable; default Decisión A opción 2; bump requeriría escalate Chris)
 
   - id: T-5
     title: "N3 → @luana/ui-kit (Decisión B): migrar staff+embudo a EntityWorkspaceLayout core + RETIRAR EntitySubNavBar brand-local"
