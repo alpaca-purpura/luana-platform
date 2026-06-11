@@ -101,6 +101,9 @@ export function ShellOrganismLayoutClient({
   // shell + tenant stores. StrictMode-safe via ref guard in useStoreHydration.
   // ── ALL hooks called UNCONDITIONALLY at the top before any branch/early-return (D3) ──
   useStoreHydration(useShellStore);
+  // T-3 (vitalia-shell-core-hardening): binary machine drives the panel width.
+  // closed (state A) → panel shrinks to the 44px tira-avatar; chat (B/C) → restore.
+  const valeriaOpen = useShellStore((s) => s.valeriaOpen);
   // Bug #2 fix (vitalia-bugfix-shell-nav-scroll-errors T-4): el tenant-store usa
   // createSsrSafePersistedStore con skipHydration:true; su doc pide rehidratarlo
   // desde el primer componente cliente que lo consume — y nadie lo hacía. Sin esto,
@@ -131,6 +134,9 @@ export function ShellOrganismLayoutClient({
   // the pixel minimum is always respected, then pass it as `"${minValeriaPct}%"`.
   const MIN_VALERIA_PX = VALERIA_MIN_PX;
   const MIN_APP_PX = 480;
+  // T-3: state A tira-avatar fixed width (matches ValeriaCollapsedStrip ~44px). The
+  // Panel is `collapsible collapsedSize={0}` so this bypasses minSize via setLayout.
+  const STRIP_VALERIA_PX = 44;
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(1280); // sane default
 
@@ -178,6 +184,12 @@ export function ShellOrganismLayoutClient({
     Math.max(10, Math.min(70, (px / Math.max(total, 1)) * 100));
   const minValeriaPct = clampPct(MIN_VALERIA_PX, containerWidth);
   const minAppPct = clampPct(MIN_APP_PX, containerWidth);
+  // T-3: raw % of the 44px strip (no [10,70] clamp — the strip is intentionally
+  // narrower than MIN_VALERIA_PX; the Panel collapse bypasses minSize).
+  const stripPct = Math.max(
+    1,
+    (STRIP_VALERIA_PX / Math.max(containerWidth, 1)) * 100,
+  );
   // Default split 30% Valeria / 70% app (03-arch-fe §1.1 estado B + §2: ≥1280 split
   // 30/70 default). Still resizable + persisted (useDefaultLayout / valeriaPct) — this
   // is only the fresh default. T-2: no shellMode branch (web mode eliminated).
@@ -201,8 +213,21 @@ export function ShellOrganismLayoutClient({
       setShellReady(true);
       return;
     }
+    // T-3 state A: Valeria closed → pin the panel to the 44px tira-avatar so the
+    // strip is visible (not 0, which would hide it) and the agent panel takes the
+    // rest. Bypasses minSize via the `collapsible` Panel.
+    if (valeriaOpen === "closed") {
+      groupRef.current.setLayout({
+        [VALERIA_PANEL_ID]: stripPct,
+        [APP_PANEL_ID]: 100 - stripPct,
+      });
+      setShellReady(true);
+      return;
+    }
     const layout = groupRef.current.getLayout();
     const valeriaPct = layout[VALERIA_PANEL_ID];
+    // Open (state B/C): if the persisted/current width is below the floor (e.g. left
+    // over from the strip), snap up to minValeriaPct so the chat is legible.
     if (valeriaPct !== undefined && valeriaPct < minValeriaPct) {
       groupRef.current.setLayout({
         [VALERIA_PANEL_ID]: minValeriaPct,
@@ -210,7 +235,7 @@ export function ShellOrganismLayoutClient({
       });
     }
     setShellReady(true);
-  }, [containerWidth, minValeriaPct, groupRef, isLg]);
+  }, [containerWidth, minValeriaPct, groupRef, isLg, valeriaOpen, stripPct]);
 
   // Persist layout across page reloads via localStorage.
   // Safe to call directly: this component is client-only via dynamic({ssr:false}).
