@@ -1,10 +1,21 @@
 ---
 proposal_id: 2026-06-01-lift-shell-organism-to-core
-state: accepted                # proposed | under_review | accepted | rejected | migrated
+state: migrated                # proposed | under_review | accepted | rejected | migrated
 opened_date: 2026-06-01
 opened_by: /pm-luana
 ratified_by: Chris             # dirección 2026-06-01 + APPROVED formal del lift 2026-06-06 (target reconciliado → @luana/ui-kit). Ejecución gated tras 4 stories abiertas
 ratified_date: 2026-06-06
+migrated_date: 2026-06-11
+migrated_story: docs/archive/2026/stories/platform-lift-shell-chrome-ui-kit/   # cadena autónoma ratificada Chris 2026-06-11
+migrated_semver: "0.4.0"       # minor additivo (organism/shell nuevo; exports previos intactos; deps react-resizable-panels+zustand)
+lift_summary: >-
+  Chrome shell-organism completo (30+ componentes) liftado a core/@luana/ui-kit/src/organism/shell/
+  brand-agnostic (props+CSS vars: supervisorName/agentCatalog/getAgentClasses/testIds/slots;
+  createShellStore factory SSR-safe vía @luana/hooks con migrate inyectable). Vitalia consume vía
+  ShellLayoutWire (chrome local BORRADO, suite e2e 84/85+fixme + resizer-matrix 7/7 contra el kit);
+  nicolify CONVERGE (máquina legacy luanaState retirada, 30 archivos, 514/514) — mirror cross-brand
+  MUERTO (basename-scan chrome = 0, allowlist → ∅). Comunify/lupulo: opt-in futuro (kit listo).
+  Evidencia: docs/archive/2026/stories/platform-lift-shell-chrome-ui-kit/{07-merge.md,CHECKPOINTS.md}.
 
 # Origen — mirror cross-brand CONCRETO (ya no preventive)
 origin_learnings:

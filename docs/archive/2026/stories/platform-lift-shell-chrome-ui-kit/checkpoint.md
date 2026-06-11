@@ -15,8 +15,10 @@ cap_change_type: fix
 parent_story: null
 predecessor_story: vitalia-shell-core-hardening   # done 2026-06-11 — chrome hardened, handoff en proposal § Estado post
 
-state: reviewing
-phase: AUDIT_IN_PROGRESS        # /auditor pickup 2026-06-11 (autonomous, G saltada) · 7 tickets GREEN
+state: done
+phase: MERGED
+done_at: 2026-06-11
+merge_artifact: 07-merge.md     # APPROVED (CHECKPOINTS C1-C5) → merge /pm-luana + archive R2 + proposal migrated
 ratified_by_chris: true
 last_artifact: 06-tickets.yaml
 module: shell
@@ -80,10 +82,9 @@ prior_art_scan:
   decision: "LIFT (mover chrome hardened de vitalia al kit, parametrizar brand-specific) + CONVERGER nicolify al modelo hardened consumiendo kit (mata mirror). N3 NO se rehace (ya en kit)."
 
 next_action: >-
-  /auditor brand=platform story=platform-lift-shell-chrome-ui-kit (AUTONOMOUS — G saltada,
-  reconciled=false PERO autonomous_mode=true). Lee T-{K1..G}-results + T-V2 § HALLAZGO
-  verde-fantasma hardening (upstream deficiency) + suite 84/85+fixme + dod_evidence.
-  APPROVED → /pm-luana merge + proposal → migrated + archive.
+  DONE 2026-06-11. Kit 0.4.0 organism/shell shipped; vitalia consume; nicolify converge;
+  proposal 2026-06-01-lift-shell-organism → migrated. Deuda ruteada: CIL L3 inbox-dark +
+  tsc kit-wide test-types · HB-68 gate anti-shell-colgado. Opt-in futuro: comunify/lupulo.
 
 # ── Ready package decisions cerradas por /architect 2026-06-11 ──
 arch_decisions:
