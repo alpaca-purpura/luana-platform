@@ -28,7 +28,6 @@
  */
 
 import { useEffect } from "react";
-import { useShellStore } from "@/stores/shell-store";
 
 /** Minimum viewport width required to display valeriaState='full' comfortably.
  *  Calculation: Valeria sidebar (620px) + resize handle (~4px) + app panel (480px) = 1104px.
@@ -57,47 +56,20 @@ export const INLINE_SPLIT_MIN_VIEWPORT = 1024;
  * Usage: call inside 'use client' components only (needs window access).
  */
 export function useViewportGuard(): void {
-  const setValeriaState = useShellStore((s) => s.setValeriaState);
-
+  // T-1 (vitalia-shell-core-hardening) minimal compile fixup — NO re-layout.
+  //
+  // The legacy guard forced the 3-state valeriaState 'full' → 'rail' when the
+  // viewport was [1024, 1104) (full split didn't fit). The new machine is binary
+  // (valeriaOpen: closed | chat) — there is NO intermediate "narrow-but-open"
+  // state to clamp to, so the one-way clamp has NO equivalent here. Forcing
+  // 'chat' → 'closed' on a narrow desktop would HIDE Valeria (a behavior change
+  // out of T-1 scope: no re-layout). The viewport-aware sizing rework belongs to
+  // T-2/T-3. For T-1 this guard is a deliberate no-op: it keeps its public API +
+  // exported breakpoint constants (still consumed elsewhere) without touching the
+  // store. The component-level min-px logic (ShellOrganismLayoutClient) already
+  // clamps the split width via ResizeObserver, so layout still respects minimums.
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    let rafId = 0;
-
-    const check = (): void => {
-      const w = window.innerWidth;
-
-      // No-op: drawer zone (< lg / 1024) — tablet + mobile. Valeria is NOT inline
-      // here (it renders as a drawer/overlay), so valeriaState is irrelevant to the
-      // inline split and must NOT be touched (Point 3, 2026-06-04). The mobile/tablet
-      // drawer open/closed is governed SOLELY by `mobileDrawerOpen` (independent slice,
-      // D5 ADR-vitalia-006); the burger opens it, the close handler closes it.
-      if (w < INLINE_SPLIT_MIN_VIEWPORT) return;
-
-      // No-op: wide desktop — full state fits without clamping
-      if (w >= FULL_STATE_MIN_VIEWPORT) return;
-
-      // [1024, 1104): inline but 'full' won't fit comfortably → one-way force 'full' → 'rail'
-      // Read current state fresh each check to avoid stale closure
-      const currentState = useShellStore.getState().valeriaState;
-      if (currentState === "full") {
-        setValeriaState("rail");
-      }
-    };
-
-    const onResize = (): void => {
-      cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(check);
-    };
-
-    // Initial check on mount
-    check();
-
-    window.addEventListener("resize", onResize);
-
-    return () => {
-      window.removeEventListener("resize", onResize);
-      cancelAnimationFrame(rafId);
-    };
-  }, [setValeriaState]);
+    // Intentionally inert in the binary machine (closed | chat). See header.
+    return;
+  }, []);
 }

@@ -3,11 +3,18 @@
  * vitalia-shell-dual-mount-a11y-fix T-1
  *
  * gherkin_coverage (from 06-tickets.yaml):
- * - SC-1: shellMode=agentic → 1 main#main-content + 1 app-panel-slot
- * - SC-2: shellMode=web → 1 main, 1 slot, grid estático, valeria presente, no panel-group
- * - SC-3: valeriaState in {full,rail} → no "Rendered more hooks" (hook-count stable)
+ * - SC-1: agentic split → 1 main#main-content + 1 app-panel-slot
+ * - SC-3: valeriaOpen in {closed,chat} → no "Rendered more hooks" (hook-count stable)
  * - SC-4: mobile viewport → single slot (no rama mobile separada con AppPanelSlot extra)
  * - SC-5: el <main> único tiene id=main-content + tabIndex=-1 + aria-label='Contenido principal'
+ *
+ * REWRITTEN for vitalia-shell-core-hardening T-1: the store machine changed
+ * (valeriaState collapsed|rail|full + shellMode → valeriaOpen closed|chat +
+ * additive historyOpen). shellMode is ELIMINATED (RN-1/AC-1) — the shell is
+ * always-agentic now (the legacy "web" static-grid branch is dead and pinned to
+ * the agentic PanelGroup render). Tests are updated to seed the new fields; the
+ * former "web mode static grid" assertions are inverted to assert the always-on
+ * agentic PanelGroup (no re-layout — T-1 directive).
  *
  * Architecture decisions D1-D5 from 03-arch.md:
  * D1: ONE <main id="main-content"> wrapping ALL chrome variants
@@ -162,7 +169,7 @@ describe("ShellOrganismLayout — import contract", () => {
 // These were RED against the old triple-main; they must be GREEN after the fix.
 describe("ShellOrganismLayout — single-main + single-slot invariants (D1 + D2)", () => {
   beforeEach(() => {
-    useShellStore.setState({ valeriaState: "full", shellMode: "agentic" });
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: true });
   });
 
   it("renders EXACTLY 1 <main id='main-content'> in agentic mode (D1 — was 2 with triple-main)", async () => {
@@ -189,8 +196,8 @@ describe("ShellOrganismLayout — single-main + single-slot invariants (D1 + D2)
     expect(slots.length).toBe(1);
   });
 
-  it("renders EXACTLY 1 <main id='main-content'> in web mode (D1)", async () => {
-    useShellStore.setState({ valeriaState: "rail", shellMode: "web" });
+  it("renders EXACTLY 1 <main id='main-content'> when Valeria collapsed (D1)", async () => {
+    useShellStore.setState({ valeriaOpen: "closed", historyOpen: false });
     const { ShellOrganismLayoutClient } =
       await import("./ShellOrganismLayoutClient");
     const { container } = render(
@@ -202,8 +209,8 @@ describe("ShellOrganismLayout — single-main + single-slot invariants (D1 + D2)
     expect(mains.length).toBe(1);
   });
 
-  it("renders EXACTLY 1 <AppPanelSlot> in web mode (D2)", async () => {
-    useShellStore.setState({ valeriaState: "rail", shellMode: "web" });
+  it("renders EXACTLY 1 <AppPanelSlot> when Valeria collapsed (D2)", async () => {
+    useShellStore.setState({ valeriaOpen: "closed", historyOpen: false });
     const { ShellOrganismLayoutClient } =
       await import("./ShellOrganismLayoutClient");
     render(
@@ -228,10 +235,10 @@ describe("ShellOrganismLayout — single-main + single-slot invariants (D1 + D2)
   });
 });
 
-// ★ D3 — hook-count stability: valeriaState transitions must not trigger "more hooks" crash
-describe("ShellOrganismLayout — hook-count stability (D3 — valeriaState transitions)", () => {
-  it("renders without error when valeriaState='full'", async () => {
-    useShellStore.setState({ valeriaState: "full", shellMode: "agentic" });
+// ★ D3 — hook-count stability: valeriaOpen transitions must not trigger "more hooks" crash
+describe("ShellOrganismLayout — hook-count stability (D3 — valeriaOpen transitions)", () => {
+  it("renders without error when valeriaOpen='chat' + historyOpen=true", async () => {
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: true });
     const { ShellOrganismLayoutClient } =
       await import("./ShellOrganismLayoutClient");
     expect(() =>
@@ -243,8 +250,8 @@ describe("ShellOrganismLayout — hook-count stability (D3 — valeriaState tran
     ).not.toThrow();
   });
 
-  it("renders without error when valeriaState='rail'", async () => {
-    useShellStore.setState({ valeriaState: "rail", shellMode: "agentic" });
+  it("renders without error when valeriaOpen='chat' + historyOpen=false", async () => {
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: false });
     const { ShellOrganismLayoutClient } =
       await import("./ShellOrganismLayoutClient");
     expect(() =>
@@ -256,8 +263,8 @@ describe("ShellOrganismLayout — hook-count stability (D3 — valeriaState tran
     ).not.toThrow();
   });
 
-  it("renders without error when valeriaState='collapsed'", async () => {
-    useShellStore.setState({ valeriaState: "collapsed", shellMode: "agentic" });
+  it("renders without error when valeriaOpen='closed'", async () => {
+    useShellStore.setState({ valeriaOpen: "closed", historyOpen: false });
     const { ShellOrganismLayoutClient } =
       await import("./ShellOrganismLayoutClient");
     expect(() =>
@@ -273,7 +280,7 @@ describe("ShellOrganismLayout — hook-count stability (D3 — valeriaState tran
 // ★ SC-5 — aria invariants on the single <main>
 describe("ShellOrganismLayout — aria invariants on single <main> (SC-5)", () => {
   beforeEach(() => {
-    useShellStore.setState({ valeriaState: "full", shellMode: "agentic" });
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: true });
   });
 
   it("single <main> has id='main-content'", async () => {
@@ -317,7 +324,7 @@ describe("ShellOrganismLayout — aria invariants on single <main> (SC-5)", () =
 // Preserved SC-1 tests — agentic desktop renders correct chrome
 describe("ShellOrganismLayout — default agentic render (SC-1)", () => {
   beforeEach(() => {
-    useShellStore.setState({ valeriaState: "full", shellMode: "agentic" });
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: true });
   });
 
   it("renders TopBarGlobal (banner role)", async () => {
@@ -402,13 +409,13 @@ describe("ShellOrganismLayout — default agentic render (SC-1)", () => {
   });
 });
 
-// Preserved SC-3 — web mode static grid
-describe("ShellOrganismLayout — web mode static grid (SC-3 edge)", () => {
-  beforeEach(() => {
-    useShellStore.setState({ valeriaState: "rail", shellMode: "web" });
-  });
-
-  it("renders grid static layout (no PanelGroup) when shellMode='web'", async () => {
+// ★ shellMode ELIMINATED (RN-1/AC-1) — the shell is ALWAYS agentic now. The legacy
+// "web mode static grid" branch is dead: the PanelGroup is always rendered
+// regardless of the (former) shellMode. These tests INVERT the old web-mode
+// assertions to lock in the always-on agentic PanelGroup (T-1 — no re-layout).
+describe("ShellOrganismLayout — always-agentic PanelGroup (RN-1 shellMode eliminated)", () => {
+  it("renders the resizable PanelGroup even when Valeria is collapsed", async () => {
+    useShellStore.setState({ valeriaOpen: "closed", historyOpen: false });
     const { ShellOrganismLayoutClient } =
       await import("./ShellOrganismLayoutClient");
     render(
@@ -416,12 +423,13 @@ describe("ShellOrganismLayout — web mode static grid (SC-3 edge)", () => {
         <div />
       </ShellOrganismLayoutClient>,
     );
-    // In web mode, no PanelGroup/resizable-panels is rendered (grid static layout)
-    expect(screen.queryByTestId("panel-group")).not.toBeInTheDocument();
-    expect(screen.queryByTestId("panel-resize-handle")).not.toBeInTheDocument();
+    // No more static "web" grid — the agentic PanelGroup is always present.
+    expect(screen.getByTestId("panel-group")).toBeInTheDocument();
+    expect(screen.getByTestId("panel-resize-handle")).toBeInTheDocument();
   });
 
-  it("still renders valeria-sidebar in web mode", async () => {
+  it("still renders valeria-sidebar regardless of valeriaOpen", async () => {
+    useShellStore.setState({ valeriaOpen: "closed", historyOpen: false });
     const { ShellOrganismLayoutClient } =
       await import("./ShellOrganismLayoutClient");
     render(
@@ -433,10 +441,10 @@ describe("ShellOrganismLayout — web mode static grid (SC-3 edge)", () => {
   });
 });
 
-// Preserved D3 — MIN_VALERIA_PX invariant
-describe("ShellOrganismLayout — MIN_VALERIA_PX invariant (D3)", () => {
-  it("MIN_VALERIA_PX === 580 when valeriaState='full'", async () => {
-    useShellStore.setState({ valeriaState: "full", shellMode: "agentic" });
+// MIN_VALERIA_PX invariant — drives off valeriaOpen now (chat → 580 floor, else 360)
+describe("ShellOrganismLayout — MIN_VALERIA_PX invariant (valeriaOpen)", () => {
+  it("renders sidebar when valeriaOpen='chat' (MIN_VALERIA_PX floor 580)", async () => {
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: true });
     const { ShellOrganismLayoutClient } =
       await import("./ShellOrganismLayoutClient");
     render(
@@ -447,8 +455,8 @@ describe("ShellOrganismLayout — MIN_VALERIA_PX invariant (D3)", () => {
     expect(screen.queryByTestId("valeria-sidebar")).toBeInTheDocument();
   });
 
-  it("MIN_VALERIA_PX === 360 when valeriaState='rail'", async () => {
-    useShellStore.setState({ valeriaState: "rail", shellMode: "agentic" });
+  it("renders sidebar when valeriaOpen='closed' (MIN_VALERIA_PX floor 360)", async () => {
+    useShellStore.setState({ valeriaOpen: "closed", historyOpen: false });
     const { ShellOrganismLayoutClient } =
       await import("./ShellOrganismLayoutClient");
     render(

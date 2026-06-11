@@ -48,24 +48,29 @@ interface ConversationModeButtonProps {
 export function ConversationModeButton({
   className,
 }: ConversationModeButtonProps) {
-  const valeriaState = useShellStore((s) => s.valeriaState);
-  const setValeriaState = useShellStore((s) => s.setValeriaState);
-  const priorValeriaState = useInboxStore((s) => s.priorValeriaState);
+  // T-1 (vitalia-shell-core-hardening) minimal compile fixup — NO re-layout.
+  // The legacy 3-state valeriaState (collapsed|rail|full) was replaced by the new
+  // machine valeriaOpen (closed|chat). "Conversation mode" = Valeria closed so the
+  // inbox takes full width. Map: collapsed → closed; restore → chat (openValeria).
+  // The inbox-store priorValeriaState slot stays untouched (its own type); we simply
+  // stop feeding it shell-legacy values. Full UX rework lands in T-2/T-3.
+  const valeriaOpen = useShellStore((s) => s.valeriaOpen);
+  const openValeria = useShellStore((s) => s.openValeria);
+  const collapseValeria = useShellStore((s) => s.collapseValeria);
   const setPriorValeriaState = useInboxStore((s) => s.setPriorValeriaState);
 
-  const isConversationMode = valeriaState === "collapsed";
+  const isConversationMode = valeriaOpen === "closed";
 
   const handleToggle = useCallback(() => {
     if (isConversationMode) {
-      // Restore prior state (rail → full fallback)
-      setValeriaState(priorValeriaState ?? "rail");
+      // Restore: reopen Valeria in chat (RN-5 — history never auto-restored)
+      openValeria();
       setPriorValeriaState(null);
     } else {
-      // Save current state before collapsing
-      setPriorValeriaState(valeriaState);
-      setValeriaState("collapsed");
+      // Collapse Valeria → inbox full width
+      collapseValeria();
     }
-  }, [isConversationMode, valeriaState, priorValeriaState, setValeriaState, setPriorValeriaState]);
+  }, [isConversationMode, openValeria, collapseValeria, setPriorValeriaState]);
 
   return (
     <button

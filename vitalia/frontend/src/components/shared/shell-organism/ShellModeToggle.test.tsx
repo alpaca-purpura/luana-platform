@@ -57,13 +57,17 @@ describe("ShellModeToggle", () => {
     expect(screen.getByText("Agéntico")).toBeInTheDocument();
   });
 
-  it("renders 'Web' label when shellMode='web'", () => {
+  it("[T-1/RN-1] never renders 'Web' label — shellMode eliminated, chip pinned agentic", () => {
+    // T-1 (vitalia-shell-core-hardening): web mode + shellMode were removed from
+    // the store (AC-1/RN-1). The chip is hardcoded agentic and reads no store —
+    // even if the store somehow yielded 'web', the label stays 'Agéntico'.
     mockUseShellStore.mockImplementation(
       (selector: (s: { shellMode: string }) => unknown) =>
         selector({ shellMode: "web" }),
     );
     render(<ShellModeToggle />);
-    expect(screen.getByText("Web")).toBeInTheDocument();
+    expect(screen.queryByText("Web")).not.toBeInTheDocument();
+    expect(screen.getByText("Agéntico")).toBeInTheDocument();
   });
 
   it("has data-testid='shell-mode-toggle'", () => {
@@ -94,14 +98,19 @@ describe("ShellModeToggle", () => {
     );
   });
 
-  it("has aria-label containing 'web' when mode is web", () => {
+  it("[T-1/RN-1] aria-label stays agéntico — never 'web' (shellMode eliminated)", () => {
+    // T-1: web mode removed. aria-label is always the agentic variant.
     mockUseShellStore.mockImplementation(
       (selector: (s: { shellMode: string }) => unknown) =>
         selector({ shellMode: "web" }),
     );
     render(<ShellModeToggle />);
     const btn = screen.getByTestId("shell-mode-toggle");
-    expect(btn).toHaveAttribute("aria-label", expect.stringContaining("web"));
+    expect(btn).toHaveAttribute(
+      "aria-label",
+      expect.stringContaining("agéntico"),
+    );
+    expect(btn.getAttribute("aria-label")).not.toContain("web activo");
   });
 
   it("renders icon svg with aria-hidden when mode is agentic", () => {

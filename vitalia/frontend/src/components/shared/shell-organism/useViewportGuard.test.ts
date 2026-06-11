@@ -1,211 +1,137 @@
 /**
- * useViewportGuard.test.ts — TDD RED-first tests for useViewportGuard hook
+ * useViewportGuard.test.ts — tests for useViewportGuard hook
  * F1-S4 vitalia-fase1-shell-layout-5050 — T-3
  *
- * gherkin_coverage:
- * - SC-2 negative: viewport <1024 (tablet/mobile = drawer) → no-op, Valeria is overlay
- * - SC-3 edge: viewport [1024, 1104) + state='full' → forces 'rail' (one-way guard)
- * - SC-3 edge: no auto-restore when viewport grows back (one-way only)
- * - SC-3 edge: viewport >=1104 → no-op (full fits without clamp)
- *
- * Updated bugfix-shell-valeria-responsive Point 3 (Chris 2026-06-04):
- * - FULL_STATE_MIN_VIEWPORT = 1104 (valeria 620 + handle ~4 + app 480)
- * - INLINE_SPLIT_MIN_VIEWPORT = 1024 (Tailwind `lg`) — below it Valeria is a drawer
- * - One-way: full → rail when [1024, 1104). No auto-restore to full.
- * - No-op when w < 1024 (tablet + mobile = drawer/overlay, full width agent)
- * - No-op when w >= 1104 (full fits)
- * - Cleans up: removeEventListener + cancelAnimationFrame on unmount
+ * REWRITTEN for vitalia-shell-core-hardening T-1: the store machine changed
+ * (valeriaState collapsed|rail|full + shellMode → valeriaOpen closed|chat +
+ * additive historyOpen). The legacy one-way viewport clamp (full → rail when
+ * [1024, 1104)) has NO equivalent in the binary machine — there is no
+ * intermediate "narrow-but-open" state to clamp to, and forcing chat → closed
+ * would HIDE Valeria (a behavior change out of T-1 scope: no re-layout). For T-1
+ * the hook is a deliberate INERT no-op: it keeps its public API + exported
+ * breakpoint constants without touching the store. These tests assert the
+ * inert contract — the store is NEVER mutated regardless of viewport — plus the
+ * constants and clean mount/unmount. The viewport-aware sizing rework is T-2/T-3.
  *
  * downstream-regression-na: brand-local hook test; no cross-brand consumers
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { renderHook, act } from "@testing-library/react";
+import { renderHook } from "@testing-library/react";
 import { useShellStore } from "@/stores/shell-store";
-
-// We import the hook after setting up mocks — it doesn't exist yet (RED phase)
-// import { useViewportGuard } from "./useViewportGuard";
 
 describe("useViewportGuard — import contract", () => {
   it("module exports useViewportGuard as named export", async () => {
     const mod = await import("./useViewportGuard");
     expect(typeof mod.useViewportGuard).toBe("function");
   });
+
+  it("re-exports breakpoint constants (consumed elsewhere)", async () => {
+    const mod = await import("./useViewportGuard");
+    expect(mod.FULL_STATE_MIN_VIEWPORT).toBe(1104);
+    expect(mod.MOBILE_BREAKPOINT).toBe(768);
+    expect(mod.INLINE_SPLIT_MIN_VIEWPORT).toBe(1024);
+  });
 });
 
-describe("useViewportGuard — no-op when viewport >= 1104 (SC-3)", () => {
+describe("useViewportGuard — inert no-op contract (T-1 binary machine)", () => {
   beforeEach(() => {
-    // Reset store to 'full'
-    useShellStore.setState({ valeriaState: "full", shellMode: "agentic" });
-    // Mock innerWidth: desktop wide (>= 1104)
+    useShellStore.setState({
+      valeriaOpen: "chat",
+      historyOpen: true,
+      mobileDrawerOpen: false,
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("does NOT mutate valeriaOpen at narrow desktop viewport=1050", async () => {
+    Object.defineProperty(window, "innerWidth", {
+      writable: true,
+      configurable: true,
+      value: 1050,
+    });
+    const { useViewportGuard } = await import("./useViewportGuard");
+
+    renderHook(() => useViewportGuard());
+
+    // Binary machine: no clamp — chat stays chat (no re-layout in T-1).
+    expect(useShellStore.getState().valeriaOpen).toBe("chat");
+  });
+
+  it("does NOT mutate valeriaOpen at wide desktop viewport=1280", async () => {
     Object.defineProperty(window, "innerWidth", {
       writable: true,
       configurable: true,
       value: 1280,
     });
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it("does not change valeriaState='full' when viewport=1280 (>= 1104)", async () => {
     const { useViewportGuard } = await import("./useViewportGuard");
 
     renderHook(() => useViewportGuard());
 
-    // State should remain 'full' — wide viewport allows it
-    expect(useShellStore.getState().valeriaState).toBe("full");
-  });
-});
-
-describe("useViewportGuard — forces 'rail' when viewport [1024, 1104) + state='full' (SC-3 / Point 3)", () => {
-  beforeEach(() => {
-    useShellStore.setState({ valeriaState: "full", shellMode: "agentic" });
-    // 1050 is inline (>= lg 1024) but < FULL_STATE_MIN_VIEWPORT (1104) → 'full' won't fit
-    Object.defineProperty(window, "innerWidth", {
-      writable: true,
-      configurable: true,
-      value: 1050,
-    });
+    expect(useShellStore.getState().valeriaOpen).toBe("chat");
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it("forces valeriaState from 'full' to 'rail' at viewport=1050", async () => {
-    const { useViewportGuard } = await import("./useViewportGuard");
-
-    renderHook(() => useViewportGuard());
-
-    // Force should happen immediately on mount (initial check)
-    expect(useShellStore.getState().valeriaState).toBe("rail");
-  });
-
-  it("no-op when state is already 'rail' at viewport=1050", async () => {
-    useShellStore.setState({ valeriaState: "rail", shellMode: "agentic" });
-    const { useViewportGuard } = await import("./useViewportGuard");
-
-    renderHook(() => useViewportGuard());
-
-    // Already 'rail' — should remain 'rail'
-    expect(useShellStore.getState().valeriaState).toBe("rail");
-  });
-});
-
-describe("useViewportGuard — no auto-restore on viewport grow (SC-3 edge)", () => {
-  beforeEach(() => {
-    useShellStore.setState({ valeriaState: "full", shellMode: "agentic" });
-    Object.defineProperty(window, "innerWidth", {
-      writable: true,
-      configurable: true,
-      value: 1050,
-    });
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it("state stays 'rail' after viewport grows from 1050 to 1280", async () => {
-    const { useViewportGuard } = await import("./useViewportGuard");
-
-    renderHook(() => useViewportGuard());
-
-    // Guard forced 'rail' at w=1050
-    expect(useShellStore.getState().valeriaState).toBe("rail");
-
-    // Now simulate viewport resize to wide desktop
-    act(() => {
-      Object.defineProperty(window, "innerWidth", {
-        writable: true,
-        configurable: true,
-        value: 1280,
-      });
-      window.dispatchEvent(new Event("resize"));
-    });
-
-    // One-way: state stays 'rail' (no auto-restore to 'full')
-    expect(useShellStore.getState().valeriaState).toBe("rail");
-  });
-});
-
-describe("useViewportGuard — no-op for valeriaState when mobile viewport < 768 (SC-2 + D5)", () => {
-  beforeEach(() => {
-    useShellStore.setState({ valeriaState: "full", shellMode: "agentic", mobileDrawerOpen: false });
-    Object.defineProperty(window, "innerWidth", {
-      writable: true,
-      configurable: true,
-      value: 375,
-    });
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it("no-op for valeriaState when viewport=375 (mobile < 768)", async () => {
-    const { useViewportGuard } = await import("./useViewportGuard");
-
-    renderHook(() => useViewportGuard());
-
-    // No-op: valeriaState stays unchanged (hook does NOT touch valeriaState on mobile)
-    expect(useShellStore.getState().valeriaState).toBe("full");
-  });
-
-  it("[D5] hook does NOT touch mobileDrawerOpen on mobile mount (T-4)", async () => {
-    // D5 (ADR-vitalia-006): mobileDrawerOpen is governed by burger/close actions only.
-    // useViewportGuard has ZERO role in mobileDrawerOpen governance.
-    // Default mobileDrawerOpen=false means drawer starts CLOSED on fresh mobile mount.
-    const { useViewportGuard } = await import("./useViewportGuard");
-
-    renderHook(() => useViewportGuard());
-
-    // mobileDrawerOpen must remain false (hook did NOT touch it)
-    expect(useShellStore.getState().mobileDrawerOpen).toBe(false);
-  });
-
-  it("[D5] hook does NOT open mobile drawer when valeriaState='full' on mobile (T-4)", async () => {
-    // Critical: valeriaState='full' on desktop MUST NOT translate to mobileDrawerOpen=true
-    // (that was Bug #2 coupling). The hook must leave mobileDrawerOpen untouched.
-    useShellStore.setState({ valeriaState: "full", shellMode: "agentic", mobileDrawerOpen: false });
-    const { useViewportGuard } = await import("./useViewportGuard");
-
-    renderHook(() => useViewportGuard());
-
-    // Mobile drawer stays closed (fresh default) — desktop 'full' did NOT auto-open it
-    expect(useShellStore.getState().mobileDrawerOpen).toBe(false);
-  });
-});
-
-describe("useViewportGuard — no-op in tablet drawer zone [768, 1024) (Point 3)", () => {
-  beforeEach(() => {
-    useShellStore.setState({ valeriaState: "full", shellMode: "agentic" });
+  it("does NOT mutate valeriaOpen at tablet viewport=800", async () => {
     Object.defineProperty(window, "innerWidth", {
       writable: true,
       configurable: true,
       value: 800,
     });
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it("no-op for valeriaState when viewport=800 (tablet < lg) — Valeria is a drawer there", async () => {
     const { useViewportGuard } = await import("./useViewportGuard");
 
     renderHook(() => useViewportGuard());
 
-    // Tablet is drawer zone → the inline guard must NOT touch valeriaState
-    expect(useShellStore.getState().valeriaState).toBe("full");
+    expect(useShellStore.getState().valeriaOpen).toBe("chat");
+  });
+
+  it("does NOT mutate valeriaOpen at mobile viewport=375", async () => {
+    Object.defineProperty(window, "innerWidth", {
+      writable: true,
+      configurable: true,
+      value: 375,
+    });
+    const { useViewportGuard } = await import("./useViewportGuard");
+
+    renderHook(() => useViewportGuard());
+
+    expect(useShellStore.getState().valeriaOpen).toBe("chat");
+  });
+
+  it("[RN-5/RN-11] does NOT touch historyOpen at any viewport", async () => {
+    Object.defineProperty(window, "innerWidth", {
+      writable: true,
+      configurable: true,
+      value: 1050,
+    });
+    const { useViewportGuard } = await import("./useViewportGuard");
+
+    renderHook(() => useViewportGuard());
+
+    // historyOpen is additive UI state — the guard never touches it.
+    expect(useShellStore.getState().historyOpen).toBe(true);
+  });
+
+  it("[D5] does NOT touch mobileDrawerOpen at any viewport", async () => {
+    Object.defineProperty(window, "innerWidth", {
+      writable: true,
+      configurable: true,
+      value: 375,
+    });
+    const { useViewportGuard } = await import("./useViewportGuard");
+
+    renderHook(() => useViewportGuard());
+
+    // Mobile drawer is governed solely by burger/close actions (D5). Inert here.
+    expect(useShellStore.getState().mobileDrawerOpen).toBe(false);
   });
 });
 
-describe("useViewportGuard — cleanup on unmount", () => {
+describe("useViewportGuard — clean mount / unmount (inert)", () => {
   beforeEach(() => {
-    useShellStore.setState({ valeriaState: "full", shellMode: "agentic" });
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: false });
     Object.defineProperty(window, "innerWidth", {
       writable: true,
       configurable: true,
@@ -217,16 +143,20 @@ describe("useViewportGuard — cleanup on unmount", () => {
     vi.restoreAllMocks();
   });
 
-  it("removes resize event listener on unmount", async () => {
-    const removeEventListenerSpy = vi.spyOn(window, "removeEventListener");
+  it("mounts and unmounts without throwing", async () => {
+    const { useViewportGuard } = await import("./useViewportGuard");
+
+    const { unmount } = renderHook(() => useViewportGuard());
+    expect(() => unmount()).not.toThrow();
+  });
+
+  it("does NOT mutate the store across mount + unmount", async () => {
     const { useViewportGuard } = await import("./useViewportGuard");
 
     const { unmount } = renderHook(() => useViewportGuard());
     unmount();
 
-    expect(removeEventListenerSpy).toHaveBeenCalledWith(
-      "resize",
-      expect.any(Function),
-    );
+    expect(useShellStore.getState().valeriaOpen).toBe("chat");
+    expect(useShellStore.getState().historyOpen).toBe(false);
   });
 });

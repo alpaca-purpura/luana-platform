@@ -38,15 +38,29 @@ import { createPortal } from "react-dom";
 import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { useShellStore } from "@/stores/shell-store";
-import type { ValeriaState } from "@/stores/shell-store";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { ValeriaRail } from "./ValeriaRail";
 import { ValeriaHistory } from "./ValeriaHistory";
 import { ValeriaChat } from "./ValeriaChat";
 
-// ─── Valid states ─────────────────────────────────────────────────────────────
+// ─── T-1 minimal compile fixup — legacy 3-state → new binary machine ──────────
+//
+// vitalia-shell-core-hardening T-1 replaced the legacy 3-state valeriaState
+// (collapsed | rail | full) with the binary machine valeriaOpen (closed | chat)
+// + additive historyOpen. This component is a heavy legacy consumer; per the
+// ticket directive ("update SOLO el import/uso mínimo para mantener verde, sin
+// re-layout") we map the old render shape onto the new store WITHOUT re-layout:
+//
+//   valeriaOpen "chat"  + historyOpen true  → render History | Chat (old "full")
+//   valeriaOpen "chat"  + historyOpen false → render Rail    | Chat (old "rail")
+//   valeriaOpen "closed"                      → render Rail    | Chat (old "rail"
+//     equiv — T-1 keeps Valeria visible as a rail; full retirement / collapsed
+//     render is T-2/T-3, out of scope here, no re-layout).
+//
+// The legacy shellMode auto-coupling effect is REMOVED (shellMode eliminated
+// from the store, RN-1/AC-1). Keyboard shortcuts map to the new setters.
 
-const VALID_STATES = ["collapsed", "rail", "full"] as const;
+type LegacyRender = "collapsed" | "rail" | "full";
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -60,37 +74,22 @@ const VALID_STATES = ["collapsed", "rail", "full"] as const;
  * "use client" required: state + effects + event handlers + matchMedia.
  */
 export function ValeriaSidebar() {
-  // ── Stable Zustand selectors (one per primitive) ──────────────────────────
-  const valeriaState = useShellStore((s) => s.valeriaState);
-  const setValeriaState = useShellStore((s) => s.setValeriaState);
-  const setShellMode = useShellStore((s) => s.setShellMode);
-  // D5 (T-4): mobile drawer independent slice — NOT derived from valeriaState
+  // ── Stable Zustand selectors (new binary machine, T-1) ────────────────────
+  const valeriaOpen = useShellStore((s) => s.valeriaOpen);
+  const historyOpen = useShellStore((s) => s.historyOpen);
+  const openValeria = useShellStore((s) => s.openValeria);
+  const collapseValeria = useShellStore((s) => s.collapseValeria);
+  const openHistory = useShellStore((s) => s.openHistory);
+  const closeHistory = useShellStore((s) => s.closeHistory);
+  // D5 (T-4): mobile drawer independent slice — NOT derived from valeriaOpen
   const mobileDrawerOpen = useShellStore((s) => s.mobileDrawerOpen);
   const setMobileDrawerOpen = useShellStore((s) => s.setMobileDrawerOpen);
 
-  // ── Adversarial guard: invalid state fallback ─────────────────────────────
-  const safeState: ValeriaState = VALID_STATES.includes(
-    valeriaState as ValeriaState,
-  )
-    ? valeriaState
-    : "rail";
-
-  if (safeState !== valeriaState) {
-    console.warn(
-      `[ValeriaSidebar] Invalid valeriaState ignored: ${valeriaState}, fallback to 'rail'`,
-    );
-  }
-
-  // ── D2 Auto-coupling effect ───────────────────────────────────────────────
-  // collapsed ↔ shellMode='web'
-  // rail | full ↔ shellMode='agentic'
-  useEffect(() => {
-    if (safeState === "collapsed") {
-      setShellMode("web");
-    } else {
-      setShellMode("agentic");
-    }
-  }, [safeState, setShellMode]);
+  // ── Map new machine → legacy render shape (T-1, no re-layout) ──────────────
+  // chat + historyOpen → "full" (History|Chat) · chat → "rail" (Rail|Chat)
+  // closed → "rail" (T-1 keeps Valeria as rail; collapsed render is T-2/T-3).
+  const safeState: LegacyRender =
+    valeriaOpen === "chat" ? (historyOpen ? "full" : "rail") : "rail";
 
   // ── Handlers ─────────────────────────────────────────────────────────────
   const handleNewConversation = () =>
@@ -108,16 +107,20 @@ export function ValeriaSidebar() {
   // the handlers capture fresh closure references.
   // For memoized builds (future perf): wrap handlers in useCallback.
   useKeyboardShortcuts({
-    c: () => setValeriaState("collapsed"),
-    r: () => setValeriaState("rail"),
-    f: () => setValeriaState("full"),
+    // T-1 mapping: c → collapse (closes history per RN-6); r → open chat (rail
+    // render, no history); f → open chat + history (additive, RN-7).
+    c: () => collapseValeria(),
+    r: () => {
+      openValeria();
+      closeHistory();
+    },
+    f: () => openHistory(),
     n: handleNewConversation,
-    // T-5 impl-fix: Escape closes desktop Valeria (collapsed) AND mobile drawer
-    // (mobileDrawerOpen=false via independent slice — D5 ADR-vitalia-006).
-    // The bug: Escape only called setValeriaState('collapsed') which doesn't close
-    // the mobile drawer (mobileDrawerOpen is an independent slice, not derived from valeriaState).
+    // Escape closes desktop Valeria AND mobile drawer (mobileDrawerOpen=false via
+    // independent slice — D5 ADR-vitalia-006). collapseValeria() also closes
+    // history (RN-6) so the next reopen never restores it (RN-5).
     Escape: () => {
-      setValeriaState("collapsed");
+      collapseValeria();
       setMobileDrawerOpen(false);
     },
     "mod+k": handleFocusComposer,
@@ -141,16 +144,15 @@ export function ValeriaSidebar() {
   }, []);
 
   // ── Derived values ────────────────────────────────────────────────────────
-  const isExpanded = safeState !== "collapsed";
+  // T-1: safeState is "rail" | "full" (binary machine never maps to "collapsed"
+  // — Valeria stays visible as a rail; the collapsed render is T-2/T-3). So the
+  // sidebar is always expanded and the live region never announces "cerrada".
+  const isExpanded = true;
   const railWidth = safeState === "full" ? 280 : 60;
 
   // Live region text per state (Spanish neutro, no voseo)
   const liveText =
-    safeState === "collapsed"
-      ? "Valeria cerrada"
-      : safeState === "rail"
-        ? "Valeria abierta"
-        : "Valeria con historial";
+    safeState === "full" ? "Valeria con historial" : "Valeria abierta";
 
   // ── Ref for hamburger (focus restoration post-drawer-close) ──────────────
   const hamburgerRef = useRef<HTMLButtonElement>(null);
@@ -225,7 +227,7 @@ export function ValeriaSidebar() {
 
           {/* Body: history + chat stacked */}
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-            <ValeriaHistory onCollapseToRail={() => setValeriaState("rail")} />
+            <ValeriaHistory onCollapseToRail={() => closeHistory()} />
             <ValeriaChat />
           </div>
         </aside>
@@ -260,13 +262,13 @@ export function ValeriaSidebar() {
 
       {/* Rail XOR History — mutually exclusive per D1 */}
       {safeState === "full" ? (
-        <ValeriaHistory onCollapseToRail={() => setValeriaState("rail")} />
+        <ValeriaHistory onCollapseToRail={() => closeHistory()} />
       ) : (
         <ValeriaRail
-          onToggleHistory={() => setValeriaState("full")}
+          onToggleHistory={() => openHistory()}
           onNewConversation={handleNewConversation}
           onSearch={handleFocusComposer}
-          onCollapse={() => setValeriaState("collapsed")}
+          onCollapse={() => collapseValeria()}
         />
       )}
 

@@ -15,16 +15,21 @@
 
 "use client";
 
-import { useShellStore } from "@/stores/shell-store";
-
 /**
  * ShellModeToggle — disabled shell mode indicator chip.
- * Shows current shellMode (agentic|web). Disabled until F1-S5/S7 activation.
- * Includes SVG icon (aria-hidden) representing current layout mode.
+ *
+ * T-1 (vitalia-shell-core-hardening) note: shellMode was ELIMINATED from the store
+ * (AC-1/RN-1 — web mode removed). This placeholder is RETIRED in T-2 (06-tickets DAG).
+ * For T-1 it is a minimal compile fixup: the chip is hardcoded to the agentic label so
+ * tsc stays green WITHOUT re-layout. No store read.
+ *
+ * Includes SVG icon (aria-hidden) representing the agentic layout mode.
  */
 export function ShellModeToggle() {
-  const shellMode = useShellStore((s) => s.shellMode);
-  const label = shellMode === "agentic" ? "Agéntico" : "Web";
+  // shellMode removed from store (T-1). Hardcoded agentic until ShellModeToggle is
+  // retired in T-2. NO re-layout.
+  const shellMode = "agentic" as const;
+  const label = "Agéntico";
 
   return (
     <button

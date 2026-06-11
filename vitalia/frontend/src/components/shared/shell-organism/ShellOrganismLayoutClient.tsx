@@ -108,21 +108,28 @@ export function ShellOrganismLayoutClient({
   // branch — invariante D3, hook-count estable).
   useStoreHydration(useTenantStore);
 
-  const shellMode = useShellStore((s) => s.shellMode);
-  const valeriaState = useShellStore((s) => s.valeriaState);
+  // T-1 (vitalia-shell-core-hardening) minimal compile fixup — NO re-layout.
+  // shellMode was ELIMINATED from the store (AC-1/RN-1, web mode removed). The web
+  // grid branch + the toggle are RETIRED in T-2; for T-1 we keep the agentic layout
+  // by pinning shellMode to "agentic" locally.
+  const shellMode = "agentic" as const;
+  // valeriaState (full|rail) was replaced by the new machine valeriaOpen (chat|closed).
+  // It was used ONLY to size MIN_VALERIA_PX. Map: chat → full-equivalent (580),
+  // closed → rail-equivalent (360). The full pixel-sizing rework is T-2/T-3.
+  const valeriaOpen = useShellStore((s) => s.valeriaOpen);
 
-  // One-way viewport guard: forces 'full' → 'rail' when viewport [768, 1104)
+  // One-way viewport guard: forces wide Valeria → narrow when viewport [768, 1104)
   useViewportGuard();
 
   // ── Min pixels cementados (01-spec.md §5 + §8) ─────────────────────────────
-  // valeriaState='full' → min Valeria 580px (history 280 + chat 300) — D3 F1-S5
-  // valeriaState='rail' → min Valeria 360px (rail 60 + chat 300)
+  // valeriaOpen='chat' → min Valeria 580px (history 280 + chat 300) — D3 F1-S5
+  // valeriaOpen='closed' → min Valeria 360px (rail 60 + chat 300)
   // App min constante 480px (ribbon 6 tabs + sub-tabs sin overflow)
   //
   // react-resizable-panels v4 minSize: STRING values ending in "%" are treated as
   // percent. We compute the % dynamically with ResizeObserver on the container so
   // the pixel minimum is always respected, then pass it as `"${minValeriaPct}%"`.
-  const MIN_VALERIA_PX = valeriaState === "full" ? 580 : 360;
+  const MIN_VALERIA_PX = valeriaOpen === "chat" ? 580 : 360;
   const MIN_APP_PX = 480;
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(1280); // sane default

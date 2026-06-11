@@ -1,17 +1,22 @@
+// cap: shell-organism.shell-vitalia
+// story-origin: vitalia-shell-core-hardening
 /**
- * shell-store.test.ts — TDD RED-first tests for shell-store Zustand store
- * F1-S4 vitalia-fase1-shell-layout-5050 — T-1
+ * shell-store.test.ts — TDD RED-first tests for the NEW shell-store state machine.
+ * vitalia-shell-core-hardening — T-1
  *
- * Tests Zustand store actions + persist partialize behavior.
- * Note: Zustand persist with localStorage in happy-dom environment —
- * we test state mutations directly (not the actual localStorage write,
- * which is integration behavior covered by E2E).
+ * Replaces the legacy collapsed/rail/full + shellMode model with the additive
+ * machine (03-arch-fe.md § 1.1):
+ *   - valeriaOpen: "closed" | "chat"   (A=closed tira-avatar 44px · B=chat split 30/70)
+ *   - historyOpen: boolean             (additive push — NOT a third conflated state)
+ *   - valeriaPct: number | null        (split % · null = default 30)
+ *   - mobileDrawerOpen: boolean        (independent slice)
  *
  * gherkin_coverage:
- * - SC-1 happy: shellMode='agentic' default + valeriaState='full' default
- * - SC-3 edge: setValeriaState + cycleValeriaState + setShellMode + persistencia
+ * - SC-1 happy: default closed|chat machine + valeriaOpen/historyOpen defaults
+ * - SC-5 RN-5/6: colapsar cierra historial; clic avatar NUNCA restaura historial
+ * - SC-8 RN-7: historyOpen aditivo (no conflado con valeriaOpen)
  *
- * 03-arch.md § 2.5 — store spec verbatim.
+ * 03-arch-fe.md § 1.1 — state machine verbatim. ELIMINATE shellMode (AC-1).
  * Named export (no default export) per FSD-Lite enforce.
  *
  * downstream-regression-na: brand-local store test; no cross-brand consumers
@@ -20,128 +25,188 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { useShellStore, SHELL_STORAGE_KEY } from "../shell-store";
 
-describe("useShellStore", () => {
+describe("useShellStore — new state machine (closed|chat + historyOpen additive)", () => {
   beforeEach(() => {
-    // Reset store to the factory default before each test.
-    // Default valeriaState is 'rail' (bugfix-shell-valeria-responsive Point 1, 2026-06-04).
+    // Reset to factory default. Default valeriaOpen='chat' (B) per 03-arch-fe § 1.1.
     useShellStore.setState({
-      valeriaState: "rail",
-      shellMode: "agentic",
+      valeriaOpen: "chat",
+      historyOpen: false,
+      valeriaPct: null,
+      mobileDrawerOpen: false,
     });
   });
 
   // ── SC-1 happy: initial state ────────────────────────────────────────────
 
   describe("initial state", () => {
-    it("initial state agentic + rail (history collapsed by default)", () => {
+    it("valeriaOpen='chat' historyOpen=false valeriaPct=null mobileDrawerOpen=false", () => {
       const state = useShellStore.getState();
-      expect(state.valeriaState).toBe("rail");
-      expect(state.shellMode).toBe("agentic");
+      expect(state.valeriaOpen).toBe("chat");
+      expect(state.historyOpen).toBe(false);
+      expect(state.valeriaPct).toBeNull();
+      expect(state.mobileDrawerOpen).toBe(false);
+    });
+
+    it("shellMode is NOT a field on the store (AC-1 — eliminated)", () => {
+      const state = useShellStore.getState() as unknown as Record<string, unknown>;
+      expect(state.shellMode).toBeUndefined();
+      expect(state.setShellMode).toBeUndefined();
+      expect(state.cycleValeriaState).toBeUndefined();
+      expect(state.valeriaState).toBeUndefined();
     });
   });
 
-  // ── SHELL_STORAGE_KEY ──────────────────────────────────────────────────────
+  // ── SHELL_STORAGE_KEY (conserved) ──────────────────────────────────────────
 
   describe("SHELL_STORAGE_KEY", () => {
-    it("SHELL_STORAGE_KEY exported 'vitalia-shell-state'", () => {
+    it("SHELL_STORAGE_KEY exported 'vitalia-shell-state' (conserved)", () => {
       expect(SHELL_STORAGE_KEY).toBe("vitalia-shell-state");
     });
   });
 
-  // ── SC-3 edge: setValeriaState ─────────────────────────────────────────────
+  // ── valeriaOpen: closed <-> chat ───────────────────────────────────────────
 
-  describe("setValeriaState", () => {
-    it("setValeriaState updates state", () => {
-      useShellStore.getState().setValeriaState("rail");
-      expect(useShellStore.getState().valeriaState).toBe("rail");
+  describe("setValeriaOpen", () => {
+    it("setValeriaOpen('closed') sets state A", () => {
+      useShellStore.getState().setValeriaOpen("closed");
+      expect(useShellStore.getState().valeriaOpen).toBe("closed");
     });
 
-    it("setValeriaState to collapsed", () => {
-      useShellStore.getState().setValeriaState("collapsed");
-      expect(useShellStore.getState().valeriaState).toBe("collapsed");
-    });
-
-    it("setValeriaState back to full", () => {
-      useShellStore.getState().setValeriaState("rail");
-      useShellStore.getState().setValeriaState("full");
-      expect(useShellStore.getState().valeriaState).toBe("full");
+    it("setValeriaOpen('chat') sets state B", () => {
+      useShellStore.getState().setValeriaOpen("closed");
+      useShellStore.getState().setValeriaOpen("chat");
+      expect(useShellStore.getState().valeriaOpen).toBe("chat");
     });
   });
 
-  // ── SC-3 edge: cycleValeriaState ──────────────────────────────────────────
+  // ── RN-5 / RN-6 transitions: collapse closes history; reopen never restores ─
 
-  describe("cycleValeriaState", () => {
-    it("cycleValeriaState toggles rail<->full", () => {
-      // Start at rail (factory default via beforeEach)
-      expect(useShellStore.getState().valeriaState).toBe("rail");
+  describe("RN-5/6 transitions", () => {
+    it("collapseValeria → A (valeriaOpen='closed') AND forces historyOpen=false (RN-6)", () => {
+      // Start in C (chat + history)
+      useShellStore.getState().setValeriaOpen("chat");
+      useShellStore.getState().setHistoryOpen(true);
+      expect(useShellStore.getState().historyOpen).toBe(true);
 
-      // Cycle: rail → full
-      useShellStore.getState().cycleValeriaState();
-      expect(useShellStore.getState().valeriaState).toBe("full");
+      useShellStore.getState().collapseValeria();
 
-      // Cycle: full → rail
-      useShellStore.getState().cycleValeriaState();
-      expect(useShellStore.getState().valeriaState).toBe("rail");
+      expect(useShellStore.getState().valeriaOpen).toBe("closed");
+      // colapsar cierra historial también (RN-6)
+      expect(useShellStore.getState().historyOpen).toBe(false);
     });
 
-    it("cycleValeriaState from rail toggles to full", () => {
-      useShellStore.getState().setValeriaState("rail");
-      useShellStore.getState().cycleValeriaState();
-      expect(useShellStore.getState().valeriaState).toBe("full");
+    it("openValeria (clic tira-avatar) → B chat-only, NEVER restores history (RN-5)", () => {
+      // Was in C before collapsing
+      useShellStore.getState().setValeriaOpen("chat");
+      useShellStore.getState().setHistoryOpen(true);
+      useShellStore.getState().collapseValeria(); // → A, history false
+      expect(useShellStore.getState().valeriaOpen).toBe("closed");
+
+      useShellStore.getState().openValeria();
+
+      expect(useShellStore.getState().valeriaOpen).toBe("chat");
+      // RN-5: reapertura NUNCA restaura el historial
+      expect(useShellStore.getState().historyOpen).toBe(false);
     });
 
-    it("cycleValeriaState from collapsed goes to full (collapsed only reachable via setValeriaState)", () => {
-      // When collapsed, cycle treats it as non-full → toggles to 'full'
-      // Implementation: get().valeriaState === 'full' ? 'rail' : 'full'
-      // collapsed !== 'full' → result is 'full' (snapping back to visible state)
-      useShellStore.getState().setValeriaState("collapsed");
-      useShellStore.getState().cycleValeriaState();
-      expect(useShellStore.getState().valeriaState).toBe("full");
-    });
-  });
-
-  // ── SC-3 edge: setShellMode ────────────────────────────────────────────────
-
-  describe("setShellMode", () => {
-    it("setShellMode persists localStorage", () => {
-      useShellStore.getState().setShellMode("web");
-      expect(useShellStore.getState().shellMode).toBe("web");
-    });
-
-    it("setShellMode back to agentic", () => {
-      useShellStore.getState().setShellMode("web");
-      useShellStore.getState().setShellMode("agentic");
-      expect(useShellStore.getState().shellMode).toBe("agentic");
+    it("historyOpen forced false while valeriaOpen='closed' (RN-5 invariant)", () => {
+      useShellStore.getState().setValeriaOpen("closed");
+      // Attempt to open history while closed must NOT leave A
+      useShellStore.getState().setHistoryOpen(true);
+      // RN-5: en A, historyOpen está forzado false
+      expect(useShellStore.getState().historyOpen).toBe(false);
     });
   });
 
-  // ── SC-3 edge: partialize ──────────────────────────────────────────────────
+  // ── SC-8 RN-7: historyOpen additive (opens Valeria too from A) ─────────────
 
-  describe("persist partialize — SC-3", () => {
-    it("partialize includes both fields", () => {
-      // Zustand persist adds .persist to the store
+  describe("openHistory — additive (RN-7)", () => {
+    it("setHistoryOpen(true) from chat → C (chat + history)", () => {
+      useShellStore.getState().setValeriaOpen("chat");
+      useShellStore.getState().setHistoryOpen(true);
+      expect(useShellStore.getState().valeriaOpen).toBe("chat");
+      expect(useShellStore.getState().historyOpen).toBe(true);
+    });
+
+    it("openHistory from A opens Valeria too (A → B+C) (RN-7)", () => {
+      useShellStore.getState().setValeriaOpen("closed");
+      useShellStore.getState().openHistory();
+      // abrir historial desde A → B+C (abre Valeria también)
+      expect(useShellStore.getState().valeriaOpen).toBe("chat");
+      expect(useShellStore.getState().historyOpen).toBe(true);
+    });
+
+    it("closeHistory → B (chat, history closed)", () => {
+      useShellStore.getState().setValeriaOpen("chat");
+      useShellStore.getState().setHistoryOpen(true);
+      useShellStore.getState().closeHistory();
+      expect(useShellStore.getState().valeriaOpen).toBe("chat");
+      expect(useShellStore.getState().historyOpen).toBe(false);
+    });
+
+    it("toggleHistory flips historyOpen (chat context)", () => {
+      useShellStore.getState().setValeriaOpen("chat");
+      useShellStore.getState().setHistoryOpen(false);
+      useShellStore.getState().toggleHistory();
+      expect(useShellStore.getState().historyOpen).toBe(true);
+      useShellStore.getState().toggleHistory();
+      expect(useShellStore.getState().historyOpen).toBe(false);
+    });
+  });
+
+  // ── valeriaPct (split %) ───────────────────────────────────────────────────
+
+  describe("setValeriaPct", () => {
+    it("setValeriaPct(45) updates split %", () => {
+      useShellStore.getState().setValeriaPct(45);
+      expect(useShellStore.getState().valeriaPct).toBe(45);
+    });
+
+    it("setValeriaPct(null) resets to default", () => {
+      useShellStore.getState().setValeriaPct(45);
+      useShellStore.getState().setValeriaPct(null);
+      expect(useShellStore.getState().valeriaPct).toBeNull();
+    });
+  });
+
+  // ── mobileDrawerOpen slice independence (conserved) ────────────────────────
+
+  describe("mobileDrawerOpen slice independence", () => {
+    it("setMobileDrawerOpen(true) does not change valeriaOpen", () => {
+      useShellStore.getState().setValeriaOpen("chat");
+      useShellStore.getState().setMobileDrawerOpen(true);
+      expect(useShellStore.getState().mobileDrawerOpen).toBe(true);
+      expect(useShellStore.getState().valeriaOpen).toBe("chat");
+    });
+  });
+
+  // ── persist partialize ─────────────────────────────────────────────────────
+
+  describe("persist partialize", () => {
+    it("persist API defined", () => {
       expect(useShellStore.persist).toBeDefined();
     });
 
     it("storage key is vitalia-shell-state", () => {
-      expect(useShellStore.persist.getOptions().name).toBe(
-        "vitalia-shell-state",
-      );
+      expect(useShellStore.persist.getOptions().name).toBe("vitalia-shell-state");
     });
 
-    it("partialize excludes setter functions (only state fields serialized)", () => {
-      // Access the partialize function and verify it only returns state fields
+    it("partialize persists valeriaOpen, valeriaPct, mobileDrawerOpen — NOT historyOpen (RN-5/11)", () => {
       const partialize = useShellStore.persist.getOptions().partialize;
+      expect(partialize).toBeDefined();
       if (partialize) {
-        const fullState = useShellStore.getState();
-        const partial = partialize(fullState);
-        // Should include state fields
-        expect(partial).toHaveProperty("valeriaState");
-        expect(partial).toHaveProperty("shellMode");
-        // Should NOT include setter functions
-        expect(partial).not.toHaveProperty("setValeriaState");
-        expect(partial).not.toHaveProperty("cycleValeriaState");
-        expect(partial).not.toHaveProperty("setShellMode");
+        const partial = partialize(useShellStore.getState()) as Record<string, unknown>;
+        expect(partial).toHaveProperty("valeriaOpen");
+        expect(partial).toHaveProperty("valeriaPct");
+        expect(partial).toHaveProperty("mobileDrawerOpen");
+        // RN-5/RN-11: historial NUNCA persiste abierto
+        expect(partial).not.toHaveProperty("historyOpen");
+        // setters + transient excluded
+        expect(partial).not.toHaveProperty("setValeriaOpen");
+        expect(partial).not.toHaveProperty("openValeria");
+        expect(partial).not.toHaveProperty("collapseValeria");
+        expect(partial).not.toHaveProperty("toggleHistory");
+        expect(partial).not.toHaveProperty("_hasHydrated");
       }
     });
   });

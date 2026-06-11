@@ -15,8 +15,8 @@ cap_target: null                        # higiene + hardening cross-cap del shel
 cap_change_type: fix                    # consolida FIXES del chrome (precedente: shell-valeria-responsive + shell-nav-scroll-errors, ambos fix+null). El lift a @luana/ui-kit es cap-work de /pm-luana (core), no una cap vitalia — gate HB-34 no exige YAML para fix.
 parent_story: null
 
-state: ready                            # ★ 2026-06-10 /architect cerró ready package (03-arch+fe + 04-validators + 05-guidelines + 06-tickets + dispatch-plan)
-phase: READY_PACKAGE_CLOSED
+state: developing                       # ★ 2026-06-10 /dev-team pickup (autonomous chain T-1..T-8 · locks code:{shell,clinics,crm} adquiridos)
+phase: BUILD_T1
 dark_mode_in_scope: true                # ★ ratificado Chris 2026-06-10 ("Si, mételo") — supersede el out-of-scope del backbone
 input_spec_signed: true                 # firma reconciliación 2026-06-10 (deltas dark/B1/race + herencia FIRMA 1 backbone)
 mockup_final_signed: true               # herencia mockup firmado backbone ratificada + caveat behavior-fi re-confirmado

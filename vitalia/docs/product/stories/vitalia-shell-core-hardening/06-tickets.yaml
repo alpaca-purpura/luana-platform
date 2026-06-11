@@ -50,6 +50,7 @@ tickets:
         - "vitest: transiciones máquina nueva + migrate legacy + no-clobber (RED first)"
         - "grep shellMode = 0 (AC-1)"
         - "mutation_gate (Stryker) 100% líneas nuevas o advisory si falta tool"
+    state: pushed                      # ★ 2026-06-10 gates GREEN (tsc 0 · vitest 631/631 · eslint clean) — finalize orchestrator (builder context-exhausted mid-verify, patrón continuation)
 
   - id: T-2
     title: "Chrome layout: TopBar switcher derecha + sin chip · clamp 320 · drawer <1024 · quitar web-mode/rail · historial empuja 260"

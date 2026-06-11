@@ -1,22 +1,27 @@
 /**
  * ValeriaSidebar.test.tsx — Unit tests for ValeriaSidebar organism
- * T-5 of vitalia-fase1-valeria-rail-history (F1-S5)
- * TDD RED-first per tdd-mandatory.md
  *
- * gherkin_coverage:
- * - SC-1 happy: keyboard cycle (r/f/c/Esc) con auto-coupling + render aside + grid
- * - SC-4 adversarial: setState({valeriaState:'INVALID'}) → console.warn + fallback rail no crash
- * - SC-7 a11y: live region role='status' aria-live='polite' aria-atomic='true' sr-only
- * - SC-8 a11y: mobile drawer (smoke — full Playwright en T-8)
+ * REWRITTEN for vitalia-shell-core-hardening T-1: the legacy 3-state machine
+ * (valeriaState collapsed|rail|full + shellMode) was replaced by the new binary
+ * machine (valeriaOpen closed|chat + additive historyOpen). ValeriaSidebar maps
+ * the new store onto the existing render shape WITHOUT re-layout (T-1 directive):
  *
- * Test setup:
- * - useShellStore manipulated via useShellStore.setState({...}) directly (real store)
- * - matchMedia mock for mobile drawer detection
- * - window.alert mock for SC-1 'n' key
- * - document.getElementById mock for Cmd+K focus
+ *   valeriaOpen "chat"  + historyOpen true  → render History | Chat (old "full")
+ *   valeriaOpen "chat"  + historyOpen false → render Rail    | Chat (old "rail")
+ *   valeriaOpen "closed"                      → render Rail    | Chat (T-1 keeps
+ *     Valeria visible as a rail; collapsed render is T-2/T-3, out of scope here)
  *
- * Spec: 01-spec.md § 0 D1+D2+D4 + § 1 Scenarios 1-5 + § 5 handlers
- * Arch: 03-arch.md § 2.5 ValeriaSidebar + § 2.7 mobile drawer
+ * Keyboard: c → collapse (closed, history dropped) · r → open chat (no history) ·
+ * f → openHistory (additive — opens chat too, RN-7) · Esc → collapse + close mobile.
+ *
+ * The shellMode auto-coupling and the INVALID-state console.warn guard are GONE
+ * (shellMode eliminated from store RN-1/AC-1; valeriaOpen is a strict union).
+ *
+ * gherkin_coverage (mapped to new machine):
+ * - SC-1 happy: keyboard cycle (r/f/c/Esc) + render aside + grid
+ * - SC-7 a11y: live region role='status' aria-live='polite' aria-atomic='true'
+ * - SC-8 a11y: mobile drawer (mobileDrawerOpen independent slice)
+ *
  * Named export (NO default) per FSD-Lite enforce.
  *
  * downstream-regression-na: brand-local shell-organism; no cross-brand consumers
@@ -60,21 +65,21 @@ function mockMatchMedia(matches: boolean): void {
   });
 }
 
-// ─── Desktop helper (default: non-mobile) ────────────────────────────────────
+// ─── Desktop / mobile helpers ────────────────────────────────────────────────
 
 function setupDesktop(): void {
-  mockMatchMedia(false); // max-width:767px does NOT match → desktop
+  mockMatchMedia(false); // (max-width: 1023px) does NOT match → desktop
 }
 
 function setupMobile(): void {
-  mockMatchMedia(true); // max-width:767px matches → mobile
+  mockMatchMedia(true); // (max-width: 1023px) matches → mobile
 }
 
 // ─── Reset store state before each test ──────────────────────────────────────
 
 beforeEach(() => {
-  // Reset to known desktop state for each test
-  useShellStore.setState({ valeriaState: "rail", shellMode: "agentic" });
+  // Reset to known desktop state for each test (new machine)
+  useShellStore.setState({ valeriaOpen: "chat", historyOpen: false, mobileDrawerOpen: false });
   setupDesktop();
 });
 
@@ -82,60 +87,69 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-// ─── SC-1 happy: keyboard cycle (8 tests) ────────────────────────────────────
+// ─── SC-1 happy: keyboard cycle ──────────────────────────────────────────────
 
 describe("ValeriaSidebar — SC-1 keyboard cycle (shortcuts)", () => {
-  it("press 'r' sets valeriaState rail + shellMode agentic (auto-coupled)", async () => {
-    useShellStore.setState({ valeriaState: "collapsed", shellMode: "web" });
+  it("press 'r' opens Valeria in chat without history (rail render)", async () => {
+    useShellStore.setState({ valeriaOpen: "closed", historyOpen: false });
     render(<ValeriaSidebar />);
 
     fireEvent.keyDown(window, { key: "r" });
-
-    // Allow useEffect auto-coupling to run
     await act(async () => {});
 
     const state = useShellStore.getState();
-    expect(state.valeriaState).toBe("rail");
-    expect(state.shellMode).toBe("agentic");
+    expect(state.valeriaOpen).toBe("chat");
+    expect(state.historyOpen).toBe(false);
   });
 
-  it("press 'f' sets valeriaState full + shellMode agentic (auto-coupled)", async () => {
-    useShellStore.setState({ valeriaState: "collapsed", shellMode: "web" });
+  it("press 'f' opens history additively (chat + history, RN-7)", async () => {
+    useShellStore.setState({ valeriaOpen: "closed", historyOpen: false });
     render(<ValeriaSidebar />);
 
     fireEvent.keyDown(window, { key: "f" });
-
     await act(async () => {});
 
     const state = useShellStore.getState();
-    expect(state.valeriaState).toBe("full");
-    expect(state.shellMode).toBe("agentic");
+    expect(state.valeriaOpen).toBe("chat");
+    expect(state.historyOpen).toBe(true);
   });
 
-  it("press 'c' sets valeriaState collapsed + shellMode web (auto-coupled)", async () => {
-    useShellStore.setState({ valeriaState: "rail", shellMode: "agentic" });
+  it("press 'c' collapses Valeria (closed) and drops history (RN-6)", async () => {
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: true });
     render(<ValeriaSidebar />);
 
     fireEvent.keyDown(window, { key: "c" });
-
     await act(async () => {});
 
     const state = useShellStore.getState();
-    expect(state.valeriaState).toBe("collapsed");
-    expect(state.shellMode).toBe("web");
+    expect(state.valeriaOpen).toBe("closed");
+    expect(state.historyOpen).toBe(false);
   });
 
-  it("press Escape (no input focus) sets valeriaState collapsed + shellMode web", async () => {
-    useShellStore.setState({ valeriaState: "rail", shellMode: "agentic" });
+  it("press Escape (no input focus) collapses Valeria + drops history", async () => {
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: true });
     render(<ValeriaSidebar />);
 
     fireEvent.keyDown(window, { key: "Escape" });
-
     await act(async () => {});
 
     const state = useShellStore.getState();
-    expect(state.valeriaState).toBe("collapsed");
-    expect(state.shellMode).toBe("web");
+    expect(state.valeriaOpen).toBe("closed");
+    expect(state.historyOpen).toBe(false);
+  });
+
+  it("RN-5: reopen after collapse never auto-restores history", async () => {
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: true });
+    render(<ValeriaSidebar />);
+
+    fireEvent.keyDown(window, { key: "c" }); // collapse → history dropped
+    await act(async () => {});
+    fireEvent.keyDown(window, { key: "r" }); // reopen chat
+    await act(async () => {});
+
+    const state = useShellStore.getState();
+    expect(state.valeriaOpen).toBe("chat");
+    expect(state.historyOpen).toBe(false);
   });
 
   it("press 'n' calls window.alert mock with 'próximamente'", () => {
@@ -172,37 +186,13 @@ describe("ValeriaSidebar — SC-1 keyboard cycle (shortcuts)", () => {
 
     expect(mockEl.focus).toHaveBeenCalledOnce();
   });
-
-  it("idempotency: press 'c' twice → no-op second time (state remains collapsed)", async () => {
-    useShellStore.setState({ valeriaState: "rail", shellMode: "agentic" });
-    render(<ValeriaSidebar />);
-
-    fireEvent.keyDown(window, { key: "c" });
-    await act(async () => {});
-
-    // First press: rail → collapsed
-    expect(useShellStore.getState().valeriaState).toBe("collapsed");
-
-    const setValeriaStateSpy = vi.spyOn(
-      useShellStore.getState(),
-      "setValeriaState",
-    );
-
-    fireEvent.keyDown(window, { key: "c" });
-    await act(async () => {});
-
-    // State should still be collapsed (idempotent)
-    expect(useShellStore.getState().valeriaState).toBe("collapsed");
-    // spy not called (shortcut still fires but store stays same value)
-    setValeriaStateSpy.mockRestore();
-  });
 });
 
-// ─── SC-1 happy: render aside (7 tests) ──────────────────────────────────────
+// ─── SC-1 happy: render aside ────────────────────────────────────────────────
 
 describe("ValeriaSidebar — SC-1 render aside with role + aria + grid", () => {
   it("renders aside role='complementary' aria-label='Panel Valeria' data-testid='valeria-sidebar'", () => {
-    useShellStore.setState({ valeriaState: "rail", shellMode: "agentic" });
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: false });
     render(<ValeriaSidebar />);
 
     const aside = screen.getByRole("complementary", { name: "Panel Valeria" });
@@ -210,85 +200,70 @@ describe("ValeriaSidebar — SC-1 render aside with role + aria + grid", () => {
     expect(aside).toHaveAttribute("data-testid", "valeria-sidebar");
   });
 
-  it("aria-expanded='true' when valeriaState='rail'", () => {
-    useShellStore.setState({ valeriaState: "rail", shellMode: "agentic" });
+  it("aria-expanded='true' when Valeria open in chat", () => {
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: false });
     render(<ValeriaSidebar />);
 
     const aside = screen.getByTestId("valeria-sidebar");
     expect(aside).toHaveAttribute("aria-expanded", "true");
   });
 
-  it("aria-expanded='false' when valeriaState='collapsed'", () => {
-    useShellStore.setState({ valeriaState: "collapsed", shellMode: "web" });
+  it("grid columns 60px/1fr when chat without history (rail render)", () => {
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: false });
     render(<ValeriaSidebar />);
 
     const aside = screen.getByTestId("valeria-sidebar");
-    expect(aside).toHaveAttribute("aria-expanded", "false");
-  });
-
-  it("grid columns 60px/1fr when state='rail'", () => {
-    useShellStore.setState({ valeriaState: "rail", shellMode: "agentic" });
-    render(<ValeriaSidebar />);
-
-    const aside = screen.getByTestId("valeria-sidebar");
-    // Style should contain grid-template-columns with 60px
     expect(aside).toHaveStyle({ gridTemplateColumns: "60px 1fr" });
   });
 
-  it("grid columns 280px/1fr when state='full'", () => {
-    useShellStore.setState({ valeriaState: "full", shellMode: "agentic" });
+  it("grid columns 280px/1fr when chat + history (full render)", () => {
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: true });
     render(<ValeriaSidebar />);
 
     const aside = screen.getByTestId("valeria-sidebar");
     expect(aside).toHaveStyle({ gridTemplateColumns: "280px 1fr" });
   });
 
-  it("renders ValeriaRail when state='rail' (ValeriaHistory NOT rendered)", () => {
-    useShellStore.setState({ valeriaState: "rail", shellMode: "agentic" });
+  it("renders ValeriaRail when chat without history (ValeriaHistory NOT rendered)", () => {
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: false });
     render(<ValeriaSidebar />);
 
-    // ValeriaRail renders nav aria-label="Rail de Valeria"
     expect(
       screen.getByRole("navigation", { name: "Rail de Valeria" }),
     ).toBeInTheDocument();
-    // ValeriaHistory NOT rendered (nav aria-label="Historial conversaciones")
     expect(
       screen.queryByRole("navigation", { name: "Historial conversaciones" }),
     ).not.toBeInTheDocument();
   });
 
-  it("renders ValeriaHistory when state='full' (ValeriaRail NOT rendered)", () => {
-    useShellStore.setState({ valeriaState: "full", shellMode: "agentic" });
+  it("renders ValeriaHistory when chat + history (ValeriaRail NOT rendered)", () => {
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: true });
     render(<ValeriaSidebar />);
 
-    // ValeriaHistory renders nav aria-label="Historial conversaciones"
     expect(
       screen.getByRole("navigation", { name: "Historial conversaciones" }),
     ).toBeInTheDocument();
-    // ValeriaRail NOT rendered
     expect(
       screen.queryByRole("navigation", { name: "Rail de Valeria" }),
     ).not.toBeInTheDocument();
   });
 
-  it("ValeriaChat rendered when state='rail' (any visible state)", () => {
-    useShellStore.setState({ valeriaState: "rail", shellMode: "agentic" });
+  it("ValeriaChat rendered when chat without history (any visible state)", () => {
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: false });
     render(<ValeriaSidebar />);
 
-    // T-6: ValeriaChatSlot replaced by ValeriaChat (data-testid="valeria-chat")
     expect(screen.getByTestId("valeria-chat")).toBeInTheDocument();
   });
 
-  it("ValeriaChat rendered when state='full'", () => {
-    useShellStore.setState({ valeriaState: "full", shellMode: "agentic" });
+  it("ValeriaChat rendered when chat + history", () => {
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: true });
     render(<ValeriaSidebar />);
 
-    // T-6: ValeriaChatSlot replaced by ValeriaChat (data-testid="valeria-chat")
     expect(screen.getByTestId("valeria-chat")).toBeInTheDocument();
   });
 
   it("transition class 'motion-reduce:transition-none' applied on aside", () => {
-    useShellStore.setState({ valeriaState: "rail", shellMode: "agentic" });
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: false });
     render(<ValeriaSidebar />);
 
     const aside = screen.getByTestId("valeria-sidebar");
@@ -296,34 +271,11 @@ describe("ValeriaSidebar — SC-1 render aside with role + aria + grid", () => {
   });
 });
 
-// ─── SC-4 adversarial guard (1 test) ─────────────────────────────────────────
-
-describe("ValeriaSidebar — SC-4 adversarial guard invalid valeriaState", () => {
-  it("useShellStore.setState({valeriaState:'INVALID'}) → console.warn + fallback render (no crash)", () => {
-    const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-
-    // Force invalid state
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    useShellStore.setState({ valeriaState: "INVALID" as any });
-
-    // Render should NOT throw
-    expect(() => render(<ValeriaSidebar />)).not.toThrow();
-
-    // console.warn MUST be called with the invalid state
-    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("INVALID"));
-
-    // Fallback: ValeriaRail should render (rail is the fallback state)
-    expect(
-      screen.getByRole("navigation", { name: "Rail de Valeria" }),
-    ).toBeInTheDocument();
-  });
-});
-
-// ─── SC-7 live region (4 tests) ──────────────────────────────────────────────
+// ─── SC-7 live region ────────────────────────────────────────────────────────
 
 describe("ValeriaSidebar — SC-7 live region updates per state", () => {
   it("live region has role='status' aria-live='polite' aria-atomic='true' + sr-only class", () => {
-    useShellStore.setState({ valeriaState: "rail", shellMode: "agentic" });
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: false });
     render(<ValeriaSidebar />);
 
     const liveRegion = screen.getByRole("status");
@@ -333,25 +285,15 @@ describe("ValeriaSidebar — SC-7 live region updates per state", () => {
     expect(liveRegion.className).toContain("sr-only");
   });
 
-  it("live region text 'Valeria cerrada' cuando state='collapsed'", () => {
-    useShellStore.setState({ valeriaState: "collapsed", shellMode: "web" });
-    render(<ValeriaSidebar />);
-
-    // collapsed renders mobile or desktop depending on matchMedia
-    // Desktop: aside has sr-only span with 'Valeria cerrada'
-    // The live region text is always rendered (even in collapsed desktop)
-    expect(screen.getByRole("status")).toHaveTextContent("Valeria cerrada");
-  });
-
-  it("live region text 'Valeria abierta' cuando state='rail'", () => {
-    useShellStore.setState({ valeriaState: "rail", shellMode: "agentic" });
+  it("live region text 'Valeria abierta' cuando chat sin historial", () => {
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: false });
     render(<ValeriaSidebar />);
 
     expect(screen.getByRole("status")).toHaveTextContent("Valeria abierta");
   });
 
-  it("live region text 'Valeria con historial' cuando state='full'", () => {
-    useShellStore.setState({ valeriaState: "full", shellMode: "agentic" });
+  it("live region text 'Valeria con historial' cuando chat + historial", () => {
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: true });
     render(<ValeriaSidebar />);
 
     expect(screen.getByRole("status")).toHaveTextContent(
@@ -360,20 +302,17 @@ describe("ValeriaSidebar — SC-7 live region updates per state", () => {
   });
 });
 
-// ─── SC-8 mobile drawer smoke — T-4 UPDATE (D5 mobileDrawerOpen slice) ──────
+// ─── SC-8 mobile drawer (D5: mobileDrawerOpen independent slice) ──────────────
 //
-// T-4 change: mobile drawer open/closed is governed SOLELY by `mobileDrawerOpen`
-// (independent slice in shell-store). valeriaState='rail'/'full' DOES NOT auto-open
-// the drawer on mobile (that was Bug #2 coupling). Drawer opens only when
-// mobileDrawerOpen=true; closes via setMobileDrawerOpen(false), NOT setValeriaState.
-//
-// ADR-vitalia-006 § D5 + 03-arch.md § 2 D5 + spec SC-4/SC-5/SC-5b.
+// Mobile drawer open/closed is governed SOLELY by `mobileDrawerOpen` (independent
+// slice). valeriaOpen/historyOpen DOES NOT auto-open the drawer (no Bug #2
+// coupling). Drawer opens only when mobileDrawerOpen=true; closes via
+// setMobileDrawerOpen(false), NOT via the desktop valeriaOpen machine.
 
-describe("ValeriaSidebar — SC-8 mobile drawer (T-4 D5: mobileDrawerOpen independent slice)", () => {
+describe("ValeriaSidebar — SC-8 mobile drawer (D5: mobileDrawerOpen independent slice)", () => {
   it("[SC-4 D5] mobile + mobileDrawerOpen=true → aside role=dialog aria-modal rendered", () => {
     setupMobile();
-    // D5: mobileDrawerOpen=true opens drawer, regardless of valeriaState
-    useShellStore.setState({ valeriaState: "rail", shellMode: "agentic", mobileDrawerOpen: true });
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: false, mobileDrawerOpen: true });
 
     render(<ValeriaSidebar />);
 
@@ -382,58 +321,51 @@ describe("ValeriaSidebar — SC-8 mobile drawer (T-4 D5: mobileDrawerOpen indepe
     expect(sidebar).toHaveAttribute("role", "dialog");
   });
 
-  it("[SC-4 D5] mobile + mobileDrawerOpen=true → backdrop rendered data-testid='valeria-drawer-backdrop'", () => {
+  it("[SC-4 D5] mobile + mobileDrawerOpen=true → backdrop rendered", () => {
     setupMobile();
-    useShellStore.setState({ valeriaState: "rail", shellMode: "agentic", mobileDrawerOpen: true });
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: false, mobileDrawerOpen: true });
 
     render(<ValeriaSidebar />);
 
     expect(screen.getByTestId("valeria-drawer-backdrop")).toBeInTheDocument();
   });
 
-  it("[SC-4 CRITICAL D5] mobile + valeriaState='full' + mobileDrawerOpen=false → drawer NOT rendered (decoupled)", () => {
-    // D5 anti-pattern fix: desktop valeriaState='full' must NOT auto-open mobile drawer
-    // (this was Bug #2 root cause — mobileDrawerOpen was derived from valeriaState)
+  it("[SC-4 CRITICAL D5] mobile + historyOpen + mobileDrawerOpen=false → drawer NOT rendered (decoupled)", () => {
     setupMobile();
-    useShellStore.setState({ valeriaState: "full", shellMode: "agentic", mobileDrawerOpen: false });
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: true, mobileDrawerOpen: false });
 
     render(<ValeriaSidebar />);
 
-    // Drawer (role=dialog) must NOT be present when mobileDrawerOpen=false
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.queryByTestId("valeria-drawer-backdrop")).not.toBeInTheDocument();
   });
 
   it("[SC-4 fresh] mobile + default mobileDrawerOpen=false → drawer NOT rendered (fresh user)", () => {
-    // SC-4: fresh user / storage clean → mobileDrawerOpen defaults to false → drawer closed
     setupMobile();
-    // Reset to defaults (mobileDrawerOpen=false is default)
-    useShellStore.setState({ valeriaState: "full", shellMode: "agentic", mobileDrawerOpen: false });
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: true, mobileDrawerOpen: false });
 
     render(<ValeriaSidebar />);
 
-    // Fresh mobile: drawer is closed (not in DOM)
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("[SC-5 D5] mobile backdrop click → setMobileDrawerOpen(false) called (NOT setValeriaState)", async () => {
+  it("[SC-5 D5] mobile backdrop click → setMobileDrawerOpen(false) called (NOT desktop machine)", async () => {
     setupMobile();
-    useShellStore.setState({ valeriaState: "rail", shellMode: "agentic", mobileDrawerOpen: true });
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: false, mobileDrawerOpen: true });
 
     render(<ValeriaSidebar />);
 
     const backdrop = screen.getByTestId("valeria-drawer-backdrop");
     await userEvent.click(backdrop);
 
-    // D5: close action uses the independent mobile slice
     expect(useShellStore.getState().mobileDrawerOpen).toBe(false);
-    // valeriaState is NOT changed by mobile close (independent slices)
-    expect(useShellStore.getState().valeriaState).toBe("rail");
+    // valeriaOpen is NOT changed by mobile close (independent slices)
+    expect(useShellStore.getState().valeriaOpen).toBe("chat");
   });
 
   it("[SC-5 D5] mobile drawer close X button visible when mobileDrawerOpen=true", () => {
     setupMobile();
-    useShellStore.setState({ valeriaState: "rail", shellMode: "agentic", mobileDrawerOpen: true });
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: false, mobileDrawerOpen: true });
 
     render(<ValeriaSidebar />);
 
@@ -442,18 +374,17 @@ describe("ValeriaSidebar — SC-8 mobile drawer (T-4 D5: mobileDrawerOpen indepe
     expect(closeBtn).toBeVisible();
   });
 
-  it("[SC-5 D5] mobile X button click → setMobileDrawerOpen(false) (NOT setValeriaState)", async () => {
+  it("[SC-5 D5] mobile X button click → setMobileDrawerOpen(false) (NOT desktop machine)", async () => {
     setupMobile();
-    useShellStore.setState({ valeriaState: "full", shellMode: "agentic", mobileDrawerOpen: true });
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: true, mobileDrawerOpen: true });
 
     render(<ValeriaSidebar />);
 
     const closeBtn = screen.getByTestId("valeria-drawer-close");
     await userEvent.click(closeBtn);
 
-    // D5: close via X button uses the independent mobile slice
     expect(useShellStore.getState().mobileDrawerOpen).toBe(false);
-    // valeriaState is NOT changed
-    expect(useShellStore.getState().valeriaState).toBe("full");
+    // valeriaOpen is NOT changed
+    expect(useShellStore.getState().valeriaOpen).toBe("chat");
   });
 });
