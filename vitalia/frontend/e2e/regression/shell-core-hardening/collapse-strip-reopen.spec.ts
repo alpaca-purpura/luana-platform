@@ -94,8 +94,8 @@ test.describe("SC-5 — colapsar → strip → reabrir (RN-5 · RN-9 · RN-12)",
     // Collapse first
     await pom.collapseToStripBtn.waitFor({ state: "visible", timeout: 15_000 });
     await pom.collapseToStripBtn.click();
-    await shellPage.waitForTimeout(300);
-    await expect(pom.collapsedStrip).toBeVisible({ timeout: 5_000 });
+    // Wait for strip to appear before trying to click it (220ms CSS transition)
+    await expect(pom.collapsedStrip).toBeVisible({ timeout: 8_000 });
 
     // Click the strip avatar to reopen
     await pom.clickCollapsedAvatar();
@@ -122,7 +122,8 @@ test.describe("SC-5 — colapsar → strip → reabrir (RN-5 · RN-9 · RN-12)",
     // Collapse
     await pom.collapseToStripBtn.waitFor({ state: "visible", timeout: 15_000 });
     await pom.collapseToStripBtn.click();
-    await shellPage.waitForTimeout(300);
+    // Wait for strip to appear before trying to click it (220ms CSS transition)
+    await expect(pom.collapsedStrip).toBeVisible({ timeout: 8_000 });
 
     // Reopen via strip
     await pom.clickCollapsedAvatar();

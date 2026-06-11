@@ -318,7 +318,13 @@ export function ShellOrganismLayoutClient({
               defaultSize={isLg ? defaultValeriaPct : 0}
               minSize={`${minValeriaPct}%`}
               collapsible={true}
-              collapsedSize={0}
+              // T-3 strip fix: react-resizable-panels snaps to collapsedSize when
+              // setLayout receives a value < minSize. We want the "closed" state A
+              // to land at stripPct (44px), not 0. On desktop set collapsedSize to
+              // stripPct so setLayout(stripPct) holds at the strip (not collapses
+              // to 0). On mobile we still want 0 (panel is CSS-hidden via hidden
+              // md:flex but stays mounted for the drawer portal to work).
+              collapsedSize={isLg ? stripPct : 0}
             >
               {/* ValeriaSidebar stays mounted at all widths (its drawer portals to
                   document.body); the inline aside hides itself < lg (hidden lg:grid),

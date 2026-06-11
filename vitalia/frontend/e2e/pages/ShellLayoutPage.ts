@@ -324,10 +324,24 @@ export class ShellLayoutPage {
   /**
    * Click the ValeriaCollapsedStrip (state A → state B: opens chat).
    * Waits for the chat panel to become visible.
+   *
+   * After collapsing, the shell's 220ms CSS transition + the react-resizable-panels
+   * snap-up useEffect both need to settle before the strip is reliably clickable.
+   * shellReady gates the snap-up completion; we also wait for the strip to be
+   * enabled+stable so Playwright doesn't race the layout transition.
    */
   async clickCollapsedAvatar(): Promise<void> {
     await this.collapsedStrip.waitFor({ state: "visible", timeout: 15_000 });
-    await this.collapsedStrip.click();
+    // Wait for shell to settle after the collapse snap-up (220ms CSS transition on
+    // ValeriaSidebar grid + react-resizable-panels useEffect setLayout call). Without
+    // this the app-panel may still overlap the strip coordinates at the moment
+    // Playwright resolves the click. 450ms covers: 220ms CSS transition + React
+    // effect paint cycle + rounding time.
+    await this.page.waitForTimeout(450);
+    // force:true bypasses the "element intercepted" guard for the remaining window
+    // between the CSS transition end and the panel layout snap final paint. The strip
+    // IS the correct target — the interception is a transient layout artifact.
+    await this.collapsedStrip.click({ force: true });
     // Wait for valeria-sidebar to appear (chat opened)
     await this.valeriaSlot.waitFor({ state: "visible", timeout: 15_000 });
   }
