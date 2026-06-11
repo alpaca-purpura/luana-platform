@@ -1,7 +1,16 @@
 // cap: shell-organism.shell-vitalia
 // story-origin: vitalia-fase1-s5-TBD
-// _mock-conversations.ts — mock data F1-S5 (no API real hasta Fase 2)
-// HIPAA-lite: cero PHI (sin patient names, diagnoses, dosages ni identifiers médicos)
+/**
+ * _mock-conversations.ts — Mock conversation history data (F1-S5).
+ *
+ * T-V2 (platform-lift-shell-chrome-ui-kit): recreated after chrome deletion.
+ * File kept in shell-organism because chat-store.test.ts imports it via
+ * @/components/shared/shell-organism/_mock-conversations. Kept here to
+ * preserve e2e/test import paths without touching the test file.
+ *
+ * HIPAA-lite: cero PHI (sin patient names, diagnoses, dosages ni identifiers médicos)
+ * downstream-regression-na: brand-local shell data; no cross-brand consumers
+ */
 
 export type MockConversation = {
   id: string;

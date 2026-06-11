@@ -155,7 +155,7 @@ export function FilterChips({ value, onChange, className }: FilterChipsProps) {
           "flex items-center gap-1.5 overflow-x-auto px-3 pb-0.5",
           "[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
         )}
-        role="listbox"
+        role="toolbar"
         aria-label="Filtrar por red social"
       >
         {/* Todas — reset all */}

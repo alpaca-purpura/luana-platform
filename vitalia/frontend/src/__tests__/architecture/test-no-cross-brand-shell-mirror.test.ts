@@ -14,6 +14,12 @@
  *    "portar verbatim de Vitalia re-temizado"). Those are KNOWN SANCTIONED
  *    mirrors tracked in KNOWN_SANCTIONED_SHELL_MIRROR below.
  *
+ *    T-V2 (platform-lift-shell-chrome-ui-kit): chrome components deleted
+ *    from vitalia. These symbols no longer originate from vitalia — they now
+ *    live in @luana/ui-kit. They are removed from both KNOWN_SANCTIONED_SHELL_MIRROR
+ *    and VITALIA_SHELL_SYMBOLS_UNDER_WATCH (no longer vitalia-originated mirrors).
+ *    Nicolify convergence (T-N1) will remove local copies when it runs.
+ *
  *    The allowlist is shrink-to-zero: it exists only while the lift-to-core
  *    is pending. Once the shell-organism is extracted to
  *    core/luana-core-ui (proposal 2026-06-01-lift-shell-organism-to-core.md),
@@ -75,39 +81,13 @@ const OTHER_BRANDS_FRONTEND = ["nicolify", "comunify", "lupulo"].map(
 // Do NOT add new entries without a corresponding proposal update and
 // Chris ratification. Each entry here is a tracked technical debt item.
 // ---------------------------------------------------------------------------
+// T-V2 (platform-lift-shell-chrome-ui-kit): chrome symbols lifted to @luana/ui-kit
+// are removed from this allowlist — they are no longer vitalia-originated.
+// Nicolify still has local copies (pending T-N1 convergence), but those are now
+// kit symbols, not vitalia mirrors. WATCH list updated accordingly.
 const KNOWN_SANCTIONED_SHELL_MIRROR = new Set<string>([
-  // --- Layout + store (T-6 origin) ---
-  "ShellOrganismLayout", // vitalia shell layout wrapper, ported to nicolify
-  "shell-store", // zustand shell store module name, ported to nicolify
-  "useShellStore", // zustand shell store hook, ported to nicolify
-
-  // --- Sidebar / history (F1-S5 origin) ---
-  "ValeriaSidebar", // vitalia sidebar component — nicolify re-themes as LuanaSidebar but re-exports symbol
-  "ValeriaRail", // collapsed rail variant, ported to nicolify
-  "ValeriaHistory", // history list component, ported to nicolify
-  "HistoryItem", // history list atom, ported to nicolify
-  "HistoryGroup", // history list grouping, ported to nicolify
-  "EmptyStateInline", // inline empty-state molecule, ported to nicolify
-  "useKeyboardShortcuts", // keyboard shortcut hook, ported to nicolify
-
-  // --- Chat skeleton (F1-S6 origin) ---
-  "ValeriaChat", // chat container component, ported to nicolify
-  "DelegateMarker", // agent delegation marker, ported to nicolify
-  "useChatStore", // chat zustand store hook, ported to nicolify
-  "AGENT_CATALOG", // agent catalog constant, ported to nicolify
-
-  // --- Ribbon (F1-S7 origin) ---
-  "Ribbon", // ribbon organism, ported to nicolify
-  "RibbonTab", // ribbon tab molecule, ported to nicolify
-  "ConfigTab", // configuration tab in ribbon, ported to nicolify
-  "AGENT_RIBBON_ORDER", // ribbon ordering constant, ported to nicolify
-  "extractAgentFromPath", // routing helper, ported to nicolify
-
-  // --- SubTabs (F1-S8 origin) ---
-  "SubTabsBar", // sub-tabs bar organism, ported to nicolify
-  "SubTab", // sub-tab molecule, ported to nicolify
-  "extractSubtabFromPath", // routing helper, ported to nicolify
-  "SubTabMeta", // sub-tab metadata type, ported to nicolify
+  // Empty — all formerly-vitalia chrome symbols now live in @luana/ui-kit.
+  // T-N1 will remove nicolify local copies when it runs.
 ]);
 
 // ---------------------------------------------------------------------------
@@ -181,25 +161,12 @@ describe("arch: shell symbol ratchet — unsanctioned mirrors = 0 (allowlisted o
    * above, (2) the test below changes from `toBeTruthy` (in-allowlist) to a
    * new zero-tolerance test like the ones above.
    */
-  it("sanctioned shell-organism symbols are tracked in the allowlist (documents pending lift)", () => {
+  it("sanctioned shell-organism symbols allowlist (T-V2: intentionally empty — chrome lifted to @luana/ui-kit)", () => {
+    // T-V2: Chrome deleted from vitalia + lifted to @luana/ui-kit.
+    // All former entries removed from both this allowlist and the WATCH list.
+    // Nicolify T-N1 will remove local copies from nicolify when it runs.
     const sanctioned = Array.from(KNOWN_SANCTIONED_SHELL_MIRROR);
-    expect(sanctioned.length).toBeGreaterThan(0);
-    // Every symbol in the allowlist should actually appear in ≥1 other brand
-    // (proves the allowlist is not stale/over-populated).
-    for (const symbol of sanctioned) {
-      const count = grepCount(symbol, OTHER_BRANDS_FRONTEND);
-      // If count is 0, the symbol was already removed from other brands —
-      // remove it from KNOWN_SANCTIONED_SHELL_MIRROR to keep the list lean.
-      if (count === 0) {
-        console.warn(
-          `[arch-test] KNOWN_SANCTIONED_SHELL_MIRROR entry "${symbol}" has 0 matches ` +
-            `in other brands — consider removing it from the allowlist.`,
-        );
-      }
-      // Not a hard failure: the lift may have partially landed. The presence
-      // of the entry is a reminder, not a blocker.
-    }
-    expect(sanctioned).not.toHaveLength(0); // allowlist itself must not be accidentally wiped
+    expect(sanctioned.length).toBe(0); // SHRINK-TO-ZERO achieved at T-V2
   });
 
   /**
@@ -209,33 +176,12 @@ describe("arch: shell symbol ratchet — unsanctioned mirrors = 0 (allowlisted o
    * To add a new symbol here, the engineer must ALSO add it to
    * KNOWN_SANCTIONED_SHELL_MIRROR with a rationale comment, or it will fail.
    */
+  // T-V2: Chrome symbols deleted from vitalia + lifted to @luana/ui-kit.
+  // No longer "vitalia shell symbols" — removed from watch list.
+  // Any NEW vitalia-specific shell symbol added in the future should be listed here.
   const VITALIA_SHELL_SYMBOLS_UNDER_WATCH: string[] = [
-    // These were previously in zero-tolerance tests and are now
-    // ratchet-checked: fail only if they appear AND are not allowlisted.
-    "ShellOrganismLayout",
-    "shell-store",
-    "useShellStore",
-    "ValeriaSidebar",
-    "ValeriaRail",
-    "ValeriaHistory",
-    "ValeriaChatSlot",
-    "HistoryItem",
-    "HistoryGroup",
-    "EmptyStateInline",
-    "useKeyboardShortcuts",
-    "ValeriaChat",
-    "DelegateMarker",
-    "useChatStore",
-    "AGENT_CATALOG",
-    "Ribbon",
-    "RibbonTab",
-    "ConfigTab",
-    "AGENT_RIBBON_ORDER",
-    "extractAgentFromPath",
-    "SubTabsBar",
-    "SubTab",
-    "extractSubtabFromPath",
-    "SubTabMeta",
+    // Future vitalia-specific symbols not yet in the kit would be listed here.
+    // Currently empty: all chrome symbols are now in @luana/ui-kit.
   ];
 
   for (const symbol of VITALIA_SHELL_SYMBOLS_UNDER_WATCH) {

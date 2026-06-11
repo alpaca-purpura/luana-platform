@@ -345,7 +345,7 @@ export function DoctorPerfilView({ doctorId }: DoctorPerfilViewProps) {
                   >
                     <div
                       className={cn(
-                        "w-4 h-4 rounded-full bg-white shadow-sm mt-1 transition-transform",
+                        "w-4 h-4 rounded-full bg-background shadow-sm mt-1 transition-transform",
                         field.value ? "translate-x-5" : "translate-x-1",
                       )}
                     />

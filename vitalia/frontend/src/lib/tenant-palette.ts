@@ -9,6 +9,7 @@
  * cross-session (same id → same color every time).
  *
  * Contrast fix forward (03-arch § 2.9 + 01-spec § 11):
+ * - cyan-500 (#00b8db) on text-white → fails WCAG AA (2.36:1) → use text-cyan-950
  * - amber-500 on white → fails WCAG AA (4.5:1) → use text-amber-950
  * - lime-500 on white → fails WCAG AA → use text-lime-950
  * - All other entries use text-white (passes ≥4.5:1 on those BGs)
@@ -32,7 +33,7 @@ export interface PaletteColor {
  * Shrink-only: do NOT reorder entries (would break existing tenant→color mapping).
  */
 export const PALETTE = [
-  { bg: "bg-cyan-500", text: "text-white" },
+  { bg: "bg-cyan-500", text: "text-cyan-950" },  // #00b8db bg → needs dark text (2.36 white fails WCAG AA)
   { bg: "bg-purple-500", text: "text-white" },
   { bg: "bg-fuchsia-500", text: "text-white" },
   { bg: "bg-amber-500", text: "text-amber-950" },

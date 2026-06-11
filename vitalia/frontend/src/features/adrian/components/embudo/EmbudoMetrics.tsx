@@ -10,10 +10,16 @@
  * Server Component: YES — no state, pure display.
  * spec_anchor: 01-spec.md § V1 KPI strip
  *
- * B1 fix (2026-06-04): frozen-kpi-badge uses hard-nav (<a>) instead of Next
- * <Link> to avoid the "Rendered more hooks" hang caused by the shell
- * dynamic({ssr:false}) layout on soft-nav (learning 2026-06-03-next16-softnav).
+ * B1 fix v2 (vitalia-shell-core-hardening T-4, Decisión A): el chip
+ * frozen-kpi-badge vuelve a next/link (soft-nav). El band-aid hard-nav (anchor)
+ * de 2026-06-04 se revirtió porque la causa raíz del "Rendered more hooks" era
+ * el redirect IN-RENDER intra-route-group de (shell-organism)/page.tsx, ahora
+ * resuelto en el EDGE (proxy.ts 307). /adrian/recuperar es una ruta estática
+ * real (sin redirect in-render) → el soft-nav del chip ya no dispara el hang.
+ * Ver 03-arch.md § Architecture Decisions A + learning 2026-06-03-next16-softnav.
  */
+import Link from "next/link";
+
 import { cn } from "@/lib/utils";
 import type { BoardKpis } from "../../types/embudo.types";
 
@@ -77,9 +83,10 @@ export function EmbudoMetrics({ kpis, tenantId, className }: EmbudoMetricsProps)
 
         if (chip.href) {
           return (
-            // Hard-nav via <a> (not Next <Link>) — intentional: avoids "Rendered more hooks"
-            // hang from shell dynamic({ssr:false}) on soft-nav. See learning 2026-06-03-next16-softnav.
-            <a
+            // Soft-nav vía next/link (T-4 Decisión A): el redirect in-render que
+            // disparaba "Rendered more hooks" se movió al edge (proxy.ts 307);
+            // /adrian/recuperar es ruta estática real → soft-nav seguro.
+            <Link
               key={chip.label}
               href={chip.href}
               className="inline-flex"
@@ -87,7 +94,7 @@ export function EmbudoMetrics({ kpis, tenantId, className }: EmbudoMetricsProps)
               data-testid="frozen-kpi-badge"
             >
               {content}
-            </a>
+            </Link>
           );
         }
 

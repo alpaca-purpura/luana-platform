@@ -2,7 +2,9 @@
 
 # Shell-Organism Design Contract — SSoT
 
-> **Versión:** 1.3 · **Fecha:** 2026-06-03 (base 1.0 2026-05-22) · **Estado:** ratificado por Chris · **Branch:** wip/vitalia
+> **Versión:** 1.5 · **Fecha:** 2026-06-11 (base 1.0 2026-05-22) · **Estado:** ratificado por Chris · **Branch:** wip/vitalia
+>
+> **★ v1.5 — EL CHROME VIVE EN `@luana/ui-kit` (lift `platform-lift-shell-chrome-ui-kit`, proposal 2026-06-01 migrated):** la implementación canónica del chrome (ShellLayout(Client) ex-ShellOrganismLayout, Supervisor{Sidebar,CollapsedStrip,History} ex-Valeria*, ChatPanel/ChatHeader/Chat*, Ribbon(Tab), SubTabsBar/SubTab/SubSubTabsBar, TopBarShell, AppPanelSlot, useViewportGuard, createShellStore) vive en `core/@luana/ui-kit/src/organism/shell/` (v0.4.0, brand-agnostic por props+CSS vars). Vitalia lo consume vía `ShellLayoutWire` (`app/[tenantId]/(shell-organism)/_components/`) que inyecta brand data (AGENT_CATALOG, supervisorName='Valeria', testIds legacy, tokens). Este contrato sigue siendo el SSoT del COMPORTAMIENTO + brand data de vitalia; la implementación se versiona en el kit (CHANGELOG 0.4.0). Quedan brand-local: LogoMark, ThemeToggle, Tenant*, SubTabContent (dispatcher), _agent-tw-classes, AddClinicPlaceholderModal.
 >
 > **Propósito:** documento canónico que cementa CADA átomo · molécula · organismo · template del shell-organism agéntico Vitalia. TODA historia de usuario Fase 1 y Fase 2 cita este doc como referencia técnica. Sin este doc, las historias serían textos sueltos sin contrato visual ni funcional verificable.
 >
@@ -123,24 +125,30 @@ vitalia/frontend/src/
 
 | Mockup ref | Organismo | Composición | State management | Keyboard | Path |
 |---|---|---|---|---|---|
-| `.topbar` header | `TopBarGlobal` | LogoMark + (ThemeToggle + TenantSwitcher) | — (consume hooks) | — | `components/shared/shell-organism/TopBarGlobal.tsx` |
-| `.panel-valeria` 50% izq | `ValeriaSidebar` | Rail OR History + Chat (grid interno) | zustand `shellStore.valeriaState` | `C/R/F/N/Esc/Cmd+K` | `components/shared/shell-organism/ValeriaSidebar.tsx` |
-| `.valeria-rail` 60px | `ValeriaRail` | RailIconButtons + divider | — (recibe state) | (delegado a parent) | `components/shared/shell-organism/ValeriaRail.tsx` |
-| `.valeria-history` 280px | `ValeriaHistory` | Header + Search + HistoryGroup[] | React Query convs · search local | — | `components/shared/shell-organism/ValeriaHistory.tsx` |
+| `.topbar` header | `TopBarGlobal` | LogoMark + (ThemeToggle + TenantSwitcher) ★ cluster derecho orden fijo | — (consume hooks) | — | `components/shared/shell-organism/TopBarGlobal.tsx` |
+| `.panel-valeria` 50% izq | `ValeriaSidebar` | `ValeriaCollapsedStrip` OR `ValeriaChat` + toggle historial (★ v1.4) | zustand `shellStore.valeriaOpen` + `historyOpen` | `C` colapsar · `F` abrir historial · `N` nueva conv · `Esc` cerrar overlays · `Cmd+K` focus composer | `components/shared/shell-organism/ValeriaSidebar.tsx` |
+| ★ v1.4 NUEVO — tira 44px estado A | `ValeriaCollapsedStrip` | avatar real Valeria (thumbnail.png) + dot presencia + label "Valeria" · click → `openChat()` | — (recibe valeriaOpen=closed) | aria-label "Abrir a Valeria" · click/Enter/Space | `components/shared/shell-organism/ValeriaCollapsedStrip.tsx` |
+| ~~`.valeria-rail` 60px~~ | ~~`ValeriaRail`~~ | **RETIRADO en T-3** (2026-06-10). Reemplazado por `ValeriaCollapsedStrip` (44px, con avatar real). La lógica de iconos de acceso rápido era prematura — Valeria opens to chat, no a rail de acciones. | — | — | ~~`components/shared/shell-organism/ValeriaRail.tsx`~~ DELETED |
+| `.valeria-history` panel lateral | `ValeriaHistory` | Header `[+][◷][⟨]` + Search + HistoryGroup[] · botón "+" = nueva conv · "◷" = toggle historial · "⟨" = colapsar sidebar | React Query convs · search local · historyOpen additive push 260px fijo | — | `components/shared/shell-organism/ValeriaHistory.tsx` |
 | `.valeria-chat` | `ValeriaChat` | ChatHeader + Messages + Composer | zustand `chatStore.messages` · WebSocket | (delegado) | `components/shared/shell-organism/ValeriaChat.tsx` |
 | `.ribbon` 5 especialistas + Plataforma | `Ribbon` | RibbonTab[] + PlataformaTab | router state (active from URL) | — | `components/shared/shell-organism/Ribbon.tsx` |
 |  ↳ ★★ v1.2 (2026-05-30) | Antes: 6 tabs (con Valeria + "Configurar"). Ahora: 5 especialistas (sin Valeria) + "Plataforma" | — | — | — |
 | `.sub-tabs` línea 2 | `SubTabsBar` | SubTab[] (dinámico per tab) | router state | — | `components/shared/shell-organism/SubTabsBar.tsx` |
-| barra N3-dynamic del detalle (patrón list→detail · § 7.2.2) | `EntitySubNavBar` | Back `‹ {rootLabel}` + identidad (avatar+nombre) + leaves (rutas) | prop `entity` (null=directory mode → leaves disabled) · `activeLeaf` · NO en `AGENT_SUBSUBTABS` | roving tabindex + flechas L/R/Home/End | `components/shared/shell-organism/EntitySubNavBar.tsx` |
-| `[doctor-id]/layout.tsx` workspace del detalle | `StaffWorkspaceShell` | `EntitySubNavBar` (sticky) + content slot · construye hrefs de leaves · `usePathname` → activeLeaf | React Query doctor · zustand `staff-ui-store` | (delegado) | `features/lisa/components/staff/workspace/StaffWorkspaceShell.tsx` |
+| barra N3-dynamic del detalle (patrón list→detail · § 7.2.2) | `EntitySubNavBar` ★ v1.4 CONSUMIDO de `@luana/ui-kit` | Back `‹ {rootLabel}` + identidad (avatar+nombre) + leaves (rutas) · prop `activeLeaf?: string\|null` agregada al kit (d3b06b11) | prop `entity` (null=directory mode → leaves disabled) · `activeLeaf` · NO en `AGENT_SUBSUBTABS` | roving tabindex + flechas L/R/Home/End | `import { EntitySubNavBar } from '@luana/ui-kit'` — brand-local RETIRADO (T-5) |
+| `[doctor-id]/layout.tsx` workspace del detalle | `StaffWorkspaceShell` ★ v1.4 usa `EntityWorkspaceLayout` de kit | `EntityWorkspaceLayout` de `@luana/ui-kit` (sticky EntitySubNavBar + content slot) · construye hrefs de leaves · `usePathname` → activeLeaf · `activeLeaf` override prop | React Query doctor · zustand `staff-ui-store` | (delegado) | `features/lisa/components/staff/workspace/StaffWorkspaceShell.tsx` |
+| `[lead-id]/layout.tsx` workspace embudo (★ v1.4) | `LeadWorkspace` usa `EntityWorkspaceLayout` de kit | `EntityWorkspaceLayout` de `@luana/ui-kit` | React Query lead · zustand `crm-ui-store` | (delegado) | `features/adrian/components/embudo/workspace/LeadWorkspace.tsx` |
 | `.content` body derecho | `ContentArea` | slot — children = page actual | — (Next.js routing) | — | (es el `{children}` del layout) |
+
+> **★ v1.4 N3 consumers — brand-local `EntitySubNavBar.tsx` RETIRADO (commit `a042e1df`):** el archivo `components/shared/shell-organism/EntitySubNavBar.tsx` (258 líneas) fue eliminado. Todo consumer importa de `@luana/ui-kit` v0.3.x. El arch-test `test-no-cross-brand-shell-mirror.test.ts` 31/31 PASS verifica ausencia del mirror local. Evidence: T-5-result.md.
 
 ### § 3.4 — Templates (layouts)
 
 | Mockup ref | Template | Composición | Variantes | Path |
 |---|---|---|---|---|
-| Layout shell completo | `ShellOrganismLayout` | TopBarGlobal + (ValeriaSidebar \| ContentSection) grid 50/50 | modo `agentic` (default 50/50) · modo `web` (Valeria → rail 60px, content 100%) | `app/[tenantId]/(shell-organism)/layout.tsx` |
+| Layout shell completo | `ShellOrganismLayout` / `ShellOrganismLayoutClient` | TopBarGlobal + resizable panel `[ValeriaSidebar \| ContentSection]` (★ v1.4: `react-resizable-panels` + `ssr:false` dynamic; splitter persistido en `shell-store`) | ≥1280 default 30/70 · [1024,1280) clamp min 320px · <1024 drawer Shadcn (Valeria overlay, CSS gate `hidden lg:block` separator) | `app/[tenantId]/(shell-organism)/layout.tsx` + `ShellOrganismLayoutClient.tsx` |
 | ContentSection | `ContentSection` | Ribbon + SubTabsBar + ContentArea | — | inline en layout o componente extraído |
+
+> **★ v1.4 — `ShellModeToggle` y modos `agentic`/`web` RETIRADOS (T-2):** el toggle chip web/agéntico fue eliminado de `TopBarGlobal` y `ShellOrganismLayout`. No existe selector de modo. El shell siempre está en modo agéntico (ValeriaSidebar siempre presente). El antiguo modo "web" (Valeria → rail 60px, content 100%) no existe: colapsar Valeria ahora muestra `ValeriaCollapsedStrip` (44px), no una expansión del content a 100%. Commits: `b19a227d`, `b522043a` (T-2-result.md).
 
 ### § 3.5 — Pages (rutas concretas)
 
@@ -151,6 +159,48 @@ vitalia/frontend/src/
 | `/[tenantId]/(shell-organism)/[agent]/[subtab]/page.tsx` | sub-tab específica | renderiza componente per agente+subtab |
 | `/[tenantId]/(shell-organism)/[agent]/[subtab]/[entityId]/layout.tsx` | N3-dynamic DETALLE — monta `EntitySubNavBar` + SSR entidad + slot `{children}` (patrón list→detail · § 7.2.2 · staff usa `[doctor-id]`) | la lista/master es el `[subtab]/page.tsx` de arriba |
 | `/[tenantId]/(shell-organism)/[agent]/[subtab]/[entityId]/[leaf]/page.tsx` | leaf activo del detalle (ej. staff: `perfil`·`horarios`·`servicios`) | `[entityId]` redirige al 1er leaf |
+
+### § 3.6 — TopBar cluster (★ v1.4 hardening T-2)
+
+> Contrato fijo post T-2. No agregar ni reordenar sin anotarlo acá.
+
+```
+[LogoMark]  ──────────────────────────  [ThemeToggle] [TenantSwitcher]
+                  flex-1 (espacio)            cluster derecho (orden fijo)
+```
+
+- **Cluster derecho:** `ThemeToggle` primero, `TenantSwitcher` segundo. Orden inmutable.
+- **Eliminado:** chip modo web/agéntico (`ShellModeToggle`) — RETIRADO en T-2. No reinstalar.
+- **ThemeToggle:** `<button aria-label="Cambiar tema (claro/oscuro)" aria-pressed={isDark}>` — Moon/Sun icon swap vía `next-themes` `useTheme`.
+- **TenantSwitcher:** DropdownMenu Radix · `aria-label="Cambiar clínica"` en trigger.
+- **wiring dark:** `next-themes` vive en `vitalia/frontend/src/app/providers.tsx` (intacto post-hardening). NO mover.
+
+### § 3.7 — Dark mode (★ v1.4 hardening T-6)
+
+> Token audit completado. Hardcoded colors eliminados del core chrome.
+
+| Archivo | Campo corregido | Antes | Después | Commit |
+|---|---|---|---|---|
+| `features/lisa/components/staff/DoctorPerfilView.tsx` l.348 | background wrapper | `bg-white` | `bg-background` | T-6 |
+| `components/shared/shell-organism/TakeoverBanner.tsx` l.91 | banner dark variant | (ninguna) | `dark:bg-amber-600 dark:border-amber-600` | T-6 |
+
+**Estado dark mode post-hardening:**
+- CSS vars `--background`, `--foreground`, `--card`, etc. definidas en `globals.css` §5.1 — dark variants presentes en `.dark {}` block.
+- `next-themes` wiring en `providers.tsx` — `ThemeProvider attribute="class"` (class-based toggle).
+- No se agregaron nuevas dark variants a `globals.css` en T-6 (las existentes cubrían todos los casos restantes).
+- ContactSidebar BUG (rgb(255,255,255) hardcoded) resuelto en T-2/T-3 (antes de T-6).
+
+### § 3.8 — Soft-nav (★ v1.4 hardening T-4)
+
+> Soft-nav = navegación SPA sin reload completo. Afecta principalmente chips/badges de métricas en embudo.
+
+**Decisión A (implementada, commits T-4):**
+- `EmbudoMetrics.tsx` frozen-kpi-badge: `<a href>` (band-aid hard-nav) → `<Link>` de `next/link` (soft-nav restaurado).
+- `proxy.ts` edge-redirect: verificado sin cambios. El rewrites `/api`→BE ya existía como `bareTenantLandingRedirect` 307.
+- `next.config.ts` rewrites `/api`→BE: agregado en T-7 para fix bug global `useTenants 404`.
+- `ssr:false` en `ShellOrganismLayoutClient` (dynamic import) conservado — `react-resizable-panels` v4 requiere browser API. El edge-redirect en `proxy.ts` cubre el problema "soft-nav hacia layout ssr:false → Rendered more hooks" (Next 16.2.3 bug, ver `vitalia/docs/learnings/2026-06-03-next16-softnav-redirect-rendered-more-hooks.md`).
+
+**Anti-patrón prohibido:** `<a href>` para navegación intra-shell. Siempre `<Link>` de `next/link` o `router.push` para rutas dentro del shell-organism.
 
 ---
 
@@ -342,39 +392,65 @@ Story F1-S0 incluye scan + plan deprecación. Strategy:
 
 ## § 6 — State management (zustand stores)
 
-### § 6.1 — `shellStore` (NEW — global shell state)
+### § 6.1 — `shellStore` (★ hardening T-1 2026-06-10 — máquina nueva)
+
+> **Cambio breaking v1.4:** `ValeriaState = 'collapsed' | 'rail' | 'full'` y `ShellMode = 'agentic' | 'web'` **RETIRADOS**. Reemplazados por máquina de 2 dimensiones ortogonales. Commits: ver T-1-result.md (vitalia-shell-core-hardening).
 
 ```ts
 // vitalia/frontend/src/stores/shell-store.ts
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+// Máquina Valeria post-hardening (T-1)
 
-type ValeriaState = 'collapsed' | 'rail' | 'full'
-type ShellMode = 'agentic' | 'web'
+// ★ Estados activos (2 valores)
+type ValeriaOpen = 'closed' | 'chat'
+// 'closed' → tira 44px (ValeriaCollapsedStrip) — estado A
+// 'chat'   → chat visible a la izquierda — estado B
+
+// ★ historyOpen = dimensión aditiva (bool, NO persiste en storage)
+// true → panel de historial empuja 260px fijos a la derecha de la sidebar
+// No modifica el splitter central ni el ancho base del panel Valeria
+
+// ★ RETIRADOS (no existen en runtime):
+// - ValeriaState = 'collapsed' | 'rail' | 'full'
+// - ShellMode = 'agentic' | 'web'
+// - shellMode / setShellMode
+// - cycleValeriaState (lógica inline reemplaza)
 
 interface ShellStore {
-  valeriaState: ValeriaState
-  shellMode: ShellMode
-  setValeriaState: (s: ValeriaState) => void
-  cycleValeriaState: () => void  // rail → full → rail
-  setShellMode: (m: ShellMode) => void
+  valeriaOpen: ValeriaOpen       // persiste
+  historyOpen: boolean           // NO persiste (session-only)
+  setValeriaOpen: (s: ValeriaOpen) => void
+  toggleHistory: () => void
+  openChat: () => void           // 'closed' → 'chat'
+  closeValeria: () => void       // 'chat' → 'closed'
 }
 
-export const useShellStore = create<ShellStore>()(
-  persist(
-    (set, get) => ({
-      valeriaState: 'rail',
-      shellMode: 'agentic',
-      setValeriaState: (s) => set({ valeriaState: s }),
-      cycleValeriaState: () => set({
-        valeriaState: get().valeriaState === 'full' ? 'rail' : 'full'
-      }),
-      setShellMode: (m) => set({ shellMode: m }),
-    }),
-    { name: 'vitalia-shell-state' }
-  )
-)
+// Implementación usa createSsrSafePersistedStore de @luana/hooks
+// (evita hydration mismatch al leer localStorage en SSR)
+// Persiste solo valeriaOpen; historyOpen arranca false siempre
 ```
+
+**Máquina de estados:**
+
+```
+              ┌──── strip click / reopenValeria() ────┐
+              ▼                                        │
+[closed] ─── openChat() ──────────────────────────► [chat]
+              ▲                                        │
+              └──── closeValeria() / ◀ colapsar ───────┘
+
+historyOpen  ──── toggleHistory() ──►  true / false
+             (additive — no cambia valeriaOpen)
+```
+
+**Layout implications:**
+
+| valeriaOpen | historyOpen | Left panel |
+|---|---|---|
+| `closed` | — | 44px tira `ValeriaCollapsedStrip` (click → `chat`) |
+| `chat` | false | Panel chat base (clamp 320px, default ~30%) |
+| `chat` | true | Panel chat + 260px fijos `ValeriaHistory` (push, no overlay) |
+
+**Responsivo:** `<1024px` → Valeria en drawer/overlay independientemente del store (CSS gate — `ShellOrganismLayoutClient` usa `hidden lg:block` separator + `Drawer` de Shadcn).
 
 ### § 6.2 — `themeStore` (NEW — light/dark)
 
@@ -489,9 +565,11 @@ N3-dynamic            → [agent]/[subtab]/[entityId]/[leaf]         → detalle
 
 **Source decisión:** ADR-vitalia-004 v1.1 § 3.1.1 (cementación 2026-05-27 origen lisa-marca refinement).
 
-### § 7.2.2 — Patrón list→detail (`EntitySubNavBar`) — ★ canónico para todo "lista → detalle" (cement 2026-06-03)
+### § 7.2.2 — Patrón list→detail (`EntitySubNavBar`) — ★ canónico para todo "lista → detalle" (cement 2026-06-03 · ★★ v1.4 lifted a `@luana/ui-kit` 2026-06-10)
 
-> **Origen:** inventado en Vitalia (`lisa/staff` doctores · `ADR-vitalia-004 § D-1`). Adoptado cross-brand 2026-06-03 (Chris) — Nicolify lo portó re-temizado (ICP→buyers). **Reemplaza la noción stale "N3-dynamic = Sheet drawer / `[...slug]` catch-all".** Reference impl: `components/shared/shell-organism/EntitySubNavBar.tsx` + `features/lisa/components/staff/workspace/StaffWorkspaceShell.tsx` + `app/[tenantId]/(shell-organism)/lisa/staff/[doctor-id]/layout.tsx`.
+> **Origen:** inventado en Vitalia (`lisa/staff` doctores · `ADR-vitalia-004 § D-1`). Adoptado cross-brand 2026-06-03 (Chris) — Nicolify lo portó re-temizado (ICP→buyers). **Reemplaza la noción stale "N3-dynamic = Sheet drawer / `[...slug]` catch-all".**
+>
+> **★★ v1.4 (T-5 hardening 2026-06-10):** `EntitySubNavBar` y `EntityWorkspaceLayout` CONSUMIDOS de `@luana/ui-kit` v0.3.x. Brand-local `components/shared/shell-organism/EntitySubNavBar.tsx` ELIMINADO (commit `a042e1df`). Prop `activeLeaf?: string | null` agregada al kit en commit `d3b06b11` (backward-compatible). Consumers vitalia: `StaffWorkspaceShell` + `LeadWorkspace` + `NewLeadPage`. Reference impl: `import { EntitySubNavBar, EntityWorkspaceLayout } from '@luana/ui-kit'`.
 
 Cuando un sub-tab N2 **es una colección de entidades** (staff/doctores, pacientes, cuentas…) que se **listan** y luego se **entra al detalle** de una, se usa `EntitySubNavBar` (NO Sheet, NO catch-all):
 
@@ -502,7 +580,7 @@ Cuando un sub-tab N2 **es una colección de entidades** (staff/doctores, pacient
 - **Directory mode** (`entity=null`): leaves **deshabilitadas/atenuadas** (aria-disabled, tabIndex=-1, opacity ~.45) hasta que hay entidad.
 - **Las leaves son RUTAS, NO Shadcn `Tabs`.** a11y (WAI-ARIA tablist · SC-10): `role="tablist"` + `role="tab"`/`aria-selected`/`aria-disabled` + roving tabindex + flechas (Left/Right/Home/End). `router.push` (no full reload — preserva React Query cache). NO registrado en `AGENT_SUBSUBTABS` (driven by `entity` prop).
 
-**Props** (`EntitySubNavBarProps`): `rootHref` · `rootLabel` · `entity: {id, name, avatarUrl?}|null` · `leaves: {id, label, href}[]` · `activeLeaf: string|null`.
+**Props** (`EntitySubNavBarProps` — `@luana/ui-kit` v0.3.x): `rootHref` · `rootLabel` · `entity: {id, name, avatarUrl?}|null` · `leaves: {id, label, href}[]` · `activeLeaf?: string|null` (★ v1.4 — optional override; si ausente el kit deriva de `usePathname()`).
 
 **Dos fuentes de leaves (misma barra, distinto origen):**
 
@@ -521,7 +599,7 @@ detalle:  app/[tenantId]/(shell-organism)/[agent]/[subtab]/[entityId]/layout.tsx
 ```
 PHI/datos sensibles NUNCA en URL — `[entityId]` es UUID, no PHI.
 
-**Lift candidate (★):** `EntitySubNavBar` ya tiene **N=2 consumers** (staff Vitalia + ICP Nicolify) → candidato fuerte a lift a `core/@luana/ui-kit` vía `/pm-luana` (promotion gate). Mientras tanto cada brand lo porta re-temizado desde Vitalia (no reinventar). Proposal relacionada: `docs/promotion-protocol/proposals/2026-06-01-lift-shell-organism-to-core.md`.
+**Lift realizado (★ v1.4):** `EntitySubNavBar` + `EntityWorkspaceLayout` ya viven en `@luana/ui-kit` v0.3.x (lift ejecutado en T-5 vitalia-shell-core-hardening). Brand-local RETIRADO. Consumers Vitalia importan del kit. Proposal shell completo (TopBar+Ribbon+ValeriaSidebar) sigue pendiente governance: `docs/promotion-protocol/proposals/2026-06-01-lift-shell-organism-to-core.md`.
 
 ### § 7.3 — Static metadata catalog (★★ v1.2 addendum 2026-05-30)
 
@@ -564,8 +642,9 @@ PNGs ya en `vitalia/frontend/public/agents/{agent}/thumbnail.png` — verificado
 | `TopBarGlobal` | `<header role="banner">` · logo `<a>` con `aria-label="Vitalia inicio"` |
 | `ThemeToggle` | `<button aria-label="Cambiar tema (claro/oscuro)" aria-pressed={isDark}>` |
 | `TenantSwitcher` | DropdownMenu Radix (a11y nativo) · `aria-label="Cambiar clínica"` en trigger |
-| `ValeriaSidebar` | `<aside role="complementary" aria-label="Panel Valeria">` · `aria-expanded={isExpanded}` |
-| `ValeriaRail` | Cada button `aria-label` específico · keyboard discoverable · Tooltip al hover |
+| `ValeriaSidebar` | `<aside role="complementary" aria-label="Panel Valeria">` · `aria-expanded={valeriaOpen === 'chat'}` |
+| `ValeriaCollapsedStrip` (★ v1.4) | `<button aria-label="Abrir a Valeria">` · tira 44px · avatar real + dot + label · click/Enter/Space → openChat() |
+| ~~`ValeriaRail`~~ | **RETIRADO v1.4** — reemplazado por `ValeriaCollapsedStrip` |
 | `ValeriaHistory` | `<nav aria-label="Historial conversaciones">` · search input `aria-label` |
 | `ValeriaChat` | `<section role="region" aria-label="Chat con Valeria">` · messages `aria-live="polite"` |
 | `Ribbon` | `<nav role="tablist" aria-label="Agentes">` · cada tab `role="tab" aria-selected` |
@@ -576,15 +655,15 @@ PNGs ya en `vitalia/frontend/public/agents/{agent}/thumbnail.png` — verificado
 
 **Keyboard shortcuts globales (Story F1-S5):**
 
-| Tecla | Acción | Scope |
-|---|---|---|
-| `C` | Valeria → collapsed | Global, skip si focus en input |
-| `R` | Valeria → rail | idem |
-| `F` | Valeria → full (history) | idem |
-| `N` | Nueva conversación Valeria | idem |
-| `Esc` | Cerrar overlays / colapsar Valeria | Global |
-| `Cmd/Ctrl+K` | Focus composer Valeria | Global, override default |
-| `Tab` / `Shift+Tab` | Navigation natural | Web standard |
+| Tecla | Acción | Scope | ★ v1.4 |
+|---|---|---|---|
+| `C` | Valeria → closed (tira 44px) | Global, skip si focus en input | ★ antes era `collapsed` |
+| ~~`R`~~ | ~~Valeria → rail~~ | — | **RETIRADO** (rail 60px eliminado) |
+| `F` | Valeria → toggle historial (`historyOpen`) | Global, skip si focus en input | ★ antes era `full` |
+| `N` | Nueva conversación Valeria (botón "+") | Global, skip si focus en input | sin cambio |
+| `Esc` | Cerrar overlays / colapsar Valeria | Global | sin cambio |
+| `Cmd/Ctrl+K` | Focus composer Valeria | Global, override default | sin cambio |
+| `Tab` / `Shift+Tab` | Navigation natural | Web standard | sin cambio |
 
 ---
 
@@ -619,13 +698,14 @@ npm run test:e2e:visual  # falla si diff > 0.1% pixels
 | Organismo | Unit | Integration | Functional E2E | Visual golden | A11y |
 |---|---|---|---|---|---|
 | `TopBarGlobal` | render con logo + slots | tenant switcher dropdown abre/cierra | abrir tema → cambia · abrir tenant → switchea | full snapshot light + dark | axe pass |
-| `ValeriaSidebar` | render 3 estados | keyboard shortcuts C/R/F | press F → expande history · click colapsar → rail | rail snapshot + history snapshot + collapsed | axe pass |
-| `ValeriaRail` | render 7 íconos | tooltips aparecen | hover btn → tooltip | full snapshot | axe pass |
+| `ValeriaSidebar` | render 2 estados (closed/chat) | keyboard shortcuts C/F/N | press C → tira strip · click strip → chat · press F → toggle history | strip snapshot + chat snapshot + chat+history snapshot | axe pass |
+| `ValeriaCollapsedStrip` (★ v1.4) | render avatar+dot+label | click handler | click → openChat() | strip snapshot light + dark | axe pass |
+| ~~`ValeriaRail`~~ | **RETIRADO v1.4** | — | — | — | — |
 | `ValeriaHistory` | render groups + items | search filtra · click item activa | typing search reduce list · click conv → activa | full snapshot | axe pass |
 | `ValeriaChat` | render messages bot/user | streaming dots aparecen | composer enter → mensaje aparece | snapshot con 5 mensajes ejemplo | axe pass |
 | `Ribbon` | render 6 tabs | active tab change | click tab → URL cambia + tab activa visual | full ribbon snapshot per active tab (6) | axe pass |
 | `SubTabsBar` | render sub-tabs per agente | click sub-tab → activa | URL refleja sub-tab | snapshot per agente (6) | axe pass |
-| `ShellOrganismLayout` | render 50/50 | resize collapse Valeria | full flow nav cross-agente | snapshot agentic + web modes | axe pass |
+| `ShellOrganismLayout` | render splitter 30/70 · drawer <1024 | resize splitter · colapsar Valeria → strip · toggle historial push 260px | full flow nav cross-agente · drawer open/close <1024 | snapshot 1280 + snapshot 1100 (clamp) + snapshot strip | axe pass |
 
 ### § 9.4 — Playwright `@project=visual` config
 
@@ -672,6 +752,8 @@ projects: [
 | **F1-S9** routing-shell | App Router pages (§3.5) · `shell-routes.ts` whitelist (§7.2) · `AGENT_CATALOG` (§7.3) · default redirects · breadcrumb logic | Routing completo funcional | Functional E2E "navego entre tabs y URL refleja" · 404 si agent invalido |
 | **F1-S10** empty-states-navegable | `EmptyState` + 22 sub-tab pages cada una con su empty-state · `PlaceholderCard` para casos especiales (Lisa Servicios cards, Conexiones grid, etc.) | Contenido placeholder navegable mockup | Visual golden por sub-tab (22 snapshots) · functional "todas las sub-tabs renderizan algo" |
 
+| **vitalia-shell-core-hardening** (Fase 2 umbrella · 8 tickets · 2026-06-10) | T-1 store hardening (`valeriaOpen/historyOpen`) · T-2 layout hardening (splitter/topbar/no-chip) · T-3 `ValeriaCollapsedStrip` + retire `ValeriaRail` · T-4 soft-nav fix (`next/link`) · T-5 N3 lift `@luana/ui-kit` (delete brand-local `EntitySubNavBar`) · T-6 dark token audit · T-7 e2e suite 52+8 + 3 bug fixes · T-8 docs | Shell chrome responsivo + dark + N3 kit | E2E 20 specs `e2e/regression/shell-core-hardening/` · Vitest arch 631 PASS · T-7-result.md |
+
 **Componentes específicos por agente** (Fase 2 — NO en Fase 1, salvo placeholder card mockup):
 - `PipelineColumn` → F2-S4 adrian-embudo
 - `AgendaSlot` → F2-S1 valeria-agenda
@@ -711,6 +793,11 @@ Toda historia DEBE pasar ANTES de merge:
 - **Pattern Copilot Nicolify (transponible):** `nicolify/frontend/src/features/copilot/components/CopilotSidebar.tsx`
 - **Pattern TenantSwitcher Nicolify (reusable):** `nicolify/frontend/src/components/shared/layout/TenantSwitcher.tsx`
 - **Tokens z-index Nicolify (copy-paste):** `nicolify/frontend/src/lib/tokens/z-index.ts`
+- **★ v1.4 E2E suite shell hardening:** `vitalia/frontend/e2e/regression/shell-core-hardening/` (20 specs · 52+8 PASS)
+- **★ v1.4 T-{1..8} result logs:** `vitalia/docs/product/stories/vitalia-shell-core-hardening/T-{1..8}-result.md`
+- **★ v1.4 N3 kit lift:** `@luana/ui-kit` v0.3.x — `EntitySubNavBar` + `EntityWorkspaceLayout` + `activeLeaf` prop (commit d3b06b11)
+- **★ v1.4 Lift proposal completo:** `docs/promotion-protocol/proposals/2026-06-01-lift-shell-organism-to-core.md` § Estado post vitalia-shell-core-hardening
+- **Next 16 soft-nav learning:** `vitalia/docs/learnings/2026-06-03-next16-softnav-redirect-rendered-more-hooks.md`
 - **HIPAA-lite overlay:** `vitalia/.claude/rules/hipaa-lite.md` (dual filter, audit log, sanitization en traces)
 - **FSD-Lite enforcement:** `.claude/rules/frontend-fsd.md` + arch tests `vitalia/frontend/src/__tests__/architecture/`
 - **Spanish neutro:** `.claude/rules/spanish-text.md` (glosario voseo → neutro)
@@ -723,3 +810,4 @@ Toda historia DEBE pasar ANTES de merge:
 |---|---|---|
 | 1.0 | 2026-05-22 | Snapshot inicial post-ratificación Chris. 5 decisiones cementadas (D1-D6). 13 secciones. SSoT para todas las stories Fase 1. |
 | 1.3 | 2026-06-03 | Formalizado patrón **list→detail (`EntitySubNavBar`)** como contrato (§ 3.3 organismos + § 3.5 pages + § 7.2.1 + nueva § 7.2.2). Reemplaza noción stale "N3-dynamic = Sheet drawer / `[...slug]` catch-all" por el patrón real ya implementado en `lisa/staff` (ADR-vitalia-004 § D-1). Back-port re-temizado del contract de Nicolify (que a su vez lo acreditó a Vitalia como origen). Lift candidate a `@luana/ui-kit` (N=2 consumers: staff Vitalia + ICP Nicolify). (v1.1/v1.2 fueron addenda inline sin row de changelog.) |
+| 1.4 | 2026-06-10 | **Shell-core-hardening (8 tickets):** (1) §6.1 máquina store nueva `valeriaOpen: 'closed'\|'chat'` + `historyOpen` — `ValeriaState/ShellMode` RETIRADOS. (2) §3.3 `ValeriaCollapsedStrip` NUEVO (44px, avatar real) + `ValeriaRail` RETIRADO + `EntitySubNavBar`/`EntityWorkspaceLayout` CONSUMIDOS de `@luana/ui-kit` v0.3.x (brand-local eliminado, commit `a042e1df`). (3) §3.4 `ShellModeToggle` + modos web/agentic RETIRADOS; splitter `react-resizable-panels` + drawer <1024. (4) §3.6 Topbar cluster fijo `[ThemeToggle][TenantSwitcher]`. (5) §3.7 dark token audit (bg-white→bg-background + dark amber banner). (6) §3.8 soft-nav: `next/link` restaurado, edge-redirect proxy 307 conservado. (7) §8 a11y + §9 tests actualizados. (8) §3.5 nuevas sub-secciones §3.6–3.8. E2E: 52 specs PASS + 2 flaky-on-retry (T-7-result.md). |

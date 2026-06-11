@@ -38,6 +38,17 @@ const CONSOLE_ERROR_ALLOWLIST: RegExp[] = [
   /Download the React DevTools/i,
   // 401 = redirect de auth esperado en rutas gated (no es un bug de runtime)
   /Failed to load resource: the server responded with a status of 401/i,
+  // SC-12 (n3-directory-disabled): tests deliberadamente navegan a UUIDs falsos
+  // (00000000-0000-0000-0000-000000000000) para verificar que el shell muestra
+  // 404/redirect. El API 404 de ese recurso fake ES la verificación esperada.
+  // QUIRÚRGICO: solo el all-zeros UUID (el propio test lo provoca).
+  /404.*\/(doctors|leads)\/00000000-0000-0000-0000-000000000000/i,
+];
+
+// SC-12 allowlist para failedApi: requests que el propio test genera a propósito
+// (navegación a UUID fake all-zeros — el 404 es la verificación esperada).
+const FAILED_API_ALLOWLIST: RegExp[] = [
+  /\/00000000-0000-0000-0000-000000000000/,
 ];
 
 // Errores de hidratación React/Next SSR — insidiosos: la UI se ve igual, status
@@ -80,14 +91,21 @@ export function attachRuntimeErrorGuards(page: Page): RuntimeErrorCollections {
       c.hydrationErrors.push(text);
       return;
     }
-    if (!CONSOLE_ERROR_ALLOWLIST.some((re) => re.test(text))) {
-      const loc = msg.location();
-      c.consoleErrors.push(`${text} @ ${loc.url}:${loc.lineNumber}`);
+    // T-V2 fix-loop: el allowlist se evalúa sobre el string COMPUESTO (text + URL).
+    // "Failed to load resource" del browser NO incluye la URL en msg.text() — viene
+    // en msg.location(); sin componer, patrones con path (ej. SC-12 all-zeros UUID)
+    // jamás matchean.
+    const loc = msg.location();
+    const composed = `${text} @ ${loc.url}:${loc.lineNumber}`;
+    if (!CONSOLE_ERROR_ALLOWLIST.some((re) => re.test(composed))) {
+      c.consoleErrors.push(composed);
     }
   });
   page.on("response", (r) => {
     if (r.status() >= 400 && /\/api\//.test(r.url())) {
-      c.failedApi.push(`${r.request().method()} ${r.url()} → ${r.status()}`);
+      if (!FAILED_API_ALLOWLIST.some((re) => re.test(r.url()))) {
+        c.failedApi.push(`${r.request().method()} ${r.url()} → ${r.status()}`);
+      }
     }
   });
   return c;

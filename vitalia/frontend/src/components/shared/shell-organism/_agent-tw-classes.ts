@@ -106,7 +106,9 @@ export function agentTextClassSubTab(slug: RibbonTabSlug): string {
     case "camila":
       return "text-agent-camila";
     case "mateo":
-      return "text-agent-mateo";
+      // Exception D20: #FEE209 yellow on bg-agent-mateo-soft (#fcf7cf) = 1.21 contrast (fails WCAG AA).
+      // Use text-foreground (near-black) for AA compliance. spec_anchor: T-V2 fix-loop axe SC-20.
+      return "text-foreground";
     case "config":
       // Exception D19: Config is not an agent — bg-muted neutral, text-foreground per mockup.
       return "text-foreground";

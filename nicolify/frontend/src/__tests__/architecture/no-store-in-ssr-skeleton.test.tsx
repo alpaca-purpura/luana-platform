@@ -1,225 +1,200 @@
 // cap: shell-organism.shell-nicolify
-// story-origin: nicolify-r0-shell T-3
+// story-origin: platform-lift-shell-chrome-ui-kit T-N1
 /**
- * Architecture fitness test: no-store-in-ssr-skeleton (G2 gate)
+ * Architecture fitness test: shell-wire-kit (T-N1 convergence gate)
  *
- * Enforces ADR-nicolify-001 G2:
- * 1. ShellOrganismLayout.tsx uses dynamic({ssr:false}) wrapping ShellOrganismLayoutClient
- * 2. The SSR skeleton component (ShellOrganismLayoutSkeleton) is store-free — does NOT
- *    subscribe to useShellStore (prevents spurious default write on SSR/hydration — Bug C3)
- * 3. useStoreHydration is called in ShellOrganismLayoutClient (the ssr:false boundary)
- * 4. ShellOrganismLayout.tsx exports ShellOrganismLayout (named export, no default)
+ * Replaces the legacy no-store-in-ssr-skeleton test (which validated ShellOrganismLayout +
+ * ShellOrganismLayoutClient — both retired in T-N1).
  *
- * Text-scan tests (don't import the actual components to avoid SSR issues in test env).
+ * Enforces T-N1 post-convergence invariants:
+ * 1. Legacy chrome machine is RETIRED (LuanaSidebar/LuanaRail/ShellOrganismLayout etc.)
+ * 2. ShellLayoutWire.tsx exists and uses @luana/ui-kit ShellLayout
+ * 3. shell-store.ts uses createShellStore from @luana/ui-kit (not raw createSsrSafePersistedStore)
+ * 4. shell-store.ts exports migrateLuanaState + SHELL_STORAGE_KEY + useShellStoreKit
+ * 5. layout.tsx imports ShellLayoutWire (not ShellOrganismLayout)
+ * 6. chat-store.ts no longer imports from shell-organism/_mock-messages
+ *
+ * RN-7 (convergencia sancionada): retiring legacy tests is the sanctioned goal.
+ * Text-scan tests (don't import actual components to avoid SSR issues in test env).
  */
-import { readFileSync, existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { resolve } from "path";
 
 import { describe, it, expect } from "vitest";
 
-const SHELL_DIR = resolve(__dirname, "../../components/shared/shell-organism");
+const SRC_ROOT = resolve(__dirname, "../../");
+const SHELL_DIR = resolve(SRC_ROOT, "components/shared/shell-organism");
+const STORES_DIR = resolve(SRC_ROOT, "stores");
+const WIRE_PATH = resolve(
+  SRC_ROOT,
+  "app/[tenantId]/(shell-organism)/_components/ShellLayoutWire.tsx",
+);
+const LAYOUT_PATH = resolve(SRC_ROOT, "app/[tenantId]/(shell-organism)/layout.tsx");
+const STORE_PATH = resolve(STORES_DIR, "shell-store.ts");
+const CHAT_STORE_PATH = resolve(STORES_DIR, "chat-store.ts");
 
-const LAYOUT_PATH = resolve(SHELL_DIR, "ShellOrganismLayout.tsx");
-const LAYOUT_CLIENT_PATH = resolve(SHELL_DIR, "ShellOrganismLayoutClient.tsx");
-const APP_PANEL_PATH = resolve(SHELL_DIR, "AppPanelSlot.tsx");
-const VIEWPORT_GUARD_PATH = resolve(SHELL_DIR, "useViewportGuard.ts");
-const STORE_PATH = resolve(__dirname, "../../stores/shell-store.ts");
+describe("Architecture: shell-wire-kit (T-N1 convergence gate)", () => {
+  // ── 1. Legacy chrome machine RETIRED ─────────────────────────────────────
 
-describe("Architecture: no-store-in-ssr-skeleton (G2 gate)", () => {
-  // ── File existence ─────────────────────────────────────────────────────────
+  describe("Legacy chrome machine retired (T-N1 RN-7)", () => {
+    const legacyFiles = [
+      "LuanaSidebar.tsx",
+      "LuanaRail.tsx",
+      "LuanaChat.tsx",
+      "LuanaHistory.tsx",
+      "ShellModeToggle.tsx",
+      "ShellOrganismLayout.tsx",
+      "ShellOrganismLayoutClient.tsx",
+      "Ribbon.tsx",
+      "RibbonTab.tsx",
+      "SubTabsBar.tsx",
+      "SubTab.tsx",
+      "TopBarGlobal.tsx",
+      "ChatComposer.tsx",
+      "ChatHeader.tsx",
+      "ChatMessages.tsx",
+      "MessageBubble.tsx",
+      "TypingIndicator.tsx",
+      "DelegateMarker.tsx",
+      "HistoryGroup.tsx",
+      "HistoryItem.tsx",
+      "PlaceholderCard.tsx",
+      "useViewportGuard.ts",
+      "_mock-messages.ts",
+      "_mock-conversations.ts",
+      "AppPanelSlot.tsx",
+    ];
 
-  it("ShellOrganismLayout.tsx exists", () => {
-    expect(existsSync(LAYOUT_PATH)).toBe(true);
+    for (const file of legacyFiles) {
+      it(`${file} is RETIRED (does not exist)`, () => {
+        expect(existsSync(resolve(SHELL_DIR, file))).toBe(false);
+      });
+    }
   });
 
-  it("ShellOrganismLayoutClient.tsx exists", () => {
-    expect(existsSync(LAYOUT_CLIENT_PATH)).toBe(true);
-  });
+  // ── 2. ShellLayoutWire.tsx exists and uses kit ────────────────────────────
 
-  it("AppPanelSlot.tsx exists", () => {
-    expect(existsSync(APP_PANEL_PATH)).toBe(true);
-  });
-
-  it("useViewportGuard.ts exists", () => {
-    expect(existsSync(VIEWPORT_GUARD_PATH)).toBe(true);
-  });
-
-  it("shell-store.ts exists (replaced stub)", () => {
-    expect(existsSync(STORE_PATH)).toBe(true);
-  });
-
-  // ── ShellOrganismLayout.tsx: SSR boundary ───────────────────────────────────
-
-  describe("ShellOrganismLayout.tsx — SSR boundary", () => {
-    it("uses dynamic import with ssr:false (G2 boundary)", () => {
-      const content = readFileSync(LAYOUT_PATH, "utf-8");
-      expect(content).toMatch(/ssr:\s*false/);
+  describe("ShellLayoutWire.tsx — exists and uses @luana/ui-kit", () => {
+    it("ShellLayoutWire.tsx exists at _components/ location", () => {
+      expect(existsSync(WIRE_PATH)).toBe(true);
     });
 
-    it("imports 'dynamic' from 'next/dynamic' for SSR boundary", () => {
-      const content = readFileSync(LAYOUT_PATH, "utf-8");
-      expect(content).toContain("dynamic");
-      expect(content).toContain("next/dynamic");
+    it("imports ShellLayout from @luana/ui-kit", () => {
+      const content = readFileSync(WIRE_PATH, "utf-8");
+      expect(content).toContain("@luana/ui-kit");
+      expect(content).toContain("ShellLayout");
     });
 
-    it("skeleton function is store-free — does NOT import useShellStore", () => {
-      const content = readFileSync(LAYOUT_PATH, "utf-8");
-      // The skeleton in ShellOrganismLayout must not subscribe to the store
-      // The file may import TopBarGlobal which is fine (TopBarGlobal has skeleton variant)
-      // But the layout wrapper itself must not call useShellStore directly
-      //
-      // Key check: the skeleton renders TopBarGlobal with variant="skeleton"
-      expect(content).toContain('variant="skeleton"');
-    });
-
-    it("exports ShellOrganismLayout as named export (no default export)", () => {
-      const content = readFileSync(LAYOUT_PATH, "utf-8");
-      expect(content).toMatch(/export\s+function\s+ShellOrganismLayout/);
-      // Must not have 'export default'
-      expect(content).not.toMatch(/^export\s+default\s/m);
-    });
-
-    it("loading prop passes the skeleton to dynamic (no flash)", () => {
-      const content = readFileSync(LAYOUT_PATH, "utf-8");
-      expect(content).toContain("loading");
-      // loading function should reference the Skeleton
-      // Check loading and Skeleton exist in the file (both words present)
-      expect(content).toContain("loading");
-      expect(content).toContain("Skeleton");
-    });
-  });
-
-  // ── ShellOrganismLayoutClient.tsx: hydration ─────────────────────────────────
-
-  describe("ShellOrganismLayoutClient.tsx — hydration + splitter", () => {
-    it("uses 'use client' directive", () => {
-      const content = readFileSync(LAYOUT_CLIENT_PATH, "utf-8");
+    it("is a 'use client' component (required for usePathname)", () => {
+      const content = readFileSync(WIRE_PATH, "utf-8");
       expect(content).toContain('"use client"');
     });
 
-    it("calls useStoreHydration (G2 requirement)", () => {
-      const content = readFileSync(LAYOUT_CLIENT_PATH, "utf-8");
-      expect(content).toContain("useStoreHydration");
+    it("supervisorName='Luana' (nicolify brand)", () => {
+      const content = readFileSync(WIRE_PATH, "utf-8");
+      expect(content).toContain('supervisorName="Luana"');
     });
 
-    it("uses useShellStore for state subscription (client side)", () => {
-      const content = readFileSync(LAYOUT_CLIENT_PATH, "utf-8");
-      expect(content).toContain("useShellStore");
+    it("supervisorSlug='luana' (nicolify brand)", () => {
+      const content = readFileSync(WIRE_PATH, "utf-8");
+      expect(content).toContain('supervisorSlug="luana"');
     });
 
-    it("uses react-resizable-panels Group/Panel/Separator", () => {
-      const content = readFileSync(LAYOUT_CLIENT_PATH, "utf-8");
-      expect(content).toContain("Group");
-      expect(content).toContain("Panel");
-      expect(content).toContain("Separator");
+    it("uses useShellStoreKit from stores/shell-store", () => {
+      const content = readFileSync(WIRE_PATH, "utf-8");
+      expect(content).toContain("useShellStoreKit");
     });
 
-    it("Separator has aria-label for accessibility (hit-area + a11y)", () => {
-      const content = readFileSync(LAYOUT_CLIENT_PATH, "utf-8");
-      expect(content).toContain("aria-label");
-      // Check for the resize label
-      expect(content).toContain("Redimensionar paneles");
+    it("splitGroupId='nicolify-shell-split' (SC-6 equivalent for nicolify)", () => {
+      const content = readFileSync(WIRE_PATH, "utf-8");
+      expect(content).toContain("nicolify-shell-split");
     });
 
-    it("uses useGroupRef for snap-up (Fix A — C3 bug mitigation)", () => {
-      const content = readFileSync(LAYOUT_CLIENT_PATH, "utf-8");
-      expect(content).toContain("useGroupRef");
-    });
-
-    it("exports ShellOrganismLayoutClient as named export (no default export)", () => {
-      const content = readFileSync(LAYOUT_CLIENT_PATH, "utf-8");
-      expect(content).toMatch(/export\s+function\s+ShellOrganismLayoutClient/);
+    it("exports ShellLayoutWire as named export (no default export)", () => {
+      const content = readFileSync(WIRE_PATH, "utf-8");
+      expect(content).toMatch(/export\s+function\s+ShellLayoutWire/);
       expect(content).not.toMatch(/^export\s+default\s/m);
     });
   });
 
-  // ── shell-store.ts: SSR-safe factory ──────────────────────────────────────────
+  // ── 3. shell-store.ts — createShellStore factory (not raw SSR factory) ───
 
-  describe("shell-store.ts — real SSR-safe implementation (not stub)", () => {
-    it("uses createSsrSafePersistedStore (not raw Zustand create)", () => {
+  describe("shell-store.ts — createShellStore factory (T-N1 thin wrapper)", () => {
+    it("uses createShellStore from @luana/ui-kit (not raw createSsrSafePersistedStore directly)", () => {
       const content = readFileSync(STORE_PATH, "utf-8");
-      expect(content).toContain("createSsrSafePersistedStore");
+      expect(content).toContain("createShellStore");
+      expect(content).toContain("@luana/ui-kit");
+    });
+
+    it("does NOT use raw zustand create() directly", () => {
+      const content = readFileSync(STORE_PATH, "utf-8");
       expect(content).not.toMatch(/import\s*\{\s*create\s*\}\s*from\s*["']zustand["']/);
     });
 
-    it("storage key is 'nicolify-shell-state'", () => {
+    it("storage key is 'nicolify-shell-state' (SC-6)", () => {
       const content = readFileSync(STORE_PATH, "utf-8");
       expect(content).toContain("nicolify-shell-state");
-    });
-
-    it("partializes without setters and without _hasHydrated", () => {
-      const content = readFileSync(STORE_PATH, "utf-8");
-      // partialize function should exist
-      expect(content).toContain("partialize");
-      // partialize result should not include setter names (manual check: 5 setters excluded)
-      // The function signature should look like PersistedState or similar
-    });
-
-    it("exports useShellStore as named export (no default export)", () => {
-      const content = readFileSync(STORE_PATH, "utf-8");
-      expect(content).toMatch(/export\s+const\s+useShellStore/);
-      expect(content).not.toMatch(/^export\s+default\s/m);
     });
 
     it("exports SHELL_STORAGE_KEY", () => {
       const content = readFileSync(STORE_PATH, "utf-8");
       expect(content).toContain("export const SHELL_STORAGE_KEY");
     });
-  });
 
-  // ── AppPanelSlot.tsx: typed slots ────────────────────────────────────────────
-
-  describe("AppPanelSlot.tsx — typed placeholder slots", () => {
-    it("is NOT a 'use client' component (Server Component per spec)", () => {
-      const content = readFileSync(APP_PANEL_PATH, "utf-8");
-      // AppPanelSlot should be a Server Component (no 'use client' at top)
-      // It can reference Client Components like Ribbon/SubTabsBar — that's fine
-      const firstLines = content.split("\n").slice(0, 5).join("\n");
-      expect(firstLines).not.toContain('"use client"');
+    it("exports useShellStoreKit as named export", () => {
+      const content = readFileSync(STORE_PATH, "utf-8");
+      expect(content).toMatch(/export\s+const\s+useShellStoreKit/);
     });
 
-    it("exports AppPanelSlot as named export (no default export)", () => {
-      const content = readFileSync(APP_PANEL_PATH, "utf-8");
-      expect(content).toMatch(/export\s+function\s+AppPanelSlot/);
+    it("exports migrateLuanaState as named export (T-N1 migration function)", () => {
+      const content = readFileSync(STORE_PATH, "utf-8");
+      expect(content).toMatch(/export\s+function\s+migrateLuanaState/);
+    });
+
+    it("migrateLuanaState maps luanaState → supervisorOpen", () => {
+      const content = readFileSync(STORE_PATH, "utf-8");
+      expect(content).toContain("luanaState");
+      expect(content).toContain("supervisorOpen");
+    });
+
+    it("does NOT export default", () => {
+      const content = readFileSync(STORE_PATH, "utf-8");
       expect(content).not.toMatch(/^export\s+default\s/m);
-    });
-
-    it("has aria-label 'Panel aplicación' for accessibility", () => {
-      const content = readFileSync(APP_PANEL_PATH, "utf-8");
-      expect(content).toContain("Panel aplicación");
-    });
-
-    it("has data-testid='app-panel-slot'", () => {
-      const content = readFileSync(APP_PANEL_PATH, "utf-8");
-      expect(content).toContain('data-testid="app-panel-slot"');
     });
   });
 
-  // ── useViewportGuard.ts: one-way rail guard ───────────────────────────────────
+  // ── 4. layout.tsx — imports ShellLayoutWire (not ShellOrganismLayout) ────
 
-  describe("useViewportGuard.ts — one-way rail guard <1104px", () => {
-    it("exports FULL_STATE_MIN_VIEWPORT = 1104", () => {
-      const content = readFileSync(VIEWPORT_GUARD_PATH, "utf-8");
-      expect(content).toContain("FULL_STATE_MIN_VIEWPORT");
-      expect(content).toMatch(/FULL_STATE_MIN_VIEWPORT\s*=\s*1104/);
+  describe("layout.tsx — uses ShellLayoutWire (T-N1 kit wire)", () => {
+    it("layout.tsx exists", () => {
+      expect(existsSync(LAYOUT_PATH)).toBe(true);
     });
 
-    it("exports MOBILE_BREAKPOINT = 768", () => {
-      const content = readFileSync(VIEWPORT_GUARD_PATH, "utf-8");
-      expect(content).toContain("MOBILE_BREAKPOINT");
-      expect(content).toMatch(/MOBILE_BREAKPOINT\s*=\s*768/);
+    it("imports ShellLayoutWire from _components/ShellLayoutWire", () => {
+      const content = readFileSync(LAYOUT_PATH, "utf-8");
+      expect(content).toContain("ShellLayoutWire");
     });
 
-    it("exports useViewportGuard as named export", () => {
-      const content = readFileSync(VIEWPORT_GUARD_PATH, "utf-8");
-      expect(content).toMatch(/export\s+function\s+useViewportGuard/);
-      expect(content).not.toMatch(/^export\s+default\s/m);
+    it("does NOT import ShellOrganismLayout (legacy chrome retired)", () => {
+      const content = readFileSync(LAYOUT_PATH, "utf-8");
+      // Check no import statement references ShellOrganismLayout (comments may still reference it for history)
+      expect(content).not.toMatch(/import\s+\{[^}]*ShellOrganismLayout[^}]*\}/);
+    });
+  });
+
+  // ── 5. chat-store.ts — mock import path updated ───────────────────────────
+
+  describe("chat-store.ts — _mock-messages import path updated", () => {
+    it("does NOT import _mock-messages from shell-organism (legacy path retired)", () => {
+      const content = readFileSync(CHAT_STORE_PATH, "utf-8");
+      expect(content).not.toContain("shell-organism/_mock-messages");
     });
 
-    it("references setLuanaState (not setValeriaState — renamed to Luana)", () => {
-      const content = readFileSync(VIEWPORT_GUARD_PATH, "utf-8");
-      expect(content).toContain("setLuanaState");
-      expect(content).not.toContain("setValeriaState");
+    it("imports _mock-messages from stores/ (new canonical path)", () => {
+      const content = readFileSync(CHAT_STORE_PATH, "utf-8");
+      expect(content).toContain("_mock-messages");
+      // Should import from stores/, not from shell-organism/
+      expect(content).toContain("@/stores/_mock-messages");
     });
   });
 });

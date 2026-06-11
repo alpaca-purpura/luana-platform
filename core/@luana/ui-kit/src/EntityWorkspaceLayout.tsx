@@ -47,6 +47,20 @@ export interface EntityWorkspaceLayoutProps {
    * trigger a mutation without routing to a literal "__add__" path.
    */
   onAddAffordance?: () => void;
+  /**
+   * Optional override for the active leaf id.
+   *
+   * When NOT provided, the active leaf is derived from the `[leaf]` dynamic
+   * route param via useParams() — suitable for routes with a `[leaf]` segment.
+   *
+   * When provided, overrides URL-derivation entirely. Use this for routes that
+   * use **static** leaf segments (e.g., `/perfil`, `/resumen`) where `useParams()`
+   * does not expose the leaf name as a dedicated param key.
+   *
+   * Additive-minimal addition (2026-06-10, vitalia-shell-core-hardening T-5):
+   * vitalia routes use static leaf segments; `[leaf]` dynamic param not present.
+   */
+  activeLeaf?: string | null;
   /** Leaf content — the active leaf page component */
   children: ReactNode;
   /** Additional className for the outer wrapper */
@@ -76,13 +90,16 @@ export function EntityWorkspaceLayout({
   isLoading = false,
   placeholder,
   onAddAffordance,
+  activeLeaf: activeLeafProp,
   children,
   className,
 }: EntityWorkspaceLayoutProps) {
   // URL-derived activeLeaf — reads the [leaf] param from the App Router.
   // useParams() is safe inside "use client" components and reads NO store (G2).
   const params = useParams<{ leaf?: string }>();
-  const activeLeaf = params.leaf ?? null;
+  // activeLeafProp overrides URL-derivation for routes using static leaf segments
+  // (e.g., `/perfil`, `/resumen`) where `[leaf]` is not a dynamic route param.
+  const activeLeaf = activeLeafProp !== undefined ? (activeLeafProp ?? null) : (params.leaf ?? null);
 
   return (
     <div

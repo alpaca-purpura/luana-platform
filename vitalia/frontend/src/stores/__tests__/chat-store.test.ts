@@ -27,6 +27,7 @@ import {
   MOCK_MESSAGES,
   MOCK_RESPONSES_BY_AGENT,
 } from "@/components/shared/shell-organism/_mock-messages";
+import { MOCK_CONVERSATIONS } from "@/components/shared/shell-organism/_mock-conversations";
 
 describe("useChatStore", () => {
   beforeEach(() => {
@@ -239,6 +240,71 @@ describe("useChatStore", () => {
       useChatStore.getState().setActiveAgent("camila");
       useChatStore.getState().setActiveAgent("valeria");
       expect(useChatStore.getState().activeAgent).toBe("valeria");
+    });
+  });
+
+  // ── T-3 conversations slice + newConversation (RN-13 / SC-8 / SC-13) ────────
+
+  describe("conversations slice", () => {
+    beforeEach(() => {
+      useChatStore.setState({
+        messages: [...MOCK_MESSAGES],
+        conversations: [...MOCK_CONVERSATIONS],
+        activeAgent: "valeria",
+        status: "idle",
+      });
+    });
+
+    it("conversations seeded from MOCK_CONVERSATIONS (8 items)", () => {
+      expect(useChatStore.getState().conversations).toHaveLength(8);
+    });
+
+    it("conversations can be emptied (drives SC-13 empty history)", () => {
+      useChatStore.setState({ conversations: [] });
+      expect(useChatStore.getState().conversations).toHaveLength(0);
+    });
+  });
+
+  describe("newConversation (RN-13 / SC-8)", () => {
+    beforeEach(() => {
+      vi.useRealTimers();
+      useChatStore.setState({
+        messages: [...MOCK_MESSAGES],
+        conversations: [...MOCK_CONVERSATIONS],
+        activeAgent: "valeria",
+        status: "idle",
+      });
+    });
+
+    it("clears the current chat (messages=[] + status='idle')", () => {
+      useChatStore.getState().newConversation();
+      const { messages, status } = useChatStore.getState();
+      expect(messages).toHaveLength(0);
+      expect(status).toBe("idle");
+    });
+
+    it("archives the current conversation to history (UI-local, prepended)", () => {
+      const before = useChatStore.getState().conversations.length;
+      useChatStore.getState().newConversation();
+      const after = useChatStore.getState().conversations;
+      expect(after.length).toBe(before + 1);
+      // newest first
+      expect(after[0]?.group).toBe("today");
+    });
+
+    it("does NOT archive when the chat is already empty (no phantom entry)", () => {
+      useChatStore.setState({ messages: [] });
+      const before = useChatStore.getState().conversations.length;
+      useChatStore.getState().newConversation();
+      expect(useChatStore.getState().conversations.length).toBe(before);
+    });
+
+    it("archived entry carries a non-PHI generic title (no message content leak)", () => {
+      useChatStore.getState().newConversation();
+      const archived = useChatStore.getState().conversations[0];
+      expect(archived?.title).toBeTruthy();
+      // title must NOT echo raw chat message content (HIPAA-lite chrome guard)
+      expect(archived?.title).not.toContain("Tienes");
     });
   });
 

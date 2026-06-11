@@ -1,155 +1,132 @@
 // cap: shell-organism.shell-nicolify
-// story-origin: nicolify-r0-shell T-3
+// story-origin: platform-lift-shell-chrome-ui-kit T-N1
 /**
- * shell-store.ts — Zustand SSR-safe store for shell layout state with localStorage persistence.
- * nicolify-r0-shell T-3
- * Port re-tematizado from vitalia shell-store.ts (Valeria→Luana + nicolify agent model).
+ * shell-store.ts — Shell state store (T-N1 convergence).
+ * platform-lift-shell-chrome-ui-kit T-N1
  *
- * WHY SSR-SAFE: The raw persist() middleware auto-writes the default value during
- * SSR/skeleton/pre-hydration, clobbering user preferences on every reload (Vitalia Bug C3).
- * The factory wraps persist with skipHydration:true + setItem NO-OP until client rehydrate.
- * ADR-vitalia-006 documents the pattern and all 4 failed techniques. Applied here via G2 gate.
+ * Replaces the legacy nicolify shell-store (luanaState/splitState/shellMode)
+ * with a thin wrapper around the @luana/ui-kit createShellStore factory.
  *
- * Persisted state: luanaState + splitState + shellMode + mobileDrawerOpen (via partialize).
- * Setters are NOT persisted (recreated on each hydration — Zustand standard pattern).
+ * The kit exposes a generic API: supervisorOpen ('closed' | 'chat') + splitPct + mobileDrawerOpen.
+ * Legacy nicolify localStorage state used luanaState ('collapsed' | 'history' | 'full').
+ * migrateLuanaState maps: collapsed→'closed', history→'chat', full→'chat'.
  *
- * Storage key: 'nicolify-shell-state' (SHELL_STORAGE_KEY).
+ * SC-6: storageKey 'nicolify-shell-state' preserved (e2e harness contract).
  *
- * partialize strategy:
- * - luanaState → persisted (user's last Luana panel state — desktop)
- * - splitState → persisted (user's last splitter state)
- * - shellMode → persisted (user's last shell mode)
- * - mobileDrawerOpen → persisted (user's last mobile drawer state — INDEPENDENT slice)
- * - _hasHydrated → NOT persisted (transient hydration flag)
- * - setters → NOT persisted (recreated on hydration)
- *
- * Default values (nicolify R0 shell design):
- * - luanaState: 'full' ← Luana panel abierto (historial + chat) on load (mockup ratificado)
- * - splitState: '50-50' ← Luana panel y app panel comparten el ancho
- * - shellMode: 'agentic' ← default mode for Nicolify R0
- * - mobileDrawerOpen: false ← default closed (mobile drawer starts closed)
- *
- * cycleLuanaState: collapsed → history → full → collapsed (3-state cycle).
- * setMobileDrawerOpen: independent from luanaState — desktop 'full' NEVER auto-opens mobile drawer.
- *
- * REHYDRATION: call useStoreHydration(useShellStore) from ShellOrganismLayoutClient
- * (the ssr:false dynamic chunk). This triggers persist.rehydrate() once client-side,
- * which flips _hasHydrated → true and enables storage writes.
- *
- * Named export (no default export) per FSD-Lite enforce.
+ * Named exports only — no default export (FSD-Lite enforce).
  * No PHI — shell layout state only.
- * No Clerk Organizations used — per MEMORY.md::no-clerk-organizations 2026-05-20.
+ * No Clerk Organizations — per MEMORY.md::no-clerk-organizations 2026-05-20.
  *
  * downstream-regression-na: brand-local store; no cross-brand consumers
  */
 
-import {
-  createSsrSafePersistedStore,
-  type SsrSafeHydration,
-} from "@luana/hooks/create-ssr-safe-persisted-store";
+import { createShellStore } from "@luana/ui-kit";
 
-/** Luana sidebar/panel display state — 3 states (Nicolify R0) */
-export type LuanaState = "collapsed" | "history" | "full";
+import type { ShellStoreState } from "@luana/ui-kit";
 
-/** Shell split state — 3 splitter positions (per 01-spec.md C1-C3) */
-export type ShellSplitState = "chat-collapsed" | "narrow" | "50-50";
-
-/** Shell layout mode — agentic (split dual-panel) or web (static rail) */
-export type ShellMode = "agentic" | "web";
-
-/** localStorage key for shell state persistence */
+// ── Canonical storage key (SC-6 — preserved for e2e + legacy migration) ──────
+/** Canonical shell state key (SC-6). Used by the kit store. */
 export const SHELL_STORAGE_KEY = "nicolify-shell-state" as const;
 
-/** Persisted slice — luanaState + splitState + shellMode + mobileDrawerOpen only (no setters, no _hasHydrated) */
-interface PersistedState {
-  luanaState: LuanaState;
-  splitState: ShellSplitState;
-  shellMode: ShellMode;
-  /** Mobile drawer open/closed state — INDEPENDENT from luanaState desktop slice.
-   * Default false (closed). Desktop 'full' NEVER propagates to this slice.
-   * Persisted so user remembers their mobile drawer preference (ADR-vitalia-006 D5). */
-  mobileDrawerOpen: boolean;
+/**
+ * Shell store version — bumped to 1 to trigger migrate() for stored v0 data
+ * that used the legacy nicolify field names (luanaState/splitState/shellMode).
+ *
+ * Without this bump, Zustand skips migrate() for matching-version data and
+ * silently tries to merge unknown fields → falls back to defaults.
+ */
+const SHELL_STORE_VERSION = 1;
+
+// ── Migration helpers ─────────────────────────────────────────────────────────
+
+const toBool = (v: unknown): boolean => (typeof v === "boolean" ? v : false);
+
+/**
+ * Maps legacy luanaState (3-state: collapsed/history/full) → kit supervisorOpen (closed/chat).
+ * - collapsed → 'closed'
+ * - history   → 'chat'  (shows history panel — maps to kit 'chat' open state)
+ * - full      → 'chat'  (shows history + chat — both map to kit 'chat' open)
+ * - unknown   → 'chat'  (safe default, supervisor visible)
+ */
+function mapLuanaStateToSupervisorOpen(raw: unknown): "closed" | "chat" {
+  switch (raw) {
+    case "collapsed":
+      return "closed";
+    case "history":
+    case "full":
+      return "chat";
+    default:
+      return "chat";
+  }
 }
 
-/** Shell store interface — extends SsrSafeHydration for factory compliance */
-interface ShellStore extends SsrSafeHydration {
-  // ── Desktop state ──────────────────────────────────────────────────────────
-  /** Luana panel state: collapsed/history/full */
-  luanaState: LuanaState;
-  /** Splitter state: chat-collapsed/narrow/50-50 */
-  splitState: ShellSplitState;
-  /** Shell layout mode */
-  shellMode: ShellMode;
-  setLuanaState: (s: LuanaState) => void;
-  /** Cycles: collapsed → history → full → collapsed */
-  cycleLuanaState: () => void;
-  setSplitState: (s: ShellSplitState) => void;
-  setShellMode: (m: ShellMode) => void;
-
-  // ── Mobile state (independent slice — ADR-vitalia-006 § D5) ──────────────
-  /** Mobile drawer open/closed. Default false. Independent of luanaState. */
-  mobileDrawerOpen: boolean;
-  /** Set mobile drawer open/closed state. Does NOT touch luanaState. */
-  setMobileDrawerOpen: (open: boolean) => void;
-}
-
-export const useShellStore = createSsrSafePersistedStore<ShellStore>(
-  (set: (partial: Partial<ShellStore>) => void, get: () => ShellStore) => ({
-    // ── SsrSafeHydration ────────────────────────────────────────────────────
-    _hasHydrated: false,
-    setHasHydrated: (v: boolean) => set({ _hasHydrated: v }),
-
-    // ── Desktop State ────────────────────────────────────────────────────────
-    // Default luanaState: 'full' (Luana panel abierto: historial 280px + chat).
-    // Justificación: el mockup ratificado del shell muestra a Luana abierta como
-    // orquestadora. 'collapsed' dejaba una franja de 60px VACÍA en desktop (sin
-    // rail ni chat ni affordance de apertura — bug visual). Alineado con vitalia,
-    // cuyo default es 'full' por la misma razón (mockup con panel visible).
-    luanaState: "full",
-    splitState: "50-50",
-    shellMode: "agentic",
-
-    // ── Mobile State (independent slice) ────────────────────────────────────
+/**
+ * migrateLuanaState — migrate legacy nicolify persisted state → kit generic shape.
+ *
+ * Handles v0 legacy nicolify shape: {luanaState, splitState, shellMode, mobileDrawerOpen}.
+ * Also handles corrupt/unknown shapes: returns defaults WITHOUT throw (Bif-5).
+ *
+ * SC-6 compliance: storageKey preserved; migration is transparent to the user.
+ */
+export function migrateLuanaState(persisted: unknown, _version: number): Partial<ShellStoreState> {
+  const fallback: Partial<ShellStoreState> = {
+    supervisorOpen: "chat",
+    splitPct: null,
     mobileDrawerOpen: false,
+  };
 
-    // ── Desktop Actions ───────────────────────────────────────────────────────
+  // Corrupt or missing shape — return defaults WITHOUT throw (Bif-5)
+  if (persisted === null || typeof persisted !== "object") return fallback;
 
-    setLuanaState: (s: LuanaState) => set({ luanaState: s }),
+  const raw = persisted as Record<string, unknown>;
 
-    /**
-     * Cycles: collapsed → history → full → collapsed
-     * Allows progressive reveal of Luana sidebar.
-     * Collapsed-only reachable directly via setLuanaState.
-     */
-    cycleLuanaState: () => {
-      const current = get().luanaState;
-      let next: LuanaState;
-      if (current === "collapsed") {
-        next = "history";
-      } else if (current === "history") {
-        next = "full";
-      } else {
-        next = "collapsed";
-      }
-      set({ luanaState: next });
-    },
+  const mobileDrawerOpen = toBool(raw.mobileDrawerOpen);
 
-    setSplitState: (s: ShellSplitState) => set({ splitState: s }),
+  // Legacy v0 nicolify shape: raw.luanaState is present
+  if ("luanaState" in raw) {
+    const supervisorOpen = mapLuanaStateToSupervisorOpen(raw.luanaState);
+    // splitState (chat-collapsed|narrow|50-50) → not used in kit; drop it (kit uses splitPct number|null)
+    return { supervisorOpen, splitPct: null, mobileDrawerOpen };
+  }
 
-    setShellMode: (m: ShellMode) => set({ shellMode: m }),
+  // Already-migrated or partial kit shape: supervisorOpen present
+  if ("supervisorOpen" in raw) {
+    const so = raw.supervisorOpen;
+    if (so !== "closed" && so !== "chat") return { ...fallback, mobileDrawerOpen };
+    return {
+      supervisorOpen: so,
+      splitPct: typeof raw.splitPct === "number" ? raw.splitPct : null,
+      mobileDrawerOpen,
+    };
+  }
 
-    // ── Mobile Actions ────────────────────────────────────────────────────────
+  // Unknown shape — return defaults without throw
+  return fallback;
+}
 
-    setMobileDrawerOpen: (open: boolean) => set({ mobileDrawerOpen: open }),
-  }),
-  {
-    name: SHELL_STORAGE_KEY,
-    // Only persist state fields — NOT setter functions, NOT _hasHydrated
-    partialize: (state: ShellStore): PersistedState => ({
-      luanaState: state.luanaState,
-      splitState: state.splitState,
-      shellMode: state.shellMode,
-      mobileDrawerOpen: state.mobileDrawerOpen,
-    }),
-  },
-);
+// ── Kit store (generic API — supervisorOpen / splitPct) ──────────────────────
+
+/**
+ * useShellStoreKit — generic kit API (supervisorOpen / splitPct).
+ *
+ * Used by layout.tsx to wire ShellLayout from @luana/ui-kit.
+ * storageKey 'nicolify-shell-state' — canonical SC-6 key.
+ */
+export const useShellStoreKit = createShellStore({
+  storageKey: SHELL_STORAGE_KEY,
+  version: SHELL_STORE_VERSION,
+  migrate: migrateLuanaState,
+});
+
+/**
+ * Convenience alias — matches the name consumers used before T-N1.
+ * Allows IcpEntityLayoutClient + EntityWorkspaceLayout to use useShellStore
+ * without file-level changes if they only read supervisorOpen/mobileDrawerOpen.
+ *
+ * Note: the kit API no longer exposes luanaState/cycleLuanaState/shellMode/splitState.
+ * Files reading those legacy fields will get undefined at runtime — they must be
+ * updated to read supervisorOpen / openSupervisor / collapseSupervisor instead.
+ *
+ * Transitional re-export: removed when all consumers updated.
+ */
+export const useShellStore = useShellStoreKit;

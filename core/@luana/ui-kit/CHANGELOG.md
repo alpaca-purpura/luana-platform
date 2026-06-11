@@ -1,3 +1,65 @@
+## 0.4.0 — 2026-06-11 (platform-lift-shell-chrome-ui-kit · T-K1)
+### Added — organism layer (`src/organism/shell/`)
+- **`createShellStore({ storageKey, version?, migrate? })`** — generic SSR-safe Zustand store factory for the shell state machine. Brand-agnostic port of the per-brand `shell-store.ts` (vitalia/nicolify), re-parametrized to neutral naming (RN-2): `valeriaOpen → supervisorOpen`, `valeriaPct → splitPct`. CONSUMES `@luana/hooks/createSsrSafePersistedStore` (RN-8 — never reimplements SSR-safe persistence). Brand passes `storageKey` (SC-6 — conserved for e2e: `vitalia-shell-state` / `nicolify-shell-state`) + optional `migrate` for legacy shapes. Machine: A=closed (strip) · B=chat (split) · C=chat+history (additive push). `historyOpen` never persisted open (no-clobber). Default migrate validates the current shape; corrupt → fallback + warn.
+- **`extractAgentFromPath` / `extractSubtabFromPath` / `isValidAgent` / `isValidSubtab`** (`routing.ts`) — generic catalog-driven routing helpers (port of vitalia `lib/agent-catalog.ts` helpers). The brand passes its agent slug-set + special tabs + sub-tab map by argument; the kit ships zero hardcoded brand slugs/labels.
+- **Generic organism types** (`types.ts`) — `ShellAgentDescriptor`, `ShellSubTabMeta`, `SupervisorOpen`, `ShellPersistedState`, `ShellStoreState`, `ShellChatStoreApi`, `ShellStore`, `CreateShellStoreOptions`, `ShellLayoutProps`, `ShellLayoutLabels`, `ShellRoutingOptions`. Verbatim from `03-arch.md § API contract`. Zero brand tokens.
+- Vitest: `src/organism/shell/__tests__/{create-shell-store,routing}.test.ts` (machine A/B/C transitions + migrate hook + no-clobber hydration SC-6 + generic routing helpers).
+### Changed — deps + SEMVER
+- New runtime deps: **`react-resizable-panels` `^4.11.1`** + **`zustand` `^5.0.5`** (exact ranges of `vitalia/frontend`) — required by the shell organism. Additive; zero breaking on existing exports.
+- **SEMVER 0.3.0 → 0.4.0 (minor — additive organism layer · Decisión D).**
+### Notes
+- **Group-name collision (Decisión D):** the kit already exports a form `Group`. T-K1 does NOT re-export `react-resizable-panels`' `Group`/`Panel`/`Separator` from the barrel. If a resize handle must be public (later ticket), it is named `ShellResizeHandle`.
+- T-K1 scope = scaffolding only (factory + types + routing). Visual components (`ShellLayout`, `SupervisorSidebar`, `Ribbon`, `ChatPanel`, …), the `ssr:false` wrapper, and the RN-4 v4 fixes (key-remount, retry-rAF, collapsedSize px, push ±histPct, grid implícito) land in T-K2.
+
+### T-K2 — Shell organism visual components (2026-06-11)
+Additive to 0.4.0 (same minor bump, no API break).
+#### Added — visual components
+- **`ShellLayout`** — SSR-safe wrapper (`next/dynamic ssr:false`) with brand `skeletonSlot`. Slot-based API: `logoSlot`, `rightClusterSlot`, `skeletonSlot`. Required: `useShellStore`, `useChatStore`, `splitGroupId`, `pathname`.
+- **`ShellLayoutClient`** — client-side shell chrome with full resizable-panels v4 fixes SAGRADOS: key-remount, retry-rAF on collapsed, `collapsedSize` in px, push ±histPct, grid implícito clamp. RN-4: mode pill uses `@[24rem]:inline-flex` (container query, NOT viewport breakpoint).
+- **`TopBarShell`** — brand-agnostic top bar (`variant: "interactive" | "skeleton"`). Slots: `logoSlot`, `rightClusterSlot`. `data-testid=topbar-global`. Hamburger `lg:hidden`.
+- **`SupervisorCollapsedStrip`** — strip panel A (supervisor closed). Props: `supervisorName`, `supervisorThumbnail?`, `supervisorInitial?`, `supervisorSoftBg?`, `onOpenSupervisor`, `openLabel`, `stripTestId?`, `statusDotTestId?`.
+- **`SupervisorSidebar`** — sidebar panel B/C (chat + history). Mobile drawer via `mobileDrawerOpen` store state.
+- **`Ribbon` + `RibbonTab` + `ConfigTab`** — horizontal agent navigation. Prop-based catalog (`agentCatalog: ShellAgentDescriptor[]`, `ribbonOrder: string[]`). `data-testid=ribbon-tab-{slug}` (e2e-safe).
+- **`SubTabsBar` + `SubTab`** — sub-section navigation bar. URL-driven active state via `usePathname`. WAI-ARIA tablist with roving tabindex + keyboard (Arrow/Home/End/Enter/Space). Props: `agentCatalog: Record<string, ShellAgentDescriptor>`, `subTabsByAgent: Record<string, readonly ShellSubTabMeta[]>`.
+- **`SubSubTabsBar`** — N3-static third-level navigation (ADR-vitalia-004 v1.1). Prop-injected tabs.
+- **`ChatPanel` + `ChatHeader` + `ChatMessages` + `ChatComposer`** — full chat organism. `ChatHeader` receives `agent: ShellAgentDescriptor` (NOT a string slug). Mode pill `@[24rem]:inline-flex` (RN-4 SACRED).
+- **`SupervisorHistory` + `HistoryGroup` + `HistoryItem`** — conversation history panel.
+- **`MessageBubble` + `TypingIndicator` + `DelegateMarker`** — chat message atoms.
+- **`TogglePill`** — mode toggle (items-prop driven, no hardcoded modes).
+- **`AppPanelSlot`** — app content panel placeholder slot.
+- **`StatusDot`** — online/offline status indicator.
+- **`EmptyState` + `EmptyStateInline` + `PlaceholderCard`** — empty states.
+- **`useViewportGuard`** — exports `SUPERVISOR_MIN_PX=320` (was `VALERIA_MIN_PX` in vitalia). `DRAWER_BREAKPOINT=1024`, `INLINE_SPLIT_MIN_VIEWPORT=1280`. Store-inert (no mutations).
+- **`useKeyboardShortcuts`** — keyboard shortcut hook (Ctrl+B open supervisor, etc.).
+- **`resolveAgent`** — catalog lookup with fallback (`catalog.find(a => a.slug === slug) ?? fallbackSlug ?? catalog[0]`).
+- **`AgentTwBundle` / `GetAgentClasses`** — type exports for brand-injected per-agent Tailwind class bundles.
+
+#### Runtime deps added (T-K2)
+- None new beyond T-K1. `react-resizable-panels ^4.11.1`, `zustand ^5.0.5` already added in T-K1.
+
+### T-K3 — Kit barrel global + component tests (2026-06-11)
+Additive to 0.4.0 (no API break).
+#### Added
+- **`src/index.ts` barrel**: `export * from "./organism/shell"` added. Shell organism symbols now reachable from `@luana/ui-kit` directly. Guard note in barrel: `react-resizable-panels` `Group`/`Panel`/`Separator` are NOT re-exported (shell barrel guards them; `Group` in kit root = form group component).
+- **Vitest tests** — 7 new test files, 91 new tests (running total: 259 tests / 20 files):
+  - `shell-layout.test.tsx` — mount + skeletonSlot render (next/dynamic mocked synchronous, ShellLayoutClient skipped).
+  - `supervisor-collapsed-strip.test.tsx` — strip A: button aria-label, thumbnail, name, status dot, click, onError fallback.
+  - `top-bar-shell.test.tsx` — D1 structure (header/h-12/testid), slots, hamburger, variant=interactive (store mutation + onBurgerClick override), labels override.
+  - `use-viewport-guard.test.ts` — `SUPERVISOR_MIN_PX=320` exported; `VALERIA_MIN_PX`/`FULL_STATE_MIN_VIEWPORT`/`MOBILE_BREAKPOINT` NOT exported (legacy names retired).
+  - `chat-header.test.tsx` — renders (SC-1: avatar/name/status/mode-pill), action buttons (nueva conv/historial toggle/colapsar), **RN-4 SACRED** `@[24rem]:inline-flex` present + `md:inline-flex` absent, avatar onError fallback.
+  - `sub-tabs-bar.test.tsx` — SC-1 (nav tablist + N tabs + classes), SC-1 click (router.push / onNavigate), SC-2 (agent change), SC-3 (URL-derived active), SC-4 (invalid agent → null), SC-5 (invalid subtab → all inactive), SC-8 (roving tabindex + keyboard), SC-9 (aria-label), defensive (null params / empty params).
+  - `toggle-pill.test.tsx` — renders, items, defaultValue active, 3-mode, Spanish neutro check.
+- **Bugfix: `routing.ts` `segmentsOf()` + `extractAgentFromPath()` / `extractSubtabFromPath()` / `extractSubSubTabFromPath()`** now accept `string | null | undefined` pathname (guards `!pathname → []`). Previously crashed when `usePathname()` returned `null` in test/SSR context.
+
+#### Migration notes (vitalia → @luana/ui-kit 0.4.0)
+Brands consuming the kit shell must adapt:
+1. Replace `import ... from "~/components/shared/shell-organism/..."` with `import ... from "@luana/ui-kit"`.
+2. Replace `shell-store.ts` singleton with `createShellStore({ storageKey: "brand-shell-state", version: 1 })`.
+3. Provide `getAgentClasses: (slug: string) => AgentClassBundle` (brand-side JIT-static literal class bundle — stays brand-side, never in kit).
+4. `ChatHeader` now takes `agent: ShellAgentDescriptor` (full descriptor, not string slug).
+5. `SubTabsBar` now takes `agentCatalog: Record<string, ShellAgentDescriptor>` + `subTabsByAgent: Record<string, readonly ShellSubTabMeta[]>` (no hardcoded `RIBBON_SUBTABS`).
+6. Remove `VALERIA_MIN_PX` / `valeriaOpen` / `collapseValeria` references → use `SUPERVISOR_MIN_PX` / `supervisorOpen` / `collapseSupervisor`.
+
 ## 0.3.0 — 2026-06-08 (core-ds-foundation)
 ### Added
 - Layout-primitives: PageContainer · PageContentStack · PageHeader · PageSection · Toolbar · FilterBar · EmptyState · ErrorState · ListPageSkeleton · FormPageSkeleton · Pagination · DetailLayout · FormLayout.

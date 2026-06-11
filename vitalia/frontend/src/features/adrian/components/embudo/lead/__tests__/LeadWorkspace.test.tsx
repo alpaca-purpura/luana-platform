@@ -8,22 +8,27 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
-// Mock EntitySubNavBar — it's a shipped component we're reusing (no edit)
-vi.mock("@/components/shared/shell-organism/EntitySubNavBar", () => ({
-  EntitySubNavBar: ({
+// Mock @luana/ui-kit EntityWorkspaceLayout — LeadWorkspace migrated to kit (T-5)
+vi.mock("@luana/ui-kit", () => ({
+  EntityWorkspaceLayout: ({
     rootLabel,
     entity,
     activeLeaf,
+    children,
   }: {
     rootLabel: string;
     entity: { name: string } | null;
     activeLeaf: string | null;
+    children: React.ReactNode;
   }) => (
-    <nav data-testid="entity-sub-nav-bar">
-      <span data-testid="root-label">{rootLabel}</span>
-      {entity && <span data-testid="entity-name">{entity.name}</span>}
-      {activeLeaf && <span data-testid="active-leaf">{activeLeaf}</span>}
-    </nav>
+    <div data-testid="entity-workspace-layout">
+      <nav data-testid="entity-sub-nav-bar">
+        <span data-testid="root-label">{rootLabel}</span>
+        {entity && <span data-testid="entity-name">{entity.name}</span>}
+        {activeLeaf && <span data-testid="active-leaf">{activeLeaf}</span>}
+      </nav>
+      <div data-testid="entity-workspace-content">{children}</div>
+    </div>
   ),
 }));
 

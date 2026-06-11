@@ -475,13 +475,15 @@ describe("RIBBON_SUBTABS — total count and distribution (F1-S8)", () => {
     expect(RIBBON_SUBTABS.valeria).toHaveLength(0);
   });
 
-  it("total sub-tabs across 5 ribbon agents + config equals 22 (4+2+5+4+4+3)", () => {
-    // v1.2: lisa(4) + mateo(2) + lucas(5) + adrian(4) + camila(4) + config(3) = 22
+  it("total sub-tabs across 5 ribbon agents + config equals 23 (4+2+5+5+4+3)", () => {
+    // v1.2: lisa(4) + mateo(2) + lucas(5) + adrian(5) + camila(4) + config(3) = 23
     // Valeria=0 (sidebar-only)
+    // ★ 2026-06-11 (auditor shell-core-hardening): adrian ganó la sub-tab `recuperar`
+    // en la story adrian-embudo (chip frozen → /adrian/recuperar); este test quedó stale.
     const ribbonAndConfig = (
       ["lisa", "mateo", "lucas", "adrian", "camila", "config"] as const
     ).reduce((acc, key) => acc + RIBBON_SUBTABS[key].length, 0);
-    expect(ribbonAndConfig).toBe(22);
+    expect(ribbonAndConfig).toBe(23);
   });
 
   it("lisa has 4 sub-tabs in order: marca, staff, servicios, compliance", () => {
@@ -508,12 +510,14 @@ describe("RIBBON_SUBTABS — total count and distribution (F1-S8)", () => {
     ]);
   });
 
-  it("adrian has 4 sub-tabs in order: inbox, embudo, outbound, propuestas", () => {
+  it("adrian has 5 sub-tabs in order: inbox, embudo, recuperar, outbound, propuestas", () => {
+    // ★ 2026-06-11: `recuperar` agregada por la story adrian-embudo (catálogo real SSoT).
     const adrian = RIBBON_SUBTABS.adrian;
-    expect(adrian).toHaveLength(4);
+    expect(adrian).toHaveLength(5);
     expect(adrian.map((t) => t.id)).toEqual([
       "inbox",
       "embudo",
+      "recuperar",
       "outbound",
       "propuestas",
     ]);

@@ -1,26 +1,27 @@
 // cap: shell-organism.shell-vitalia
-// story-origin: vitalia-shell-state-persistence
+// story-origin: platform-lift-shell-chrome-ui-kit T-V2
 /**
- * shell-store-hydration.test.ts — TDD RED-first hydration tests for shell-store.
- * vitalia-shell-state-persistence T-1
+ * shell-store-hydration.test.ts — Kit store SSR-safe hydration + legacy migration tests.
+ * platform-lift-shell-chrome-ui-kit T-V2
  *
- * Tests (per 04-validators.yaml val-fn-unit-shell-hydration + creation_order step 3):
+ * T-V2 removes the legacy useShellStore. All tests now use useShellStoreKit
+ * (kit API: supervisorOpen / splitPct) against the canonical key 'vitalia-shell-state'.
  *
- * SC-3 (adversarial — the bug):
- *   - Seed localStorage with valeriaState='rail'
- *   - Simulate SSR/pre-hydration window (store created, mutations happen)
- *   - Assert NO setItem writes valeriaState='full' (the default) during that window
- *   - Assert first post-rehydration value === 'rail' (not clobbered)
+ * Covers:
  *
- * SC-6 (empty_state — first visit):
- *   - No localStorage entry
- *   - Store hydrates to default full/agentic
- *   - Single clean write post-hydrate (not a spurious clobber)
+ * SC-1/SC-5 SSR-safe (no-clobber — ADR-vitalia-006):
+ *   - Seed localStorage with a NEW-shape preference (supervisorOpen)
+ *   - Pre-hydration window: store created, mutations happen, NO setItem to the key
+ *   - Post-rehydrate: value comes from storage (not the default)
  *
- * SC-7 (corrupt localStorage):
- *   - localStorage contains invalid JSON
- *   - Store falls back to default without throw
- *   - Shell renders correctly with defaults
+ * SC-18 legacy migration (no-crash):
+ *   - Old shape {valeriaState:'collapsed'|'rail'|'full', shellMode} migrates:
+ *       collapsed → supervisorOpen='closed'
+ *       rail      → supervisorOpen='chat', historyOpen=false
+ *       full      → supervisorOpen='chat', historyOpen=false (NO restore history — RN-5)
+ *   - v1 shape {valeriaOpen: ...} migrates → supervisorOpen (field rename compat)
+ *   - corrupt / unknown → fallback {supervisorOpen:'chat', historyOpen:false} + console.warn
+ *   - NO clobber during SSR/skeleton (factory setItem NO-OP pre-hydration)
  *
  * Named export (no default export) per FSD-Lite enforce.
  * downstream-regression-na: brand-local store test; no cross-brand consumers
@@ -28,11 +29,42 @@
 
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import { act } from "@testing-library/react";
-import { useShellStore, SHELL_STORAGE_KEY } from "../shell-store";
+import { useShellStoreKit, SHELL_STORAGE_KEY } from "../shell-store";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function seedLocalStorage(
+/** Seed localStorage with current kit shape (supervisorOpen). */
+function seedNew(
+  supervisorOpen: string,
+  splitPct: number | null = null,
+  mobileDrawerOpen = false,
+) {
+  localStorage.setItem(
+    SHELL_STORAGE_KEY,
+    JSON.stringify({
+      state: { supervisorOpen, splitPct, mobileDrawerOpen },
+      version: 1,
+    }),
+  );
+}
+
+/** Seed localStorage with v1 vitalia-specific shape (valeriaOpen) for compat migration tests. */
+function seedV1Vitalia(
+  valeriaOpen: string,
+  valeriaPct: number | null = null,
+  mobileDrawerOpen = false,
+) {
+  localStorage.setItem(
+    SHELL_STORAGE_KEY,
+    JSON.stringify({
+      state: { valeriaOpen, valeriaPct, mobileDrawerOpen },
+      version: 1,
+    }),
+  );
+}
+
+/** Seed localStorage with the LEGACY shape (version 0) for migration tests. */
+function seedLegacy(
   valeriaState: string,
   shellMode = "agentic",
   mobileDrawerOpen = false,
@@ -50,18 +82,24 @@ function clearStorage() {
   localStorage.removeItem(SHELL_STORAGE_KEY);
 }
 
+async function rehydrate() {
+  await act(async () => {
+    await useShellStoreKit.persist.rehydrate();
+    await new Promise((r) => setTimeout(r, 0));
+  });
+}
+
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
-describe("shell-store SSR-safe hydration", () => {
+describe("shell-store SSR-safe hydration + legacy migration (kit store)", () => {
   let setItemSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     clearStorage();
-    // Reset store partial state — _hasHydrated: false also resets the closure hydrationRef
-    // (the factory wraps setState to sync hydrationRef when _hasHydrated is reset)
-    useShellStore.setState({
-      valeriaState: "full",
-      shellMode: "agentic",
+    useShellStoreKit.setState({
+      supervisorOpen: "chat",
+      historyOpen: false,
+      splitPct: null,
       mobileDrawerOpen: false,
       _hasHydrated: false,
     });
@@ -73,134 +111,54 @@ describe("shell-store SSR-safe hydration", () => {
     clearStorage();
   });
 
-  // ── SC-3: adversarial — the bug ───────────────────────────────────────────
+  // ── SC-1/SC-5 no-clobber during SSR/pre-hydration ─────────────────────────
 
-  describe("SC-3 adversarial — NO write espurio del default during SSR/pre-hydration", () => {
-    it("does NOT write valeriaState='full' to storage while _hasHydrated=false", async () => {
-      // Seed localStorage with user's preference ('rail')
-      seedLocalStorage("rail");
-
+  describe("SC-1/SC-5 no-clobber — NO write espurio del default during pre-hydration", () => {
+    it("does NOT write to storage while _hasHydrated=false", () => {
+      seedNew("closed");
       setItemSpy.mockClear();
 
-      // Simulate: store exists pre-hydration (skipHydration=true, no auto-hydrate)
-      // During this window, the persist middleware must NOT write the default
-      expect(useShellStore.getState()._hasHydrated).toBe(false);
+      expect(useShellStoreKit.getState()._hasHydrated).toBe(false);
 
-      // Verify NO write to the shell storage key happened pre-hydration
       const writesForKey = setItemSpy.mock.calls.filter(
         ([k]) => k === SHELL_STORAGE_KEY,
       );
       expect(writesForKey).toHaveLength(0);
     });
 
-    it("after rehydrate, valeriaState is 'rail' (not clobbered to 'full')", async () => {
-      // Seed localStorage with 'rail' — user preference
-      seedLocalStorage("rail");
+    it("after rehydrate, supervisorOpen comes from storage (not clobbered to default)", async () => {
+      seedNew("closed");
 
-      // Trigger rehydrate (simulates useStoreHydration in ShellOrganismLayoutClient)
-      await act(async () => {
-        useShellStore.persist.rehydrate();
-        await new Promise((r) => setTimeout(r, 0));
-      });
+      await rehydrate();
 
-      // _hasHydrated must flip
-      expect(useShellStore.getState()._hasHydrated).toBe(true);
-      // valeriaState must be 'rail' from localStorage, not the default 'full'
-      expect(useShellStore.getState().valeriaState).toBe("rail");
+      expect(useShellStoreKit.getState()._hasHydrated).toBe(true);
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("closed");
     });
 
-    it("after rehydrate, shellMode is preserved from storage", async () => {
-      seedLocalStorage("rail", "web");
-
-      await act(async () => {
-        useShellStore.persist.rehydrate();
-        await new Promise((r) => setTimeout(r, 0));
-      });
-
-      expect(useShellStore.getState().shellMode).toBe("web");
-    });
-
-    it("'full' is NEVER written to storage key when seed is 'rail' (pre-hydration window)", async () => {
-      seedLocalStorage("rail");
+    it("mutations before rehydrate don't persist to storage (NO-OP)", async () => {
+      seedNew("closed");
       setItemSpy.mockClear();
 
-      // Pre-hydration: any state mutations should NOT write storage
-      // (this is the window where the bug occurred — SSR/skeleton subscribed the store)
-      expect(useShellStore.getState()._hasHydrated).toBe(false);
-
-      const writesWithFull = setItemSpy.mock.calls.filter(([k, v]) => {
-        if (k !== SHELL_STORAGE_KEY) return false;
-        try {
-          const parsed = JSON.parse(v as string) as { state?: { valeriaState?: string } };
-          return parsed.state?.valeriaState === "full";
-        } catch {
-          return false;
-        }
-      });
-      expect(writesWithFull).toHaveLength(0);
-    });
-
-    it("mutations before rehydrate don't persist to storage", async () => {
-      seedLocalStorage("rail");
-      setItemSpy.mockClear();
-
-      // Simulate pre-hydration state mutations (like what SSR skeleton might trigger)
       act(() => {
-        useShellStore.getState().setValeriaState("full"); // default value
+        useShellStoreKit.getState().setSupervisorOpen("chat");
       });
 
-      // Must NOT have written to storage (NO-OP)
       const writesForKey = setItemSpy.mock.calls.filter(
         ([k]) => k === SHELL_STORAGE_KEY,
       );
       expect(writesForKey).toHaveLength(0);
 
-      // After rehydrate, state comes from localStorage (rail), not the pre-hydration mutation
-      await act(async () => {
-        useShellStore.persist.rehydrate();
-        await new Promise((r) => setTimeout(r, 0));
-      });
-
-      expect(useShellStore.getState().valeriaState).toBe("rail");
-    });
-  });
-
-  // ── SC-6: empty_state — first visit ──────────────────────────────────────
-
-  describe("SC-6 empty_state — first visit without stored preference", () => {
-    it("defaults to valeriaState='full' shellMode='agentic' when no storage entry", async () => {
-      // No localStorage entry (fresh user) — clearStorage in beforeEach ensures this
-      // After reset, the store starts with defaults
-      await act(async () => {
-        useShellStore.persist.rehydrate();
-        await new Promise((r) => setTimeout(r, 0));
-      });
-
-      // With no stored value, defaults should be maintained
-      const state = useShellStore.getState();
-      expect(state.valeriaState).toBe("full");
-      expect(state.shellMode).toBe("agentic");
-    });
-
-    it("_hasHydrated is true after rehydrate even with empty storage", async () => {
-      await act(async () => {
-        useShellStore.persist.rehydrate();
-        await new Promise((r) => setTimeout(r, 0));
-      });
-
-      expect(useShellStore.getState()._hasHydrated).toBe(true);
+      // After rehydrate, state comes from localStorage (closed), not the mutation
+      await rehydrate();
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("closed");
     });
 
     it("post-hydrate mutation writes to storage (single clean write)", async () => {
-      await act(async () => {
-        useShellStore.persist.rehydrate();
-        await new Promise((r) => setTimeout(r, 0));
-      });
-
+      await rehydrate();
       setItemSpy.mockClear();
 
       act(() => {
-        useShellStore.getState().setValeriaState("rail");
+        useShellStoreKit.getState().setSupervisorOpen("closed");
       });
 
       const writesForKey = setItemSpy.mock.calls.filter(
@@ -208,60 +166,75 @@ describe("shell-store SSR-safe hydration", () => {
       );
       expect(writesForKey.length).toBeGreaterThan(0);
     });
+  });
 
-    it("mobileDrawerOpen defaults to false (fresh user)", async () => {
-      await act(async () => {
-        useShellStore.persist.rehydrate();
-        await new Promise((r) => setTimeout(r, 0));
-      });
+  // ── SC-18 legacy migration (v0 → kit) ────────────────────────────────────
 
-      expect(useShellStore.getState().mobileDrawerOpen).toBe(false);
+  describe("SC-18 legacy migration — old shape maps to new machine", () => {
+    it("legacy 'collapsed' → supervisorOpen='closed'", async () => {
+      seedLegacy("collapsed");
+      await rehydrate();
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("closed");
+    });
+
+    it("legacy 'rail' → supervisorOpen='chat', historyOpen=false", async () => {
+      seedLegacy("rail");
+      await rehydrate();
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("chat");
+      expect(useShellStoreKit.getState().historyOpen).toBe(false);
+    });
+
+    it("legacy 'full' → supervisorOpen='chat', historyOpen=false (NO restore history — RN-5)", async () => {
+      seedLegacy("full");
+      await rehydrate();
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("chat");
+      // RN-5: NO restaura el historial al migrar de 'full'
+      expect(useShellStoreKit.getState().historyOpen).toBe(false);
+    });
+
+    it("legacy shellMode is dropped (not present on migrated state)", async () => {
+      seedLegacy("full", "web");
+      await rehydrate();
+      const state = useShellStoreKit.getState() as unknown as Record<string, unknown>;
+      expect(state.shellMode).toBeUndefined();
+    });
+
+    it("legacy mobileDrawerOpen preserved", async () => {
+      seedLegacy("rail", "agentic", true);
+      await rehydrate();
+      expect(useShellStoreKit.getState().mobileDrawerOpen).toBe(true);
     });
   });
 
-  // ── SC-7: corrupt localStorage — no crash ────────────────────────────────
+  // ── v1 valeriaOpen field compat migration ─────────────────────────────────
 
-  describe("SC-7 corrupt localStorage — fallback to default without throw", () => {
-    it("handles invalid JSON in localStorage without throwing", async () => {
-      // Seed with invalid JSON
+  describe("v1 vitalia field name compat — valeriaOpen maps to supervisorOpen", () => {
+    it("v1 valeriaOpen='chat' → supervisorOpen='chat'", async () => {
+      seedV1Vitalia("chat");
+      await rehydrate();
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("chat");
+    });
+
+    it("v1 valeriaOpen='closed' → supervisorOpen='closed'", async () => {
+      seedV1Vitalia("closed");
+      await rehydrate();
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("closed");
+    });
+  });
+
+  // ── SC-18 corrupt / unknown → fallback + console.warn ─────────────────────
+
+  describe("SC-18 corrupt/unknown → fallback {supervisorOpen:'chat', historyOpen:false} + console.warn", () => {
+    it("invalid JSON does not throw, falls back to default", async () => {
       localStorage.setItem(SHELL_STORAGE_KEY, "not-valid-json{{{{");
-
-      // Should not throw
-      await expect(
-        act(async () => {
-          useShellStore.persist.rehydrate();
-          await new Promise((r) => setTimeout(r, 0));
-        }),
-      ).resolves.not.toThrow();
+      await expect(rehydrate()).resolves.not.toThrow();
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("chat");
+      expect(useShellStoreKit.getState().historyOpen).toBe(false);
+      expect(useShellStoreKit.getState()._hasHydrated).toBe(true);
     });
 
-    it("falls back to default state when localStorage contains invalid JSON", async () => {
-      localStorage.setItem(SHELL_STORAGE_KEY, "this is not json");
-
-      await act(async () => {
-        useShellStore.persist.rehydrate();
-        await new Promise((r) => setTimeout(r, 0));
-      });
-
-      const state = useShellStore.getState();
-      // Should have default values (not crash/undefined)
-      expect(state.valeriaState).toBe("full");
-      expect(state.shellMode).toBe("agentic");
-      expect(state.mobileDrawerOpen).toBe(false);
-    });
-
-    it("_hasHydrated is true after corrupt JSON rehydrate (still hydrated, just defaults)", async () => {
-      localStorage.setItem(SHELL_STORAGE_KEY, "{invalid");
-
-      await act(async () => {
-        useShellStore.persist.rehydrate();
-        await new Promise((r) => setTimeout(r, 0));
-      });
-
-      expect(useShellStore.getState()._hasHydrated).toBe(true);
-    });
-
-    it("handles valeriaState with out-of-enum value gracefully", async () => {
+    it("unknown legacy valeriaState → fallback chat + console.warn (SC-18)", async () => {
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
       localStorage.setItem(
         SHELL_STORAGE_KEY,
         JSON.stringify({
@@ -270,90 +243,77 @@ describe("shell-store SSR-safe hydration", () => {
         }),
       );
 
-      // Should not throw — Zustand persist merges what it can
-      await expect(
-        act(async () => {
-          useShellStore.persist.rehydrate();
-          await new Promise((r) => setTimeout(r, 0));
+      await rehydrate();
+
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("chat");
+      expect(useShellStoreKit.getState().historyOpen).toBe(false);
+      expect(warnSpy).toHaveBeenCalled();
+    });
+
+    it("unknown new-shape supervisorOpen → fallback chat + console.warn", async () => {
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+      localStorage.setItem(
+        SHELL_STORAGE_KEY,
+        JSON.stringify({
+          state: { supervisorOpen: "bogus", splitPct: null, mobileDrawerOpen: false },
+          version: 1,
         }),
-      ).resolves.not.toThrow();
+      );
+
+      await rehydrate();
+
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("chat");
+      expect(warnSpy).toHaveBeenCalled();
     });
   });
 
-  // ── _hasHydrated + SsrSafeHydration interface ─────────────────────────────
+  // ── SC-6 empty_state — first visit ────────────────────────────────────────
+
+  describe("empty_state — first visit without stored preference", () => {
+    it("defaults to supervisorOpen='chat' historyOpen=false when no storage entry", async () => {
+      await rehydrate();
+      const state = useShellStoreKit.getState();
+      expect(state.supervisorOpen).toBe("chat");
+      expect(state.historyOpen).toBe(false);
+    });
+
+    it("_hasHydrated is true after rehydrate with empty storage", async () => {
+      await rehydrate();
+      expect(useShellStoreKit.getState()._hasHydrated).toBe(true);
+    });
+
+    it("mobileDrawerOpen defaults to false (fresh user)", async () => {
+      await rehydrate();
+      expect(useShellStoreKit.getState().mobileDrawerOpen).toBe(false);
+    });
+  });
+
+  // ── SsrSafeHydration interface ────────────────────────────────────────────
 
   describe("SsrSafeHydration interface on shell-store", () => {
-    it("shell-store exposes _hasHydrated (false initially)", () => {
-      expect(useShellStore.getState()._hasHydrated).toBe(false);
+    it("exposes _hasHydrated (false initially)", () => {
+      expect(useShellStoreKit.getState()._hasHydrated).toBe(false);
     });
 
-    it("shell-store exposes setHasHydrated action", () => {
-      expect(typeof useShellStore.getState().setHasHydrated).toBe("function");
+    it("exposes setHasHydrated action", () => {
+      expect(typeof useShellStoreKit.getState().setHasHydrated).toBe("function");
     });
 
-    it("shell-store exposes persist.rehydrate method", () => {
-      expect(typeof useShellStore.persist.rehydrate).toBe("function");
+    it("exposes persist.rehydrate method", () => {
+      expect(typeof useShellStoreKit.persist.rehydrate).toBe("function");
     });
 
-    it("partialize excludes _hasHydrated and setHasHydrated", () => {
-      const partialize = useShellStore.persist.getOptions().partialize;
+    it("partialize excludes _hasHydrated, setters, and historyOpen", () => {
+      const partialize = useShellStoreKit.persist.getOptions().partialize;
       if (partialize) {
-        const partial = partialize(useShellStore.getState());
+        const partial = partialize(useShellStoreKit.getState()) as Record<string, unknown>;
         expect(partial).not.toHaveProperty("_hasHydrated");
         expect(partial).not.toHaveProperty("setHasHydrated");
-        // Setters also excluded
-        expect(partial).not.toHaveProperty("setValeriaState");
-        expect(partial).not.toHaveProperty("cycleValeriaState");
-        expect(partial).not.toHaveProperty("setShellMode");
+        expect(partial).not.toHaveProperty("setSupervisorOpen");
         expect(partial).not.toHaveProperty("setMobileDrawerOpen");
+        // RN-5/RN-11: historyOpen never persisted
+        expect(partial).not.toHaveProperty("historyOpen");
       }
-    });
-
-    it("partialize includes valeriaState, shellMode, mobileDrawerOpen", () => {
-      const partialize = useShellStore.persist.getOptions().partialize;
-      if (partialize) {
-        const partial = partialize(useShellStore.getState());
-        expect(partial).toHaveProperty("valeriaState");
-        expect(partial).toHaveProperty("shellMode");
-        expect(partial).toHaveProperty("mobileDrawerOpen");
-      }
-    });
-  });
-
-  // ── mobileDrawerOpen slice independence ──────────────────────────────────
-
-  describe("mobileDrawerOpen slice independence from valeriaState", () => {
-    it("mobileDrawerOpen defaults to false", () => {
-      expect(useShellStore.getState().mobileDrawerOpen).toBe(false);
-    });
-
-    it("setMobileDrawerOpen changes mobileDrawerOpen without changing valeriaState", () => {
-      useShellStore.getState().setValeriaState("rail");
-
-      act(() => {
-        useShellStore.getState().setMobileDrawerOpen(true);
-      });
-
-      expect(useShellStore.getState().mobileDrawerOpen).toBe(true);
-      // valeriaState must be unchanged (slices are independent)
-      expect(useShellStore.getState().valeriaState).toBe("rail");
-    });
-
-    it("changing valeriaState does not affect mobileDrawerOpen", () => {
-      act(() => {
-        useShellStore.getState().setMobileDrawerOpen(true);
-        useShellStore.getState().setValeriaState("collapsed");
-      });
-
-      expect(useShellStore.getState().mobileDrawerOpen).toBe(true);
-    });
-
-    it("valeriaState='full' (desktop default) does NOT set mobileDrawerOpen=true", () => {
-      // This tests the bug fix: full desktop state never auto-opens mobile drawer
-      act(() => {
-        useShellStore.getState().setValeriaState("full");
-      });
-      expect(useShellStore.getState().mobileDrawerOpen).toBe(false);
     });
   });
 });

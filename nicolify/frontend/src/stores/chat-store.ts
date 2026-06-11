@@ -20,11 +20,8 @@
 
 import { create } from "zustand";
 
-import {
-  MOCK_MESSAGES,
-  MOCK_RESPONSES_BY_AGENT,
-} from "@/components/shared/shell-organism/_mock-messages";
 import { AGENT_CATALOG, DEFAULT_CHAT_AGENT } from "@/lib/agent-catalog";
+import { MOCK_MESSAGES, MOCK_RESPONSES_BY_AGENT } from "@/stores/_mock-messages";
 
 import type { AgentSlug } from "@/lib/agent-catalog";
 
