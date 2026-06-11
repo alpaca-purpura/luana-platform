@@ -32,13 +32,19 @@ test.describe("SC-3 — topbar: ThemeToggle < TenantSwitcher DOM order (RN-2)", 
     await pom.gotoShell(tenantId, { useProdRoute: true });
     await pom.waitForShellReady();
 
-    // Get positions of ThemeToggle and TenantSwitcher via DOM compareDocumentPosition
+    // Wait for TenantSwitcher to be in the DOM (async render — fetches tenant data)
+    await pom.tenantSwitcher.waitFor({ state: "visible", timeout: 10_000 });
+    // Also ensure ThemeToggle is visible
+    await pom.themeToggle.waitFor({ state: "visible", timeout: 10_000 });
+
+    // Check DOM order via compareDocumentPosition
+    // Both elements confirmed present via waitFor — no null guard needed
     const orderIsCorrect = await shellPage.evaluate(() => {
       const themeToggle = document.querySelector(
-        'header button[aria-label*="tema" i], header button[aria-label*="Tema" i]',
+        '[data-testid="topbar-global"] button[aria-label*="tema" i], [data-testid="topbar-global"] button[aria-label*="Tema" i]',
       );
       const tenantSwitcher = document.querySelector(
-        '[data-testid="tenant-switcher-trigger"]',
+        '[data-testid="topbar-global"] [data-testid="tenant-switcher-trigger"]',
       );
       if (!themeToggle || !tenantSwitcher) return null;
       // DOCUMENT_POSITION_FOLLOWING = 4 means tenantSwitcher comes AFTER themeToggle
@@ -59,8 +65,16 @@ test.describe("SC-3 — topbar: ThemeToggle < TenantSwitcher DOM order (RN-2)", 
     await pom.gotoShell(tenantId, { useProdRoute: true });
     await pom.waitForShellReady();
 
-    const themeBox = await pom.themeToggle.boundingBox();
-    const switcherBox = await pom.tenantSwitcher.boundingBox();
+    // Wait for TenantSwitcher (async tenant fetch)
+    await pom.tenantSwitcher.waitFor({ state: "visible", timeout: 10_000 });
+
+    // Use topbar-scoped locators to avoid matching buttons outside the header
+    const topbar = shellPage.getByTestId("topbar-global").last();
+    const themeToggleInTopbar = topbar.locator('button[aria-label*="tema" i], button[aria-label*="Tema" i]').first();
+    const tenantSwitcherInTopbar = topbar.getByTestId("tenant-switcher-trigger");
+
+    const themeBox = await themeToggleInTopbar.boundingBox();
+    const switcherBox = await tenantSwitcherInTopbar.boundingBox();
 
     expect(themeBox).not.toBeNull();
     expect(switcherBox).not.toBeNull();

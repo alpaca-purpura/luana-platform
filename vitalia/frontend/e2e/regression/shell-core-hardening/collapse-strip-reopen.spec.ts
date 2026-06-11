@@ -94,12 +94,27 @@ test.describe("SC-5 — colapsar → strip → reabrir (RN-5 · RN-9 · RN-12)",
     // Collapse first
     await pom.collapseToStripBtn.waitFor({ state: "visible", timeout: 15_000 });
     await pom.collapseToStripBtn.click();
-    // Wait for strip to appear before trying to click it (220ms CSS transition)
+    // Brief settle — same pattern as test 1 (220ms CSS transition + React re-render)
+    await shellPage.waitForTimeout(300);
+    // Wait for strip to appear before trying to click it
     await expect(pom.collapsedStrip).toBeVisible({ timeout: 8_000 });
 
-    // Click the strip avatar to reopen
-    await pom.clickCollapsedAvatar();
-    await pom.waitForShellReady();
+    // Click the strip avatar to reopen via JS (more reliable than Playwright click
+    // during the react-resizable-panels layout snap transition)
+    await shellPage.evaluate(() => {
+      const strip = document.querySelector<HTMLButtonElement>(
+        '[data-testid="valeria-collapsed-strip"]',
+      );
+      strip?.click();
+    });
+
+    // Wait for chat region to appear (confirms openValeria() fired + React re-rendered)
+    await shellPage
+      .locator('[aria-label="Chat con Valeria"]')
+      .waitFor({ state: "visible", timeout: 8_000 });
+
+    // Give Zustand persist middleware time to flush to localStorage
+    await shellPage.waitForTimeout(300);
 
     // ValeriaOpen should now be chat again
     const valeriaOpen = await pom.getValeriaOpen();
@@ -117,17 +132,33 @@ test.describe("SC-5 — colapsar → strip → reabrir (RN-5 · RN-9 · RN-12)",
     // Open history first
     await pom.historyToggleBtn.waitFor({ state: "visible", timeout: 15_000 });
     await pom.historyToggleBtn.click();
-    await shellPage.waitForTimeout(300);
+    // Wait for history toggle to settle (panel open/close animation)
+    await shellPage.waitForTimeout(500);
 
-    // Collapse
-    await pom.collapseToStripBtn.waitFor({ state: "visible", timeout: 15_000 });
-    await pom.collapseToStripBtn.click();
-    // Wait for strip to appear before trying to click it (220ms CSS transition)
+    // Collapse — target ChatHeader's "Colapsar a Valeria" specifically.
+    // When history is open, ValeriaHistory ALSO has [aria-label="Colapsar a barra"] (closeHistory only).
+    // The generic pom.collapseToStripBtn picks "Colapsar a barra" first (wrong button — only closes history).
+    // Must target "Colapsar a Valeria" (ChatHeader button) which calls collapseValeria().
+    const collapseVaeriaBtn = shellPage.locator('[aria-label="Colapsar a Valeria"]').first();
+    await collapseVaeriaBtn.waitFor({ state: "visible", timeout: 15_000 });
+    await collapseVaeriaBtn.click();
+    // Brief settle — same pattern as tests 1 & 3 (220ms CSS transition + React re-render)
+    await shellPage.waitForTimeout(300);
+    // Wait for strip to appear before trying to click it
     await expect(pom.collapsedStrip).toBeVisible({ timeout: 8_000 });
 
-    // Reopen via strip
-    await pom.clickCollapsedAvatar();
-    await pom.waitForShellReady();
+    // Reopen via strip via JS (more reliable than Playwright click during layout snap)
+    await shellPage.evaluate(() => {
+      const strip = document.querySelector<HTMLButtonElement>(
+        '[data-testid="valeria-collapsed-strip"]',
+      );
+      strip?.click();
+    });
+
+    // Wait for chat region to appear (confirms openValeria() fired + React re-rendered)
+    await shellPage
+      .locator('[aria-label="Chat con Valeria"]')
+      .waitFor({ state: "visible", timeout: 8_000 });
 
     // History must NOT be restored (RN-5)
     const historyOpen = await pom.getHistoryOpen();
