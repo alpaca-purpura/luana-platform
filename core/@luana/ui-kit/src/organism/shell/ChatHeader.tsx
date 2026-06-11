@@ -101,7 +101,7 @@ export function ChatHeader({
       {/* Avatar 9×9 con status dot */}
       <div className="relative shrink-0">
         <div
-          data-testid={testIds?.chatAvatar ?? "valeria-avatar"}
+          data-testid={testIds?.chatAvatar ?? "supervisor-avatar"}
           className={cn(
             "h-9 w-9 rounded-full overflow-hidden flex items-center justify-center",
             agentClasses.accentBg,
@@ -122,7 +122,7 @@ export function ChatHeader({
           )}
         </div>
         <span
-          data-testid={testIds?.chatStatusDot ?? "valeria-status-dot"}
+          data-testid={testIds?.chatStatusDot ?? "supervisor-status-dot"}
           className={cn(
             "absolute bottom-0 right-0 h-2 w-2 rounded-full ring-2 ring-card",
             statusDotClass ?? "bg-green-500",

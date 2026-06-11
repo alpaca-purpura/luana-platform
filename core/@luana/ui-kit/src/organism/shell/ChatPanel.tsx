@@ -92,7 +92,7 @@ export function ChatPanel({
     <section
       role="region"
       aria-label={`Chat con ${supervisor.name}`}
-      data-testid={testIds?.chat ?? "valeria-chat"}
+      data-testid={testIds?.chat ?? "supervisor-chat"}
       // ★ SACRED RN-4 (2026-06-11 live-fix): grid-rows sin cols explícitas crea columna
       // implícita `auto` que trackea al CONTENIDO más ancho → mensajes/composer recortados
       // por overflow-hidden al achicar el panel. `grid-cols-[minmax(0,1fr)]` fuerza el
