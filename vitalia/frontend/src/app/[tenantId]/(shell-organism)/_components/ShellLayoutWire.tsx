@@ -26,6 +26,7 @@
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { useStoreHydration } from "@luana/hooks/use-store-hydration";
 import {
   ShellLayout,
   type AgentClassBundle,
@@ -51,6 +52,7 @@ import { TenantSwitcher } from "@/components/shared/shell-organism/TenantSwitche
 import { ThemeToggle } from "@/components/shared/shell-organism/ThemeToggle";
 import { useChatStore } from "@/stores/chat-store";
 import { useShellStoreKit } from "@/stores/shell-store";
+import { useTenantStore } from "@/stores/tenant-store";
 
 // ── Agent border class (JIT-static switch — Tailwind v4 requires literal strings) ────
 
@@ -164,6 +166,12 @@ interface ShellLayoutWireProps {
  */
 export function ShellLayoutWire({ children }: ShellLayoutWireProps) {
   const pathname = usePathname();
+
+  // ★ ADR-vitalia-006: el chrome viejo hidrataba shell + tenant stores en su
+  // LayoutClient (único rehydrate del árbol). El kit hidrata el shell store
+  // (inyectado, dentro del chunk ssr:false); el TENANT store es brand-specific
+  // → se hidrata acá. Sin esto, setItem queda NO-OP y nada persiste.
+  useStoreHydration(useTenantStore);
 
   return (
     <ShellLayout
