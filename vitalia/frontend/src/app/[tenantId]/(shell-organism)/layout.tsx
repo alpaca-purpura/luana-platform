@@ -29,7 +29,9 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
-import { ShellOrganismLayout } from "@/components/shared/shell-organism/ShellOrganismLayout";
+// T-V1: ShellLayoutWire uses @luana/ui-kit ShellLayout (kit store + brand props).
+// ShellOrganismLayout (local chrome) is kept until T-V2 deletes it.
+import { ShellLayoutWire } from "./_components/ShellLayoutWire";
 import { fetchUserTenants } from "@/lib/iam/api";
 import { logCrossTenantAttempt, logNoTenantsAssigned } from "@/lib/iam/audit";
 import { DEFAULT_LANDING_SUBPATH } from "@/lib/shell-routes";
@@ -80,7 +82,10 @@ export default async function Layout({ children, params }: LayoutProps) {
   }
 
   // Happy path: tenant válido → render shell
-  return (
-    <ShellOrganismLayout tenantId={tenantId}>{children}</ShellOrganismLayout>
-  );
+  // T-V1: ShellLayoutWire (@luana/ui-kit) replaces ShellOrganismLayout (local chrome).
+  // T-V2 will remove the old ShellOrganismLayout import and clean up chrome/.
+  // `tenantId` is validated above; ShellLayoutWire only needs `children` (no Server props needed
+  // — ShellLayout is dynamic({ssr:false}) and reads its own zustand + usePathname internally).
+  void tenantId; // used for audit/validation above; ShellLayoutWire reads from URL
+  return <ShellLayoutWire>{children}</ShellLayoutWire>;
 }

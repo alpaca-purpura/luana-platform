@@ -21,6 +21,14 @@
 @import "tailwindcss";
 @config "../../tailwind.config.ts";
 
+/* T-V1: Scan @luana/ui-kit shell organism so Tailwind v4 JIT includes kit classes.
+ * Without this, arbitrary Tailwind utilities used inside the kit (bg-agent-*, border-*)
+ * would be purged. The agent color tokens are defined in this file + tailwind.config.ts;
+ * the @source ensures the JIT scanner sees the kit's static class usages.
+ * See: vitalia/docs/product/stories/platform-lift-shell-chrome-ui-kit/03-arch.md § FE-3
+ */
+@source "../../../core/@luana/ui-kit/src/organism/shell";
+
 /* ─── Shadcn standard tokens + agent tokens (F1-S0) ─────────────────────────
  * SSoT: vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md § 5.1
  * Format: H S% L% (consumed via hsl(var(--X)))
