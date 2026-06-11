@@ -1,34 +1,35 @@
 // cap: shell-organism.shell-nicolify
-// story-origin: nicolify-r0-shell T-3
+// story-origin: platform-lift-shell-chrome-ui-kit T-N1
 /**
- * shell-store.test.ts — TDD RED-first tests for nicolify shell-store.
- * nicolify-r0-shell T-3 — port from vitalia shell-store.test.ts, re-themed to Nicolify.
+ * shell-store.test.ts — Tests for nicolify shell-store (T-N1 convergence).
+ * platform-lift-shell-chrome-ui-kit T-N1
  *
- * Tests Zustand store actions + persist partialize behavior.
- * gherkin_coverage: C1, C2, C3 (splitter states + hydration)
+ * Replaces the legacy luanaState/cycleLuanaState/shellMode tests with
+ * kit-API tests: supervisorOpen, openSupervisor, collapseSupervisor, splitPct.
  *
- * Nicolify changes vs Vitalia:
- * - valeriaState/ValeriaState → luanaState/LuanaState
- * - cycleValeriaState → cycleLuanaState
- * - setValeriaState → setLuanaState
- * - SHELL_STORAGE_KEY = 'nicolify-shell-state'
- * - shellMode retained (agentic|web)
- * - splitState NEW field (chat-collapsed|narrow|50-50)
+ * SC-6: storageKey 'nicolify-shell-state' must remain unchanged.
+ *
+ * RN-7 (convergencia sancionada): retiring legacy tests is the sanctioned goal
+ * — these kit-API tests replace them wholesale.
  *
  * downstream-regression-na: brand-local store test; no cross-brand consumers
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
 
-import { useShellStore, SHELL_STORAGE_KEY } from "../shell-store";
+import {
+  useShellStoreKit,
+  useShellStore,
+  SHELL_STORAGE_KEY,
+  migrateLuanaState,
+} from "../shell-store";
 
-describe("useShellStore (nicolify)", () => {
+describe("useShellStoreKit (nicolify — T-N1 kit API)", () => {
   beforeEach(() => {
     // Reset store to initial state before each test
-    useShellStore.setState({
-      luanaState: "collapsed",
-      splitState: "chat-collapsed",
-      shellMode: "agentic",
+    useShellStoreKit.setState({
+      supervisorOpen: "chat",
+      splitPct: null,
       mobileDrawerOpen: false,
     });
   });
@@ -41,159 +42,199 @@ describe("useShellStore (nicolify)", () => {
     });
   });
 
-  // ── initial state ──────────────────────────────────────────────────────────
+  // ── storage key preserved (SC-6) ──────────────────────────────────────────
 
-  describe("initial state", () => {
-    it("initial state: luanaState=collapsed, splitState=chat-collapsed, shellMode=agentic, mobileDrawerOpen=false", () => {
-      const state = useShellStore.getState();
-      expect(state.luanaState).toBe("collapsed");
-      expect(state.splitState).toBe("chat-collapsed");
-      expect(state.shellMode).toBe("agentic");
-      expect(state.mobileDrawerOpen).toBe(false);
+  describe("SC-6 — storage key preserved", () => {
+    it("persist.getOptions().name is 'nicolify-shell-state'", () => {
+      expect(useShellStoreKit.persist.getOptions().name).toBe("nicolify-shell-state");
     });
   });
 
-  // ── setLuanaState ──────────────────────────────────────────────────────────
+  // ── useShellStore convenience alias ───────────────────────────────────────
 
-  describe("setLuanaState", () => {
-    it("setLuanaState('history') updates state", () => {
-      useShellStore.getState().setLuanaState("history");
-      expect(useShellStore.getState().luanaState).toBe("history");
-    });
-
-    it("setLuanaState('full') updates state", () => {
-      useShellStore.getState().setLuanaState("full");
-      expect(useShellStore.getState().luanaState).toBe("full");
-    });
-
-    it("setLuanaState back to collapsed", () => {
-      useShellStore.getState().setLuanaState("full");
-      useShellStore.getState().setLuanaState("collapsed");
-      expect(useShellStore.getState().luanaState).toBe("collapsed");
+  describe("useShellStore alias", () => {
+    it("useShellStore is same reference as useShellStoreKit", () => {
+      expect(useShellStore).toBe(useShellStoreKit);
     });
   });
 
-  // ── cycleLuanaState ────────────────────────────────────────────────────────
+  // ── kit API: supervisorOpen ───────────────────────────────────────────────
 
-  describe("cycleLuanaState", () => {
-    it("cycleLuanaState from collapsed goes to history", () => {
-      useShellStore.getState().setLuanaState("collapsed");
-      useShellStore.getState().cycleLuanaState();
-      expect(useShellStore.getState().luanaState).toBe("history");
-    });
-
-    it("cycleLuanaState from history goes to full", () => {
-      useShellStore.getState().setLuanaState("history");
-      useShellStore.getState().cycleLuanaState();
-      expect(useShellStore.getState().luanaState).toBe("full");
-    });
-
-    it("cycleLuanaState from full goes to collapsed", () => {
-      useShellStore.getState().setLuanaState("full");
-      useShellStore.getState().cycleLuanaState();
-      expect(useShellStore.getState().luanaState).toBe("collapsed");
+  describe("supervisorOpen initial state", () => {
+    it("supervisorOpen is 'chat' by default", () => {
+      const state = useShellStoreKit.getState();
+      expect(state.supervisorOpen).toBe("chat");
     });
   });
 
-  // ── setSplitState ──────────────────────────────────────────────────────────
-
-  describe("setSplitState", () => {
-    it("setSplitState('narrow') updates state", () => {
-      useShellStore.getState().setSplitState("narrow");
-      expect(useShellStore.getState().splitState).toBe("narrow");
+  describe("openSupervisor / collapseSupervisor", () => {
+    it("collapseSupervisor sets supervisorOpen to 'closed'", () => {
+      useShellStoreKit.getState().collapseSupervisor();
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("closed");
     });
 
-    it("setSplitState('50-50') updates state", () => {
-      useShellStore.getState().setSplitState("50-50");
-      expect(useShellStore.getState().splitState).toBe("50-50");
-    });
-
-    it("setSplitState back to chat-collapsed", () => {
-      useShellStore.getState().setSplitState("50-50");
-      useShellStore.getState().setSplitState("chat-collapsed");
-      expect(useShellStore.getState().splitState).toBe("chat-collapsed");
+    it("openSupervisor sets supervisorOpen to 'chat'", () => {
+      useShellStoreKit.getState().collapseSupervisor();
+      useShellStoreKit.getState().openSupervisor();
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("chat");
     });
   });
 
-  // ── setShellMode ───────────────────────────────────────────────────────────
+  // ── kit API: mobileDrawerOpen independent slice ───────────────────────────
 
-  describe("setShellMode", () => {
-    it("setShellMode('web') updates state", () => {
-      useShellStore.getState().setShellMode("web");
-      expect(useShellStore.getState().shellMode).toBe("web");
-    });
-
-    it("setShellMode back to agentic", () => {
-      useShellStore.getState().setShellMode("web");
-      useShellStore.getState().setShellMode("agentic");
-      expect(useShellStore.getState().shellMode).toBe("agentic");
-    });
-  });
-
-  // ── mobileDrawerOpen — independent slice ──────────────────────────────────
-
-  describe("mobileDrawerOpen slice independence from luanaState", () => {
+  describe("mobileDrawerOpen slice independence", () => {
     it("mobileDrawerOpen defaults to false", () => {
-      expect(useShellStore.getState().mobileDrawerOpen).toBe(false);
+      expect(useShellStoreKit.getState().mobileDrawerOpen).toBe(false);
     });
 
-    it("setMobileDrawerOpen changes mobileDrawerOpen without changing luanaState", () => {
-      useShellStore.getState().setLuanaState("history");
-      useShellStore.getState().setMobileDrawerOpen(true);
-      expect(useShellStore.getState().mobileDrawerOpen).toBe(true);
-      // luanaState must be unchanged (slices are independent — ADR-vitalia-006 D5)
-      expect(useShellStore.getState().luanaState).toBe("history");
+    it("setMobileDrawerOpen changes mobileDrawerOpen without changing supervisorOpen", () => {
+      useShellStoreKit.getState().openSupervisor();
+      useShellStoreKit.getState().setMobileDrawerOpen(true);
+      expect(useShellStoreKit.getState().mobileDrawerOpen).toBe(true);
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("chat");
     });
 
-    it("changing luanaState does not affect mobileDrawerOpen", () => {
-      useShellStore.getState().setMobileDrawerOpen(true);
-      useShellStore.getState().setLuanaState("full");
-      expect(useShellStore.getState().mobileDrawerOpen).toBe(true);
-    });
-
-    it("luanaState='full' (desktop) does NOT auto-set mobileDrawerOpen=true", () => {
-      // Bug #2 from vitalia: full desktop state must NEVER auto-open mobile drawer
-      useShellStore.getState().setLuanaState("full");
-      expect(useShellStore.getState().mobileDrawerOpen).toBe(false);
+    it("collapseSupervisor does NOT affect mobileDrawerOpen", () => {
+      useShellStoreKit.getState().setMobileDrawerOpen(true);
+      useShellStoreKit.getState().collapseSupervisor();
+      expect(useShellStoreKit.getState().mobileDrawerOpen).toBe(true);
     });
   });
 
-  // ── persist.partialize ─────────────────────────────────────────────────────
+  // ── persist API ───────────────────────────────────────────────────────────
 
-  describe("persist partialize", () => {
+  describe("persist API", () => {
     it("persist API is available", () => {
-      expect(useShellStore.persist).toBeDefined();
+      expect(useShellStoreKit.persist).toBeDefined();
     });
 
-    it("storage key is nicolify-shell-state", () => {
-      expect(useShellStore.persist.getOptions().name).toBe("nicolify-shell-state");
-    });
-
-    it("partialize includes state fields (luanaState, splitState, shellMode, mobileDrawerOpen)", () => {
-      const { partialize } = useShellStore.persist.getOptions();
+    it("partialize includes supervisorOpen and mobileDrawerOpen", () => {
+      const { partialize } = useShellStoreKit.persist.getOptions();
       if (partialize) {
-        const fullState = useShellStore.getState();
+        const fullState = useShellStoreKit.getState();
         const partial = partialize(fullState);
-        expect(partial).toHaveProperty("luanaState");
-        expect(partial).toHaveProperty("splitState");
-        expect(partial).toHaveProperty("shellMode");
+        expect(partial).toHaveProperty("supervisorOpen");
         expect(partial).toHaveProperty("mobileDrawerOpen");
       }
     });
+  });
+});
 
-    it("partialize excludes setter functions and _hasHydrated", () => {
-      const { partialize } = useShellStore.persist.getOptions();
-      if (partialize) {
-        const fullState = useShellStore.getState();
-        const partial = partialize(fullState);
-        expect(partial).not.toHaveProperty("setLuanaState");
-        expect(partial).not.toHaveProperty("cycleLuanaState");
-        expect(partial).not.toHaveProperty("setSplitState");
-        expect(partial).not.toHaveProperty("setShellMode");
-        expect(partial).not.toHaveProperty("setMobileDrawerOpen");
-        expect(partial).not.toHaveProperty("_hasHydrated");
-        expect(partial).not.toHaveProperty("setHasHydrated");
-      }
+// ── migrateLuanaState — unit tests ───────────────────────────────────────────
+
+describe("migrateLuanaState (T-N1)", () => {
+  // ── Legacy v0 luanaState mapping ─────────────────────────────────────────
+
+  describe("legacy luanaState → supervisorOpen mapping", () => {
+    it("maps luanaState='collapsed' → supervisorOpen='closed'", () => {
+      const result = migrateLuanaState(
+        {
+          luanaState: "collapsed",
+          splitState: "chat-collapsed",
+          shellMode: "agentic",
+          mobileDrawerOpen: false,
+        },
+        0,
+      );
+      expect(result.supervisorOpen).toBe("closed");
+    });
+
+    it("maps luanaState='history' → supervisorOpen='chat'", () => {
+      const result = migrateLuanaState(
+        {
+          luanaState: "history",
+          splitState: "50-50",
+          shellMode: "agentic",
+          mobileDrawerOpen: false,
+        },
+        0,
+      );
+      expect(result.supervisorOpen).toBe("chat");
+    });
+
+    it("maps luanaState='full' → supervisorOpen='chat'", () => {
+      const result = migrateLuanaState(
+        { luanaState: "full", splitState: "50-50", shellMode: "agentic", mobileDrawerOpen: false },
+        0,
+      );
+      expect(result.supervisorOpen).toBe("chat");
+    });
+
+    it("preserves mobileDrawerOpen from legacy shape", () => {
+      const result = migrateLuanaState(
+        {
+          luanaState: "collapsed",
+          splitState: "chat-collapsed",
+          shellMode: "agentic",
+          mobileDrawerOpen: true,
+        },
+        0,
+      );
+      expect(result.mobileDrawerOpen).toBe(true);
+    });
+
+    it("drops legacy splitState (maps to splitPct: null)", () => {
+      const result = migrateLuanaState(
+        { luanaState: "full", splitState: "narrow", shellMode: "agentic", mobileDrawerOpen: false },
+        0,
+      );
+      expect(result.splitPct).toBeNull();
+    });
+  });
+
+  // ── Already-migrated kit shape ────────────────────────────────────────────
+
+  describe("already-migrated kit shape passthrough", () => {
+    it("passes through supervisorOpen='closed'", () => {
+      const result = migrateLuanaState(
+        { supervisorOpen: "closed", splitPct: null, mobileDrawerOpen: false },
+        1,
+      );
+      expect(result.supervisorOpen).toBe("closed");
+    });
+
+    it("passes through supervisorOpen='chat'", () => {
+      const result = migrateLuanaState(
+        { supervisorOpen: "chat", splitPct: null, mobileDrawerOpen: false },
+        1,
+      );
+      expect(result.supervisorOpen).toBe("chat");
+    });
+
+    it("passes through splitPct number", () => {
+      const result = migrateLuanaState(
+        { supervisorOpen: "chat", splitPct: 0.35, mobileDrawerOpen: false },
+        1,
+      );
+      expect(result.splitPct).toBe(0.35);
+    });
+  });
+
+  // ── Corrupt / unknown shapes — must return defaults WITHOUT throw (Bif-5) ─
+
+  describe("Bif-5 — corrupt shape returns defaults without throw", () => {
+    it("null → fallback defaults (no throw)", () => {
+      expect(() => migrateLuanaState(null, 0)).not.toThrow();
+      const result = migrateLuanaState(null, 0);
+      expect(result.supervisorOpen).toBe("chat");
+    });
+
+    it("string → fallback defaults (no throw)", () => {
+      expect(() => migrateLuanaState("corrupt", 0)).not.toThrow();
+      const result = migrateLuanaState("corrupt", 0);
+      expect(result.supervisorOpen).toBe("chat");
+    });
+
+    it("unknown supervisorOpen value → fallback defaults (no throw)", () => {
+      expect(() => migrateLuanaState({ supervisorOpen: "invalid-value" }, 1)).not.toThrow();
+      const result = migrateLuanaState({ supervisorOpen: "invalid-value" }, 1);
+      expect(result.supervisorOpen).toBe("chat");
+    });
+
+    it("empty object → fallback defaults (no throw)", () => {
+      expect(() => migrateLuanaState({}, 0)).not.toThrow();
+      const result = migrateLuanaState({}, 0);
+      expect(result.supervisorOpen).toBe("chat");
     });
   });
 });
