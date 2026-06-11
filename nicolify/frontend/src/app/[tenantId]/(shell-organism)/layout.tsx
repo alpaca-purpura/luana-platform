@@ -1,8 +1,8 @@
 // cap: shell-organism.shell-nicolify
-// story-origin: nicolify-r0-shell T-6
+// story-origin: platform-lift-shell-chrome-ui-kit T-N1
 /**
  * Shell Organism Route Group Layout — Server Component.
- * nicolify-r0-shell T-6 — port from vitalia shell-organism layout, re-themed.
+ * platform-lift-shell-chrome-ui-kit T-N1 — re-wired to @luana/ui-kit ShellLayout.
  *
  * Architecture Decisions D1 (03-arch.md):
  *   Tenant resolution SKELETON — valida sesión Clerk (auth() → userId).
@@ -15,7 +15,10 @@
  * No "use client" — Server Component obligatorio para auth() + redirect().
  * No metadata export — las páginas hijas son dueñas de su metadata.
  *
- * spec_anchor: 03-arch.md § Architecture Decisions D1 + 06-tickets.yaml T-6
+ * T-N1: ShellOrganismLayout (legacy chrome) replaced with ShellLayoutWire
+ * (thin client bridge → @luana/ui-kit ShellLayout).
+ *
+ * spec_anchor: 03-arch.md § Architecture Decisions D1 + 06-tickets.yaml T-N1
  * gherkin_coverage: A1 A2 A3
  * downstream-regression-na: brand-local route; no cross-brand consumers.
  */
@@ -23,7 +26,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
-import { ShellOrganismLayout } from "@/components/shared/shell-organism/ShellOrganismLayout";
+import { ShellLayoutWire } from "./_components/ShellLayoutWire";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -31,10 +34,12 @@ interface LayoutProps {
 }
 
 /**
- *
+ * Shell organism route group layout.
+ * Validates Clerk session then renders ShellLayoutWire (kit chrome).
  */
 export default async function ShellOrganismGroupLayout({ children, params }: LayoutProps) {
-  const { tenantId } = await params;
+  // params is awaited for Next 16 async params compliance
+  void params;
 
   // SC-01: sin sesión Clerk → redirect a /sign-in
   const { userId } = await auth();
@@ -47,6 +52,6 @@ export default async function ShellOrganismGroupLayout({ children, params }: Lay
   // deferred to R1+ when nicolify IAM routes exist.
   // The Clerk middleware in proxy.ts already protects [tenantId]/** routes.
 
-  // Happy path: tenant valid per middleware → render shell
-  return <ShellOrganismLayout tenantId={tenantId}>{children}</ShellOrganismLayout>;
+  // Happy path: tenant valid per middleware → render kit shell
+  return <ShellLayoutWire>{children}</ShellLayoutWire>;
 }
