@@ -202,6 +202,7 @@ tickets:
         - "arch: staff+embudo importan @luana/ui-kit EntityWorkspaceLayout; brand-local retirado; cross-brand-shell-mirror allowlist ENCOGE (shrink-only)"
         - "e2e SC-11/12: directorio→workspace→back; leafs disabled sin entidad"
         - "regression: embudo board/writes live-verified intactos (AC-10)"
+    state: pushed                      # ★ 2026-06-10 builder-frontend · 3 commits (d3b06b11 · 8d62c958 · a042e1df) · kit activeLeaf override additive-minimal (10/10 kit tests GREEN) · StaffWorkspaceShell + LeadWorkspace + NewLeadPage migrated to @luana/ui-kit · brand-local EntitySubNavBar.tsx + test DELETED · tsc 0 errors · eslint 0 errors · 8 targeted tests GREEN · cross-brand-shell-mirror arch 31/31 PASS · pre-existing arch test failures (embudo-server internal import + stale inbox allowlist) unrelated to T-5
 
   - id: T-6
     title: "Dark token-audit (Decisión C): hardcoded→token en sub-tabs shipped + --vitalia-*-soft faltantes"
