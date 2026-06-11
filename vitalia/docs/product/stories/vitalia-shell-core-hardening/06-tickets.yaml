@@ -274,6 +274,7 @@ tickets:
       - "Todos importan base.ts; SC-20/21/22 real-backend"
       - "Tenant seed: ≥1 doctor + ≥1 lead + conversaciones (historial)"
     gherkin_coverage: [SC-1, SC-2, SC-3, SC-4, SC-5, SC-6, SC-7, SC-8, SC-9, SC-10, SC-11, SC-12, SC-13, SC-14, SC-15, SC-16, SC-17, SC-18, SC-19, SC-20, SC-21, SC-22]
+    state: pushed                      # ★ 2026-06-10 suite 52 passed + 2 flaky(retry-pass, documentados) + race 8/8 · 3 bugs producto cazados+arreglados (rewrites /api · strip collapsedSize · drag-collapse) · commits 00b3e259+93ccf620+cd99265d+e1a0bad0
     acceptance:
       validator_ids: [e2e_functional, a11y]
       checks:
