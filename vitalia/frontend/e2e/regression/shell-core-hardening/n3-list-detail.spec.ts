@@ -40,8 +40,9 @@ test.describe("SC-11 — N3 EntityWorkspaceLayout (RN-10)", () => {
     // Page loaded: either a list of doctors or an empty state.
     // T-V2 lift (harness fix): isVisible() retorna INMEDIATO (ignora timeout) —
     // race con el fetch RQ post-networkidle. waitFor sí espera (misma semántica).
+    // T-V2 fix-loop: testids alineados al contrato real: staff-card-* + empty-doctores.
     const hasCards = await shellPage
-      .locator('[data-testid^="entity-info-card-"]')
+      .locator('[data-testid^="staff-card-"]')
       .first()
       .waitFor({ state: "visible", timeout: 10_000 })
       .then(() => true)
@@ -49,7 +50,7 @@ test.describe("SC-11 — N3 EntityWorkspaceLayout (RN-10)", () => {
     const hasEmptyState =
       hasCards ||
       (await shellPage
-        .locator('[data-testid="staff-empty"]')
+        .locator('[data-testid="empty-doctores"]')
         .waitFor({ state: "visible", timeout: 2_000 })
         .then(() => true)
         .catch(() => false));
@@ -68,9 +69,9 @@ test.describe("SC-11 — N3 EntityWorkspaceLayout (RN-10)", () => {
     await ewp.gotoStaffDirectory(tenantId);
     await shellPage.waitForTimeout(1000);
 
-    // Try to click first doctor card
+    // Try to click first doctor card (T-V2 fix-loop: testid = staff-card-*)
     const firstCard = shellPage
-      .locator('[data-testid^="entity-info-card-"]')
+      .locator('[data-testid^="staff-card-"]')
       .first();
     const hasDoctor = await firstCard
       .waitFor({ state: "visible", timeout: 5_000 })
@@ -78,7 +79,9 @@ test.describe("SC-11 — N3 EntityWorkspaceLayout (RN-10)", () => {
       .catch(() => false);
 
     if (hasDoctor) {
-      await firstCard.click();
+      // T-V2 fix-loop (harness): la card es un <article> no-clickeable — el nav
+      // real del usuario es el link interno "Ver perfil".
+      await firstCard.getByRole("link").first().click();
       await shellPage.waitForLoadState("networkidle", { timeout: 15_000 });
 
       // EntityWorkspaceLayout should be mounted
@@ -102,16 +105,18 @@ test.describe("SC-11 — N3 EntityWorkspaceLayout (RN-10)", () => {
     const ewp = new EntityWorkspacePage(shellPage);
     await ewp.gotoEmbudoDirectory(tenantId);
 
-    // Embudo board or empty state (T-V2 lift harness fix: waitFor, no isVisible racy)
+    // Embudo board or empty state.
+    // T-V2 lift harness fix: waitFor, no isVisible racy.
+    // T-V2 fix-loop: testids alineados al contrato real: kanban-board + embudo-empty-state.
     const hasBoard = await shellPage
-      .locator('[data-testid="embudo-board"]')
+      .locator('[data-testid="kanban-board"]')
       .waitFor({ state: "visible", timeout: 10_000 })
       .then(() => true)
       .catch(() => false);
     const hasEmptyState =
       hasBoard ||
       (await shellPage
-        .locator('[data-testid="embudo-empty"]')
+        .locator('[data-testid="embudo-empty-state"]')
         .waitFor({ state: "visible", timeout: 2_000 })
         .then(() => true)
         .catch(() => false));
@@ -137,7 +142,13 @@ test.describe("SC-11 — N3 EntityWorkspaceLayout (RN-10)", () => {
       .catch(() => false);
 
     if (hasLead) {
-      await firstLead.click();
+      // T-V2 fix-loop (harness): nav real = link interno si existe; fallback click.
+      const innerLink = firstLead.getByRole("link").first();
+      if ((await innerLink.count()) > 0) {
+        await innerLink.click();
+      } else {
+        await firstLead.click();
+      }
       await shellPage.waitForLoadState("networkidle", { timeout: 15_000 });
       await expect(ewp.workspaceLayout).toBeVisible({ timeout: 10_000 });
     } else {

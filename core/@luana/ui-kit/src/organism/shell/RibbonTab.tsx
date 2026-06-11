@@ -65,13 +65,14 @@ export const RibbonTab = forwardRef<HTMLButtonElement, RibbonTabProps>(
           </AvatarFallback>
         </Avatar>
         {/* Q15 cement: whitespace-nowrap en ambos spans garantiza ribbon h-14 uniforme */}
-        {/* A11y cement: sub-label usa text-foreground/60 cuando active para WCAG AA */}
+        {/* A11y cement: sub-label sólido cuando active para WCAG AA sobre bg-agent-*-soft.
+            T-V2 fix-loop: /60 daba 4.25 sobre mateo-soft DARK (#534a09) → /75 (AA ambos temas). */}
         <span className="flex flex-col items-start leading-tight whitespace-nowrap">
           <span className="whitespace-nowrap">{descriptor.tabLabel}</span>
           <span
             className={cn(
               "whitespace-nowrap text-[10px]",
-              active ? "text-foreground/60" : "text-muted-foreground",
+              active ? "text-foreground/75" : "text-muted-foreground",
             )}
           >
             {descriptor.name}

@@ -41,11 +41,12 @@ import {
   RIBBON_SUBTABS,
   SHIPPED_STATIC_SUBTABS,
   type AgentSlug,
+  type RibbonTabSlug,
 } from "@/lib/agent-catalog";
 import {
   agentBgClass,
   agentBgSoftClass,
-  agentTextClass,
+  agentTextClassSubTab,
 } from "@/components/shared/shell-organism/_agent-tw-classes";
 import { LogoMark } from "@/components/shared/shell-organism/LogoMark";
 import { TenantSwitcher } from "@/components/shared/shell-organism/TenantSwitcher";
@@ -89,10 +90,11 @@ function agentBorderClass(slug: AgentSlug): string {
  */
 function getAgentClasses(slug: string): AgentClassBundle {
   const s = (slug as AgentSlug) in AGENT_CATALOG ? (slug as AgentSlug) : "valeria";
+  // agentTextClassSubTab handles WCAG AA contrast exceptions (mateo D20, lucas D18, config D19)
   return {
     accentBg: agentBgClass(s),
     softBg: agentBgSoftClass(s),
-    accentText: agentTextClass(s),
+    accentText: agentTextClassSubTab(s as RibbonTabSlug),
     accentBorder: agentBorderClass(s),
   };
 }

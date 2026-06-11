@@ -352,6 +352,10 @@ export function ShellLayoutClient({
       useChatStore={useChatStore}
       getAgentClasses={getAgentClasses}
       statusDotClass={statusDotClass}
+      // T-V2 fix-loop (axe): el original pintaba el bubble del usuario con el
+      // accent del supervisor (bg-agent-* + text-white = AA en las paletas brand).
+      // El default bg-primary del kit (cyan vitalia) daba 2.49 white-on-cyan.
+      userBubbleBgClass={getAgentClasses(supervisorSlug).accentBg}
       testIds={testIds}
     />
   );

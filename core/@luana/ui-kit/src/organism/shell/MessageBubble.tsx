@@ -83,6 +83,8 @@ export function MessageBubble({
         data-testid="msg-bubble"
         data-role="user"
         className={cn(
+          // text-white verbatim del original — el bg viene del brand vía
+          // userBubbleBgClass (accent del supervisor, AA con white en paletas brand).
           "text-white rounded-2xl rounded-br-sm px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap",
           userBubbleBgClass,
         )}

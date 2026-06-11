@@ -38,8 +38,10 @@ describe("agentTextClassSubTab — standard agents return text-agent-{slug} (F1-
     expect(agentTextClassSubTab("camila")).toBe("text-agent-camila");
   });
 
-  it("agentTextClassSubTab('mateo') === 'text-agent-mateo' (transversal but shape-complete)", () => {
-    expect(agentTextClassSubTab("mateo")).toBe("text-agent-mateo");
+  it("agentTextClassSubTab('mateo') === 'text-foreground' (exception D20 — WCAG AA)", () => {
+    // T-V2 lift fix-loop: #FEE209 amarillo sobre bg-agent-mateo-soft = 1.21 (AA fail)
+    // — destapado por axe real post edge-redirect. Excepción análoga a lucas/config.
+    expect(agentTextClassSubTab("mateo")).toBe("text-foreground");
   });
 });
 
