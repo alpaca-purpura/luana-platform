@@ -1,0 +1,68 @@
+// cap: platform.lift-shell-chrome-ui-kit
+import type { ShellRoutingOptions } from "./types";
+
+/**
+ * Generic shell routing helpers (T-K1).
+ *
+ * Catalog-driven: the brand passes its own agent slug-set, special (non-agent)
+ * tabs, and the valid sub-tab map by argument. The kit ships zero hardcoded
+ * brand slugs/labels (RN-2).
+ *
+ * Path shape (brand-agnostic, mirrors the shell route group):
+ *   /{tenantId}/{agent}/{subtab}/...
+ * segment[0] = tenant, segment[1] = agent, segment[2] = subtab.
+ *
+ * Port of vitalia lib/agent-catalog.ts helpers, re-parametrized.
+ */
+
+/** Split a pathname into non-empty segments (tolerates leading/trailing slashes). */
+function segmentsOf(pathname: string): string[] {
+  return pathname.split("/").filter(Boolean);
+}
+
+/**
+ * Extract the agent (or special-tab) slug from segment[1].
+ * Returns the slug only if it is a known agent or a known special tab.
+ */
+export function extractAgentFromPath(
+  pathname: string,
+  opts: ShellRoutingOptions,
+): string | null {
+  const segments = segmentsOf(pathname);
+  // segments[0] = tenantId, segments[1] = agent/special tab
+  const candidate = segments[1];
+  if (!candidate) return null;
+  if (opts.specialTabs?.includes(candidate)) return candidate;
+  if (opts.agentSlugs.includes(candidate)) return candidate;
+  return null;
+}
+
+/**
+ * Extract the sub-tab slug from segment[2] (raw — no validation).
+ * Returns null when there is no sub-tab segment.
+ */
+export function extractSubtabFromPath(pathname: string): string | null {
+  const segments = segmentsOf(pathname);
+  return segments[2] ?? null;
+}
+
+/** True when `slug` is a known agent or special tab. */
+export function isValidAgent(
+  slug: string | null | undefined,
+  opts: ShellRoutingOptions,
+): boolean {
+  if (!slug) return false;
+  if (opts.specialTabs?.includes(slug)) return true;
+  return opts.agentSlugs.includes(slug);
+}
+
+/** True when `subtabSlug` is a valid sub-tab for the given `agent`. */
+export function isValidSubtab(
+  agent: string,
+  subtabSlug: string,
+  opts: ShellRoutingOptions,
+): boolean {
+  const subtabs = opts.subtabsByAgent[agent];
+  if (!subtabs) return false;
+  return subtabs.includes(subtabSlug);
+}

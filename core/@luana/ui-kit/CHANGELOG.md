@@ -1,3 +1,16 @@
+## 0.4.0 — 2026-06-11 (platform-lift-shell-chrome-ui-kit · T-K1)
+### Added — organism layer (`src/organism/shell/`)
+- **`createShellStore({ storageKey, version?, migrate? })`** — generic SSR-safe Zustand store factory for the shell state machine. Brand-agnostic port of the per-brand `shell-store.ts` (vitalia/nicolify), re-parametrized to neutral naming (RN-2): `valeriaOpen → supervisorOpen`, `valeriaPct → splitPct`. CONSUMES `@luana/hooks/createSsrSafePersistedStore` (RN-8 — never reimplements SSR-safe persistence). Brand passes `storageKey` (SC-6 — conserved for e2e: `vitalia-shell-state` / `nicolify-shell-state`) + optional `migrate` for legacy shapes. Machine: A=closed (strip) · B=chat (split) · C=chat+history (additive push). `historyOpen` never persisted open (no-clobber). Default migrate validates the current shape; corrupt → fallback + warn.
+- **`extractAgentFromPath` / `extractSubtabFromPath` / `isValidAgent` / `isValidSubtab`** (`routing.ts`) — generic catalog-driven routing helpers (port of vitalia `lib/agent-catalog.ts` helpers). The brand passes its agent slug-set + special tabs + sub-tab map by argument; the kit ships zero hardcoded brand slugs/labels.
+- **Generic organism types** (`types.ts`) — `ShellAgentDescriptor`, `ShellSubTabMeta`, `SupervisorOpen`, `ShellPersistedState`, `ShellStoreState`, `ShellChatStoreApi`, `ShellStore`, `CreateShellStoreOptions`, `ShellLayoutProps`, `ShellLayoutLabels`, `ShellRoutingOptions`. Verbatim from `03-arch.md § API contract`. Zero brand tokens.
+- Vitest: `src/organism/shell/__tests__/{create-shell-store,routing}.test.ts` (machine A/B/C transitions + migrate hook + no-clobber hydration SC-6 + generic routing helpers).
+### Changed — deps + SEMVER
+- New runtime deps: **`react-resizable-panels` `^4.11.1`** + **`zustand` `^5.0.5`** (exact ranges of `vitalia/frontend`) — required by the shell organism. Additive; zero breaking on existing exports.
+- **SEMVER 0.3.0 → 0.4.0 (minor — additive organism layer · Decisión D).**
+### Notes
+- **Group-name collision (Decisión D):** the kit already exports a form `Group`. T-K1 does NOT re-export `react-resizable-panels`' `Group`/`Panel`/`Separator` from the barrel. If a resize handle must be public (later ticket), it is named `ShellResizeHandle`.
+- T-K1 scope = scaffolding only (factory + types + routing). Visual components (`ShellLayout`, `SupervisorSidebar`, `Ribbon`, `ChatPanel`, …), the `ssr:false` wrapper, and the RN-4 v4 fixes (key-remount, retry-rAF, collapsedSize px, push ±histPct, grid implícito) land in T-K2.
+
 ## 0.3.0 — 2026-06-08 (core-ds-foundation)
 ### Added
 - Layout-primitives: PageContainer · PageContentStack · PageHeader · PageSection · Toolbar · FilterBar · EmptyState · ErrorState · ListPageSkeleton · FormPageSkeleton · Pagination · DetailLayout · FormLayout.
