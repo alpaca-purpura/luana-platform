@@ -9,7 +9,7 @@ folded_into: vitalia-shell-core-hardening    # ★ 2026-06-10 absorbido por la u
 architecture_pattern: ADR-vitalia-004
 last_modified: 2026-06-10T00:00:00-05:00
 parked_at: 2026-05-23T18:30:00-05:00
-parked_reason: "F1-S4 audit ESCALATED Caso D — race condition transition+drag-immediate edge case. Ratified Chris accept-with-defer. ★ 2026-06-10 FOLDED into vitalia-shell-core-hardening (el refactor del conversational shell lifecycle ahora vive en el hardening umbrella)."
+parked_reason: "F1-S4 audit ESCALATED Caso D — race condition transition+drag-immediate edge case. Ratified Chris accept-with-defer. ★ 2026-06-10 FOLDED into vitalia-shell-core-hardening. ★ DELIVERED 2026-06-11: umbrella done — test del race REACTIVADO y verde (resize-and-state.spec.ts 8/8, SC-22/AC-14) sobre la máquina de estados nueva. Deuda saldada."
 parent_story: vitalia-fase1-shell-layout-5050
 parent_commit_partial_fix: 46fc8700
 parallel_safe: true

@@ -15,8 +15,10 @@ cap_target: null                        # higiene + hardening cross-cap del shel
 cap_change_type: fix                    # consolida FIXES del chrome (precedente: shell-valeria-responsive + shell-nav-scroll-errors, ambos fix+null). El lift a @luana/ui-kit es cap-work de /pm-luana (core), no una cap vitalia — gate HB-34 no exige YAML para fix.
 parent_story: null
 
-state: developed                        # ★ 2026-06-11 T-1..T-8 pushed · gates GREEN · live-verify #37 + 2 rondas Chris SATISFIED → /auditor (autonomous)
-phase: HANDOFF_TO_AUDITOR
+state: done                             # ★ 2026-06-11 APPROVED (CHECKPOINTS C1-C5 PASS) + signoff Chris SATISFIED → merge /pm-vitalia + archive R2
+phase: MERGED
+done_at: 2026-06-11
+merge_artifact: 07-merge.md
 reconciled: true                        # R liviano ejecutado: RN-7 ~260→280 reconciliado en 01-spec + ledger matriz ✅ + rounds = allowlist auditor
 dark_mode_in_scope: true                # ★ ratificado Chris 2026-06-10 ("Si, mételo") — supersede el out-of-scope del backbone
 input_spec_signed: true                 # firma reconciliación 2026-06-10 (deltas dark/B1/race + herencia FIRMA 1 backbone)

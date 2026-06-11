@@ -15,7 +15,7 @@ state: parked                       # ★ 2026-06-10 FOLDED into vitalia-shell-c
 phase: FOLDED
 folded_into: vitalia-shell-core-hardening
 parked_at: 2026-06-10T00:00:00-05:00
-parked_reason: "Folded en la umbrella vitalia-shell-core-hardening (un solo review del chrome + lift a @luana/ui-kit). Artefactos refined carry-forward por referencia (01-spec v3 + mockup FINAL firmado + baseline build). Reabrir solo si Chris revierte la consolidación."
+parked_reason: "Folded en la umbrella vitalia-shell-core-hardening. ★ DELIVERED 2026-06-11: la umbrella llegó a done (APPROVED + signoff Chris) — los 7 puntos de esta story están construidos, live-verified y mergeados. Esta carpeta queda como histórico del refinamiento (spec v3 + mockup firmado son carry-forward citados por la umbrella archivada)."
 prior_state_before_fold: refined    # ★ 2026-06-06 /po-ux cerró refined: spec v3 RONDA 1+2 + ambas firmas (input_spec_signed + mockup_final_signed) + mapa funcional + matriz sin huecos. Build previo (614bfbd5 + 29451ef6) = BASELINE (puntos 3+5), NO se descarta.
 module: shell                       # ⚠️ scope real cross-módulo [shell, clinics, crm] por bundle 1-7 (punto 7) — ver 01-spec § Coordinación
 cross_module_scope: [shell, clinics, crm]
