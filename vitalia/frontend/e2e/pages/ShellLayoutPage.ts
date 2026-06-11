@@ -28,12 +28,28 @@ import type { Page, Locator } from "@playwright/test";
 // Types
 // ---------------------------------------------------------------------------
 
+/** @deprecated Legacy F1-S4 type. Use ValeriaOpen for new machine. */
 export type ValeriaState = "full" | "rail" | "collapsed";
+/** @deprecated Eliminated in vitalia-shell-core-hardening T-1 (AC-1 / RN-1). */
 export type ShellMode = "agentic" | "web";
 
+/** New machine (vitalia-shell-core-hardening T-1 · 03-arch-fe § 1.1) */
+export type ValeriaOpen = "closed" | "chat";
+
+/** New machine storage schema (version 1).
+ * historyOpen is NOT persisted (RN-5/RN-11) — always starts closed.
+ */
 export interface ShellStorageState {
-  shellMode?: ShellMode;
+  /** New machine: replaces valeriaState (full|rail|collapsed). Persisted. */
+  valeriaOpen?: ValeriaOpen;
+  /** Split percent of the Valeria panel. null = default 30. Persisted. */
+  valeriaPct?: number | null;
+  /** Mobile drawer slice (independent). Persisted. */
+  mobileDrawerOpen?: boolean;
+  /** @deprecated Legacy v0 field — still present during migration (SC-18). */
   valeriaState?: ValeriaState;
+  /** @deprecated Legacy v0 field — eliminated. */
+  shellMode?: ShellMode;
 }
 
 // localStorage keys (must stay in sync with shell-store.ts)
@@ -78,8 +94,22 @@ export class ShellLayoutPage {
   /** TenantSwitcher trigger button */
   readonly tenantSwitcher: Locator;
 
-  /** ShellModeToggle chip (disabled placeholder F1-S4) */
-  readonly shellModeToggle: Locator;
+  // ── New machine (vitalia-shell-core-hardening) ────────────────────────────
+
+  /** ValeriaCollapsedStrip (state A · closed) — the narrow avatar/strip */
+  readonly collapsedStrip: Locator;
+
+  /** History panel (when open — additive state C) */
+  readonly historyPanel: Locator;
+
+  /** Collapse-to-strip button inside ValeriaSidebar (aria-label="Colapsar a barra") */
+  readonly collapseToStripBtn: Locator;
+
+  /** History toggle in ChatHeader (aria-label "Mostrar historial" | "Ocultar historial") */
+  readonly historyToggleBtn: Locator;
+
+  /** New conversation button (ChatHeader aria-label="Nueva conversación") */
+  readonly newConversationBtn: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -105,7 +135,16 @@ export class ShellLayoutPage {
       )
       .first();
     this.tenantSwitcher = page.getByTestId("tenant-switcher-trigger");
-    this.shellModeToggle = page.getByTestId("shell-mode-toggle");
+    // New machine (shell-core-hardening)
+    this.collapsedStrip = page.getByTestId("valeria-collapsed-strip");
+    this.historyPanel = page.locator('[aria-label="Historial conversaciones"]');
+    this.collapseToStripBtn = page.locator(
+      '[aria-label="Colapsar a barra"], [aria-label="Colapsar a Valeria"]',
+    ).first();
+    this.historyToggleBtn = page.locator(
+      '[aria-label="Mostrar historial"], [aria-label="Ocultar historial"]',
+    ).first();
+    this.newConversationBtn = page.locator('[aria-label="Nueva conversación"]').first();
   }
 
   // ── Navigation ─────────────────────────────────────────────────────────────
@@ -207,9 +246,108 @@ export class ShellLayoutPage {
 
   // ── Store manipulation (via localStorage pre-navigation) ───────────────────
 
+  // ── New machine getters (shell-core-hardening) ────────────────────────────
+
+  /**
+   * Get the current valeriaOpen value from localStorage.
+   * Returns 'chat' if absent or parse fails (matches store default).
+   */
+  async getValeriaOpen(): Promise<ValeriaOpen> {
+    return await this.page.evaluate((key) => {
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return "chat";
+        const parsed = JSON.parse(raw) as { state?: { valeriaOpen?: string } };
+        const v = parsed.state?.valeriaOpen;
+        if (v === "closed" || v === "chat") return v;
+        return "chat";
+      } catch {
+        return "chat";
+      }
+    }, SHELL_STORAGE_KEY) as Promise<ValeriaOpen>;
+  }
+
+  /**
+   * Get the current historyOpen from the live Zustand store via the DOM.
+   * historyOpen is NOT persisted, so we read the in-memory state via
+   * the presence/visibility of the history panel in the DOM.
+   */
+  async getHistoryOpen(): Promise<boolean> {
+    try {
+      const box = await this.historyPanel.boundingBox();
+      if (!box || box.width === 0) return false;
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Toggle the theme by clicking ThemeToggle in the top bar.
+   * Waits briefly for the class to be applied to <html>.
+   */
+  async toggleDark(): Promise<void> {
+    await this.themeToggle.click();
+    await this.page.waitForTimeout(300);
+  }
+
+  /**
+   * Get the computed background color of the shell (html element class dark/light).
+   * Returns 'dark' or 'light' based on the class on <html>.
+   */
+  async getComputedBg(): Promise<"dark" | "light"> {
+    return await this.page.evaluate(() => {
+      const html = document.documentElement;
+      return html.classList.contains("dark") ? "dark" : "light";
+    });
+  }
+
+  /**
+   * Soft-navigate (Next.js router.push) to a route within the shell.
+   * Uses page.evaluate to call router.push — does NOT trigger a full reload.
+   * Falls back to page.goto if Next router is not available.
+   */
+  async softNavTo(path: string): Promise<void> {
+    // Use Link click pattern: inject a temporary link and click it for reliable soft-nav
+    await this.page.evaluate((p) => {
+      const a = document.createElement("a");
+      a.href = p;
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }, path);
+    // Wait for navigation to settle
+    await this.page.waitForLoadState("networkidle", { timeout: 15_000 });
+  }
+
+  /**
+   * Click the ValeriaCollapsedStrip (state A → state B: opens chat).
+   * Waits for the chat panel to become visible.
+   */
+  async clickCollapsedAvatar(): Promise<void> {
+    await this.collapsedStrip.waitFor({ state: "visible", timeout: 15_000 });
+    await this.collapsedStrip.click();
+    // Wait for valeria-sidebar to appear (chat opened)
+    await this.valeriaSlot.waitFor({ state: "visible", timeout: 15_000 });
+  }
+
+  /**
+   * Click the "Nueva conversación" button in ChatHeader.
+   * Archives current conversation and opens a new one.
+   */
+  async clickNewConversation(): Promise<void> {
+    await this.newConversationBtn.waitFor({ state: "visible", timeout: 15_000 });
+    await this.newConversationBtn.click();
+    await this.page.waitForTimeout(300);
+  }
+
+  // ── Store manipulation (via localStorage pre-navigation) ───────────────────
+
   /**
    * Set shellMode in localStorage and reload to apply.
    * Zustand persist reads localStorage on mount.
+   * @deprecated shellMode eliminated in shell-core-hardening. Use setValeriaOpenViaStore.
    */
   async setShellModeViaStore(mode: ShellMode): Promise<void> {
     await this.page.evaluate(
@@ -234,6 +372,7 @@ export class ShellLayoutPage {
 
   /**
    * Set valeriaState in localStorage and reload to apply.
+   * @deprecated Legacy v0 shape. Use setValeriaOpenViaStore for new machine.
    */
   async setValeriaStateViaStore(state: ValeriaState): Promise<void> {
     await this.page.evaluate(
@@ -251,6 +390,34 @@ export class ShellLayoutPage {
         }
       },
       [SHELL_STORAGE_KEY, state] as const,
+    );
+    await this.page.reload();
+    await this.topBar.waitFor({ state: "visible", timeout: 30_000 });
+  }
+
+  /**
+   * Set valeriaOpen in localStorage (new machine v1) and reload to apply.
+   * Seeds the new machine persisted slice directly.
+   */
+  async setValeriaOpenViaStore(open: ValeriaOpen): Promise<void> {
+    await this.page.evaluate(
+      ([key, v]) => {
+        try {
+          const raw = localStorage.getItem(key);
+          const data = raw
+            ? (JSON.parse(raw) as { state?: Record<string, unknown>; version?: number })
+            : { state: {}, version: 1 };
+          data.state = { ...(data.state ?? {}), valeriaOpen: v };
+          data.version = 1;
+          localStorage.setItem(key, JSON.stringify(data));
+        } catch {
+          localStorage.setItem(
+            key,
+            JSON.stringify({ state: { valeriaOpen: v }, version: 1 }),
+          );
+        }
+      },
+      [SHELL_STORAGE_KEY, open] as const,
     );
     await this.page.reload();
     await this.topBar.waitFor({ state: "visible", timeout: 30_000 });
