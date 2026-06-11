@@ -38,11 +38,21 @@ const KNOWN_CROSS_FEATURE_INTERNAL_IMPORTS: ReadonlySet<string> =
     // T-inbox-fe-2: use-conversation-filters.ts imports ConversationsFilters type from
     // crm-shared/api/use-conversations internal path. To be refactored to use
     // crm-shared index.ts public API in T-inbox-fe-refactor.
-    "src/features/inbox/hooks/use-conversation-filters.ts",
+    // ★ 2026-06-11 (auditor shell-core-hardening): path actualizado — feature `inbox`
+    // renombrada a `adrian` en integración previa (e98e09a8); allowlist quedó stale.
+    "src/features/adrian/hooks/use-conversation-filters.ts",
     // T-inbox-fe-3: ConversationListPanel imports useConversations from crm-shared internal path.
     // crm-shared is the SSoT producer for CRM data contracts. To be refactored to public
     // API (crm-shared index.ts) in T-inbox-fe-refactor.
-    "src/features/inbox/components/ConversationListPanel.tsx",
+    // ★ 2026-06-11: idem rename inbox→adrian.
+    "src/features/adrian/components/inbox/ConversationListPanel.tsx",
+    // ★ 2026-06-11 (auditor shell-core-hardening): embudo page (app layer) imports
+    // `@/features/adrian/api/embudo-server` by direct path. JUSTIFIED: embudo-server is a
+    // SERVER-ONLY initial-state fetch (T-FE-2 adrian-embudo) — re-exporting it from the
+    // feature's public index.ts would pull server-only code into the client bundle graph
+    // (the index is imported by Client Components). Direct-path import of server modules
+    // from the app layer is the standard Next.js pattern for this split.
+    "src/app/[tenantId]/(shell-organism)/adrian/embudo/page.tsx",
   ]);
 
 function collectTsFiles(dir: string): string[] {

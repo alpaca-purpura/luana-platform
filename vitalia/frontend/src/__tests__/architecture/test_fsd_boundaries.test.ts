@@ -37,39 +37,30 @@ const FEATURES_DIR = join(ROOT, "src", "features");
 
 // Ratchet baseline — known violations at time of T-infra-4 creation (shrink-only).
 const KNOWN_FSD_BOUNDARY_VIOLATIONS: ReadonlySet<string> = new Set<string>([
-  // T-inbox-fe-1: crm-shared is a PRODUCER feature (cross-story shared contracts Ola 1+).
-  // inbox/types/conversation-detail.ts imports Lead + Conversation from crm-shared/index.ts.
-  // This is an intentional exception per 03-arch-fe.md § 1 (crm-shared ← inbox, pipeline, agenda).
-  // The arch boundary exception is justified: crm-shared is NOT a downstream consumer of inbox.
-  "src/features/inbox/types/conversation-detail.ts",
-  // T-inbox-fe-2: inbox feature hooks/api import type-only from crm-shared (PRODUCER contract).
-  // crm-shared owns Conversation/Lead types used cross-feature per 03-arch-fe.md § 1.
-  // Justified: crm-shared is infrastructure-like SSoT for CRM contracts (Ola 1+).
+  // crm-shared is a PRODUCER feature (cross-story shared CRM contracts, Ola 1+):
+  // Conversation/Lead types + useConversations/useConversationDetail hooks.
+  // Intentional exception per 03-arch-fe.md § 1 (crm-shared ← adrian, pipeline, agenda).
+  // Justified: crm-shared is infrastructure-like SSoT PRODUCER, never a downstream consumer.
+  //
+  // ★ 2026-06-11 (auditor shell-core-hardening, Carril R): the `inbox` feature was RENAMED
+  // to `adrian` in a previous integration (e98e09a8) but this allowlist kept the old paths
+  // → ratchet broke with 14 stale entries + 14 unlisted real files. Same justified
+  // exception, real paths updated (rename, not new violations — net count unchanged).
   "src/features/crm-shared/api/use-conversation-detail.ts",
-  "src/features/inbox/api/use-pause-adrian.ts",
-  "src/features/inbox/api/use-proactive-outbound.ts",
-  "src/features/inbox/api/use-set-mode.ts",
-  "src/features/inbox/hooks/use-conversation-filters.ts",
-  "src/features/inbox/hooks/use-mode-toggle.ts",
-  // T-inbox-fe-3: inbox components import Conversation type + useConversations from crm-shared.
-  // crm-shared is the SSoT for CRM data contracts — inbox consumes, never mirrors.
-  // Per 03-arch-fe.md § 1: crm-shared ← inbox (downstream consumer). Justified exception.
-  "src/features/inbox/components/ConversationItem.tsx",
-  "src/features/inbox/components/ConversationList.tsx",
-  "src/features/inbox/components/ConversationListPanel.tsx",
-  // T-inbox-fe-4: ConversationThread imports useConversationDetail from crm-shared public API.
-  // crm-shared is the SSoT for CRM conversation data contracts (Ola 1+).
-  // Justified: crm-shared is infrastructure-like PRODUCER; inbox is consumer per 03-arch-fe.md.
-  "src/features/inbox/components/ConversationThread.tsx",
-  // T-inbox-fe-5: ComposerArea imports Conversation type from crm-shared.
-  // crm-shared is the SSoT for CRM contracts (Ola 1+). ComposerArea receives conversation prop
-  // that carries handler_mode, status, id — all from the Conversation contract.
-  // Justified: crm-shared is infrastructure-like PRODUCER; inbox is consumer per 03-arch-fe.md.
-  "src/features/inbox/components/ComposerArea.tsx",
-  // T-inbox-fe-1 (audit iter 1): InboxPageClient imports useConversationDetail from crm-shared.
-  // crm-shared is the SSoT for CRM conversation data contracts (Ola 1+).
-  // Justified: crm-shared is infrastructure-like PRODUCER; inbox is consumer per 03-arch-fe.md § 1.
-  "src/features/inbox/components/InboxPageClient.tsx",
+  "src/features/adrian/api/use-pause-adrian.ts",
+  "src/features/adrian/api/use-proactive-outbound.ts",
+  "src/features/adrian/api/use-set-mode.ts",
+  "src/features/adrian/components/inbox/AdrianInboxView.tsx",
+  "src/features/adrian/components/inbox/ComposerArea.tsx",
+  "src/features/adrian/components/inbox/ConversationItem.test.tsx",
+  "src/features/adrian/components/inbox/ConversationItem.tsx",
+  "src/features/adrian/components/inbox/ConversationListPanel.tsx",
+  "src/features/adrian/components/inbox/InboxConvList.tsx",
+  "src/features/adrian/components/inbox/InboxPageClient.tsx",
+  "src/features/adrian/components/inbox/InboxThread.tsx",
+  "src/features/adrian/hooks/use-conversation-filters.ts",
+  "src/features/adrian/hooks/use-mode-toggle.ts",
+  "src/features/adrian/types/inbox.types.ts",
 ]);
 
 function collectTsFiles(dir: string): string[] {
