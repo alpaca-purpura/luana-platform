@@ -15,8 +15,10 @@ cap_change_type: fix
 parent_story: null
 predecessor_story: vitalia-shell-core-hardening   # done 2026-06-11 — chrome hardened, handoff en proposal § Estado post
 
-state: refining
-phase: SPEC_PENDING
+state: refined
+phase: SPEC_RATIFIED            # ratificación = criterios verbatim Chris 2026-06-11 (autonomous_mode — sin loop)
+ratified_by_chris: true
+last_artifact: 01-spec.md
 module: shell
 cross_module_scope: [shell]             # core/@luana/ui-kit + vitalia FE shell + nicolify FE shell
 agent_owner: null
@@ -68,9 +70,10 @@ prior_art_scan:
   decision: "LIFT (mover chrome hardened de vitalia al kit, parametrizar brand-specific) + CONVERGER nicolify al modelo hardened consumiendo kit (mata mirror). N3 NO se rehace (ya en kit)."
 
 next_action: >-
-  /po produce 01-spec.md (criterios de éxito verbatim de Chris 2026-06-11) → /architect ready package
-  (corte exacto del chrome, API brand-agnostic props+CSS vars, SEMVER, sequencing vitalia→nicolify)
-  → /dev-team build → /auditor → /pm-luana merge + proposal → migrated.
+  /architect brand=platform → ready package (03-arch corte exacto file-by-file del chrome, API
+  brand-agnostic props+CSS vars, SEMVER, sequencing kit→vitalia→nicolify, 04-validators con
+  verification_nature + 06-tickets con assignment) → /dev-team → /auditor → /pm-luana merge +
+  proposal → migrated.
 ---
 
 # platform-lift-shell-chrome-ui-kit — checkpoint
