@@ -149,7 +149,7 @@ Heredadas verbatim del backbone (firmadas):
 - **RN-4** — Split resizable; default 30/70 solo sin valor persistido (ADR-vitalia-006).
 - **RN-5** — Colapsar Valeria colapsa también el historial. Reabrir nunca restaura historial (reabre a B).
 - **RN-6** — Abrir historial con Valeria cerrada → abre Valeria también.
-- **RN-7** — El historial EMPUJA con ancho FIJO ~260px; el chat sigue resizable.
+- **RN-7** — El historial EMPUJA con ancho FIJO ~260px; el chat sigue resizable. *(Reconcile 2026-06-11: el ancho real construido es **280px** — columna del grid shipped; ratificado por Chris en chris_verify.rounds[1]. El push es REAL: ensancha el panel, nunca roba al chat; min efectivo en C = chat-min + 280.)*
 - **RN-8** — [1024,1280): clamp ~320px; <1024: drawer. Min-width legacy 620px eliminado.
 - **RN-9** — Botón colapsar propio y visible (cabecera Valeria). Rail 60px eliminado.
 - **RN-10** — Patrón N3 canónico: directorio → workspace (`EntitySubNavBar`); sin entidad leafs disabled. Contrato para futuras sub-tabs list/detail.
@@ -236,7 +236,9 @@ SC-22 (adversarial) Drag inmediato post-hidratación respeta clamps
 
 ## § Matriz de cobertura (Bif/RN → SC → verificación REAL)
 
-Filas heredadas del backbone (Bif-1..7, RN-1..13, AC-1..11 → SC-1..19) — verbatim en `backbone_spec` § Matriz; sin huecos, firmadas. Filas ★ UMBRELLA:
+> **★ LEDGER (cierre 2026-06-11):** TODO el mapa = `✅ construido`. Backbone (Bif-1..7 · RN-1..13 · AC-1..11 → SC-1..19): construido T-1..T-6, verificado suite e2e **68/68 (0 flaky)** real-backend + matriz runtime 22/22 + 2 rondas live Chris (signoff SATISFIED). Deltas ★ (abajo): ✅ todos. Ítems `→ historia`: ninguno. Happy-path completo (piso HARD cumplido — aunque cap_change_type=fix, sin deuda diferida).
+
+Filas heredadas del backbone (Bif-1..7, RN-1..13, AC-1..11 → SC-1..19) — verbatim en `backbone_spec` § Matriz; sin huecos, firmadas. Filas ★ UMBRELLA (todas ✅ construido):
 
 | Ítem | Tipo | Cubierto por | Verificación REAL (acción + efecto) |
 |---|---|---|---|

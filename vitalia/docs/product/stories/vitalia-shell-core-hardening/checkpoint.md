@@ -15,8 +15,9 @@ cap_target: null                        # higiene + hardening cross-cap del shel
 cap_change_type: fix                    # consolida FIXES del chrome (precedente: shell-valeria-responsive + shell-nav-scroll-errors, ambos fix+null). El lift a @luana/ui-kit es cap-work de /pm-luana (core), no una cap vitalia — gate HB-34 no exige YAML para fix.
 parent_story: null
 
-state: developing                       # ★ 2026-06-10 /dev-team pickup (autonomous chain T-1..T-8 · locks code:{shell,clinics,crm} adquiridos)
-phase: BUILD_T1
+state: developed                        # ★ 2026-06-11 T-1..T-8 pushed · gates GREEN · live-verify #37 + 2 rondas Chris SATISFIED → /auditor (autonomous)
+phase: HANDOFF_TO_AUDITOR
+reconciled: true                        # R liviano ejecutado: RN-7 ~260→280 reconciliado en 01-spec + ledger matriz ✅ + rounds = allowlist auditor
 dark_mode_in_scope: true                # ★ ratificado Chris 2026-06-10 ("Si, mételo") — supersede el out-of-scope del backbone
 input_spec_signed: true                 # firma reconciliación 2026-06-10 (deltas dark/B1/race + herencia FIRMA 1 backbone)
 mockup_final_signed: true               # herencia mockup firmado backbone ratificada + caveat behavior-fi re-confirmado
@@ -82,7 +83,12 @@ verified_at: 2026-06-11T03:09:00Z
 # ── chris_verify (ronda live de Chris 2026-06-11 — autonomous saltó G pero Chris probó = ronda de facto) ──
 chris_verify:
   required: true
-  signoff: null                        # pendiente — Chris re-prueba con los fixes
+  signoff:
+    by: Chris
+    date: 2026-06-11
+    result: SATISFIED
+    verbatim: "ya quedó bien, continúa con el cierre hasta el done"
+    notes: "2 rondas live ejercidas por Chris (colapso/gap + resize·wrap·historial-min) — ambas cerradas con root-cause + fix + verificación exhaustiva (68/68, matriz 22/22, escenarios exactos @1920 overhang 0). Ronda-allowlist para el auditor: push 280px (vs ~260 del spec), placeholder corto, pill container-query, min-w-72 header."
   rounds:
     - date: 2026-06-11
       reported_by: Chris
