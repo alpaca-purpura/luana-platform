@@ -56,3 +56,7 @@ export * from "./tabs";
 export * from "./textarea";
 export * from "./timezone-select";
 export * from "./tooltip";
+
+// ── Shell organism (T-K3 — brand-agnostic shell chrome, 0.4.0) ───────────────
+// ⛔ react-resizable-panels Group/Panel/Separator NOT re-exported (shell barrel guards).
+export * from "./organism/shell";
