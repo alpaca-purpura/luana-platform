@@ -62,6 +62,14 @@ export const proxy = clerkMiddleware(async (auth, request) => {
   // el Router monta limpio. Solo para usuarios ya autenticados (auth.protect
   // arriba ya mandó a sign-in a los anónimos). Server Component redirect queda
   // como defensa para tenants no-UUID (raro). Lógica de match en lib/shell-routes.ts.
+  //
+  // T-4 (vitalia-shell-core-hardening, Decisión A) — COVERAGE VERIFICADA: el
+  // único redirect IN-RENDER intra-route-group del shell es este landing bare-
+  // tenant; el 307 lo cubre. El flujo board→/adrian/recuperar (chip frozen-kpi)
+  // NO necesita 307: /adrian/recuperar es una ruta estática real, sin redirect
+  // in-render → su soft-nav (next/link) no dispara el "Rendered more hooks".
+  // Por eso el band-aid hard-nav del chip se revirtió a next/link sin extender
+  // este matcher. (grep `redirect(` en (shell-organism)/** = 0 fuera del landing.)
   const landingRedirect = bareTenantLandingRedirect(request.nextUrl.pathname);
   if (landingRedirect) {
     return NextResponse.redirect(new URL(landingRedirect, request.url));
