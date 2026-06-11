@@ -98,6 +98,18 @@ chris_verify:
       fixes:
         - "key-remount del Panel por estado + collapsedSize=44px + seam oculto en A (RN-9) + rAF retry collapse + push real ±histPct en flip de historyOpen con floor min+hist"
       verification: "matriz exhaustiva 22/22 PASS (estados A/B/C × drags crece/clamp/below-min × ciclos colapsar/reabrir × historial push × persistencia reload × viewports 1280/1100/800/round-trip · 0 errores consola) + spec permanente resizer-matrix.spec.ts 7/7 + no-regresión 25/25 (collapse-strip/default-30-70/history-push/drawer/resize-and-state)"
+    - date: 2026-06-11
+      reported_by: Chris (000.png + 001.png @1920)
+      issues:
+        - "resize al mínimo de Valeria (o descolapsar): contenido del chat RECORTADO (no re-wrappea)"
+        - "historial abierto + drag del resize: el chat desaparece (~60px)"
+      root_causes_found:
+        - "grid-rows sin cols explícitas → columna implícita auto trackea al CONTENIDO (604px), ignora el contenedor → overflow-hidden recorta. Fix: grid-cols-[minmax(0,1fr)] + min-w-0"
+        - "min del panel en C no incluía el historial (280px reales, no 260) → drag clampeaba al min de B y el historial se comía el chat. Fix: minSize efectivo dinámico + key remount B|C + retry rAF push"
+        - "polish al mínimo: 'Valeria'→'V.' (min-w-72) · pill no cabía (container query @24rem) · placeholder 4 líneas (corto + title)"
+      fixes:
+        - "commit 1c339736 — 6 files"
+      verification: "escenarios exactos de Chris @1920: overhang 0px ×3 (sin recorte, chat legible) + suite COMPLETA 68/68 (0 flaky) + resizer-matrix 7/7 con asserts anti-recorte + min-C permanentes"
 autonomous_mode: true                   # ★ RATIFICADO Chris 2026-06-10 verbatim: "arranca /architect y continúa hasta el done" — corre architect→build→auditor→merge sin pausa G. El architect valida criterios HARD-false en dispatch-plan; si detecta uno, ESCALA a Chris en vez de proceder. Live-verify #37 + dod_evidence siguen obligatorios (autonomous no relaja el DoD).
 
 # ─────────────────────────────────────────────────────────────
