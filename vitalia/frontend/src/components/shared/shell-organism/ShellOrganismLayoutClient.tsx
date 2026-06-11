@@ -71,11 +71,13 @@ import { cn } from "@/lib/utils";
 import { useShellStore } from "@/stores/shell-store";
 import { useTenantStore } from "@/stores/tenant-store";
 import { useStoreHydration } from "@luana/hooks/use-store-hydration";
-import { useViewportGuard } from "./useViewportGuard";
+import {
+  useViewportGuard,
+  VALERIA_MIN_PX,
+} from "./useViewportGuard";
 import { TopBarGlobal } from "./TopBarGlobal";
 import { ValeriaSidebar } from "./ValeriaSidebar";
 import { AppPanelSlot } from "./AppPanelSlot";
-import { ShellModeToggle } from "./ShellModeToggle";
 import { Toaster } from "@/components/ui/sonner";
 
 /** Unique group ID for localStorage persistence via useDefaultLayout */
@@ -108,28 +110,26 @@ export function ShellOrganismLayoutClient({
   // branch — invariante D3, hook-count estable).
   useStoreHydration(useTenantStore);
 
-  // T-1 (vitalia-shell-core-hardening) minimal compile fixup — NO re-layout.
-  // shellMode was ELIMINATED from the store (AC-1/RN-1, web mode removed). The web
-  // grid branch + the toggle are RETIRED in T-2; for T-1 we keep the agentic layout
-  // by pinning shellMode to "agentic" locally.
-  const shellMode = "agentic" as const;
-  // valeriaState (full|rail) was replaced by the new machine valeriaOpen (chat|closed).
-  // It was used ONLY to size MIN_VALERIA_PX. Map: chat → full-equivalent (580),
-  // closed → rail-equivalent (360). The full pixel-sizing rework is T-2/T-3.
-  const valeriaOpen = useShellStore((s) => s.valeriaOpen);
+  // T-2 (vitalia-shell-core-hardening): shellMode ('agentic'|'web') + ShellModeToggle
+  // + the legacy "web mode" static grid + the 60px rail are ELIMINATED (AC-1/RN-1).
+  // The shell is always the resizable split now — there is no longer a mode branch.
+  // The closed-state tira-avatar (state A) + its open/collapse wiring is T-3.
 
-  // One-way viewport guard: forces wide Valeria → narrow when viewport [768, 1104)
+  // Store-inert viewport hook (T-2): owns the clamp/drawer constants; the binary
+  // machine has no viewport-driven store mutation (called unconditionally — D3).
   useViewportGuard();
 
-  // ── Min pixels cementados (01-spec.md §5 + §8) ─────────────────────────────
-  // valeriaOpen='chat' → min Valeria 580px (history 280 + chat 300) — D3 F1-S5
-  // valeriaOpen='closed' → min Valeria 360px (rail 60 + chat 300)
-  // App min constante 480px (ribbon 6 tabs + sub-tabs sin overflow)
+  // ── Min pixels (03-arch-fe §2 · T-2 clamp 320; sin 620/rail) ───────────────
+  // Valeria clamps to VALERIA_MIN_PX (320) in the inline split window [1024,1280)
+  // so the agent panel stays legible without overflow-x. The legacy 580/360 rail
+  // sizing (rail 60 + chat 300) is REMOVED ("sin 620/rail"). The 44px collapsed
+  // tira-avatar (state A) is T-3; here closed simply collapses the panel to 0.
+  // App min constante 480px (ribbon 6 tabs + sub-tabs sin overflow).
   //
   // react-resizable-panels v4 minSize: STRING values ending in "%" are treated as
   // percent. We compute the % dynamically with ResizeObserver on the container so
   // the pixel minimum is always respected, then pass it as `"${minValeriaPct}%"`.
-  const MIN_VALERIA_PX = valeriaOpen === "chat" ? 580 : 360;
+  const MIN_VALERIA_PX = VALERIA_MIN_PX;
   const MIN_APP_PX = 480;
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(1280); // sane default
@@ -178,10 +178,10 @@ export function ShellOrganismLayoutClient({
     Math.max(10, Math.min(70, (px / Math.max(total, 1)) * 100));
   const minValeriaPct = clampPct(MIN_VALERIA_PX, containerWidth);
   const minAppPct = clampPct(MIN_APP_PX, containerWidth);
-  // Point 2 (vitalia-bugfix-shell-valeria-responsive, Chris 2026-06-04): default split
-  // 30% Valeria / 70% app (was 50/50) so the agent panel (inbox 3-pane, etc.) is usable.
-  // Still resizable + persisted (useDefaultLayout) — this is only the fresh default.
-  const defaultValeriaPct = shellMode === "agentic" ? 30 : 5;
+  // Default split 30% Valeria / 70% app (03-arch-fe §1.1 estado B + §2: ≥1280 split
+  // 30/70 default). Still resizable + persisted (useDefaultLayout / valeriaPct) — this
+  // is only the fresh default. T-2: no shellMode branch (web mode eliminated).
+  const defaultValeriaPct = 30;
 
   // ── Imperative Group ref for snap-up (Fix A — C3 bug mitigation) ─────────
   const groupRef = useGroupRef();
@@ -221,18 +221,14 @@ export function ShellOrganismLayoutClient({
   });
 
   // ── End of unconditional hooks (D3) ────────────────────────────────────────
-  // JSX below may branch by shellMode — that's fine because no hooks live inside
-  // the branches. Hook count is identical across all renders.
+  // No JSX branch by shellMode anymore (web mode eliminated — T-2). The single
+  // resizable <Group> is the only layout. Hook count is identical across renders.
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground">
-      {/* Top bar — always visible (48px) */}
+      {/* Top bar — always visible (48px). Right cluster [ThemeToggle][TenantSwitcher],
+          no web/agentic chip (ShellModeToggle eliminated — AC-1). */}
       <TopBarGlobal />
-
-      {/* Shell mode toggle chip — disabled placeholder */}
-      <div className="absolute top-1.5 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
-        <ShellModeToggle />
-      </div>
 
       {/*
        * ── SINGLE <main id="main-content"> (D1) ──────────────────────────────
@@ -263,9 +259,12 @@ export function ShellOrganismLayoutClient({
         ref={containerRef}
         data-shell-ready={shellReady ? "true" : "false"}
       >
-        {shellMode === "agentic" ? (
+        {
           /*
-           * ── Agentic mode: resizable 2-panel via react-resizable-panels v4 ──
+           * ── Resizable 2-panel via react-resizable-panels v4 (only layout) ──
+           *
+           * T-2: the legacy "web mode" static grid branch is REMOVED — the shell
+           * is always this resizable split (shellMode eliminated, AC-1).
            *
            * The Group is ALWAYS mounted — no `hidden md:block` on the Group
            * wrapper itself. Instead:
@@ -335,26 +334,7 @@ export function ShellOrganismLayoutClient({
               <AppPanelSlot>{children}</AppPanelSlot>
             </Panel>
           </Group>
-        ) : (
-          /*
-           * ── Web mode: static CSS grid 60px / 1px / 1fr ──
-           *
-           * The grid uses `grid` (not `hidden md:grid`) so it's always active.
-           * Valeria sidebar + divider columns use `hidden md:block` so they
-           * are invisible on mobile. The app-panel column (1fr) is always
-           * visible → single AppPanelSlot in the DOM.
-           */
-          <div className="grid h-full grid-cols-[auto_auto_1fr]">
-            {/* Valeria sidebar — hidden < lg (drawer zone) */}
-            <div className="hidden w-[60px] lg:block">
-              <ValeriaSidebar />
-            </div>
-            {/* Visual divider (1px) — hidden < lg */}
-            <div className="hidden w-px bg-border lg:block" aria-hidden="true" />
-            {/* App panel — always visible; single slot */}
-            <AppPanelSlot>{children}</AppPanelSlot>
-          </div>
-        )}
+        }
       </main>
       {/* Sonner toast portal — required for toast() calls throughout the shell.
           Rendered here (inside client-only boundary) to avoid SSR issues.

@@ -230,3 +230,27 @@ describe("ValeriaHistory — HistoryItem active state (integration)", () => {
     expect(onCollapseToRail).toHaveBeenCalledTimes(1);
   });
 });
+
+// ─── T-2 (vitalia-shell-core-hardening) · 260px fijo empuja (SC-14) ──────────
+// 03-arch-fe.md § 6: ValeriaHistory ancho FIJO 260px; empuja (ensancha el conjunto
+// Valeria, angosta el agente — NO come del chat dentro de panel fijo). El push se
+// logra con un ancho propio fijo + shrink-0 (no flexible) — así el contenedor del
+// chat se corre en vez de que el historial se comprima.
+
+describe("ValeriaHistory — 260px fijo empuja (T-2 · SC-14)", () => {
+  it("nav declares fixed 260px width (w-[260px]) — empuja, no flexible", () => {
+    render(<ValeriaHistory {...defaultProps} />);
+    const nav = screen.getByRole("navigation", {
+      name: "Historial conversaciones",
+    });
+    expect(nav.className).toContain("w-[260px]");
+  });
+
+  it("nav is shrink-0 (no se comprime — el agente angosta, el historial mantiene 260)", () => {
+    render(<ValeriaHistory {...defaultProps} />);
+    const nav = screen.getByRole("navigation", {
+      name: "Historial conversaciones",
+    });
+    expect(nav.className).toContain("shrink-0");
+  });
+});

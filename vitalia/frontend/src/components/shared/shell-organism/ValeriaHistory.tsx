@@ -84,7 +84,11 @@ export function ValeriaHistory({
   return (
     <nav
       aria-label="Historial conversaciones"
-      className="flex flex-col border-r border-border overflow-hidden h-full"
+      // T-2 (vitalia-shell-core-hardening · 03-arch-fe § 6): ancho FIJO 260px que
+      // EMPUJA en el split inline desktop (≥lg) — `shrink-0` evita que se comprima,
+      // así el agente angosta en vez de que el historial pierda ancho. En el drawer
+      // mobile (<lg) el historial se apila vertical sobre el chat → `w-full`.
+      className="flex flex-col border-r border-border overflow-hidden h-full w-full lg:w-[260px] shrink-0"
     >
       {/* ── Header: título + quick actions ── */}
       <div className="px-3 pt-3 pb-2 flex items-center justify-between">

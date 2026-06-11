@@ -1,17 +1,20 @@
 /**
  * useViewportGuard.test.ts — tests for useViewportGuard hook
- * F1-S4 vitalia-fase1-shell-layout-5050 — T-3
  *
- * REWRITTEN for vitalia-shell-core-hardening T-1: the store machine changed
- * (valeriaState collapsed|rail|full + shellMode → valeriaOpen closed|chat +
- * additive historyOpen). The legacy one-way viewport clamp (full → rail when
- * [1024, 1104)) has NO equivalent in the binary machine — there is no
- * intermediate "narrow-but-open" state to clamp to, and forcing chat → closed
- * would HIDE Valeria (a behavior change out of T-1 scope: no re-layout). For T-1
- * the hook is a deliberate INERT no-op: it keeps its public API + exported
- * breakpoint constants without touching the store. These tests assert the
- * inert contract — the store is NEVER mutated regardless of viewport — plus the
- * constants and clean mount/unmount. The viewport-aware sizing rework is T-2/T-3.
+ * REWRITTEN for vitalia-shell-core-hardening T-2 (clamp 320; drawer 1024;
+ * sin 620/rail). The binary machine (valeriaOpen closed|chat + additive
+ * historyOpen) has NO intermediate "narrow-but-open" state to clamp to, and the
+ * mobile drawer is governed SOLELY by the burger/close actions (D5 independent
+ * `mobileDrawerOpen` slice). So the hook stays STORE-INERT — it never mutates
+ * valeriaOpen/historyOpen/mobileDrawerOpen at any viewport.
+ *
+ * What T-2 changes vs T-1: the EXPORTED contract. The viewport-aware sizing is
+ * expressed as breakpoint constants the layout consumes for clamping:
+ *   - VALERIA_MIN_PX = 320       → clamp floor in [1024,1280) (replaces 620 legacy)
+ *   - DRAWER_BREAKPOINT = 1024   → below: Valeria is a drawer/overlay
+ *   - INLINE_SPLIT_MIN_VIEWPORT = 1280 → at/above: split 30/70 + history 260 fixed
+ * Legacy constants FULL_STATE_MIN_VIEWPORT (1104) + MOBILE_BREAKPOINT (768) +
+ * the 60px rail are REMOVED (AC: "sin 620/rail").
  *
  * downstream-regression-na: brand-local hook test; no cross-brand consumers
  */
@@ -20,21 +23,29 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { useShellStore } from "@/stores/shell-store";
 
-describe("useViewportGuard — import contract", () => {
+describe("useViewportGuard — import contract (T-2)", () => {
   it("module exports useViewportGuard as named export", async () => {
     const mod = await import("./useViewportGuard");
     expect(typeof mod.useViewportGuard).toBe("function");
   });
 
-  it("re-exports breakpoint constants (consumed elsewhere)", async () => {
+  it("exports the T-2 clamp/drawer constants (320 / 1024 / 1280)", async () => {
     const mod = await import("./useViewportGuard");
-    expect(mod.FULL_STATE_MIN_VIEWPORT).toBe(1104);
-    expect(mod.MOBILE_BREAKPOINT).toBe(768);
-    expect(mod.INLINE_SPLIT_MIN_VIEWPORT).toBe(1024);
+    expect(mod.VALERIA_MIN_PX).toBe(320);
+    expect(mod.DRAWER_BREAKPOINT).toBe(1024);
+    expect(mod.INLINE_SPLIT_MIN_VIEWPORT).toBe(1280);
+  });
+
+  it("does NOT re-export the legacy 620/rail constants (sin 620/rail)", async () => {
+    const mod = (await import("./useViewportGuard")) as Record<string, unknown>;
+    // FULL_STATE_MIN_VIEWPORT (was 1104 for the 620 valeria minimum) is GONE.
+    expect(mod.FULL_STATE_MIN_VIEWPORT).toBeUndefined();
+    // MOBILE_BREAKPOINT (768) is GONE — the drawer breakpoint is 1024 now.
+    expect(mod.MOBILE_BREAKPOINT).toBeUndefined();
   });
 });
 
-describe("useViewportGuard — inert no-op contract (T-1 binary machine)", () => {
+describe("useViewportGuard — store-inert contract (binary machine, D5)", () => {
   beforeEach(() => {
     useShellStore.setState({
       valeriaOpen: "chat",
@@ -47,74 +58,43 @@ describe("useViewportGuard — inert no-op contract (T-1 binary machine)", () =>
     vi.restoreAllMocks();
   });
 
-  it("does NOT mutate valeriaOpen at narrow desktop viewport=1050", async () => {
-    Object.defineProperty(window, "innerWidth", {
-      writable: true,
-      configurable: true,
-      value: 1050,
+  const viewports = [
+    { label: "wide desktop (>=1280, inline split)", value: 1440 },
+    { label: "narrow desktop ([1024,1280), clamp 320)", value: 1100 },
+    { label: "drawer boundary (<1024)", value: 900 },
+    { label: "mobile", value: 375 },
+  ];
+
+  for (const vp of viewports) {
+    it(`does NOT mutate valeriaOpen at ${vp.label} = ${vp.value}`, async () => {
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: vp.value,
+      });
+      const { useViewportGuard } = await import("./useViewportGuard");
+
+      renderHook(() => useViewportGuard());
+
+      // No clamp on the store: chat stays chat at every viewport.
+      expect(useShellStore.getState().valeriaOpen).toBe("chat");
     });
-    const { useViewportGuard } = await import("./useViewportGuard");
-
-    renderHook(() => useViewportGuard());
-
-    // Binary machine: no clamp — chat stays chat (no re-layout in T-1).
-    expect(useShellStore.getState().valeriaOpen).toBe("chat");
-  });
-
-  it("does NOT mutate valeriaOpen at wide desktop viewport=1280", async () => {
-    Object.defineProperty(window, "innerWidth", {
-      writable: true,
-      configurable: true,
-      value: 1280,
-    });
-    const { useViewportGuard } = await import("./useViewportGuard");
-
-    renderHook(() => useViewportGuard());
-
-    expect(useShellStore.getState().valeriaOpen).toBe("chat");
-  });
-
-  it("does NOT mutate valeriaOpen at tablet viewport=800", async () => {
-    Object.defineProperty(window, "innerWidth", {
-      writable: true,
-      configurable: true,
-      value: 800,
-    });
-    const { useViewportGuard } = await import("./useViewportGuard");
-
-    renderHook(() => useViewportGuard());
-
-    expect(useShellStore.getState().valeriaOpen).toBe("chat");
-  });
-
-  it("does NOT mutate valeriaOpen at mobile viewport=375", async () => {
-    Object.defineProperty(window, "innerWidth", {
-      writable: true,
-      configurable: true,
-      value: 375,
-    });
-    const { useViewportGuard } = await import("./useViewportGuard");
-
-    renderHook(() => useViewportGuard());
-
-    expect(useShellStore.getState().valeriaOpen).toBe("chat");
-  });
+  }
 
   it("[RN-5/RN-11] does NOT touch historyOpen at any viewport", async () => {
     Object.defineProperty(window, "innerWidth", {
       writable: true,
       configurable: true,
-      value: 1050,
+      value: 1100,
     });
     const { useViewportGuard } = await import("./useViewportGuard");
 
     renderHook(() => useViewportGuard());
 
-    // historyOpen is additive UI state — the guard never touches it.
     expect(useShellStore.getState().historyOpen).toBe(true);
   });
 
-  it("[D5] does NOT touch mobileDrawerOpen at any viewport", async () => {
+  it("[D5] does NOT touch mobileDrawerOpen at any viewport (drawer = burger only)", async () => {
     Object.defineProperty(window, "innerWidth", {
       writable: true,
       configurable: true,
@@ -124,12 +104,11 @@ describe("useViewportGuard — inert no-op contract (T-1 binary machine)", () =>
 
     renderHook(() => useViewportGuard());
 
-    // Mobile drawer is governed solely by burger/close actions (D5). Inert here.
     expect(useShellStore.getState().mobileDrawerOpen).toBe(false);
   });
 });
 
-describe("useViewportGuard — clean mount / unmount (inert)", () => {
+describe("useViewportGuard — clean mount / unmount", () => {
   beforeEach(() => {
     useShellStore.setState({ valeriaOpen: "chat", historyOpen: false });
     Object.defineProperty(window, "innerWidth", {

@@ -148,6 +148,9 @@ export function ValeriaSidebar() {
   // — Valeria stays visible as a rail; the collapsed render is T-2/T-3). So the
   // sidebar is always expanded and the live region never announces "cerrada".
   const isExpanded = true;
+  // T-1 legacy bridge value — sin tocar en T-2. El "empuja 260" (03-arch-fe § 6) lo
+  // implementa el ancho propio de ValeriaHistory (`lg:w-[260px] shrink-0`), no esta
+  // columna del bridge. La migración del grid del bridge + tira-avatar (44px) son T-3.
   const railWidth = safeState === "full" ? 280 : 60;
 
   // Live region text per state (Spanish neutro, no voseo)

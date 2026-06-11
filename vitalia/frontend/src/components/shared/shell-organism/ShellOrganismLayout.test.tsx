@@ -112,9 +112,13 @@ vi.mock("react-resizable-panels", () => ({
   })),
 }));
 
-// Mock useViewportGuard to avoid window.innerWidth setup complexity in layout tests
+// Mock useViewportGuard to avoid window.innerWidth setup complexity in layout tests.
+// The layout consumes VALERIA_MIN_PX (T-2 clamp 320) so the mock must export it too.
 vi.mock("./useViewportGuard", () => ({
   useViewportGuard: vi.fn(),
+  VALERIA_MIN_PX: 320,
+  DRAWER_BREAKPOINT: 1024,
+  INLINE_SPLIT_MIN_VIEWPORT: 1280,
 }));
 
 // Mock TopBarGlobal to avoid deep tree dependencies (TenantSwitcher, Clerk, etc.)
@@ -143,18 +147,6 @@ vi.mock("./AppPanelSlot", () => ({
     >
       {children}
     </section>
-  ),
-}));
-
-// Mock ShellModeToggle
-vi.mock("./ShellModeToggle", () => ({
-  ShellModeToggle: () => (
-    <button
-      data-testid="shell-mode-toggle"
-      type="button"
-      disabled
-      aria-disabled="true"
-    />
   ),
 }));
 
@@ -393,19 +385,6 @@ describe("ShellOrganismLayout — default agentic render (SC-1)", () => {
     expect(handle).toBeInTheDocument();
     expect(handle).toHaveAttribute("aria-label", "Redimensionar paneles");
     expect(handle).toHaveAttribute("role", "separator");
-  });
-
-  it("renders ShellModeToggle disabled chip", async () => {
-    const { ShellOrganismLayoutClient } =
-      await import("./ShellOrganismLayoutClient");
-    render(
-      <ShellOrganismLayoutClient tenantId="acme-clinic">
-        <div />
-      </ShellOrganismLayoutClient>,
-    );
-    const toggle = screen.getByTestId("shell-mode-toggle");
-    expect(toggle).toBeInTheDocument();
-    expect(toggle).toBeDisabled();
   });
 });
 
