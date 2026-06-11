@@ -241,6 +241,7 @@ tickets:
         - "e2e SC-20: toggle dark cada sub-tab → computed colors oscuros, sin mitad clara"
         - "axe: contraste ≥4.5:1 en dark"
         - "SC-19: light sin regresión (baseline)"
+    state: pushed # ★ 2026-06-10 builder-frontend · DoctorPerfilView bg-white→bg-background + TakeoverBanner dark:bg-amber-600 variant
 
   - id: T-7
     title: "E2E suite SC-1..22 + reactivar test de race omitido (AC-14) + regression cross-tab AMBOS temas"
