@@ -15,8 +15,9 @@ import type { ShellAgentDescriptor, ShellRoutingOptions } from "./types";
  * Port of vitalia lib/agent-catalog.ts helpers, re-parametrized.
  */
 
-/** Split a pathname into non-empty segments (tolerates leading/trailing slashes). */
-function segmentsOf(pathname: string): string[] {
+/** Split a pathname into non-empty segments (tolerates leading/trailing slashes, null/undefined). */
+function segmentsOf(pathname: string | null | undefined): string[] {
+  if (!pathname) return [];
   return pathname.split("/").filter(Boolean);
 }
 
@@ -25,7 +26,7 @@ function segmentsOf(pathname: string): string[] {
  * Returns the slug only if it is a known agent or a known special tab.
  */
 export function extractAgentFromPath(
-  pathname: string,
+  pathname: string | null | undefined,
   opts: ShellRoutingOptions,
 ): string | null {
   const segments = segmentsOf(pathname);
@@ -41,7 +42,7 @@ export function extractAgentFromPath(
  * Extract the sub-tab slug from segment[2] (raw — no validation).
  * Returns null when there is no sub-tab segment.
  */
-export function extractSubtabFromPath(pathname: string): string | null {
+export function extractSubtabFromPath(pathname: string | null | undefined): string | null {
   const segments = segmentsOf(pathname);
   return segments[2] ?? null;
 }
@@ -52,7 +53,7 @@ export function extractSubtabFromPath(pathname: string): string | null {
  *   /{tenant}/{agent}/{subtab}/{subsubtab}/...
  * Returns null when there is no sub-sub-tab segment.
  */
-export function extractSubSubTabFromPath(pathname: string): string | null {
+export function extractSubSubTabFromPath(pathname: string | null | undefined): string | null {
   const segments = segmentsOf(pathname);
   return segments[3] ?? null;
 }

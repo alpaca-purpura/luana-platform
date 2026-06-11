@@ -13,7 +13,7 @@
  */
 
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import type React from "react";
 
 // ── next/dynamic mock — synchronous stub ──────────────────────────────────────
@@ -41,9 +41,10 @@ vi.mock("next/navigation", () => ({
   useParams: () => ({ tenantId: "tenant-test" }),
 }));
 
+import { create } from "zustand";
 import { ShellLayout } from "../ShellLayout";
-import type { ShellLayoutProps } from "../types";
-import type { ShellAgentDescriptor } from "../types";
+import { createShellStore } from "../create-shell-store";
+import type { ShellLayoutProps, ShellAgentDescriptor } from "../types";
 
 const MOCK_AGENTS: ShellAgentDescriptor[] = [
   {
@@ -66,6 +67,22 @@ const MOCK_GET_AGENT_CLASSES = (_slug: string) => ({
   accentBorder: "border-agent-alfa",
 });
 
+// Minimal store mocks — ShellLayout is mocked to show loading fallback so stores are unused.
+// We still need to satisfy the required props type contract.
+const useTestShellStore = createShellStore({ storageKey: "test-shell-layout", version: 1 });
+const useTestChatStore = create(() => ({
+  messages: [],
+  conversations: [],
+  activeAgent: "alfa",
+  status: "idle" as const,
+  sendMessage: vi.fn(),
+  clearMessages: vi.fn(),
+  newConversation: vi.fn(),
+  setActiveAgent: vi.fn(),
+  _hasHydrated: true,
+  setHasHydrated: vi.fn(),
+}));
+
 function makeProps(overrides: Partial<ShellLayoutProps> = {}): ShellLayoutProps {
   return {
     supervisorName: "Supervisora Test",
@@ -76,8 +93,13 @@ function makeProps(overrides: Partial<ShellLayoutProps> = {}): ShellLayoutProps 
     getAgentClasses: MOCK_GET_AGENT_CLASSES,
     configTabSlug: "config",
     configTabLabel: "Configuración",
-    chatSlot: <div data-testid="mock-chat-slot">Chat</div>,
-    appPanelSlot: <div data-testid="mock-app-panel-slot">Panel</div>,
+    useShellStore: useTestShellStore as never,
+    useChatStore: useTestChatStore as never,
+    splitGroupId: "test-shell-split-group",
+    logoSlot: <div data-testid="mock-logo">Logo</div>,
+    rightClusterSlot: <div data-testid="mock-right-cluster">Cluster</div>,
+    pathname: "/tenant-test/alfa/tab1",
+    children: <div data-testid="mock-children">Content</div>,
     ...overrides,
   };
 }
