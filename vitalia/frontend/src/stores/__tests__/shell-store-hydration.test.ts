@@ -1,22 +1,26 @@
 // cap: shell-organism.shell-vitalia
-// story-origin: vitalia-shell-core-hardening
+// story-origin: platform-lift-shell-chrome-ui-kit T-V2
 /**
- * shell-store-hydration.test.ts — TDD RED-first SSR-safe hydration + legacy-migration tests.
- * vitalia-shell-core-hardening — T-1
+ * shell-store-hydration.test.ts — Kit store SSR-safe hydration + legacy migration tests.
+ * platform-lift-shell-chrome-ui-kit T-V2
  *
- * Covers (new machine, 03-arch-fe.md § 1.1 + § 1.2):
+ * T-V2 removes the legacy useShellStore. All tests now use useShellStoreKit
+ * (kit API: supervisorOpen / splitPct) against the canonical key 'vitalia-shell-state'.
+ *
+ * Covers:
  *
  * SC-1/SC-5 SSR-safe (no-clobber — ADR-vitalia-006):
- *   - Seed localStorage with a NEW-shape preference
+ *   - Seed localStorage with a NEW-shape preference (supervisorOpen)
  *   - Pre-hydration window: store created, mutations happen, NO setItem to the key
  *   - Post-rehydrate: value comes from storage (not the default)
  *
  * SC-18 legacy migration (no-crash):
  *   - Old shape {valeriaState:'collapsed'|'rail'|'full', shellMode} migrates:
- *       collapsed → valeriaOpen='closed'
- *       rail      → valeriaOpen='chat', historyOpen=false
- *       full      → valeriaOpen='chat', historyOpen=false (NO restore history — RN-5)
- *   - corrupt / unknown → fallback {valeriaOpen:'chat', historyOpen:false} + console.warn
+ *       collapsed → supervisorOpen='closed'
+ *       rail      → supervisorOpen='chat', historyOpen=false
+ *       full      → supervisorOpen='chat', historyOpen=false (NO restore history — RN-5)
+ *   - v1 shape {valeriaOpen: ...} migrates → supervisorOpen (field rename compat)
+ *   - corrupt / unknown → fallback {supervisorOpen:'chat', historyOpen:false} + console.warn
  *   - NO clobber during SSR/skeleton (factory setItem NO-OP pre-hydration)
  *
  * Named export (no default export) per FSD-Lite enforce.
@@ -25,17 +29,27 @@
 
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import { act } from "@testing-library/react";
-// T-V1 dual-store: useShellStore is the @deprecated legacy store (valeriaOpen API).
-// It now uses SHELL_STORAGE_KEY_LEGACY ('vitalia-shell-state-legacy').
-// SHELL_STORAGE_KEY is the canonical key owned by useShellStoreKit after T-V1.
-// These tests verify legacy SSR-safe hydration + migration (still needed until T-V2).
-import { useShellStore, SHELL_STORAGE_KEY_LEGACY } from "../shell-store";
-const SHELL_STORAGE_KEY = SHELL_STORAGE_KEY_LEGACY;
+import { useShellStoreKit, SHELL_STORAGE_KEY } from "../shell-store";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-/** Seed localStorage with the NEW shape (version current). */
+/** Seed localStorage with current kit shape (supervisorOpen). */
 function seedNew(
+  supervisorOpen: string,
+  splitPct: number | null = null,
+  mobileDrawerOpen = false,
+) {
+  localStorage.setItem(
+    SHELL_STORAGE_KEY,
+    JSON.stringify({
+      state: { supervisorOpen, splitPct, mobileDrawerOpen },
+      version: 1,
+    }),
+  );
+}
+
+/** Seed localStorage with v1 vitalia-specific shape (valeriaOpen) for compat migration tests. */
+function seedV1Vitalia(
   valeriaOpen: string,
   valeriaPct: number | null = null,
   mobileDrawerOpen = false,
@@ -70,22 +84,22 @@ function clearStorage() {
 
 async function rehydrate() {
   await act(async () => {
-    await useShellStore.persist.rehydrate();
+    await useShellStoreKit.persist.rehydrate();
     await new Promise((r) => setTimeout(r, 0));
   });
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
-describe("shell-store SSR-safe hydration + legacy migration", () => {
+describe("shell-store SSR-safe hydration + legacy migration (kit store)", () => {
   let setItemSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     clearStorage();
-    useShellStore.setState({
-      valeriaOpen: "chat",
+    useShellStoreKit.setState({
+      supervisorOpen: "chat",
       historyOpen: false,
-      valeriaPct: null,
+      splitPct: null,
       mobileDrawerOpen: false,
       _hasHydrated: false,
     });
@@ -104,7 +118,7 @@ describe("shell-store SSR-safe hydration + legacy migration", () => {
       seedNew("closed");
       setItemSpy.mockClear();
 
-      expect(useShellStore.getState()._hasHydrated).toBe(false);
+      expect(useShellStoreKit.getState()._hasHydrated).toBe(false);
 
       const writesForKey = setItemSpy.mock.calls.filter(
         ([k]) => k === SHELL_STORAGE_KEY,
@@ -112,13 +126,13 @@ describe("shell-store SSR-safe hydration + legacy migration", () => {
       expect(writesForKey).toHaveLength(0);
     });
 
-    it("after rehydrate, valeriaOpen comes from storage (not clobbered to default)", async () => {
+    it("after rehydrate, supervisorOpen comes from storage (not clobbered to default)", async () => {
       seedNew("closed");
 
       await rehydrate();
 
-      expect(useShellStore.getState()._hasHydrated).toBe(true);
-      expect(useShellStore.getState().valeriaOpen).toBe("closed");
+      expect(useShellStoreKit.getState()._hasHydrated).toBe(true);
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("closed");
     });
 
     it("mutations before rehydrate don't persist to storage (NO-OP)", async () => {
@@ -126,7 +140,7 @@ describe("shell-store SSR-safe hydration + legacy migration", () => {
       setItemSpy.mockClear();
 
       act(() => {
-        useShellStore.getState().setValeriaOpen("chat");
+        useShellStoreKit.getState().setSupervisorOpen("chat");
       });
 
       const writesForKey = setItemSpy.mock.calls.filter(
@@ -136,7 +150,7 @@ describe("shell-store SSR-safe hydration + legacy migration", () => {
 
       // After rehydrate, state comes from localStorage (closed), not the mutation
       await rehydrate();
-      expect(useShellStore.getState().valeriaOpen).toBe("closed");
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("closed");
     });
 
     it("post-hydrate mutation writes to storage (single clean write)", async () => {
@@ -144,7 +158,7 @@ describe("shell-store SSR-safe hydration + legacy migration", () => {
       setItemSpy.mockClear();
 
       act(() => {
-        useShellStore.getState().setValeriaOpen("closed");
+        useShellStoreKit.getState().setSupervisorOpen("closed");
       });
 
       const writesForKey = setItemSpy.mock.calls.filter(
@@ -154,53 +168,69 @@ describe("shell-store SSR-safe hydration + legacy migration", () => {
     });
   });
 
-  // ── SC-18 legacy migration ────────────────────────────────────────────────
+  // ── SC-18 legacy migration (v0 → kit) ────────────────────────────────────
 
   describe("SC-18 legacy migration — old shape maps to new machine", () => {
-    it("legacy 'collapsed' → valeriaOpen='closed'", async () => {
+    it("legacy 'collapsed' → supervisorOpen='closed'", async () => {
       seedLegacy("collapsed");
       await rehydrate();
-      expect(useShellStore.getState().valeriaOpen).toBe("closed");
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("closed");
     });
 
-    it("legacy 'rail' → valeriaOpen='chat', historyOpen=false", async () => {
+    it("legacy 'rail' → supervisorOpen='chat', historyOpen=false", async () => {
       seedLegacy("rail");
       await rehydrate();
-      expect(useShellStore.getState().valeriaOpen).toBe("chat");
-      expect(useShellStore.getState().historyOpen).toBe(false);
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("chat");
+      expect(useShellStoreKit.getState().historyOpen).toBe(false);
     });
 
-    it("legacy 'full' → valeriaOpen='chat', historyOpen=false (NO restore history — RN-5)", async () => {
+    it("legacy 'full' → supervisorOpen='chat', historyOpen=false (NO restore history — RN-5)", async () => {
       seedLegacy("full");
       await rehydrate();
-      expect(useShellStore.getState().valeriaOpen).toBe("chat");
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("chat");
       // RN-5: NO restaura el historial al migrar de 'full'
-      expect(useShellStore.getState().historyOpen).toBe(false);
+      expect(useShellStoreKit.getState().historyOpen).toBe(false);
     });
 
     it("legacy shellMode is dropped (not present on migrated state)", async () => {
       seedLegacy("full", "web");
       await rehydrate();
-      const state = useShellStore.getState() as unknown as Record<string, unknown>;
+      const state = useShellStoreKit.getState() as unknown as Record<string, unknown>;
       expect(state.shellMode).toBeUndefined();
     });
 
     it("legacy mobileDrawerOpen preserved", async () => {
       seedLegacy("rail", "agentic", true);
       await rehydrate();
-      expect(useShellStore.getState().mobileDrawerOpen).toBe(true);
+      expect(useShellStoreKit.getState().mobileDrawerOpen).toBe(true);
+    });
+  });
+
+  // ── v1 valeriaOpen field compat migration ─────────────────────────────────
+
+  describe("v1 vitalia field name compat — valeriaOpen maps to supervisorOpen", () => {
+    it("v1 valeriaOpen='chat' → supervisorOpen='chat'", async () => {
+      seedV1Vitalia("chat");
+      await rehydrate();
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("chat");
+    });
+
+    it("v1 valeriaOpen='closed' → supervisorOpen='closed'", async () => {
+      seedV1Vitalia("closed");
+      await rehydrate();
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("closed");
     });
   });
 
   // ── SC-18 corrupt / unknown → fallback + console.warn ─────────────────────
 
-  describe("SC-18 corrupt/unknown → fallback {valeriaOpen:'chat', historyOpen:false} + console.warn", () => {
+  describe("SC-18 corrupt/unknown → fallback {supervisorOpen:'chat', historyOpen:false} + console.warn", () => {
     it("invalid JSON does not throw, falls back to default", async () => {
       localStorage.setItem(SHELL_STORAGE_KEY, "not-valid-json{{{{");
       await expect(rehydrate()).resolves.not.toThrow();
-      expect(useShellStore.getState().valeriaOpen).toBe("chat");
-      expect(useShellStore.getState().historyOpen).toBe(false);
-      expect(useShellStore.getState()._hasHydrated).toBe(true);
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("chat");
+      expect(useShellStoreKit.getState().historyOpen).toBe(false);
+      expect(useShellStoreKit.getState()._hasHydrated).toBe(true);
     });
 
     it("unknown legacy valeriaState → fallback chat + console.warn (SC-18)", async () => {
@@ -215,24 +245,24 @@ describe("shell-store SSR-safe hydration + legacy migration", () => {
 
       await rehydrate();
 
-      expect(useShellStore.getState().valeriaOpen).toBe("chat");
-      expect(useShellStore.getState().historyOpen).toBe(false);
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("chat");
+      expect(useShellStoreKit.getState().historyOpen).toBe(false);
       expect(warnSpy).toHaveBeenCalled();
     });
 
-    it("unknown new-shape valeriaOpen → fallback chat + console.warn", async () => {
+    it("unknown new-shape supervisorOpen → fallback chat + console.warn", async () => {
       const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
       localStorage.setItem(
         SHELL_STORAGE_KEY,
         JSON.stringify({
-          state: { valeriaOpen: "bogus", valeriaPct: null, mobileDrawerOpen: false },
+          state: { supervisorOpen: "bogus", splitPct: null, mobileDrawerOpen: false },
           version: 1,
         }),
       );
 
       await rehydrate();
 
-      expect(useShellStore.getState().valeriaOpen).toBe("chat");
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("chat");
       expect(warnSpy).toHaveBeenCalled();
     });
   });
@@ -240,21 +270,21 @@ describe("shell-store SSR-safe hydration + legacy migration", () => {
   // ── SC-6 empty_state — first visit ────────────────────────────────────────
 
   describe("empty_state — first visit without stored preference", () => {
-    it("defaults to valeriaOpen='chat' historyOpen=false when no storage entry", async () => {
+    it("defaults to supervisorOpen='chat' historyOpen=false when no storage entry", async () => {
       await rehydrate();
-      const state = useShellStore.getState();
-      expect(state.valeriaOpen).toBe("chat");
+      const state = useShellStoreKit.getState();
+      expect(state.supervisorOpen).toBe("chat");
       expect(state.historyOpen).toBe(false);
     });
 
     it("_hasHydrated is true after rehydrate with empty storage", async () => {
       await rehydrate();
-      expect(useShellStore.getState()._hasHydrated).toBe(true);
+      expect(useShellStoreKit.getState()._hasHydrated).toBe(true);
     });
 
     it("mobileDrawerOpen defaults to false (fresh user)", async () => {
       await rehydrate();
-      expect(useShellStore.getState().mobileDrawerOpen).toBe(false);
+      expect(useShellStoreKit.getState().mobileDrawerOpen).toBe(false);
     });
   });
 
@@ -262,24 +292,24 @@ describe("shell-store SSR-safe hydration + legacy migration", () => {
 
   describe("SsrSafeHydration interface on shell-store", () => {
     it("exposes _hasHydrated (false initially)", () => {
-      expect(useShellStore.getState()._hasHydrated).toBe(false);
+      expect(useShellStoreKit.getState()._hasHydrated).toBe(false);
     });
 
     it("exposes setHasHydrated action", () => {
-      expect(typeof useShellStore.getState().setHasHydrated).toBe("function");
+      expect(typeof useShellStoreKit.getState().setHasHydrated).toBe("function");
     });
 
     it("exposes persist.rehydrate method", () => {
-      expect(typeof useShellStore.persist.rehydrate).toBe("function");
+      expect(typeof useShellStoreKit.persist.rehydrate).toBe("function");
     });
 
     it("partialize excludes _hasHydrated, setters, and historyOpen", () => {
-      const partialize = useShellStore.persist.getOptions().partialize;
+      const partialize = useShellStoreKit.persist.getOptions().partialize;
       if (partialize) {
-        const partial = partialize(useShellStore.getState()) as Record<string, unknown>;
+        const partial = partialize(useShellStoreKit.getState()) as Record<string, unknown>;
         expect(partial).not.toHaveProperty("_hasHydrated");
         expect(partial).not.toHaveProperty("setHasHydrated");
-        expect(partial).not.toHaveProperty("setValeriaOpen");
+        expect(partial).not.toHaveProperty("setSupervisorOpen");
         expect(partial).not.toHaveProperty("setMobileDrawerOpen");
         // RN-5/RN-11: historyOpen never persisted
         expect(partial).not.toHaveProperty("historyOpen");

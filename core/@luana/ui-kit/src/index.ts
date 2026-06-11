@@ -138,6 +138,7 @@ export type {
   TogglePillItem,
   TopBarShellProps,
   StatusDotProps,
+  StatusDotVariant,
   ConfigTabProps,
   HistoryGroupProps,
   HistoryItemProps,

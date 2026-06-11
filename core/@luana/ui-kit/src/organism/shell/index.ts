@@ -108,7 +108,7 @@ export { TopBarShell } from "./TopBarShell";
 export type { TopBarShellProps } from "./TopBarShell";
 
 export { StatusDot } from "./StatusDot";
-export type { StatusDotProps } from "./StatusDot";
+export type { StatusDotProps, StatusDotVariant } from "./StatusDot";
 
 export { ConfigTab } from "./ConfigTab";
 export type { ConfigTabProps } from "./ConfigTab";

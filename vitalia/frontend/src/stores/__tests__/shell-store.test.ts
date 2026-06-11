@@ -1,37 +1,37 @@
 // cap: shell-organism.shell-vitalia
-// story-origin: vitalia-shell-core-hardening
+// story-origin: platform-lift-shell-chrome-ui-kit T-V2
 /**
- * shell-store.test.ts — TDD RED-first tests for the NEW shell-store state machine.
- * vitalia-shell-core-hardening — T-1
+ * shell-store.test.ts — Kit store state machine tests.
+ * platform-lift-shell-chrome-ui-kit T-V2
  *
- * Replaces the legacy collapsed/rail/full + shellMode model with the additive
- * machine (03-arch-fe.md § 1.1):
- *   - valeriaOpen: "closed" | "chat"   (A=closed tira-avatar 44px · B=chat split 30/70)
- *   - historyOpen: boolean             (additive push — NOT a third conflated state)
- *   - valeriaPct: number | null        (split % · null = default 30)
- *   - mobileDrawerOpen: boolean        (independent slice)
+ * T-V2 removes the legacy useShellStore (valeriaOpen API) and exposes only
+ * useShellStoreKit (kit API: supervisorOpen / splitPct). These tests migrate
+ * from the old valeriaOpen/historyOpen API to the canonical kit API.
+ *
+ * Machine (generic kit, create-shell-store.ts):
+ *   A=closed   : supervisorOpen 'closed' ⇒ historyOpen forced false (RN-5)
+ *   B=chat     : supervisorOpen 'chat', NEVER restores history (RN-6)
+ *   C=chat+hist: supervisorOpen 'chat' + historyOpen true (RN-7 additive)
  *
  * gherkin_coverage:
- * - SC-1 happy: default closed|chat machine + valeriaOpen/historyOpen defaults
- * - SC-5 RN-5/6: colapsar cierra historial; clic avatar NUNCA restaura historial
- * - SC-8 RN-7: historyOpen aditivo (no conflado con valeriaOpen)
+ * - SC-1 happy: default supervisorOpen/historyOpen defaults
+ * - SC-5 RN-5/6: collapsing closes history; reopening NEVER restores history
+ * - SC-8 RN-7: historyOpen additive (not conflated with supervisorOpen)
  *
- * 03-arch-fe.md § 1.1 — state machine verbatim. ELIMINATE shellMode (AC-1).
  * Named export (no default export) per FSD-Lite enforce.
- *
  * downstream-regression-na: brand-local store test; no cross-brand consumers
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
-import { useShellStore, SHELL_STORAGE_KEY } from "../shell-store";
+import { useShellStoreKit, SHELL_STORAGE_KEY } from "../shell-store";
 
-describe("useShellStore — new state machine (closed|chat + historyOpen additive)", () => {
+describe("useShellStoreKit — kit state machine (closed|chat + historyOpen additive)", () => {
   beforeEach(() => {
-    // Reset to factory default. Default valeriaOpen='chat' (B) per 03-arch-fe § 1.1.
-    useShellStore.setState({
-      valeriaOpen: "chat",
+    // Reset to factory default. Default supervisorOpen='chat' (B).
+    useShellStoreKit.setState({
+      supervisorOpen: "chat",
       historyOpen: false,
-      valeriaPct: null,
+      splitPct: null,
       mobileDrawerOpen: false,
     });
   });
@@ -39,16 +39,17 @@ describe("useShellStore — new state machine (closed|chat + historyOpen additiv
   // ── SC-1 happy: initial state ────────────────────────────────────────────
 
   describe("initial state", () => {
-    it("valeriaOpen='chat' historyOpen=false valeriaPct=null mobileDrawerOpen=false", () => {
-      const state = useShellStore.getState();
-      expect(state.valeriaOpen).toBe("chat");
+    it("supervisorOpen='chat' historyOpen=false splitPct=null mobileDrawerOpen=false", () => {
+      const state = useShellStoreKit.getState();
+      expect(state.supervisorOpen).toBe("chat");
       expect(state.historyOpen).toBe(false);
-      expect(state.valeriaPct).toBeNull();
+      expect(state.splitPct).toBeNull();
       expect(state.mobileDrawerOpen).toBe(false);
     });
 
-    it("shellMode is NOT a field on the store (AC-1 — eliminated)", () => {
-      const state = useShellStore.getState() as unknown as Record<string, unknown>;
+    it("valeriaOpen / shellMode / valeriaState NOT present on kit store (AC-1 — eliminated)", () => {
+      const state = useShellStoreKit.getState() as unknown as Record<string, unknown>;
+      expect(state.valeriaOpen).toBeUndefined();
       expect(state.shellMode).toBeUndefined();
       expect(state.setShellMode).toBeUndefined();
       expect(state.cycleValeriaState).toBeUndefined();
@@ -59,124 +60,124 @@ describe("useShellStore — new state machine (closed|chat + historyOpen additiv
   // ── SHELL_STORAGE_KEY (conserved) ──────────────────────────────────────────
 
   describe("SHELL_STORAGE_KEY", () => {
-    it("SHELL_STORAGE_KEY exported 'vitalia-shell-state' (conserved)", () => {
+    it("SHELL_STORAGE_KEY exported 'vitalia-shell-state' (conserved SC-6)", () => {
       expect(SHELL_STORAGE_KEY).toBe("vitalia-shell-state");
     });
   });
 
-  // ── valeriaOpen: closed <-> chat ───────────────────────────────────────────
+  // ── supervisorOpen: closed <-> chat ───────────────────────────────────────
 
-  describe("setValeriaOpen", () => {
-    it("setValeriaOpen('closed') sets state A", () => {
-      useShellStore.getState().setValeriaOpen("closed");
-      expect(useShellStore.getState().valeriaOpen).toBe("closed");
+  describe("setSupervisorOpen", () => {
+    it("setSupervisorOpen('closed') sets state A", () => {
+      useShellStoreKit.getState().setSupervisorOpen("closed");
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("closed");
     });
 
-    it("setValeriaOpen('chat') sets state B", () => {
-      useShellStore.getState().setValeriaOpen("closed");
-      useShellStore.getState().setValeriaOpen("chat");
-      expect(useShellStore.getState().valeriaOpen).toBe("chat");
+    it("setSupervisorOpen('chat') sets state B", () => {
+      useShellStoreKit.getState().setSupervisorOpen("closed");
+      useShellStoreKit.getState().setSupervisorOpen("chat");
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("chat");
     });
   });
 
   // ── RN-5 / RN-6 transitions: collapse closes history; reopen never restores ─
 
   describe("RN-5/6 transitions", () => {
-    it("collapseValeria → A (valeriaOpen='closed') AND forces historyOpen=false (RN-6)", () => {
+    it("collapseSupervisor → A (supervisorOpen='closed') AND forces historyOpen=false (RN-6)", () => {
       // Start in C (chat + history)
-      useShellStore.getState().setValeriaOpen("chat");
-      useShellStore.getState().setHistoryOpen(true);
-      expect(useShellStore.getState().historyOpen).toBe(true);
+      useShellStoreKit.getState().setSupervisorOpen("chat");
+      useShellStoreKit.getState().setHistoryOpen(true);
+      expect(useShellStoreKit.getState().historyOpen).toBe(true);
 
-      useShellStore.getState().collapseValeria();
+      useShellStoreKit.getState().collapseSupervisor();
 
-      expect(useShellStore.getState().valeriaOpen).toBe("closed");
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("closed");
       // colapsar cierra historial también (RN-6)
-      expect(useShellStore.getState().historyOpen).toBe(false);
+      expect(useShellStoreKit.getState().historyOpen).toBe(false);
     });
 
-    it("openValeria (clic tira-avatar) → B chat-only, NEVER restores history (RN-5)", () => {
+    it("openSupervisor (reopen) → B chat-only, NEVER restores history (RN-5)", () => {
       // Was in C before collapsing
-      useShellStore.getState().setValeriaOpen("chat");
-      useShellStore.getState().setHistoryOpen(true);
-      useShellStore.getState().collapseValeria(); // → A, history false
-      expect(useShellStore.getState().valeriaOpen).toBe("closed");
+      useShellStoreKit.getState().setSupervisorOpen("chat");
+      useShellStoreKit.getState().setHistoryOpen(true);
+      useShellStoreKit.getState().collapseSupervisor(); // → A, history false
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("closed");
 
-      useShellStore.getState().openValeria();
+      useShellStoreKit.getState().openSupervisor();
 
-      expect(useShellStore.getState().valeriaOpen).toBe("chat");
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("chat");
       // RN-5: reapertura NUNCA restaura el historial
-      expect(useShellStore.getState().historyOpen).toBe(false);
+      expect(useShellStoreKit.getState().historyOpen).toBe(false);
     });
 
-    it("historyOpen forced false while valeriaOpen='closed' (RN-5 invariant)", () => {
-      useShellStore.getState().setValeriaOpen("closed");
+    it("historyOpen forced false while supervisorOpen='closed' (RN-5 invariant)", () => {
+      useShellStoreKit.getState().setSupervisorOpen("closed");
       // Attempt to open history while closed must NOT leave A
-      useShellStore.getState().setHistoryOpen(true);
+      useShellStoreKit.getState().setHistoryOpen(true);
       // RN-5: en A, historyOpen está forzado false
-      expect(useShellStore.getState().historyOpen).toBe(false);
+      expect(useShellStoreKit.getState().historyOpen).toBe(false);
     });
   });
 
-  // ── SC-8 RN-7: historyOpen additive (opens Valeria too from A) ─────────────
+  // ── SC-8 RN-7: historyOpen additive (opens supervisor too from A) ───────────
 
   describe("openHistory — additive (RN-7)", () => {
     it("setHistoryOpen(true) from chat → C (chat + history)", () => {
-      useShellStore.getState().setValeriaOpen("chat");
-      useShellStore.getState().setHistoryOpen(true);
-      expect(useShellStore.getState().valeriaOpen).toBe("chat");
-      expect(useShellStore.getState().historyOpen).toBe(true);
+      useShellStoreKit.getState().setSupervisorOpen("chat");
+      useShellStoreKit.getState().setHistoryOpen(true);
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("chat");
+      expect(useShellStoreKit.getState().historyOpen).toBe(true);
     });
 
-    it("openHistory from A opens Valeria too (A → B+C) (RN-7)", () => {
-      useShellStore.getState().setValeriaOpen("closed");
-      useShellStore.getState().openHistory();
-      // abrir historial desde A → B+C (abre Valeria también)
-      expect(useShellStore.getState().valeriaOpen).toBe("chat");
-      expect(useShellStore.getState().historyOpen).toBe(true);
+    it("openHistory from A opens supervisor too (A → B+C) (RN-7)", () => {
+      useShellStoreKit.getState().setSupervisorOpen("closed");
+      useShellStoreKit.getState().openHistory();
+      // abrir historial desde A → B+C (abre supervisor también)
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("chat");
+      expect(useShellStoreKit.getState().historyOpen).toBe(true);
     });
 
     it("closeHistory → B (chat, history closed)", () => {
-      useShellStore.getState().setValeriaOpen("chat");
-      useShellStore.getState().setHistoryOpen(true);
-      useShellStore.getState().closeHistory();
-      expect(useShellStore.getState().valeriaOpen).toBe("chat");
-      expect(useShellStore.getState().historyOpen).toBe(false);
+      useShellStoreKit.getState().setSupervisorOpen("chat");
+      useShellStoreKit.getState().setHistoryOpen(true);
+      useShellStoreKit.getState().closeHistory();
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("chat");
+      expect(useShellStoreKit.getState().historyOpen).toBe(false);
     });
 
     it("toggleHistory flips historyOpen (chat context)", () => {
-      useShellStore.getState().setValeriaOpen("chat");
-      useShellStore.getState().setHistoryOpen(false);
-      useShellStore.getState().toggleHistory();
-      expect(useShellStore.getState().historyOpen).toBe(true);
-      useShellStore.getState().toggleHistory();
-      expect(useShellStore.getState().historyOpen).toBe(false);
+      useShellStoreKit.getState().setSupervisorOpen("chat");
+      useShellStoreKit.getState().setHistoryOpen(false);
+      useShellStoreKit.getState().toggleHistory();
+      expect(useShellStoreKit.getState().historyOpen).toBe(true);
+      useShellStoreKit.getState().toggleHistory();
+      expect(useShellStoreKit.getState().historyOpen).toBe(false);
     });
   });
 
-  // ── valeriaPct (split %) ───────────────────────────────────────────────────
+  // ── splitPct (split %) ────────────────────────────────────────────────────
 
-  describe("setValeriaPct", () => {
-    it("setValeriaPct(45) updates split %", () => {
-      useShellStore.getState().setValeriaPct(45);
-      expect(useShellStore.getState().valeriaPct).toBe(45);
+  describe("setSplitPct", () => {
+    it("setSplitPct(45) updates split %", () => {
+      useShellStoreKit.getState().setSplitPct(45);
+      expect(useShellStoreKit.getState().splitPct).toBe(45);
     });
 
-    it("setValeriaPct(null) resets to default", () => {
-      useShellStore.getState().setValeriaPct(45);
-      useShellStore.getState().setValeriaPct(null);
-      expect(useShellStore.getState().valeriaPct).toBeNull();
+    it("setSplitPct(null) resets to default", () => {
+      useShellStoreKit.getState().setSplitPct(45);
+      useShellStoreKit.getState().setSplitPct(null);
+      expect(useShellStoreKit.getState().splitPct).toBeNull();
     });
   });
 
   // ── mobileDrawerOpen slice independence (conserved) ────────────────────────
 
   describe("mobileDrawerOpen slice independence", () => {
-    it("setMobileDrawerOpen(true) does not change valeriaOpen", () => {
-      useShellStore.getState().setValeriaOpen("chat");
-      useShellStore.getState().setMobileDrawerOpen(true);
-      expect(useShellStore.getState().mobileDrawerOpen).toBe(true);
-      expect(useShellStore.getState().valeriaOpen).toBe("chat");
+    it("setMobileDrawerOpen(true) does not change supervisorOpen", () => {
+      useShellStoreKit.getState().setSupervisorOpen("chat");
+      useShellStoreKit.getState().setMobileDrawerOpen(true);
+      expect(useShellStoreKit.getState().mobileDrawerOpen).toBe(true);
+      expect(useShellStoreKit.getState().supervisorOpen).toBe("chat");
     });
   });
 
@@ -184,29 +185,27 @@ describe("useShellStore — new state machine (closed|chat + historyOpen additiv
 
   describe("persist partialize", () => {
     it("persist API defined", () => {
-      expect(useShellStore.persist).toBeDefined();
+      expect(useShellStoreKit.persist).toBeDefined();
     });
 
-    // T-V1 dual-store: useShellStore is the @deprecated legacy store.
-    // Its key moved to 'vitalia-shell-state-legacy' (canonical 'vitalia-shell-state' → useShellStoreKit).
-    it("storage key is vitalia-shell-state-legacy (T-V1: legacy key; kit store owns canonical)", () => {
-      expect(useShellStore.persist.getOptions().name).toBe("vitalia-shell-state-legacy");
+    it("storage key is vitalia-shell-state (SC-6 canonical key)", () => {
+      expect(useShellStoreKit.persist.getOptions().name).toBe("vitalia-shell-state");
     });
 
-    it("partialize persists valeriaOpen, valeriaPct, mobileDrawerOpen — NOT historyOpen (RN-5/11)", () => {
-      const partialize = useShellStore.persist.getOptions().partialize;
+    it("partialize persists supervisorOpen, splitPct, mobileDrawerOpen — NOT historyOpen (RN-5/11)", () => {
+      const partialize = useShellStoreKit.persist.getOptions().partialize;
       expect(partialize).toBeDefined();
       if (partialize) {
-        const partial = partialize(useShellStore.getState()) as Record<string, unknown>;
-        expect(partial).toHaveProperty("valeriaOpen");
-        expect(partial).toHaveProperty("valeriaPct");
+        const partial = partialize(useShellStoreKit.getState()) as Record<string, unknown>;
+        expect(partial).toHaveProperty("supervisorOpen");
+        expect(partial).toHaveProperty("splitPct");
         expect(partial).toHaveProperty("mobileDrawerOpen");
         // RN-5/RN-11: historial NUNCA persiste abierto
         expect(partial).not.toHaveProperty("historyOpen");
         // setters + transient excluded
-        expect(partial).not.toHaveProperty("setValeriaOpen");
-        expect(partial).not.toHaveProperty("openValeria");
-        expect(partial).not.toHaveProperty("collapseValeria");
+        expect(partial).not.toHaveProperty("setSupervisorOpen");
+        expect(partial).not.toHaveProperty("openSupervisor");
+        expect(partial).not.toHaveProperty("collapseSupervisor");
         expect(partial).not.toHaveProperty("toggleHistory");
         expect(partial).not.toHaveProperty("_hasHydrated");
       }

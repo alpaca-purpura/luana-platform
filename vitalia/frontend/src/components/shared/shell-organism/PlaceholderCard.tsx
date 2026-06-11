@@ -16,7 +16,7 @@
  */
 
 import { cn } from "@/lib/utils";
-import { StatusDot, type StatusDotVariant } from "./StatusDot";
+import { StatusDot, type StatusDotVariant } from "@luana/ui-kit";
 
 export interface PlaceholderCardProps {
   /** Emoji icon displayed at 2xl size. */

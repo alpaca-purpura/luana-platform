@@ -1,24 +1,17 @@
 /**
- * ShellOrganismLayout showcase — test page fixture
+ * ShellLayout showcase — test page fixture
  * F1-S4 vitalia-fase1-shell-layout-5050 — T-7 Fase 7A micro-fix
  *
- * Renders ShellOrganismLayout isolated for visual + functional E2E testing
- * sin requerir Clerk auth ni un real /{tenantId}/lisa/marca route (que
- * todavía no existe — Fase 2 lo construirá). Mismo pattern parity con
- * F1-S0..S3 test-stack showcases.
+ * T-V2 (platform-lift-shell-chrome-ui-kit): ShellOrganismLayout (local chrome)
+ * replaced by ShellLayoutWire which wraps @luana/ui-kit ShellLayout.
+ * The ShellLayoutWire is the vitalia production wire — same component used by
+ * the real layout.tsx route, so e2e fixture remains faithful to production.
  *
  * Accessible via dev server: /test-stack/shell-layout
  * NOT protected by Clerk auth (public dev-only, no PHI).
  *
  * Pre-hydrates tenant-store con mock tenants LatAm para que TenantSwitcher
- * en TopBarGlobal renderice (sin Clerk auth fetched, store viene vacío
- * y TenantSwitcher hace graceful degrade a null).
- *
- * NO pasa children al AppPanelSlot — el skeleton interno ya identifica
- * el placeholder (slot labels visibles). Children sería redundante.
- *
- * Playwright specs (e2e/regression/vitalia-fase1-shell-layout-5050/*.spec.ts)
- * usan POM `ShellLayoutPage.gotoShell()` que navega aquí.
+ * en TopBarShell renderice sin Clerk auth.
  *
  * HIPAA-lite: no-phi-scope — UI shell fixture, zero PHI.
  * downstream-regression-na: brand-local E2E fixture; no cross-brand consumers
@@ -27,7 +20,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { ShellOrganismLayout } from "@/components/shared/shell-organism/ShellOrganismLayout";
+import { ShellLayoutWire } from "@/app/[tenantId]/(shell-organism)/_components/ShellLayoutWire";
 import { useTenantStore } from "@/stores/tenant-store";
 import type { Tenant } from "@/components/shared/shell-organism/types";
 
@@ -60,11 +53,9 @@ export default function ShellLayoutShowcasePage() {
     }
   }, [availableTenants, setAvailableTenants, setActiveTenant]);
 
-  // Empty children: skeleton del AppPanelSlot ya identifica placeholder.
-  // ShellOrganismLayoutProps.children es required; pasamos null Element.
   return (
-    <ShellOrganismLayout tenantId={FIXTURE_TENANT_ID}>
+    <ShellLayoutWire>
       {null}
-    </ShellOrganismLayout>
+    </ShellLayoutWire>
   );
 }

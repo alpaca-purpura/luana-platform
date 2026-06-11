@@ -37,7 +37,7 @@ user_facing_description: >
 dev_preview:
   route: "/"
   how_to_navigate: "Login → shell principal · ribbon con 5 agentes visible · Valeria chat a la izquierda · panel contenido a la derecha."
-  main_component: "vitalia/frontend/src/components/shared/shell-organism/AppPanelSlot.tsx"
+  main_component: "core/@luana/ui-kit/src/organism/shell/AppPanelSlot.tsx"
   api_endpoints: []
   e2e_test: "vitalia/frontend/e2e/regression/vitalia-fase1-ribbon-6-tabs/ribbon-nav.spec.ts"
   fixtures_required: ["3-clinic-fixture-latam"]

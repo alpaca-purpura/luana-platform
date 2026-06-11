@@ -3,6 +3,11 @@
 /**
  * _mock-messages.ts — Mock data SSoT for Valeria chat shell (F1-S6).
  *
+ * T-V2 (platform-lift-shell-chrome-ui-kit): recreated after chrome deletion.
+ * File kept in shell-organism (not chrome) because chat-store.test.ts imports
+ * it via @/components/shared/shell-organism/_mock-messages. Kept here to
+ * preserve e2e/test import paths without touching the test file.
+ *
  * spec_anchor: 01-spec.md § 5.3 + § 6 + § 8 · 03-arch.md § 2.6
  *
  * IDs stable ('1'..'6') — NOT crypto.randomUUID() — Playwright golden snapshots
@@ -16,10 +21,6 @@
  * Anti-PHI: "Marina Pérez" + "Dr. Juan García" are fictional names from the
  * ratified mockup (Chris 2026-05-24). Not real patient data. Zero PHI.
  * Per vitalia/.claude/rules/hipaa-lite.md: PHI scope = not_applicable (shell chrome UI mock).
- *
- * LIFT CANDIDATE: mock-messages pattern cross-brand si ≥2 brands replican.
- * Hoy brand-local Vitalia per anti-duplication.md. Future /pm-luana promotion
- * candidate: core/@luana/shell-chat-organism/.
  *
  * downstream-regression-na: brand-local shell data; no cross-brand consumers
  */

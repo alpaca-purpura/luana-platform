@@ -3,39 +3,37 @@
 /**
  * ConversationModeButton.test.tsx — T-5 tests.
  *
- * SC-5: "Modo conversación" collapses Valeria + remembers prior state.
+ * SC-5: "Modo conversación" collapses Valeria → inbox full width.
  * RN-12: toggle-off restores priorValeriaState from inbox-store.
  *
- * T-1 (vitalia-shell-core-hardening): the shell machine changed from the 3-state
- * valeriaState (collapsed|rail|full) to the binary valeriaOpen (closed|chat). The
- * component now reads valeriaOpen + openValeria/collapseValeria. These mocks track
- * the new API: "conversation mode" = valeriaOpen === 'closed'. Minimal mock update,
- * NO behavior re-design (that lands in T-2/T-3).
+ * T-V2 (platform-lift-shell-chrome-ui-kit): migrated from useShellStore (legacy)
+ * to useShellStoreKit (kit API). Mock updated to supervisorOpen/openSupervisor/
+ * collapseSupervisor (matching the canonical kit store API).
  *
  * downstream-regression-na: brand-local FE test; no cross-brand consumers
  */
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { render, screen } from "@testing-library/react";
 
-// Mocks — new machine API (T-1)
-const mockOpenValeria = vi.fn();
-const mockCollapseValeria = vi.fn();
+// Mocks — kit store API (T-V2)
+const mockOpenSupervisor = vi.fn();
+const mockCollapseSupervisor = vi.fn();
 const mockSetPriorValeriaState = vi.fn();
 
 vi.mock("@/stores/shell-store", () => {
   return {
-    useShellStore: vi.fn(
+    useShellStoreKit: vi.fn(
       (
         selector: (s: {
-          valeriaOpen: string;
-          openValeria: typeof mockOpenValeria;
-          collapseValeria: typeof mockCollapseValeria;
+          supervisorOpen: string;
+          openSupervisor: typeof mockOpenSupervisor;
+          collapseSupervisor: typeof mockCollapseSupervisor;
         }) => unknown,
       ) =>
         selector({
-          valeriaOpen: "chat",
-          openValeria: mockOpenValeria,
-          collapseValeria: mockCollapseValeria,
+          supervisorOpen: "chat",
+          openSupervisor: mockOpenSupervisor,
+          collapseSupervisor: mockCollapseSupervisor,
         }),
     ),
   };
@@ -71,26 +69,26 @@ describe("ConversationModeButton — SC-5 full-canvas (RN-12)", () => {
     expect(btn.textContent).toContain("Modo conversación");
   });
 
-  it("test_aria_pressed_false: aria-pressed is false when Valeria is open (valeriaOpen='chat')", () => {
+  it("test_aria_pressed_false: aria-pressed is false when supervisor is open (supervisorOpen='chat')", () => {
     render(<ConversationModeButton />);
     const btn = screen.getByTestId("conversation-mode-button");
     expect(btn.getAttribute("aria-pressed")).toBe("false");
   });
 
-  it("test_aria_pressed_true: aria-pressed is true when Valeria is closed (valeriaOpen='closed')", async () => {
-    const { useShellStore } = await import("@/stores/shell-store");
-    (useShellStore as unknown as Mock).mockImplementation(
+  it("test_aria_pressed_true: aria-pressed is true when supervisor is closed (supervisorOpen='closed')", async () => {
+    const { useShellStoreKit } = await import("@/stores/shell-store");
+    (useShellStoreKit as unknown as Mock).mockImplementation(
       (
         selector: (s: {
-          valeriaOpen: string;
-          openValeria: typeof mockOpenValeria;
-          collapseValeria: typeof mockCollapseValeria;
+          supervisorOpen: string;
+          openSupervisor: typeof mockOpenSupervisor;
+          collapseSupervisor: typeof mockCollapseSupervisor;
         }) => unknown,
       ) =>
         selector({
-          valeriaOpen: "closed",
-          openValeria: mockOpenValeria,
-          collapseValeria: mockCollapseValeria,
+          supervisorOpen: "closed",
+          openSupervisor: mockOpenSupervisor,
+          collapseSupervisor: mockCollapseSupervisor,
         }),
     );
     render(<ConversationModeButton />);
