@@ -20,10 +20,14 @@
  */
 
 import { useState } from "react";
+import { Clock, PanelLeftClose, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AgentSlug } from "@/lib/agent-catalog";
 import { AGENT_CATALOG, DEFAULT_CHAT_AGENT } from "@/lib/agent-catalog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useShellStore } from "@/stores/shell-store";
+import { useChatStore } from "@/stores/chat-store";
 import { agentBgClass } from "./_agent-tw-classes";
 
 export interface ChatHeaderProps {
@@ -50,10 +54,19 @@ export function ChatHeader({
   const [imgError, setImgError] = useState(false);
   const descriptor = AGENT_CATALOG[agent] ?? AGENT_CATALOG[DEFAULT_CHAT_AGENT];
 
+  // T-3 action buttons: read stores directly (header is already a Client
+  // Component) instead of threading callbacks through ValeriaChat (untouched).
+  const historyOpen = useShellStore((s) => s.historyOpen);
+  const toggleHistory = useShellStore((s) => s.toggleHistory);
+  const collapseValeria = useShellStore((s) => s.collapseValeria);
+  const newConversation = useChatStore((s) => s.newConversation);
+
   const statusText =
     status === "online" ? `En línea · ${descriptor.role}` : "Desconectada";
 
   const modeLabel = mode === "agent" ? "🤖 Modo agente" : "🌐 Modo web";
+
+  const historyLabel = historyOpen ? "Ocultar historial" : "Mostrar historial";
 
   return (
     <header
@@ -112,6 +125,41 @@ export function ChatHeader({
       >
         {modeLabel}
       </Badge>
+
+      {/* T-3 action buttons: nueva conv · historial (toggle) · colapsar propio */}
+      <div className="flex shrink-0 items-center gap-0.5">
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Nueva conversación"
+          title="Nueva conversación"
+          onClick={newConversation}
+          className="h-8 w-8"
+        >
+          <Plus className="size-4" aria-hidden="true" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={historyLabel}
+          title={historyLabel}
+          aria-pressed={historyOpen}
+          onClick={toggleHistory}
+          className="h-8 w-8"
+        >
+          <Clock className="size-4" aria-hidden="true" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Colapsar a Valeria"
+          title="Colapsar a Valeria"
+          onClick={collapseValeria}
+          className="h-8 w-8"
+        >
+          <PanelLeftClose className="size-4" aria-hidden="true" />
+        </Button>
+      </div>
     </header>
   );
 }

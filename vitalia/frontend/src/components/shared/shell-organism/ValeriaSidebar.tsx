@@ -38,62 +38,67 @@ import { createPortal } from "react-dom";
 import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { useShellStore } from "@/stores/shell-store";
+import { useChatStore } from "@/stores/chat-store";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
-import { ValeriaRail } from "./ValeriaRail";
+import { ValeriaCollapsedStrip } from "./ValeriaCollapsedStrip";
 import { ValeriaHistory } from "./ValeriaHistory";
 import { ValeriaChat } from "./ValeriaChat";
 
-// ─── T-1 minimal compile fixup — legacy 3-state → new binary machine ──────────
+// ─── T-3 binary machine render contract (ValeriaRail retired) ─────────────────
 //
-// vitalia-shell-core-hardening T-1 replaced the legacy 3-state valeriaState
-// (collapsed | rail | full) with the binary machine valeriaOpen (closed | chat)
-// + additive historyOpen. This component is a heavy legacy consumer; per the
-// ticket directive ("update SOLO el import/uso mínimo para mantener verde, sin
-// re-layout") we map the old render shape onto the new store WITHOUT re-layout:
+// vitalia-shell-core-hardening T-3 retires the 60px ValeriaRail. The binary
+// machine valeriaOpen (closed | chat) + additive historyOpen now drives THREE
+// real layouts (no more rail bridge):
 //
-//   valeriaOpen "chat"  + historyOpen true  → render History | Chat (old "full")
-//   valeriaOpen "chat"  + historyOpen false → render Rail    | Chat (old "rail")
-//   valeriaOpen "closed"                      → render Rail    | Chat (old "rail"
-//     equiv — T-1 keeps Valeria visible as a rail; full retirement / collapsed
-//     render is T-2/T-3, out of scope here, no re-layout).
+//   valeriaOpen "closed"                      → state A: ValeriaCollapsedStrip
+//     (~44px tira-avatar at the left edge). The agent panel on the other side
+//     of the shell split gets the room. No chat, no rail. Click strip → B.
+//   valeriaOpen "chat"  + historyOpen false → state B: Chat only (chat-only split).
+//   valeriaOpen "chat"  + historyOpen true  → state C: History (260px push) | Chat.
 //
-// The legacy shellMode auto-coupling effect is REMOVED (shellMode eliminated
-// from the store, RN-1/AC-1). Keyboard shortcuts map to the new setters.
+// The legacy shellMode auto-coupling is gone (RN-1/AC-1). Keyboard shortcuts map
+// to the new setters; "n" (new conversation) wires to the real chat-store action
+// (RN-13) — no more alert placeholder.
 
-type LegacyRender = "collapsed" | "rail" | "full";
+type ValeriaRender = "strip" | "chat" | "history";
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 /**
  * ValeriaSidebar — organism that composes:
- *   - ValeriaRail (rail mode)
- *   - ValeriaHistory (full mode)
- *   - ValeriaChat (always visible when expanded)
+ *   - ValeriaCollapsedStrip (state A, closed)
+ *   - ValeriaHistory (state C, chat + history)
+ *   - ValeriaChat (states B + C, visible whenever Valeria is open)
  *
  * Consumes useShellStore READ-ONLY (no schema mutation per F1-S5 arch test).
  * "use client" required: state + effects + event handlers + matchMedia.
  */
 export function ValeriaSidebar() {
-  // ── Stable Zustand selectors (new binary machine, T-1) ────────────────────
+  // ── Stable Zustand selectors (binary machine) ─────────────────────────────
   const valeriaOpen = useShellStore((s) => s.valeriaOpen);
   const historyOpen = useShellStore((s) => s.historyOpen);
   const openValeria = useShellStore((s) => s.openValeria);
   const collapseValeria = useShellStore((s) => s.collapseValeria);
   const openHistory = useShellStore((s) => s.openHistory);
   const closeHistory = useShellStore((s) => s.closeHistory);
+  // T-3: "+" / 'n' archive current conv + clear chat (RN-13, UI-local).
+  const newConversation = useChatStore((s) => s.newConversation);
   // D5 (T-4): mobile drawer independent slice — NOT derived from valeriaOpen
   const mobileDrawerOpen = useShellStore((s) => s.mobileDrawerOpen);
   const setMobileDrawerOpen = useShellStore((s) => s.setMobileDrawerOpen);
 
-  // ── Map new machine → legacy render shape (T-1, no re-layout) ──────────────
-  // chat + historyOpen → "full" (History|Chat) · chat → "rail" (Rail|Chat)
-  // closed → "rail" (T-1 keeps Valeria as rail; collapsed render is T-2/T-3).
-  const safeState: LegacyRender =
-    valeriaOpen === "chat" ? (historyOpen ? "full" : "rail") : "rail";
+  // ── Map machine → render shape (T-3, three real layouts) ──────────────────
+  // closed → "strip" (44px) · chat + history → "history" · chat → "chat".
+  const renderShape: ValeriaRender =
+    valeriaOpen === "closed"
+      ? "strip"
+      : historyOpen
+        ? "history"
+        : "chat";
 
   // ── Handlers ─────────────────────────────────────────────────────────────
-  const handleNewConversation = () =>
-    alert("Nueva conversación (próximamente)");
+  // T-3: real chat-store action (archive + clear, RN-13) replaces the placeholder.
+  const handleNewConversation = () => newConversation();
 
   const handleFocusComposer = () => {
     const composer = document.getElementById("valeria-composer-placeholder");
@@ -144,18 +149,20 @@ export function ValeriaSidebar() {
   }, []);
 
   // ── Derived values ────────────────────────────────────────────────────────
-  // T-1: safeState is "rail" | "full" (binary machine never maps to "collapsed"
-  // — Valeria stays visible as a rail; the collapsed render is T-2/T-3). So the
-  // sidebar is always expanded and the live region never announces "cerrada".
-  const isExpanded = true;
-  // T-1 legacy bridge value — sin tocar en T-2. El "empuja 260" (03-arch-fe § 6) lo
-  // implementa el ancho propio de ValeriaHistory (`lg:w-[260px] shrink-0`), no esta
-  // columna del bridge. La migración del grid del bridge + tira-avatar (44px) son T-3.
-  const railWidth = safeState === "full" ? 280 : 60;
+  // T-3: three real states. closed → strip (44px, collapsed); open → expanded.
+  const isExpanded = renderShape !== "strip";
+  // First grid column width: strip 44px (state A) · history 280px (state C) ·
+  // chat-only 0 (state B — chat spans the whole panel, no left column).
+  const firstColWidth =
+    renderShape === "strip" ? 44 : renderShape === "history" ? 280 : 0;
 
   // Live region text per state (Spanish neutro, no voseo)
   const liveText =
-    safeState === "full" ? "Valeria con historial" : "Valeria abierta";
+    renderShape === "history"
+      ? "Valeria con historial"
+      : renderShape === "strip"
+        ? "Valeria cerrada"
+        : "Valeria abierta";
 
   // ── Ref for hamburger (focus restoration post-drawer-close) ──────────────
   const hamburgerRef = useRef<HTMLButtonElement>(null);
@@ -230,7 +237,10 @@ export function ValeriaSidebar() {
 
           {/* Body: history + chat stacked */}
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-            <ValeriaHistory onCollapseToRail={() => closeHistory()} />
+            <ValeriaHistory
+              onNewConversation={handleNewConversation}
+              onCollapseToRail={() => closeHistory()}
+            />
             <ValeriaChat />
           </div>
         </aside>
@@ -239,7 +249,17 @@ export function ValeriaSidebar() {
     );
   }
 
-  // ── Desktop / collapsed render ────────────────────────────────────────────
+  // ── Desktop render (T-3: strip A · chat B · history|chat C) ───────────────
+  // State A (strip): single 44px column, no chat (agent panel gets the room).
+  // State B (chat): single 1fr column, chat only.
+  // State C (history): 280px history (push) | 1fr chat.
+  const gridColumns =
+    renderShape === "strip"
+      ? `${firstColWidth}px`
+      : renderShape === "history"
+        ? `${firstColWidth}px 1fr`
+        : "1fr";
+
   return (
     <aside
       role="complementary"
@@ -248,7 +268,7 @@ export function ValeriaSidebar() {
       data-testid="valeria-sidebar"
       className="hidden h-full overflow-hidden bg-card motion-reduce:transition-none lg:grid"
       style={{
-        gridTemplateColumns: `${railWidth}px 1fr`,
+        gridTemplateColumns: gridColumns,
         gridTemplateRows: "minmax(0, 1fr)",
         transition: "grid-template-columns 220ms cubic-bezier(.2,.8,.2,1)",
       }}
@@ -263,20 +283,19 @@ export function ValeriaSidebar() {
         {liveText}
       </span>
 
-      {/* Rail XOR History — mutually exclusive per D1 */}
-      {safeState === "full" ? (
-        <ValeriaHistory onCollapseToRail={() => closeHistory()} />
-      ) : (
-        <ValeriaRail
-          onToggleHistory={() => openHistory()}
+      {/* State A: tira-avatar strip (closed) — reopens to chat (RN-12) */}
+      {renderShape === "strip" && <ValeriaCollapsedStrip />}
+
+      {/* State C: history (260px push) — XOR with strip */}
+      {renderShape === "history" && (
+        <ValeriaHistory
           onNewConversation={handleNewConversation}
-          onSearch={handleFocusComposer}
-          onCollapse={() => collapseValeria()}
+          onCollapseToRail={() => closeHistory()}
         />
       )}
 
-      {/* Chat — always rendered when not collapsed */}
-      <ValeriaChat />
+      {/* Chat — rendered in states B + C (whenever Valeria is open) */}
+      {isExpanded && <ValeriaChat />}
     </aside>
   );
 }

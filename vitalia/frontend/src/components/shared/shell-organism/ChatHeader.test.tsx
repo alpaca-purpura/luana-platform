@@ -18,7 +18,12 @@
  */
 
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it } from "vitest";
+import { useShellStore } from "@/stores/shell-store";
+import { useChatStore } from "@/stores/chat-store";
+import { MOCK_MESSAGES } from "./_mock-messages";
+import { MOCK_CONVERSATIONS } from "./_mock-conversations";
 import { ChatHeader } from "./ChatHeader";
 
 describe("ChatHeader — renders avatar + name + status (SC-1 happy)", () => {
@@ -88,6 +93,64 @@ describe("ChatHeader — custom agent prop (SC-1 happy, D9)", () => {
     const img = container.querySelector("img");
     expect(img).not.toBeNull();
     expect(img!.getAttribute("src")).toContain("/agents/camila/thumbnail.png");
+  });
+});
+
+describe("ChatHeader — action buttons (T-3 · SC-7/SC-8 · RN-6/RN-13)", () => {
+  beforeEach(() => {
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: false });
+    useChatStore.setState({
+      messages: [...MOCK_MESSAGES],
+      conversations: [...MOCK_CONVERSATIONS],
+      status: "idle",
+    });
+  });
+
+  it("renders the three action buttons with neutro LatAm aria-labels", () => {
+    render(<ChatHeader agent="valeria" status="online" mode="agent" />);
+    expect(
+      screen.getByRole("button", { name: "Nueva conversación" }),
+    ).toBeInTheDocument();
+    // history closed → label invites to show
+    expect(
+      screen.getByRole("button", { name: "Mostrar historial" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Colapsar a Valeria" }),
+    ).toBeInTheDocument();
+  });
+
+  it("'+' archives current conv + clears chat (RN-13/SC-8)", async () => {
+    const before = useChatStore.getState().conversations.length;
+    render(<ChatHeader agent="valeria" status="online" mode="agent" />);
+    await userEvent.click(
+      screen.getByRole("button", { name: "Nueva conversación" }),
+    );
+    expect(useChatStore.getState().messages).toHaveLength(0);
+    expect(useChatStore.getState().conversations.length).toBe(before + 1);
+  });
+
+  it("historial toggles history open → C (SC-7) and flips aria-label", async () => {
+    render(<ChatHeader agent="valeria" status="online" mode="agent" />);
+    await userEvent.click(
+      screen.getByRole("button", { name: "Mostrar historial" }),
+    );
+    expect(useShellStore.getState().historyOpen).toBe(true);
+    // label now offers to hide
+    expect(
+      screen.getByRole("button", { name: "Ocultar historial" }),
+    ).toBeInTheDocument();
+  });
+
+  it("colapsar → A (closed) AND closes history (RN-6)", async () => {
+    useShellStore.setState({ valeriaOpen: "chat", historyOpen: true });
+    render(<ChatHeader agent="valeria" status="online" mode="agent" />);
+    await userEvent.click(
+      screen.getByRole("button", { name: "Colapsar a Valeria" }),
+    );
+    const s = useShellStore.getState();
+    expect(s.valeriaOpen).toBe("closed");
+    expect(s.historyOpen).toBe(false);
   });
 });
 

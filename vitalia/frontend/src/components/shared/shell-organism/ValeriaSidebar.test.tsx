@@ -31,6 +31,9 @@ import { render, screen, act, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useShellStore } from "@/stores/shell-store";
+import { useChatStore } from "@/stores/chat-store";
+import { MOCK_MESSAGES } from "./_mock-messages";
+import { MOCK_CONVERSATIONS } from "./_mock-conversations";
 import { ValeriaSidebar } from "./ValeriaSidebar";
 
 // ─── matchMedia helper ────────────────────────────────────────────────────────
@@ -152,15 +155,21 @@ describe("ValeriaSidebar — SC-1 keyboard cycle (shortcuts)", () => {
     expect(state.historyOpen).toBe(false);
   });
 
-  it("press 'n' calls window.alert mock with 'próximamente'", () => {
-    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+  it("press 'n' archives current conv + clears chat (RN-13, real action)", async () => {
+    // T-3: 'n' now wires to the real chat-store newConversation (no alert).
+    useChatStore.setState({
+      messages: [...MOCK_MESSAGES],
+      conversations: [...MOCK_CONVERSATIONS],
+      status: "idle",
+    });
+    const before = useChatStore.getState().conversations.length;
     render(<ValeriaSidebar />);
 
     fireEvent.keyDown(window, { key: "n" });
+    await act(async () => {});
 
-    expect(alertSpy).toHaveBeenCalledWith(
-      expect.stringContaining("próximamente"),
-    );
+    expect(useChatStore.getState().messages).toHaveLength(0);
+    expect(useChatStore.getState().conversations.length).toBe(before + 1);
   });
 
   it("press Cmd+K calls focus on valeria-composer-placeholder", () => {
@@ -208,15 +217,23 @@ describe("ValeriaSidebar — SC-1 render aside with role + aria + grid", () => {
     expect(aside).toHaveAttribute("aria-expanded", "true");
   });
 
-  it("grid columns 60px/1fr when chat without history (rail render)", () => {
+  it("aria-expanded='false' when Valeria closed (state A strip)", () => {
+    useShellStore.setState({ valeriaOpen: "closed", historyOpen: false });
+    render(<ValeriaSidebar />);
+
+    const aside = screen.getByTestId("valeria-sidebar");
+    expect(aside).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("grid single 1fr column when chat without history (state B chat-only)", () => {
     useShellStore.setState({ valeriaOpen: "chat", historyOpen: false });
     render(<ValeriaSidebar />);
 
     const aside = screen.getByTestId("valeria-sidebar");
-    expect(aside).toHaveStyle({ gridTemplateColumns: "60px 1fr" });
+    expect(aside).toHaveStyle({ gridTemplateColumns: "1fr" });
   });
 
-  it("grid columns 280px/1fr when chat + history (full render)", () => {
+  it("grid columns 280px/1fr when chat + history (state C push)", () => {
     useShellStore.setState({ valeriaOpen: "chat", historyOpen: true });
     render(<ValeriaSidebar />);
 
@@ -224,19 +241,37 @@ describe("ValeriaSidebar — SC-1 render aside with role + aria + grid", () => {
     expect(aside).toHaveStyle({ gridTemplateColumns: "280px 1fr" });
   });
 
-  it("renders ValeriaRail when chat without history (ValeriaHistory NOT rendered)", () => {
-    useShellStore.setState({ valeriaOpen: "chat", historyOpen: false });
+  it("grid single 44px column when closed (state A strip width)", () => {
+    useShellStore.setState({ valeriaOpen: "closed", historyOpen: false });
     render(<ValeriaSidebar />);
 
-    expect(
-      screen.getByRole("navigation", { name: "Rail de Valeria" }),
-    ).toBeInTheDocument();
+    const aside = screen.getByTestId("valeria-sidebar");
+    expect(aside).toHaveStyle({ gridTemplateColumns: "44px" });
+  });
+
+  it("renders ValeriaCollapsedStrip when closed (state A) — no chat, no history", () => {
+    useShellStore.setState({ valeriaOpen: "closed", historyOpen: false });
+    render(<ValeriaSidebar />);
+
+    expect(screen.getByTestId("valeria-collapsed-strip")).toBeInTheDocument();
+    expect(screen.queryByTestId("valeria-chat")).not.toBeInTheDocument();
     expect(
       screen.queryByRole("navigation", { name: "Historial conversaciones" }),
     ).not.toBeInTheDocument();
   });
 
-  it("renders ValeriaHistory when chat + history (ValeriaRail NOT rendered)", () => {
+  it("click strip reopens to chat (RN-12 — chat only, history stays false)", async () => {
+    useShellStore.setState({ valeriaOpen: "closed", historyOpen: false });
+    render(<ValeriaSidebar />);
+
+    await userEvent.click(screen.getByTestId("valeria-collapsed-strip"));
+
+    const s = useShellStore.getState();
+    expect(s.valeriaOpen).toBe("chat");
+    expect(s.historyOpen).toBe(false);
+  });
+
+  it("renders ValeriaHistory when chat + history (strip NOT rendered)", () => {
     useShellStore.setState({ valeriaOpen: "chat", historyOpen: true });
     render(<ValeriaSidebar />);
 
@@ -244,15 +279,22 @@ describe("ValeriaSidebar — SC-1 render aside with role + aria + grid", () => {
       screen.getByRole("navigation", { name: "Historial conversaciones" }),
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole("navigation", { name: "Rail de Valeria" }),
+      screen.queryByTestId("valeria-collapsed-strip"),
     ).not.toBeInTheDocument();
   });
 
-  it("ValeriaChat rendered when chat without history (any visible state)", () => {
+  it("ValeriaChat rendered when chat without history (state B)", () => {
     useShellStore.setState({ valeriaOpen: "chat", historyOpen: false });
     render(<ValeriaSidebar />);
 
     expect(screen.getByTestId("valeria-chat")).toBeInTheDocument();
+    // state B: chat only, no history, no strip
+    expect(
+      screen.queryByRole("navigation", { name: "Historial conversaciones" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("valeria-collapsed-strip"),
+    ).not.toBeInTheDocument();
   });
 
   it("ValeriaChat rendered when chat + history", () => {
