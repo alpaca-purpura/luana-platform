@@ -198,6 +198,20 @@ export function ShellOrganismLayoutClient({
   // ── Imperative Group ref for snap-up (Fix A — C3 bug mitigation) ─────────
   const groupRef = useGroupRef();
 
+  // ── T-7 drag-clamp (RN-8/RN-9) ───────────────────────────────────────────
+  // root cause: `collapsible={true}` on the Panel means react-resizable-panels
+  // auto-collapses to collapsedSize when user drags below minSize. That violates
+  // RN-8 (clamp at 320px) and RN-9 (collapse ONLY via button).
+  //
+  // Fix: `collapsible` is DYNAMIC — true ONLY when the panel is in state A
+  // (closed) or we're in drawer mode (below lg). When the panel is open (state
+  // B/C) collapsible=false so the library itself clamps at minSize on drag.
+  // The programmatic setLayout(stripPct) for state A still works because when
+  // valeriaOpen transitions to "closed" collapsible flips to true first.
+  //
+  // No onResize handler or usePanelRef needed — the library handles it.
+  const valeriaCollapsible = valeriaOpen === "closed" || !isLg;
+
   // Fix A: snap-up when containerWidth or minValeriaPct changes (hydration race +
   // valeriaState change cycle). Signals readiness once layout reconciled.
   useEffect(() => {
@@ -317,13 +331,14 @@ export function ShellOrganismLayoutClient({
               id={VALERIA_PANEL_ID}
               defaultSize={isLg ? defaultValeriaPct : 0}
               minSize={`${minValeriaPct}%`}
-              collapsible={true}
-              // T-3 strip fix: react-resizable-panels snaps to collapsedSize when
-              // setLayout receives a value < minSize. We want the "closed" state A
-              // to land at stripPct (44px), not 0. On desktop set collapsedSize to
-              // stripPct so setLayout(stripPct) holds at the strip (not collapses
-              // to 0). On mobile we still want 0 (panel is CSS-hidden via hidden
-              // md:flex but stays mounted for the drawer portal to work).
+              // T-7 drag-clamp (RN-8/RN-9): collapsible is dynamic.
+              // - state A ("closed") or drawer mode (!isLg): true → setLayout(stripPct)
+              //   can bypass minSize to park the panel at 44px strip.
+              // - state B/C (chat, open): false → library clamps at minSize on drag,
+              //   never auto-collapses → RN-8 and RN-9 are satisfied natively.
+              collapsible={valeriaCollapsible}
+              // T-3 strip fix: on desktop collapsedSize=stripPct so setLayout(stripPct)
+              // holds at the 44px tira-avatar (not collapses to 0). On mobile: 0.
               collapsedSize={isLg ? stripPct : 0}
             >
               {/* ValeriaSidebar stays mounted at all widths (its drawer portals to
