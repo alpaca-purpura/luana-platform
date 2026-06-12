@@ -16,6 +16,7 @@ Architecture:
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import date, time
 from uuid import UUID, uuid4
 
@@ -32,6 +33,9 @@ from src.modules.vitalia.clinics.application.availability_projection_service imp
 from src.modules.vitalia.clinics.application.ports.availability_repo_port import (
     AvailabilityRepoPort,
 )
+from src.modules.vitalia.clinics.application.recurrence_summary import (
+    format_recurrence_summary,
+)
 from src.modules.vitalia.clinics.domain.availability_block import AvailabilityBlock
 from src.modules.vitalia.clinics.infrastructure.models.availability_slot_model import (
     VitaliaAvailabilitySlotModel,
@@ -40,6 +44,28 @@ from src.modules.vitalia.clinics.infrastructure.models.availability_slot_model i
 logger = structlog.get_logger()
 
 _DEFAULT_SLOT_DURATION_MINUTES = 30
+
+# D3-C (03-arch-delta § 4.3): from/to bounded to avoid unbounded projection
+_MAX_OCCURRENCES_RANGE_DAYS = 62
+
+
+@dataclass
+class BlockOccurrence:
+    """A block-level occurrence within a queried range (D3-C paint SSoT).
+
+    The calendar paints blocks, not 30-min slots — slots collapse to one
+    occurrence per (block, date). Returned by
+    AvailabilityBlockService.list_occurrences; the router maps it to
+    AvailabilityOccurrenceDTO.
+    """
+
+    block_id: UUID
+    occurrence_date: date
+    start_time: time
+    end_time: time
+    kind: str
+    freq: str | None
+    pattern_summary: str
 
 
 class AvailabilityBlockService:
@@ -91,6 +117,78 @@ class AvailabilityBlockService:
         """
         return await self._repo.list_blocks(tenant_id=tenant_id, clinic_id=clinic_id, doctor_id=doctor_id)
 
+    async def list_occurrences(
+        self,
+        *,
+        doctor_id: UUID,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        range_start: date,
+        range_end: date,
+    ) -> list[BlockOccurrence]:
+        """Collapse active blocks into block-level occurrences within [range_start, range_end].
+
+        D3-C (03-arch-delta § 4.3): this projection is the paint SSoT the FE
+        consumes — client-side expansion (recurrentBlockVisibleInWeek) dies
+        (V-D3C-NODUP). REUSES AvailabilityProjectionService.occurrence_dates_in_range
+        (no new expansion logic); pattern_summary comes from the shared
+        format_recurrence_summary (RN-D3F-1 single source).
+
+        Dual filter (hipaa-lite): tenant_id + clinic_id enforced by the repo.
+        Read-only over scheduling metadata (non-PHI) — no audit row (mirrors
+        list_blocks).
+
+        Args:
+            doctor_id: Doctor UUID.
+            tenant_id: Tenant UUID.
+            clinic_id: Clinic UUID.
+            range_start: First date of the window (inclusive).
+            range_end: Last date of the window (inclusive).
+
+        Returns:
+            BlockOccurrence list ordered by (occurrence_date, start_time).
+
+        Raises:
+            ValueError: range_end < range_start, or span > 62 days.
+        """
+        if range_end < range_start:
+            raise ValueError("Rango inválido: la fecha final debe ser igual o posterior a la inicial.")
+        if (range_end - range_start).days > _MAX_OCCURRENCES_RANGE_DAYS:
+            raise ValueError(f"El rango máximo de proyección es de {_MAX_OCCURRENCES_RANGE_DAYS} días.")
+
+        blocks = await self._repo.list_blocks(tenant_id=tenant_id, clinic_id=clinic_id, doctor_id=doctor_id)
+
+        occurrences: list[BlockOccurrence] = []
+        for block in blocks:
+            summary = format_recurrence_summary(block)
+            for occ_date in self._projection.occurrence_dates_in_range(
+                block, range_start=range_start, range_end=range_end
+            ):
+                occurrences.append(
+                    BlockOccurrence(
+                        block_id=block.id,
+                        occurrence_date=occ_date,
+                        start_time=block.start_time,
+                        end_time=block.end_time,
+                        kind=block.kind,
+                        freq=block.freq,
+                        pattern_summary=summary,
+                    )
+                )
+
+        occurrences.sort(key=lambda o: (o.occurrence_date, o.start_time, str(o.block_id)))
+
+        logger.info(
+            "availability_occurrences_projected",
+            doctor_id=str(doctor_id),
+            tenant_id=str(tenant_id),
+            range_start=range_start.isoformat(),
+            range_end=range_end.isoformat(),
+            blocks=len(blocks),
+            occurrences=len(occurrences),
+        )
+        return occurrences
+
     async def create_block(
         self,
         *,
@@ -101,7 +199,10 @@ class AvailabilityBlockService:
         kind: str,
         start_time: time,
         end_time: time,
-        # Recurrent fields
+        # D3-F primary recurrent fields
+        days_of_week: list[int] | None = None,
+        interval: int = 1,
+        # Legacy recurrent fields (backward compat)
         day_of_week: int | None = None,
         freq: str | None = None,
         end_condition_kind: str | None = None,
@@ -127,8 +228,10 @@ class AvailabilityBlockService:
             kind: 'recurrent' | 'one_off'.
             start_time: Block start time (UTC).
             end_time: Block end time (UTC).
-            day_of_week: 0=Mon..6=Sun (recurrent only).
-            freq: 'weekly' | 'biweekly' (recurrent only).
+            days_of_week: Primary D3-F — list of weekday ints 0=Mon..6=Sun.
+            interval: Primary D3-F — recurrence interval in weeks (≥1).
+            day_of_week: Legacy — 0=Mon..6=Sun (recurrent only).
+            freq: Legacy — 'weekly' | 'biweekly' (recurrent only).
             end_condition_kind: 'end_date' | 'occurrences' | 'open_ended' (recurrent only).
             end_date: End date for end_date condition.
             occurrences: Count for occurrences condition.
@@ -141,6 +244,7 @@ class AvailabilityBlockService:
             ValueError: If domain validation fails (from AvailabilityBlock.__post_init__).
         """
         # 1. Build domain entity (validates invariants in __post_init__)
+        # D3-F precedence: days_of_week (non-empty) wins over legacy day_of_week.
         block = AvailabilityBlock(
             id=uuid4(),
             tenant_id=tenant_id,
@@ -149,6 +253,8 @@ class AvailabilityBlockService:
             kind=kind,  # type: ignore[arg-type]
             start_time=start_time,
             end_time=end_time,
+            days_of_week=days_of_week or [],
+            interval=interval,
             day_of_week=day_of_week,
             freq=freq,  # type: ignore[arg-type]
             end_condition_kind=end_condition_kind,  # type: ignore[arg-type]
@@ -199,7 +305,10 @@ class AvailabilityBlockService:
         kind: str,
         start_time: time,
         end_time: time,
-        # Recurrent fields
+        # D3-F primary recurrent fields
+        days_of_week: list[int] | None = None,
+        interval: int = 1,
+        # Legacy recurrent fields (backward compat)
         day_of_week: int | None = None,
         freq: str | None = None,
         end_condition_kind: str | None = None,
@@ -217,6 +326,12 @@ class AvailabilityBlockService:
         4. repo.update_block: soft-delete future free slots + insert new slots
         5. No audit write on update (read-only schedule management — only create/delete audited)
 
+        Args:
+            days_of_week: Primary D3-F — list of weekday ints 0=Mon..6=Sun.
+            interval: Primary D3-F — recurrence interval in weeks (≥1).
+            day_of_week: Legacy — 0=Mon..6=Sun (backward compat).
+            freq: Legacy — 'weekly' | 'biweekly' (backward compat).
+
         Returns:
             Updated AvailabilityBlock or None if block not found.
         """
@@ -225,6 +340,7 @@ class AvailabilityBlockService:
             return None
 
         # Build updated domain entity
+        # D3-F precedence: days_of_week (non-empty) wins over legacy day_of_week.
         updated = AvailabilityBlock(
             id=block_id,
             tenant_id=tenant_id,
@@ -233,6 +349,8 @@ class AvailabilityBlockService:
             kind=kind,  # type: ignore[arg-type]
             start_time=start_time,
             end_time=end_time,
+            days_of_week=days_of_week or [],
+            interval=interval,
             day_of_week=day_of_week,
             freq=freq,  # type: ignore[arg-type]
             end_condition_kind=end_condition_kind,  # type: ignore[arg-type]

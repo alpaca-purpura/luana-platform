@@ -65,3 +65,19 @@ export const toolsStateKey = (conversationId: string) =>
  */
 export const nudgeKey = (conversationId: string) =>
   [ADRIAN, INBOX, "nudge", conversationId] as const;
+
+/**
+ * ★ Unified conversation detail key — shared by all surfaces.
+ * Mirrors useConversationDetail in crm-shared.
+ * MUST be kept in sync with crm-shared/api/use-conversation-detail.ts line 36.
+ * Invalidated on stage changes, message send, mode change, pause, etc.
+ */
+export const conversationDetailKeyForInvalidation = (conversationId: string) =>
+  ["crm", "conversation", conversationId] as const;
+
+/**
+ * Unified conversations list key for Inbox.
+ * Used for list-level invalidations (send message, mode change, pause).
+ */
+export const conversationsListKeyForInvalidation = () =>
+  ["crm", "conversations"] as const;

@@ -14,6 +14,9 @@ Error classes:
 
 from __future__ import annotations
 
+import re
+import unicodedata
+from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
 import structlog
@@ -29,6 +32,7 @@ from src.modules.vitalia.clinics.application.credential_validator import (
 from src.modules.vitalia.clinics.application.ports.doctor_repo_port import DoctorRepoPort
 from src.modules.vitalia.clinics.domain.bio import BioPublic
 from src.modules.vitalia.clinics.domain.doctor import Doctor
+from src.modules.vitalia.clinics.domain.public_profile import DoctorPublicProfile
 from src.modules.vitalia.clinics.infrastructure.repositories.doctor_repository import (
     compute_dni_hash,
 )
@@ -399,6 +403,132 @@ class DoctorService:
             )
         )
         return True
+
+    async def generate_public_profile(
+        self,
+        *,
+        doctor_id: UUID,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        user_id: UUID,
+        profile: DoctorPublicProfile,
+        public_slug: str | None = None,
+    ) -> Doctor | None:
+        """Persist generated public profile for a doctor.
+
+        Writes bio_generated_at = utc_now() + public_profile + public_slug.
+        Writes audit `doctor.profile_generated` SYNC (hipaa-lite.md § Audit log).
+
+        bio_generated_at ONLY updated here (RN-D3B-4 — not in update_doctor).
+
+        Args:
+            doctor_id: Doctor UUID.
+            tenant_id: Tenant UUID.
+            clinic_id: Clinic UUID.
+            user_id: Actor user UUID (for audit log).
+            profile: Structured DoctorPublicProfile to persist.
+            public_slug: Optional URL-safe slug. If None, uses doctor's existing slug or None.
+
+        Returns:
+            Updated Doctor entity or None if not found.
+        """
+        bio_generated_at = datetime.now(tz=timezone.utc)
+
+        updated = await self._repo.update_public_profile(
+            doctor_id=doctor_id,
+            tenant_id=tenant_id,
+            clinic_id=clinic_id,
+            public_profile=profile,
+            bio_generated_at=bio_generated_at,
+            public_slug=public_slug,
+        )
+
+        # Audit log SYNC (mandatory — HIPAA-lite § Audit log + shell-feature-arch constraint 6)
+        await self._audit.write(
+            AuditLogEntry(
+                tenant_id=tenant_id,
+                clinic_id=clinic_id,
+                user_id=user_id,
+                action="doctor.profile_generated",
+                resource_type="doctor",
+                resource_id=doctor_id,
+            )
+        )
+
+        logger.info(
+            "doctor_profile_generated",
+            doctor_id=str(doctor_id),
+            tenant_id=str(tenant_id),
+            clinic_id=str(clinic_id),
+        )
+        return updated
+
+    async def patch_public_profile(
+        self,
+        *,
+        doctor_id: UUID,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        user_id: UUID,
+        profile: DoctorPublicProfile,
+    ) -> Doctor | None:
+        """Persist manually-edited public profile sections WITHOUT touching bio_generated_at.
+
+        RN-D3B-4: bio_generated_at is ONLY set by generate-profile, NEVER here.
+        Writes audit `doctor.public_profile_updated` SYNC (hipaa-lite.md § Audit log).
+
+        Args:
+            doctor_id: Doctor UUID.
+            tenant_id: Tenant UUID.
+            clinic_id: Clinic UUID.
+            user_id: Actor user UUID (for audit log).
+            profile: Updated DoctorPublicProfile sections to persist.
+
+        Returns:
+            Updated Doctor entity or None if not found (dual filter miss).
+        """
+        updated = await self._repo.update_public_profile_sections(
+            doctor_id=doctor_id,
+            tenant_id=tenant_id,
+            clinic_id=clinic_id,
+            public_profile=profile,
+        )
+
+        # Audit log SYNC (mandatory — HIPAA-lite § Audit log + shell-feature-arch constraint 6)
+        await self._audit.write(
+            AuditLogEntry(
+                tenant_id=tenant_id,
+                clinic_id=clinic_id,
+                user_id=user_id,
+                action="doctor.public_profile_updated",
+                resource_type="doctor",
+                resource_id=doctor_id,
+            )
+        )
+
+        logger.info(
+            "doctor_public_profile_updated",
+            doctor_id=str(doctor_id),
+            tenant_id=str(tenant_id),
+            clinic_id=str(clinic_id),
+        )
+        return updated
+
+
+def _slugify(text: str) -> str:
+    """Convert display_name to URL-safe slug.
+
+    Example: 'Dra. María González' → 'dra-maria-gonzalez'.
+    """
+    # Normalize unicode (decompose accents)
+    nfkd = unicodedata.normalize("NFKD", text)
+    ascii_text = nfkd.encode("ascii", "ignore").decode("ascii")
+    # Lowercase
+    lower = ascii_text.lower()
+    # Replace non-alphanumeric with hyphen
+    slug = re.sub(r"[^a-z0-9]+", "-", lower)
+    # Strip leading/trailing hyphens
+    return slug.strip("-")
 
 
 def _compute_local_hash(dni: str, repo: DoctorRepoPort) -> str:

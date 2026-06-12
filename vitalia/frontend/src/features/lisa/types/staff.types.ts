@@ -69,12 +69,24 @@ export interface DoctorDetail {
   bioInputsNotes?: string | null;
   bioLinks: string[];
   bioPublic?: BioPublic | null;
+  /** Bio file attachments (D3-B, T-FE-bio-docs). Populated by GET /{id}/bio-files endpoint. */
+  bioFiles?: BioFile[];
   avatarKey?: string | null;
   avatarUrl?: string | null;
   visibleEnLanding: boolean;
   active: boolean;
   createdAt: string;
   updatedAt: string;
+  // ── D3-D public page fields (T-FE-pagina-publica) ────────────────────────
+  /** URL-safe slug for public page (populated by BE after slug assigned) */
+  publicSlug?: string | null;
+  /** Controls visibility at /d/{clinica-slug}/{doctor-slug} */
+  visiblePublic?: boolean;
+  /** Structured public profile (populated by GET /{id} with public_profile=true) */
+  publicProfile?: DoctorPublicProfile | null;
+  clinicSlug?: string | null;
+  /** Server-computed generation state (materialNew, generatedAt, materialNewCount) */
+  profileState?: ProfileState | null;
 }
 
 // ── Bio public sections ────────────────────────────────────────────────────────
@@ -104,10 +116,16 @@ export type RecurrenceFreq = "weekly" | "biweekly";
 export interface RecurrentBlock {
   id: string;
   kind: "recurrent";
-  dayOfWeek: number; // 0=Monday..6=Sunday
+  /** D3-F PRIMARY: list of weekday indices, 0=Monday..6=Sunday */
+  daysOfWeek: number[];
+  /** D3-F PRIMARY: recurrence interval in weeks (1=weekly, 2=biweekly, etc.) */
+  interval: number;
+  /** LEGACY optional — single day. Populated by BE mapper for old blocks. */
+  dayOfWeek?: number;
+  /** LEGACY optional — freq shorthand. Populated by BE mapper for old blocks. */
+  freq?: RecurrenceFreq;
   startTime: string; // HH:mm 24h
   endTime: string;
-  freq: RecurrenceFreq;
   endConditionKind: EndConditionKind;
   endDate?: string | null; // ISO 8601 date
   occurrences?: number | null;
@@ -122,6 +140,45 @@ export interface OneOffBlock {
 }
 
 export type AvailabilityBlock = RecurrentBlock | OneOffBlock;
+
+// ── Availability occurrences (BE projection SSoT — T-FE-occurrences-consume) ──
+
+/**
+ * AvailabilityOccurrence — mirrors BE AvailabilityOccurrenceDTO (camelCase via alias_generator=to_camel).
+ * Paint source: occurrences from BE projection endpoint, NOT client-side recurrence expansion.
+ * spec_anchor: 01-spec.md § D3-C.1 | 03-arch-be.md § AvailabilityOccurrenceDTO
+ */
+export interface AvailabilityOccurrence {
+  /** UUID of the parent AvailabilityBlock */
+  blockId: string;
+  /** ISO 8601 date string — the actual calendar date of this occurrence */
+  occurrenceDate: string;
+  /** HH:mm 24h */
+  startTime: string;
+  /** HH:mm 24h */
+  endTime: string;
+  /** 'recurrent' | 'one_off' */
+  kind: "recurrent" | "one_off";
+  /** 'weekly' | 'biweekly' — null for one_off */
+  freq: "weekly" | "biweekly" | null;
+  /** Human-readable summary from BE — e.g. "Cada semana · Lunes 09:00–13:00 · 2 repeticiones" */
+  patternSummary: string;
+}
+
+// ── Bio documents (T-FE-bio-docs, D3-B) ───────────────────────────────────────
+
+/**
+ * BioFile — mirrors BE BioFileDTO (camelCase via alias_generator=to_camel).
+ * spec_anchor: 01-spec.md § D3-B | 03-arch-be.md § BioFileDTO
+ */
+export interface BioFile {
+  id: string;
+  filename: string;
+  sizeBytes: number;
+  contentType: string;
+  /** ISO 8601 datetime */
+  uploadedAt: string;
+}
 
 // ── Asset upload response ──────────────────────────────────────────────────────
 
@@ -146,4 +203,76 @@ export interface StaffFilters {
   specialty?: string;
   active?: "true" | "false" | "";
   page?: number;
+}
+
+// ── Structured public profile types (D3-D, T-FE-pagina-publica) ───────────────
+
+/** Formación académica estructurada (mirrors BE StructuredFormacionDTO) */
+export interface StructuredFormacion {
+  titulo: string;
+  institucion?: string | null;
+  anio?: number | null;
+}
+
+/**
+ * Experiencia profesional estructurada (mirrors BE StructuredExperienciaDTO commit 275d5d7e).
+ * Real wire shape: {puesto, lugar, anios} — previous {cargo,institucion,desde,hasta,descripcion}
+ * was an imagined contract; deleted per auditor finding F2.
+ */
+export interface StructuredExperiencia {
+  puesto: string;
+  lugar?: string | null;
+  anios?: number | null;
+}
+
+// StructuredCertificacion DELETED — BE sends certificaciones as string[] (finding F3)
+// StructuredIdioma DELETED — BE sends idiomas as string[] (finding F3)
+
+/**
+ * DoctorPublicProfile — structured public profile.
+ * Mirrors BE DoctorPublicProfileDTO (camelCase via alias_generator=to_camel).
+ * spec_anchor: 01-spec.md § D3-D | 03-arch-be.md § DoctorPublicProfileDTO
+ * Anti-enumeration: publicSlug / visiblePublic only on detail (not list).
+ */
+export interface DoctorPublicProfile {
+  sobreMi?: string | null;
+  formacion: StructuredFormacion[];
+  experiencia: StructuredExperiencia[];
+  tratamientos: string[];
+  certificaciones: string[];
+  idiomas: string[];
+}
+
+/**
+ * ProfileState — server-computed state for AI generation.
+ * Mirrors BE ProfileStateDTO.
+ * materialNew: max(bio_files.uploaded_at, inputs/links change) > bio_generated_at
+ */
+export interface ProfileState {
+  /** ISO 8601 datetime of last generation, null if never generated */
+  generatedAt: string | null;
+  /** True when new material uploaded since last generation */
+  materialNew: boolean;
+  /** Count of new files/links since last generation */
+  materialNewCount: number;
+}
+
+/**
+ * PublicDoctorPageData — public page response (no auth).
+ * Mirrors BE PublicDoctorPageDTO (camelCase).
+ * Anti-enumeration: visible: false → BE returns 404 (not this type).
+ */
+export interface PublicDoctorPageData {
+  /** OG-safe display name — never full DNI/email */
+  displayName: string;
+  specialty?: string | null;
+  avatarKey?: string | null;
+  clinicName?: string | null;
+  credentialLabel?: string | null;
+  sobreMi?: string | null;
+  formacion?: StructuredFormacion[] | null;
+  experiencia?: StructuredExperiencia[] | null;
+  tratamientos?: string[] | null;
+  certificaciones?: string[] | null;
+  idiomas?: string[] | null;
 }

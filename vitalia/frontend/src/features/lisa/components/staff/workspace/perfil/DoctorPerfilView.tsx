@@ -8,15 +8,15 @@
  *   - autosave-no-save-button HARD: every field autosaves on-change, 600ms debounce
  *   - NO "Guardar" button (forbidden)
  *   - Shows hint: "Los cambios se guardan automáticamente"
- *   - Bio = repo of inputs: notes + files + links → "✨ Generar bio" → contenteditable sections
  *   - Avatar upload via proxy (useAvatarUpload)
  *
  * Layout sections:
  *   1. Avatar + identity (name/credential/specialty)
  *   2. Contact (email/phone)
  *   3. Professional (years experience, languages, visibility toggle)
- *   4. Bio repo (BioRepoInputs)
- *   5. Generated bio (GeneratedBioSections)
+ *   4. Cross-link card → Página pública (D3-D)
+ *
+ * Note: BioRepoInputs was moved to DoctorPaginaView (hoja Página) per spec § D3-D.
  *
  * Per ADR-vitalia-004 § 3-5: Client Component, React Query, RHF + Zod, autosave.
  *
@@ -29,11 +29,11 @@ import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { staffKeys, useDoctor, usePatchDoctor } from "../../../../api/staff";
 import { useAutosave } from "@/hooks/use-autosave";
 import { AvatarUploader } from "../AvatarUploader";
-import { BioRepoInputs } from "./BioRepoInputs";
-import { GeneratedBioSections } from "./GeneratedBioSections";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -57,6 +57,7 @@ interface DoctorPerfilViewProps {
  */
 export function DoctorPerfilView({ doctorId }: DoctorPerfilViewProps) {
   const queryClient = useQueryClient();
+  const pathname = usePathname();
 
   // ── Data ────────────────────────────────────────────────────────────────────
   const { data: doctor, isLoading, isError } = useDoctor(doctorId);
@@ -357,13 +358,31 @@ export function DoctorPerfilView({ doctorId }: DoctorPerfilViewProps) {
         </div>
       </section>
 
-      {/* Bio repo + generated bio (full-width) */}
-      <div className="sm:col-span-2">
-        <BioRepoInputs doctorId={doctorId} initialDoctor={doctor} />
       </div>
+
+      {/* Cross-link to Página tab (D3-D) — BioRepoInputs lives in DoctorPaginaView */}
       <div className="sm:col-span-2">
-        <GeneratedBioSections doctorId={doctorId} initialDoctor={doctor} />
-      </div>
+        <Link
+          href={pathname ? pathname.replace("/perfil", "/pagina") : "#"}
+          className="group flex items-center justify-between rounded-xl border border-border bg-card/60 p-4 hover:bg-card transition-colors"
+          aria-label="Ir a la hoja Página pública del doctor"
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-base" aria-hidden="true">🌐</span>
+            <div>
+              <p className="text-sm font-medium">Página pública del doctor</p>
+              <p className="text-xs text-muted-foreground">
+                Configura y publica el perfil que verán los pacientes
+              </p>
+            </div>
+          </div>
+          <span
+            className="text-muted-foreground group-hover:text-foreground transition-colors text-sm"
+            aria-hidden="true"
+          >
+            →
+          </span>
+        </Link>
       </div>
 
       <FloatingAutosaveIndicator status={autosaveStatus} />

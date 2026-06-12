@@ -8,9 +8,11 @@ Enables dependency injection and mock-friendly testing.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from datetime import datetime
 from uuid import UUID
 
 from src.modules.vitalia.clinics.domain.doctor import Doctor
+from src.modules.vitalia.clinics.domain.public_profile import DoctorPublicProfile
 
 
 class DoctorRepoPort(ABC):
@@ -110,4 +112,38 @@ class DoctorRepoPort(ABC):
         clinic_id: UUID,
     ) -> list[Doctor]:
         """List public doctors (visible_en_landing=True AND active=True)."""
+        ...
+
+    @abstractmethod
+    async def update_public_profile(
+        self,
+        *,
+        doctor_id: UUID,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        public_profile: DoctorPublicProfile,
+        bio_generated_at: datetime,
+        public_slug: str | None,
+    ) -> "Doctor | None":
+        """Persist generated public profile, timestamp, and slug.
+
+        bio_generated_at ONLY updated via this method (RN-D3B-4).
+        Returns updated Doctor entity or None if not found.
+        """
+        ...
+
+    @abstractmethod
+    async def update_public_profile_sections(
+        self,
+        *,
+        doctor_id: UUID,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        public_profile: DoctorPublicProfile,
+    ) -> "Doctor | None":
+        """Persist manually-edited public profile sections WITHOUT touching bio_generated_at.
+
+        RN-D3B-4: bio_generated_at is ONLY set by generate-profile, NEVER here.
+        Returns updated Doctor entity or None if not found (dual filter miss).
+        """
         ...

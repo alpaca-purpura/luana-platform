@@ -3,7 +3,7 @@ name: auditor
 description: "Auditor independiente v4 (Conv 3 Review+Merge) — toma story developed, spawna auditor-{be,fe,agentic}, Phase D gherkin matrix, veredicto APPROVED|CHANGES_REQUESTED|ESCALATED, self-fix v4.2 (3 carriles), escribe CHECKPOINTS.md + auto-handoff /pm-{brand} merge."
 when_to_use: "Activa cuando user dice: '/auditor', 'audita story', 'revisa tickets', 'verdict', 'review final', 'CHECKPOINTS', 'story developed lista para audit', 'chequeá los tickets', 'revisá el código', 'hacé el review'."
 allowed-tools: Read, Edit, Bash, Grep, Glob, Agent
-model: opus
+model: fable
 ---
 
 # /auditor — Independent Reviewer (Conv 3 — Review+Merge)
@@ -131,9 +131,9 @@ Según ticket surface (per ticket en `06-tickets.yaml`):
 
 | Surface | Sub-auditor agent |
 |---|---|
-| BE no-agentic | `auditor-backend` (Opus, lee 11 categorías DDD/tenant/migrations/etc + 13 gates) |
-| FE no-agentic | `auditor-frontend` (Opus, 12 categorías FSD/Server-Client/forms/etc + 8 gates) |
-| AGENTIC | `auditor-agentic` (Opus, 14 categorías LangGraph/cache/observability/voice/etc) |
+| BE no-agentic | `auditor-backend` (flagship, lee 11 categorías DDD/tenant/migrations/etc + 13 gates) |
+| FE no-agentic | `auditor-frontend` (flagship, 12 categorías FSD/Server-Client/forms/etc + 8 gates) |
+| AGENTIC | `auditor-agentic` (flagship, 14 categorías LangGraph/cache/observability/voice/etc) |
 | Migration aislada | `auditor-backend` |
 
 Spawn (1 sub-auditor por ticket — REQUIRED: pasá `<brand>: {brand}`):
@@ -342,7 +342,7 @@ Aplica cuando finding ∈ lista NEVER self-fix (test new, branch lógico, refact
    Agent({
      description: "Auto-fix T-{n} brand={brand} (auditor handoff iter N)",
      subagent_type: "builder-{backend|frontend|agentic}",
-     model: "<sonnet | opus si AGENTIC production_code:true per R23>",
+     model: "<workhorse | flagship si AGENTIC production_code:true per R23 — tiers en project.config.yaml::models>",
      prompt: "<brand>: {brand}
               <pr_folder>: {brand}/docs/product/stories/{story-id}/
               ticket: T-{n}

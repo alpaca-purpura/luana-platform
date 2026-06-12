@@ -8,18 +8,23 @@
  *   - @dnd-kit/core for drag-to-create availability blocks.
  *   - Base range: 07:00–21:00. "Mostrar 24 horas" toggle expands to 00:00–23:00.
  *   - Week navigation ‹/› via Zustand calendarWeek state.
- *   - Recurrent blocks visible in every applicable week; one-off only in own week.
+ *   - PAINT source: useAvailabilityOccurrences (BE projection SSoT) — fixes infinite
+ *     paint bug (D3-C) where recurrentBlockVisibleInWeek() ignored occurrences/open_ended.
+ *   - useAvailabilityBlocks kept ONLY for BloquePopover (edit/delete UI).
  *   - 24h format. Slots stored UTC; display via useTenantLocale (master-data.md).
  *   - Drag creates a draft block → BloquePopover opens.
  *
- * T-FE-3 vitalia-fase2-lisa-doctores
- * spec_anchor: 03-arch-fe.md § AvailabilityCalendar + 01-spec.md § SC-1/SC-1b/SC-1c/SC-1d/SC-3b
+ * D3-C fix: deleted recurrentBlockVisibleInWeek / oneOffBlockVisibleInWeek / blockDayOfWeek
+ *           (V-D3C-NODUP: grep these function names in src/ → 0 matches required).
+ *
+ * T-FE-occurrences-consume vitalia-fase2-lisa-doctores
+ * spec_anchor: 01-spec.md § D3-C.1 + 03-arch-fe.md § AvailabilityCalendar
  * downstream-regression-na: brand-local vitalia FE component; no cross-brand consumers
  */
 
 "use client";
 
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useMemo } from "react";
 import {
   DndContext,
   useSensor,
@@ -32,14 +37,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useStaffUiStore } from "../../../../store/staff-ui-store";
-import { useAvailabilityBlocks } from "../../../../api/staff";
+import {
+  useAvailabilityBlocks,
+  useAvailabilityOccurrences,
+} from "../../../../api/staff";
 // F6 fix: per master-data.md — NEVER toLocaleDateString(); use Intl.DateTimeFormat with explicit locale
-// AvailabilityCalendar is not a Client-hook component boundary; formatWeekLabel is a pure helper.
-// Using Intl.DateTimeFormat directly (not useTenantLocale hook) because this is a pure util fn.
 import type {
   AvailabilityBlock,
-  RecurrentBlock,
-  OneOffBlock,
+  AvailabilityOccurrence,
 } from "../../../../types/staff.types";
 import { BloquePopover, type BloquePopoverAnchor } from "./BloquePopover";
 
@@ -65,11 +70,6 @@ function addDays(isoDate: string, days: number): string {
  * formatWeekLabel — deterministic week range label using Intl.DateTimeFormat.
  * F6 fix: per master-data.md — NEVER toLocaleDateString(). Use Intl.DateTimeFormat
  * with explicit locale "es-419" and no browser-default date locale resolution.
- * The locale is hardcoded here because: (a) this is a pure util fn (no hook),
- * (b) the 03-arch-fe.md explicitly requires "es-419" for the horarios label,
- * (c) useTenantLocale() can only be called in a Client Component body, not in a
- *     module-level pure helper. The hook provides the locale for monetary display;
- *     date locale here is spec-locked to es-419.
  */
 function formatWeekLabel(mondayIso: string): string {
   const monday = new Date(mondayIso + "T00:00:00");
@@ -92,56 +92,6 @@ function getDateForDayOfWeek(mondayIso: string, dayOfWeek: number): string {
 }
 
 /**
- * Determine if a recurrent block should appear in the given week.
- * Weekly: appears every week if started <= weekEnd and not ended.
- * Biweekly: appears every other week.
- */
-function recurrentBlockVisibleInWeek(
-  block: RecurrentBlock,
-  mondayIso: string,
-): boolean {
-  // For display purposes, always show recurrent blocks unless we have specific
-  // end_date that has passed. Backend handles exact slot materialisation.
-  const weekMonday = new Date(mondayIso + "T00:00:00");
-  const weekSunday = new Date(mondayIso + "T00:00:00");
-  weekSunday.setDate(weekMonday.getDate() + 6);
-
-  if (block.endConditionKind === "end_date" && block.endDate) {
-    const endDate = new Date(block.endDate + "T00:00:00");
-    if (endDate < weekMonday) return false;
-  }
-
-  return true;
-}
-
-/**
- * Determine if a one-off block should appear in the given week.
- */
-function oneOffBlockVisibleInWeek(
-  block: OneOffBlock,
-  mondayIso: string,
-): boolean {
-  const blockDate = new Date(block.specificDate + "T00:00:00");
-  const weekMonday = new Date(mondayIso + "T00:00:00");
-  const weekSunday = new Date(mondayIso + "T00:00:00");
-  weekSunday.setDate(weekMonday.getDate() + 6);
-  return blockDate >= weekMonday && blockDate <= weekSunday;
-}
-
-/**
- * Get the day-of-week index (0=Monday) for a block in the given week.
- */
-function blockDayOfWeek(block: AvailabilityBlock, mondayIso: string): number {
-  if (block.kind === "recurrent") return block.dayOfWeek;
-  const blockDate = new Date(block.specificDate + "T00:00:00");
-  const weekMonday = new Date(mondayIso + "T00:00:00");
-  const diff = Math.round(
-    (blockDate.getTime() - weekMonday.getTime()) / (1000 * 60 * 60 * 24),
-  );
-  return Math.max(0, Math.min(6, diff));
-}
-
-/**
  * Convert "HH:mm" to hours as decimal.
  */
 function timeToHours(time: string): number {
@@ -156,30 +106,52 @@ function fmtHHmm(time: string): string {
   return time.length >= 5 ? time.slice(0, 5) : time;
 }
 
+/**
+ * Get the day-of-week index (0=Monday) for an occurrence date within a given week.
+ */
+function occurrenceDayOfWeek(occurrenceDate: string, mondayIso: string): number {
+  const occDate = new Date(occurrenceDate + "T00:00:00");
+  const weekMonday = new Date(mondayIso + "T00:00:00");
+  const diff = Math.round(
+    (occDate.getTime() - weekMonday.getTime()) / (1000 * 60 * 60 * 24),
+  );
+  return Math.max(0, Math.min(6, diff));
+}
+
 // ── CalendarBlock component ────────────────────────────────────────────────────
 
 interface CalendarBlockProps {
-  block: AvailabilityBlock;
+  occurrence: AvailabilityOccurrence;
   startHour: number;
   dayColIndex: number;
   hourHeight: number;
-  onBlockClick: (block: AvailabilityBlock, event: React.MouseEvent) => void;
+  onOccurrenceClick: (occurrence: AvailabilityOccurrence, event: React.MouseEvent) => void;
 }
 
 function CalendarBlock({
-  block,
+  occurrence,
   startHour,
   hourHeight,
-  onBlockClick,
+  onOccurrenceClick,
 }: CalendarBlockProps) {
-  const start = timeToHours(block.startTime) - startHour;
-  const end = timeToHours(block.endTime) - startHour;
+  const start = timeToHours(occurrence.startTime) - startHour;
+  const end = timeToHours(occurrence.endTime) - startHour;
   const top = start * hourHeight;
   const height = (end - start) * hourHeight;
 
+  // D3-F: use patternSummary from BE (SSoT) instead of hardcoded freq label.
+  // Falls back to "Único" for one_off blocks without patternSummary.
+  const patternLabel =
+    occurrence.kind === "recurrent" && occurrence.patternSummary
+      ? occurrence.patternSummary
+      : occurrence.kind === "one_off"
+        ? "Único"
+        : "Recurrente";
+
   return (
     <button
-      data-testid={`block-${block.id}`}
+      data-testid={`block-${occurrence.blockId}`}
+      data-occurrence-date={occurrence.occurrenceDate}
       className={cn(
         "absolute left-0.5 right-0.5 rounded-md cursor-pointer text-xs font-semibold",
         "bg-agent-lisa-soft border-l-[3px] border-agent-lisa text-foreground shadow-sm",
@@ -188,15 +160,18 @@ function CalendarBlock({
         "focus:outline-none focus:ring-2 focus:ring-agent-lisa",
       )}
       style={{ top: `${top}px`, height: `${Math.max(height, 20)}px` }}
-      onClick={(e) => onBlockClick(block, e)}
-      aria-label={`Bloque ${fmtHHmm(block.startTime)}–${fmtHHmm(block.endTime)}${block.kind === "recurrent" ? ` (${block.freq === "weekly" ? "semanal" : "quincenal"})` : " (único)"}`}
+      onClick={(e) => onOccurrenceClick(occurrence, e)}
+      aria-label={`Bloque ${fmtHHmm(occurrence.startTime)}–${fmtHHmm(occurrence.endTime)} (${patternLabel})`}
     >
       <span className="truncate leading-tight">
-        {fmtHHmm(block.startTime)}–{fmtHHmm(block.endTime)}
+        {fmtHHmm(occurrence.startTime)}–{fmtHHmm(occurrence.endTime)}
       </span>
-      {block.kind === "recurrent" && (
-        <span className="truncate text-[10px] font-medium text-agent-lisa leading-none">
-          {block.freq === "weekly" ? "Semanal" : "Quincenal"}
+      {occurrence.kind === "recurrent" && (
+        <span
+          className="truncate text-[10px] font-medium text-agent-lisa leading-none"
+          data-testid={`block-pattern-${occurrence.blockId}`}
+        >
+          {patternLabel}
         </span>
       )}
     </button>
@@ -243,7 +218,16 @@ export function AvailabilityCalendar({ doctorId }: AvailabilityCalendarProps) {
   const setCalendarWeek = useStaffUiStore((s) => s.setCalendarWeek);
   const setDragDraft = useStaffUiStore((s) => s.setDragDraft);
 
-  const { data: blocks, isLoading } = useAvailabilityBlocks(doctorId);
+  // PAINT source: BE occurrences for the visible week (fixes D3-C infinite paint)
+  const weekEnd = useMemo(() => addDays(calendarWeek, 6), [calendarWeek]);
+  const { data: occurrences, isLoading: occurrencesLoading } =
+    useAvailabilityOccurrences(doctorId, calendarWeek, weekEnd);
+
+  // EDIT source: full blocks data — only for BloquePopover (not for painting)
+  const { data: blocks, isLoading: blocksLoading } =
+    useAvailabilityBlocks(doctorId);
+
+  const isLoading = occurrencesLoading || blocksLoading;
 
   const [show24h, setShow24h] = useState(false);
   const [popoverState, setPopoverState] = useState<{
@@ -277,6 +261,32 @@ export function AvailabilityCalendar({ doctorId }: AvailabilityCalendarProps) {
     (_, i) => startHour + i,
   );
 
+  // ── Build blocks lookup map (blockId → AvailabilityBlock) ─────────────────
+  // Used to resolve the full block when an occurrence is clicked → BloquePopover
+
+  const blocksMap = useMemo(() => {
+    const map = new Map<string, AvailabilityBlock>();
+    for (const block of blocks ?? []) {
+      map.set(block.id, block);
+    }
+    return map;
+  }, [blocks]);
+
+  // ── Group occurrences by day column (0=Mon..6=Sun) ─────────────────────────
+  // This replaces the deleted client-side expansion (blocksByDay + recurrentBlockVisibleInWeek)
+
+  const occurrencesByDay = useMemo(() => {
+    const byDay: AvailabilityOccurrence[][] = Array.from(
+      { length: 7 },
+      () => [],
+    );
+    for (const occ of occurrences ?? []) {
+      const dayIndex = occurrenceDayOfWeek(occ.occurrenceDate, calendarWeek);
+      byDay[dayIndex]?.push(occ);
+    }
+    return byDay;
+  }, [occurrences, calendarWeek]);
+
   // ── Week navigation ────────────────────────────────────────────────────────
 
   const goToPrevWeek = useCallback(() => {
@@ -287,27 +297,13 @@ export function AvailabilityCalendar({ doctorId }: AvailabilityCalendarProps) {
     setCalendarWeek(addDays(calendarWeek, 7));
   }, [calendarWeek, setCalendarWeek]);
 
-  // ── Filter blocks visible in current week ─────────────────────────────────
-
-  const visibleBlocks: AvailabilityBlock[] = (blocks ?? []).filter((block) => {
-    if (block.kind === "recurrent") {
-      return recurrentBlockVisibleInWeek(block, calendarWeek);
-    }
-    return oneOffBlockVisibleInWeek(block, calendarWeek);
-  });
-
-  // Group blocks by day-of-week
-  const blocksByDay: AvailabilityBlock[][] = Array.from({ length: 7 }, () => []);
-  for (const block of visibleBlocks) {
-    const dow = blockDayOfWeek(block, calendarWeek);
-    blocksByDay[dow]?.push(block);
-  }
-
   // ── Click-to-open popover for existing block ──────────────────────────────
 
-  const handleBlockClick = useCallback(
-    (block: AvailabilityBlock, event: React.MouseEvent) => {
+  const handleOccurrenceClick = useCallback(
+    (occurrence: AvailabilityOccurrence, event: React.MouseEvent) => {
       event.stopPropagation();
+      // Look up the full AvailabilityBlock from blocks data for the popover
+      const block = blocksMap.get(occurrence.blockId) ?? null;
       setPopoverState({
         block,
         draft: null,
@@ -315,7 +311,7 @@ export function AvailabilityCalendar({ doctorId }: AvailabilityCalendarProps) {
         isExisting: true,
       });
     },
-    [],
+    [blocksMap],
   );
 
   // ── Drag-to-create (mouse down → drag → mouse up → popover) ──────────────
@@ -547,23 +543,23 @@ export function AvailabilityCalendar({ doctorId }: AvailabilityCalendarProps) {
                   );
                 })}
 
-                {/* Blocks overlay */}
+                {/* Occurrences overlay — paint from BE projection (D3-C fix) */}
                 <div className="absolute inset-0 pointer-events-none">
-                  {(blocksByDay[dayIndex] ?? []).map((block) => (
+                  {(occurrencesByDay[dayIndex] ?? []).map((occ) => (
                     <div
-                      key={block.id}
+                      key={`${occ.blockId}-${occ.occurrenceDate}`}
                       className="pointer-events-auto absolute left-0 right-0"
                       style={{
-                        top: `${(timeToHours(block.startTime) - startHour) * HOUR_HEIGHT}px`,
-                        height: `${(timeToHours(block.endTime) - timeToHours(block.startTime)) * HOUR_HEIGHT}px`,
+                        top: `${(timeToHours(occ.startTime) - startHour) * HOUR_HEIGHT}px`,
+                        height: `${(timeToHours(occ.endTime) - timeToHours(occ.startTime)) * HOUR_HEIGHT}px`,
                       }}
                     >
                       <CalendarBlock
-                        block={block}
+                        occurrence={occ}
                         startHour={startHour}
                         dayColIndex={dayIndex}
                         hourHeight={HOUR_HEIGHT}
-                        onBlockClick={handleBlockClick}
+                        onOccurrenceClick={handleOccurrenceClick}
                       />
                     </div>
                   ))}

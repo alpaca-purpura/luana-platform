@@ -2,7 +2,7 @@
 name: po-ux
 description: "Product Owner + UX/UI Designer fusión v4 (post pm-redesign 2026-05 Punto 4). Toma 1 UI standard story (CRUD/list/detail/form/dashboard) state=refining → produce 01-spec.md UNIFICADO con Gherkin AI-resistant + wireframes inline (ASCII / HTML mockup / Figma link) + estados visuales + microcopy Spanish neutro + Playwright graders → transition state=refining→refined al ratificar. NO se usa para agentic-stories (use /ux-agentico) ni service-stories (use /po). Loop iterativo Chris hasta ratificación. Activa cuando user dice: '/po-ux', 'definamos esta historia UI', 'spec + diseño', 'pantalla CRUD', 'dashboard', 'form nuevo', 'list view', 'detail page', 'wireframe', 'mockup'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
-model: opus
+model: fable
 ---
 
 # /po-ux — Product Owner + UX Designer (UI Standard)

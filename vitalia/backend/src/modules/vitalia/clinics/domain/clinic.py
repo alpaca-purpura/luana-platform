@@ -19,7 +19,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class Clinic(BaseModel):
@@ -58,3 +58,24 @@ class Clinic(BaseModel):
     created_at: datetime | None = None
     updated_at: datetime | None = None
     deleted_at: datetime | None = None
+
+    # --- Account / fiscal identity fields (migration 039) ---
+    # Non-PHI clinic identity: legal name, fiscal ID, address, contact info,
+    # locale preferences. Added in vitalia-fase2-config-cuenta T-2.
+    legal_name: str | None = Field(default=None, description="Razón social o nombre legal")
+    fiscal_id: str | None = Field(default=None, description="ID fiscal (CUIT/RUC/RFC/NIT/RUT por país)")
+    address: str | None = Field(default=None, description="Dirección fiscal o de atención")
+    phone: str | None = Field(default=None, description="Teléfono de contacto")
+    email: str | None = Field(default=None, description="Email de contacto clínica")
+    language: str = Field(default="es-419", description="Locale preferido (IETF BCP 47)")
+    currency: str | None = Field(default=None, description="Moneda preferida ISO 4217 (None = del país del tenant)")
+
+    @field_validator("language", mode="before")
+    @classmethod
+    def _coerce_language_none(cls, v: object) -> object:
+        """Back-compat: rows pre-039 (o fixtures) traen language=None — coerce al default.
+
+        El server_default de la migración solo cubre INSERTs nuevos; objetos
+        existentes hidratados via from_attributes pueden traer None explícito.
+        """
+        return "es-419" if v is None else v

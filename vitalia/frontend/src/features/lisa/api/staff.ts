@@ -22,8 +22,14 @@
 
 "use client";
 
+import { useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
+import type {
+  EntityPickerItem,
+  EntitySearchFn,
+  EntitySearchResult,
+} from "@luana/ui-kit";
 import { useTenantId } from "@/hooks/useTenantId";
 import { fetchClient } from "@/lib/api/fetchClient";
 import { useClinicId } from "@/hooks/useClinicId";
@@ -108,6 +114,9 @@ export const staffKeys = {
   details: () => [...staffKeys.all, "detail"] as const,
   detail: (id: string) => [...staffKeys.details(), id] as const,
   blocks: (id: string) => [...staffKeys.detail(id), "blocks"] as const,
+  occurrences: (id: string, from: string, to: string) =>
+    [...staffKeys.detail(id), "occurrences", from, to] as const,
+  bioFiles: (id: string) => [...staffKeys.detail(id), "bio-files"] as const,
 };
 
 // ── useStaffList ───────────────────────────────────────────────────────────────
@@ -265,10 +274,21 @@ export function useDoctor(
     queryFn: async () => {
       const token = await getToken();
       if (!token || !tenantId) throw new Error("Sin autenticación");
-      return fetchClient<DoctorDetail>(
+      const detail = await fetchClient<DoctorDetail>(
         `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}`,
         { token, tenantId, clinicId, headers: actorHeaders },
       );
+      // Frontera null→[]: el BE serializa secciones nullable del perfil (RN-D3D-6);
+      // los consumers (editor/preview) asumen arrays. Normalizar ACÁ, una vez.
+      if (detail.publicProfile) {
+        const pp = detail.publicProfile;
+        pp.formacion = pp.formacion ?? [];
+        pp.experiencia = pp.experiencia ?? [];
+        pp.tratamientos = pp.tratamientos ?? [];
+        pp.certificaciones = pp.certificaciones ?? [];
+        pp.idiomas = pp.idiomas ?? [];
+      }
+      return detail;
     },
     // Gate until X-User-ID (from /me) is ready — firing the detail GET before it
     // resolves sends X-User-ID:"" → 422 race ("No se pudo cargar el perfil", bug #5).
@@ -371,7 +391,7 @@ export function useGenerateBio(doctorId: string) {
 // ── useAvatarUpload ────────────────────────────────────────────────────────────
 
 /**
- * useAvatarUpload — mutation: POST /api/v1/vitalia/clinics/assets/upload (proxy)
+ * useAvatarUpload — mutation: POST /api/v1/vitalia/assets/upload (proxy)
  * Per D-3: proxy upload (presigned not implemented in engine).
  * After upload: PATCH doctor {avatarKey}.
  */
@@ -392,7 +412,7 @@ export function useAvatarUpload(doctorId: string) {
       formData.append("file", file);
       formData.append("kind", "avatar");
 
-      const uploadUrl = `${API_BASE}/api/v1/vitalia/clinics/assets/upload`;
+      const uploadUrl = `${API_BASE}/api/v1/vitalia/assets/upload`;
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 60_000);
 
@@ -445,6 +465,96 @@ export function useAvatarUpload(doctorId: string) {
   });
 }
 
+// ── Doctor picker searchFn (D3-A entity switcher) ──────────────────────────────
+
+/**
+ * pickerCursorToPage — pure page↔cursor adapter half (cursor → page).
+ *
+ * The EntityPicker (@luana/ui-kit, canon §2.4) speaks CURSOR pagination; the
+ * doctors list endpoint speaks page/page_size. Convention: cursor = stringified
+ * NEXT page number. null/undefined/garbage/<1 → first page (never a NaN fetch).
+ *
+ * T-FE-switcher-wire vitalia-fase2-lisa-doctores
+ */
+export function pickerCursorToPage(cursor?: string | null): number {
+  if (!cursor) return 1;
+  const page = Number(cursor);
+  return Number.isFinite(page) && page >= 1 ? Math.floor(page) : 1;
+}
+
+/**
+ * mapDoctorsPageToPickerResult — pure page↔cursor adapter half (page → result).
+ *
+ * Maps one `PaginatedDoctors` page to the `EntitySearchResult` the EntityPicker
+ * consumes: `nextCursor` is the stringified next page while pages remain
+ * (null on the last page), `total` feeds the "Mostrando N de M" footer, and
+ * each item's `name` prefers `displayName` falling back to "firstName lastName".
+ */
+export function mapDoctorsPageToPickerResult(
+  res: PaginatedDoctors,
+  page: number,
+): EntitySearchResult<EntityPickerItem> {
+  const pageSize = res.pageSize > 0 ? res.pageSize : 1;
+  const lastPage = Math.max(1, Math.ceil(res.total / pageSize));
+  return {
+    items: res.items.map((d) => ({
+      id: d.id,
+      name: d.displayName?.trim()
+        ? d.displayName
+        : `${d.firstName} ${d.lastName}`,
+    })),
+    nextCursor: page < lastPage ? String(page + 1) : null,
+    total: res.total,
+  };
+}
+
+/**
+ * useDoctorPickerSearchFn — query-lib-agnostic `searchFn` for the EntityPicker
+ * wired into the staff workspace N3 bar (D3-A switcher).
+ *
+ * Request contract:
+ *   - `active=true` ALWAYS (RN-D3A-2: inactive staff never appears)
+ *   - `q` server-side when non-empty (RN-D3A-1: never client-side filtering
+ *     of the full collection — canon §2.4)
+ *   - `page_size=limit` hard page size (cursor = stringified page number)
+ *
+ * The list GET requires NO actor headers (masked listing — same contract as
+ * `useStaffList`; X-User-ID is a detail/mutation requirement only, bug #5).
+ *
+ * IDENTITY-STABLE across re-renders (latest-ref pattern): the EntityPicker's
+ * fetch effect depends on `searchFn` — an unstable identity would re-fire the
+ * first-page fetch on every parent render while the popover is open. The ref
+ * always holds the freshest auth/tenant context (read at CALL time → no stale
+ * closure), while the returned function identity never changes.
+ */
+export function useDoctorPickerSearchFn(): EntitySearchFn<EntityPickerItem> {
+  const { getToken } = useAuth();
+  const tenantId = useTenantId();
+  const clinicId = useClinicId();
+
+  const ctxRef = useRef({ getToken, tenantId, clinicId });
+  ctxRef.current = { getToken, tenantId, clinicId };
+
+  return useCallback(async ({ q, cursor, limit }) => {
+    const ctx = ctxRef.current;
+    const token = await ctx.getToken();
+    if (!token || !ctx.tenantId) throw new Error("Sin autenticación");
+
+    const page = pickerCursorToPage(cursor);
+    const params = new URLSearchParams();
+    params.set("page", String(page));
+    params.set("page_size", String(limit));
+    params.set("active", "true");
+    if (q) params.set("q", q);
+
+    const res = await fetchClient<PaginatedDoctors>(
+      `${API_BASE}/api/v1/vitalia/clinics/doctors?${params.toString()}`,
+      { token, tenantId: ctx.tenantId, clinicId: ctx.clinicId },
+    );
+    return mapDoctorsPageToPickerResult(res, page);
+  }, []);
+}
+
 // ── useAvailabilityBlocks ──────────────────────────────────────────────────────
 
 /**
@@ -480,6 +590,56 @@ export function useAvailabilityBlocks(doctorId: string) {
   });
 }
 
+// ── useAvailabilityOccurrences ────────────────────────────────────────────────
+
+/**
+ * useAvailabilityOccurrences — fetches BE-projected occurrences for a week window.
+ *
+ * This is the PAINT source for AvailabilityCalendar. It replaces the buggy
+ * client-side recurrentBlockVisibleInWeek() that ignored occurrences/open_ended
+ * end conditions → infinite paint.
+ *
+ * Endpoint: GET /api/v1/vitalia/clinics/doctors/{id}/availability-occurrences?from=&to=
+ * Response: { occurrences: AvailabilityOccurrenceDTO[] } (camelCase via alias_generator=to_camel)
+ *
+ * BE anchors series in block.created_at.date() (not query window) → consistent
+ * series numbering across page-loads (no infinite paint even for open_ended).
+ *
+ * T-FE-occurrences-consume vitalia-fase2-lisa-doctores
+ * spec_anchor: 01-spec.md § D3-C.1
+ */
+export function useAvailabilityOccurrences(
+  doctorId: string,
+  fromIso: string,
+  toIso: string,
+) {
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+  const tenantId = useTenantId();
+  const clinicId = useClinicId();
+  // X-User-ID required by the endpoint for actor-header consistency (per doctors_router.py)
+  const actorHeaders = useStaffActorHeaders();
+
+  return useQuery({
+    queryKey: staffKeys.occurrences(doctorId, fromIso, toIso),
+    queryFn: async (): Promise<
+      import("../types/staff.types").AvailabilityOccurrence[]
+    > => {
+      const token = await getToken();
+      if (!token || !tenantId) throw new Error("Sin autenticación");
+      const params = new URLSearchParams({ from: fromIso, to: toIso });
+      const res = await fetchClient<{
+        occurrences: import("../types/staff.types").AvailabilityOccurrence[];
+      }>(
+        `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}/availability-occurrences?${params.toString()}`,
+        { token, tenantId, clinicId, headers: actorHeaders },
+      );
+      return res.occurrences ?? [];
+    },
+    enabled: isLoaded && !!isSignedIn && !!doctorId && !!fromIso && !!toIso,
+    staleTime: 30_000,
+  });
+}
+
 // ── useCreateBlock ─────────────────────────────────────────────────────────────
 
 export interface CreateBlockPayload {
@@ -492,6 +652,10 @@ export interface CreateBlockPayload {
   end_date?: string | null;
   occurrences?: number | null;
   specific_date?: string | null;
+  /** D3-F PRIMARY: weekday ints 0=Mon..6=Sun (BE accepts snake via populate_by_name) */
+  days_of_week?: number[];
+  /** D3-F PRIMARY: recurrence interval in weeks (1=weekly, 2=biweekly, N=custom) */
+  interval?: number;
 }
 
 /**
@@ -540,6 +704,10 @@ export interface UpdateBlockPayload {
   occurrences?: number | null;
   start_time?: string;
   end_time?: string;
+  /** D3-F PRIMARY: weekday ints 0=Mon..6=Sun (BE accepts snake via populate_by_name) */
+  days_of_week?: number[];
+  /** D3-F PRIMARY: recurrence interval in weeks (1=weekly, 2=biweekly, N=custom) */
+  interval?: number;
 }
 
 /**
@@ -626,6 +794,369 @@ export function useDeleteBlock(doctorId: string) {
   });
 }
 
+// ── useBioFiles ───────────────────────────────────────────────────────────────
+
+/**
+ * useBioFiles — fetches bio document list for a doctor.
+ * Key: ['lisa','staff',id,'detail',id,'bio-files']
+ * Endpoint: GET /api/v1/vitalia/clinics/doctors/{id}/bio-files
+ * HIPAA-lite: X-Tenant-ID + X-Clinic-ID required.
+ * T-FE-bio-docs vitalia-fase2-lisa-doctores
+ * spec_anchor: 01-spec.md § D3-B
+ */
+export function useBioFiles(doctorId: string) {
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+  const tenantId = useTenantId();
+  const clinicId = useClinicId();
+  const mutationHeaders = useStaffActorHeaders();
+
+  return useQuery({
+    queryKey: staffKeys.bioFiles(doctorId),
+    queryFn: async (): Promise<import("../types/staff.types").BioFile[]> => {
+      const token = await getToken();
+      if (!token || !tenantId) throw new Error("Sin autenticación");
+      const res = await fetchClient<{
+        bioFiles: import("../types/staff.types").BioFile[];
+      }>(
+        `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}/bio-files`,
+        { token, tenantId, clinicId, headers: mutationHeaders },
+      );
+      return res.bioFiles ?? [];
+    },
+    enabled: isLoaded && !!isSignedIn && !!doctorId,
+    staleTime: 30_000,
+  });
+}
+
+// ── useBioFileUpload ──────────────────────────────────────────────────────────
+
+/**
+ * useBioFileUpload — 2-step mutation: POST /assets/upload (proxy, kind=bio_doc)
+ * then POST /{doctor_id}/bio-files (register metadata).
+ *
+ * Mirror of useAvatarUpload (D-3 pattern). Step 2 sends BioFileRegisterRequest
+ * (camelCase): { storageKey, filename, sizeBytes, contentType }.
+ *
+ * On success: invalidates bio-files query.
+ * HIPAA-lite: all headers required (X-Tenant-ID, X-Clinic-ID, X-User-ID/Role).
+ * T-FE-bio-docs vitalia-fase2-lisa-doctores
+ * spec_anchor: 01-spec.md § D3-B.1
+ */
+export function useBioFileUpload(doctorId: string) {
+  const { getToken } = useAuth();
+  const tenantId = useTenantId();
+  const clinicId = useClinicId();
+  const mutationHeaders = useStaffActorHeaders();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const token = await getToken();
+      if (!token || !tenantId) throw new Error("Sin autenticación");
+
+      // Step 1 — upload bytes to assets proxy
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("kind", "bio_doc");
+
+      const uploadUrl = `${API_BASE}/api/v1/vitalia/assets/upload`;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60_000);
+
+      let uploadResponse: Response;
+      try {
+        uploadResponse = await fetch(uploadUrl, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "X-Tenant-ID": tenantId,
+            ...(clinicId ? { "X-Clinic-ID": clinicId } : {}),
+            ...mutationHeaders,
+          },
+          body: formData,
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
+
+      if (!uploadResponse.ok) {
+        const status = uploadResponse.status;
+        if (status === 503) {
+          throw new Error("STORAGE_UNAVAILABLE");
+        }
+        throw new Error(`Error al subir archivo: ${status}`);
+      }
+
+      const { key } = (await uploadResponse.json()) as { key: string; url: string };
+
+      // Step 2 — register bio file metadata
+      const registered = await fetchClient<{
+        bioFiles: import("../types/staff.types").BioFile[];
+      }>(
+        `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}/bio-files`,
+        {
+          method: "POST",
+          token,
+          tenantId,
+          clinicId,
+          headers: mutationHeaders,
+          body: JSON.stringify({
+            storageKey: key,
+            filename: file.name,
+            sizeBytes: file.size,
+            contentType: file.type,
+          }),
+        },
+      );
+
+      return registered.bioFiles ?? [];
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: staffKeys.bioFiles(doctorId),
+      });
+    },
+  });
+}
+
+// ── useDeleteBioFile ──────────────────────────────────────────────────────────
+
+/**
+ * useDeleteBioFile — mutation: DELETE /{doctor_id}/bio-files/{file_id}
+ * Requires explicit user confirmation before calling mutate().
+ * On success: invalidates bio-files query.
+ * HIPAA-lite: audit log written sync pre-response by BE.
+ * T-FE-bio-docs vitalia-fase2-lisa-doctores
+ */
+export function useDeleteBioFile(doctorId: string) {
+  const { getToken } = useAuth();
+  const tenantId = useTenantId();
+  const clinicId = useClinicId();
+  const mutationHeaders = useStaffActorHeaders();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (fileId: string) => {
+      const token = await getToken();
+      if (!token || !tenantId) throw new Error("Sin autenticación");
+      return fetchClient<{ deleted: boolean }>(
+        `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}/bio-files/${fileId}`,
+        {
+          method: "DELETE",
+          token,
+          tenantId,
+          clinicId,
+          headers: mutationHeaders,
+        },
+      );
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: staffKeys.bioFiles(doctorId),
+      });
+    },
+  });
+}
+
+// ── useBioFileDownload ────────────────────────────────────────────────────────
+
+/**
+ * useBioFileDownload — mutation: GET /{doctor_id}/bio-files/{file_id}/download
+ *
+ * D-1 decision: backend streams bytes via StorageStrategy.get_file_bytes()
+ * (presigned URL not implemented in engine). FE fetches raw, converts to blob,
+ * triggers programmatic download via anchor click.
+ *
+ * HIPAA-lite: X-Tenant-ID + X-Clinic-ID + X-User-ID required (audit log on BE).
+ * T-FE-bio-docs vitalia-fase2-lisa-doctores
+ */
+export function useBioFileDownload(doctorId: string) {
+  const { getToken } = useAuth();
+  const tenantId = useTenantId();
+  const clinicId = useClinicId();
+  const mutationHeaders = useStaffActorHeaders();
+
+  return useMutation({
+    mutationFn: async ({
+      fileId,
+      filename,
+    }: {
+      fileId: string;
+      filename: string;
+    }) => {
+      const token = await getToken();
+      if (!token || !tenantId) throw new Error("Sin autenticación");
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60_000);
+
+      let response: Response;
+      try {
+        response = await fetch(
+          `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}/bio-files/${fileId}/download`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "X-Tenant-ID": tenantId,
+              ...(clinicId ? { "X-Clinic-ID": clinicId } : {}),
+              ...mutationHeaders,
+            },
+            signal: controller.signal,
+          },
+        );
+      } finally {
+        clearTimeout(timeoutId);
+      }
+
+      if (!response.ok) {
+        throw new Error(`Error al descargar archivo: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = objectUrl;
+      anchor.download = filename;
+      anchor.style.display = "none";
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      URL.revokeObjectURL(objectUrl);
+    },
+  });
+}
+
 // ── Type re-exports for consumers ──────────────────────────────────────────────
 
 export type { DoctorListItem, DoctorDetail, PaginatedDoctors };
+
+// ── useGenerateProfile (D3-D, T-FE-pagina-publica) ───────────────────────────
+
+/**
+ * useGenerateProfile — mutation: POST /api/v1/vitalia/clinics/doctors/{id}/generate-profile
+ * Triggers BE LLM generation of structured public profile (DoctorPublicProfile).
+ * On success: invalidates doctor detail (profileState.generatedAt updates).
+ * spec_anchor: 01-spec.md § D3-D.2
+ */
+export function useGenerateProfile(doctorId: string) {
+  const { getToken } = useAuth();
+  const tenantId = useTenantId();
+  const clinicId = useClinicId();
+  const mutationHeaders = useStaffActorHeaders();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const token = await getToken();
+      if (!token || !tenantId) throw new Error("Sin autenticación");
+      return fetchClient<import("../types/staff.types").DoctorPublicProfile>(
+        `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}/generate-profile`,
+        {
+          method: "POST",
+          token,
+          tenantId,
+          clinicId,
+          headers: mutationHeaders,
+          body: JSON.stringify({}),
+        },
+      );
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: staffKeys.detail(doctorId) });
+    },
+  });
+}
+
+// ── useSavePublicProfile (D3-D, T-FE-pagina-publica) ─────────────────────────
+
+/**
+ * SavePublicProfilePayload — mirrors BE SavePublicProfileDTO (commit 275d5d7e).
+ * - experiencia: [{puesto, lugar, anios}] (NOT cargo/institucion/desde/hasta)
+ * - certificaciones: string[] (NOT object array — finding F3)
+ * - idiomas: string[] (NOT object array — finding F3)
+ */
+export interface SavePublicProfilePayload {
+  sobreMi?: string | null;
+  formacion?: import("../types/staff.types").StructuredFormacion[];
+  experiencia?: import("../types/staff.types").StructuredExperiencia[];
+  tratamientos?: string[];
+  certificaciones?: string[];
+  idiomas?: string[];
+}
+
+/**
+ * useSavePublicProfile — mutation: PATCH /api/v1/vitalia/clinics/doctors/{id}/public-profile
+ * Saves edits to structured profile fields (autosave 600ms).
+ * On success: optimistically updates detail cache.
+ * spec_anchor: 01-spec.md § D3-D.3
+ */
+export function useSavePublicProfile(doctorId: string) {
+  const { getToken } = useAuth();
+  const tenantId = useTenantId();
+  const clinicId = useClinicId();
+  const mutationHeaders = useStaffActorHeaders();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: SavePublicProfilePayload) => {
+      const token = await getToken();
+      if (!token || !tenantId) throw new Error("Sin autenticación");
+      return fetchClient<import("../types/staff.types").DoctorDetail>(
+        `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}/public-profile`,
+        {
+          method: "PATCH",
+          token,
+          tenantId,
+          clinicId,
+          headers: mutationHeaders,
+          body: JSON.stringify(payload),
+        },
+      );
+    },
+    onSuccess: (updated) => {
+      queryClient.setQueryData(staffKeys.detail(doctorId), updated);
+    },
+  });
+}
+
+// ── useTogglePublicVisible (D3-D, T-FE-pagina-publica) ───────────────────────
+
+/**
+ * useTogglePublicVisible — mutation: PATCH /api/v1/vitalia/clinics/doctors/{id}
+ * (body {visibleEnLanding} — NO existe ruta /public-visible; 7ª lección contrato).
+ * Toggles visibility at the public /d/{clinica-slug}/{doctor-slug} route.
+ * Anti-enumeration (RN-D3D-9): BE sends identical "perfil no disponible" for OFF/unknown/cross-tenant.
+ * On success: invalidates detail (visiblePublic updates).
+ * spec_anchor: 01-spec.md § D3-D.4
+ */
+export function useTogglePublicVisible(doctorId: string) {
+  const { getToken } = useAuth();
+  const tenantId = useTenantId();
+  const clinicId = useClinicId();
+  const mutationHeaders = useStaffActorHeaders();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (visiblePublic: boolean) => {
+      const token = await getToken();
+      if (!token || !tenantId) throw new Error("Sin autenticación");
+      // Reusa el PATCH general /{doctor_id} (no existe /public-visible — 7ª lección contrato).
+      return fetchClient<import("../types/staff.types").DoctorDetail>(
+        `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}`,
+        {
+          method: "PATCH",
+          token,
+          tenantId,
+          clinicId,
+          headers: mutationHeaders,
+          body: JSON.stringify({ visibleEnLanding: visiblePublic }),
+        },
+      );
+    },
+    onSuccess: () => {
+      // invalidate (NO setQueryData): el PATCH response no incluye clinicSlug (solo el GET lo arma)
+      void queryClient.invalidateQueries({ queryKey: staffKeys.detail(doctorId) });
+    },
+  });
+}

@@ -40,7 +40,7 @@
  */
 
 import { useRouter, usePathname } from "next/navigation";
-import { useState, useRef, useCallback, type KeyboardEvent } from "react";
+import { useState, useRef, useCallback, type KeyboardEvent, type ReactNode } from "react";
 
 import { cn } from "@luana/format/utils";
 
@@ -123,6 +123,20 @@ export interface EntitySubNavBarProps {
    * If not provided, add-affordance leaves behave like normal leaves (router.push).
    */
   onAddAffordance?: () => void;
+  /**
+   * Optional entity-identity selector (canon §6.3 — "cambiar sin volver").
+   *
+   * Workspace mode (entity set): when provided, this node renders in the
+   * entity-identity slot INSTEAD of the static avatar+name block (e.g., an
+   * EntityPicker). The slot owns its own a11y (EntityPicker already provides
+   * combobox/listbox roles + keyboard nav); it is NOT a tab and does not
+   * participate in the tablist roving tabindex.
+   *
+   * Absent → the static identity block renders verbatim (back-compat:
+   * existing consumers render unchanged).
+   * Master mode (entity=null) → the slot is NEVER rendered.
+   */
+  entityIdentitySlot?: ReactNode;
   /** Additional className for the wrapper */
   className?: string;
 }
@@ -243,6 +257,7 @@ export function EntitySubNavBar({
   activeLeaf,
   placeholder,
   onAddAffordance,
+  entityIdentitySlot,
   className,
 }: EntitySubNavBarProps) {
   const router = useRouter();
@@ -364,8 +379,21 @@ export function EntitySubNavBar({
             onLeafFocus={handleLeafFocus}
           />
 
-          {/* Entity identity — shown only in workspace mode (entity present) */}
-          {!isMasterMode && entity && (
+          {/* Entity identity slot — workspace mode only. When provided, the slot
+              replaces the static avatar+name block (canon §6.3: identity = selector,
+              "cambiar sin volver"). The slot is NOT a tab (tablist unaffected). */}
+          {!isMasterMode && entity && entityIdentitySlot && (
+            <div
+              className="flex items-center min-w-0 flex-shrink-0 mx-3"
+              data-testid="entity-identity-slot"
+            >
+              {entityIdentitySlot}
+            </div>
+          )}
+
+          {/* Entity identity (static) — shown only in workspace mode (entity present)
+              when no entityIdentitySlot is provided (back-compat) */}
+          {!isMasterMode && entity && !entityIdentitySlot && (
             <div
               className="flex items-center gap-2 min-w-0 flex-shrink-0 mx-3 max-w-[200px]"
               aria-label={`Editando: ${entity.name}`}

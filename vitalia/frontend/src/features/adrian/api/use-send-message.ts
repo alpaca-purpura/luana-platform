@@ -23,10 +23,10 @@ import { useAuth } from "@clerk/nextjs";
 import { useTenantId } from "@/hooks/useTenantId";
 import { useClinicId } from "@/hooks/useClinicId";
 import { fetchClient } from "@/lib/api/fetchClient";
-// Optimistic append + invalidate on the crm-shared keys the thread/list read
-// (the legacy ["adrian","inbox",…] keys are not rendered → sent msg never showed).
-const crmDetailKey = (id: string) => ["crm", "conversation", id] as const;
-const crmListKey = ["crm", "conversations"] as const;
+import {
+  conversationDetailKeyForInvalidation,
+  conversationsListKeyForInvalidation,
+} from "./_keys";
 import type { Message } from "../types/inbox.types";
 import type { ConversationDetail } from "../types/inbox.types";
 
@@ -77,7 +77,7 @@ export function useSendMessage() {
       );
     },
     onMutate: async (input) => {
-      const detailKey = crmDetailKey(input.conversationId);
+      const detailKey = conversationDetailKeyForInvalidation(input.conversationId);
       await qc.cancelQueries({ queryKey: detailKey });
       const previousDetail = qc.getQueryData<ConversationDetail>(detailKey);
       // Optimistic: add a placeholder message
@@ -111,14 +111,14 @@ export function useSendMessage() {
     onError: (_err, input, ctx) => {
       // Rollback optimistic update on error
       if (ctx?.previousDetail) {
-        qc.setQueryData(crmDetailKey(input.conversationId), ctx.previousDetail);
+        qc.setQueryData(conversationDetailKeyForInvalidation(input.conversationId), ctx.previousDetail);
       }
     },
     onSettled: (_data, _err, input) => {
       void qc.invalidateQueries({
-        queryKey: crmDetailKey(input.conversationId),
+        queryKey: conversationDetailKeyForInvalidation(input.conversationId),
       });
-      void qc.invalidateQueries({ queryKey: crmListKey });
+      void qc.invalidateQueries({ queryKey: conversationsListKeyForInvalidation() });
     },
   });
 }

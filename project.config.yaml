@@ -275,3 +275,56 @@ wip_caps:
     done_rolling: 90
   active_states: [refining, refined, ready, developing, developed, reviewing]
   module_scoped_note: "developed/developing/reviewing ≤1 per code:{module} bucket — enforced by pre-commit story-closure gate (story-closure-gate.md WIP-cap v2), NOT this coarse net."
+
+# ── SLOT 12 ─────────────────────────────────────────────────────────────
+#  models  ·  SSoT de ruteo de modelos Claude del harness (pedido Chris 2026-06-12).
+#  REEMPLAZA: nombres de modelo hardcodeados en frontmatter `model:` de
+#  .claude/{agents,skills} (+ espejos .claude-shared/ y core-harness/agents/).
+#  CONVENCIÓN: la doctrina (rules/skills/templates) habla en TIERS
+#  (flagship/coordinator/workhorse/mechanical) — NUNCA nombres de modelo.
+#  El frontmatter `model:` es ARTEFACTO GENERADO: `make models-sync` lo parchea
+#  desde acá; machinery CHECK 31 (`scripts/sync_model_tiers.py --check`) bloquea drift.
+#  · Swap global (ej. opus→fable): editar 1 línea en tiers + `make models-sync`.
+#  · Override puntual por superficie: el valor en agents/skills puede ser un tier
+#    O un alias literal (fable|opus|sonnet|haiku) — "quiero que ESTE agente use X".
+models:
+  tiers:
+    flagship: fable        # estratégico + agentic prod (R23) + refinamiento
+    coordinator: opus      # PMs + orquestación git (commit-push/handoff)
+    workhorse: sonnet      # builders BE/FE no-agentic
+    mechanical: haiku      # gate-runner / context / grep workers
+  agents:                  # .claude/agents/{name}.md (+ espejo .claude-shared/agents/ y core-harness/agents/ si existen)
+    architect-orchestrator: flagship
+    auditor-agentic: flagship
+    auditor-backend: flagship
+    auditor-frontend: flagship
+    builder-agentic: flagship
+    builder-backend: workhorse
+    builder-frontend: workhorse
+    context-builder: mechanical
+    context-validator: mechanical
+    gate-runner: mechanical
+    grep-bot: mechanical
+  skills:                  # .claude/skills/{name}/SKILL.md (+ espejo .claude-shared/skills/ si existe)
+    architect: flagship
+    auditor: flagship
+    dev-team: flagship
+    po: flagship
+    po-ux: flagship
+    ux-agentico: flagship
+    pm: coordinator
+    pm-luana: coordinator
+    pm-vitalia: coordinator
+    pm-nicolify: coordinator
+    pm-comunify: coordinator
+    pm-lupulo: coordinator
+    pm-saasora: coordinator
+    pm-inmoflow: coordinator
+    pm-retailly: coordinator
+    pm-fixia: coordinator
+    pm-guestly: coordinator
+    pm-fitflow: coordinator
+    _pm-brand-template: coordinator
+    commit-push: coordinator
+    handoff: coordinator
+    harness-issue: mechanical

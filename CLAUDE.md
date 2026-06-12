@@ -2,7 +2,7 @@
 
 **luana-platform** — Multi-brand multitenant SaaS. Modular Monolith DDD + uv/pnpm workspace + Docker-First. **10 brand verticals** consumen engine compartido `core/` (Luana, 27 paquetes `luana-core-*`).
 
-**Objetivo agentic dev:** Chris orquesta /pm-{brand} → /po-ux|/po → /architect → /dev-team → /auditor. Paradigm v4 con auto-handoffs. Cross-brand learning automático. Cost-routing optimizado (Haiku para mecánico, Sonnet para BE/FE no-agentic, Opus para agentic prod + estratégico).
+**Objetivo agentic dev:** Chris orquesta /pm-{brand} → /po-ux|/po → /architect → /dev-team → /auditor. Paradigm v4 con auto-handoffs. Cross-brand learning automático. Cost-routing por TIERS — SSoT `project.config.yaml::models` (SLOT 12): `mechanical` (gates/context/grep) · `workhorse` (BE/FE no-agentic) · `flagship` (agentic prod + estratégico/refinamiento: `/architect`·`/auditor`·`/dev-team`·`/po`·`/po-ux`·`/ux-agentico` + `builder-agentic` + `auditor-{be,fe,agentic}`) · `coordinator` (PMs). Swap de modelo = editar el seam + `make models-sync` (NUNCA frontmatter a mano — machinery CHECK 31).
 
 ## ★ Brand overlay auto-load
 
@@ -53,7 +53,7 @@ Por-brand: `{brand}/docs/` = SSoT autónomo. Vista master cross-brand: `docs/por
 
 | Tool | Path | Trigger conversacional | Cómo levantar |
 |---|---|---|---|
-| **Luana Cockpit** (SDD visualizer + editor · **per-worktree** Paradigma A) | `tools/luana-cockpit/` | usuario pide "levantar cockpit", "abrir luana-cockpit", "arrancar la tool cockpit" (variantes coloquiales aceptadas) | **Comando único: `make cockpit-up`** desde el worktree actual (auto-install deps + brand detection + port asignado + arranca dev). README: `tools/luana-cockpit/README.md`. Standalone Next.js 16 + filesystem-as-DB · NO Docker · NO PG. |
+| **Luana Cockpit** (SDD visualizer · **per-worktree** Paradigma A) | binario externo `~/Proyectos/alpaca-harness/cockpit-go/cockpit` (Go + UI Next.js embebida go:embed · filesystem-as-DB · NO Docker · NO PG · NO node en runtime) | usuario pide "levantar cockpit", "abrir luana-cockpit", "arrancar la tool cockpit" (variantes coloquiales aceptadas) | **Comando único: `make cockpit-up`** desde el worktree actual (brand detection + port asignado + daemon TRUE-detach · pidfile/log `$WS/.cockpit/`). **Pivote 2026-06-11 ratificado Chris**: los cockpits anteriores (Go-templates `tools/luana-cockpit-go` y Next `tools/_legacy/luana-cockpit`) ELIMINADOS del repo — alpaca es el único y final. Rebuild binario: `cd ~/Proyectos/alpaca-harness/cockpit-go && ./build-ui.sh && go build -o cockpit .`. Proceso v5 visible: tab Proceso (gate G signoff · DoD · stepper G·R) + gates G1-G9 en Drift. |
 
 ### Cockpit · Paradigma A · per-worktree (cement 2026-05-28)
 
@@ -71,7 +71,7 @@ El cockpit es **filesystem-as-DB**: lee/escribe directo de `.md`/`.yaml` del wor
 | `~/Proyectos/luana-protocol-*/` (efímero) | cross-brand | 4000 | n/a | n/a |
 | `~/Proyectos/luana-core-*/` (efímero lift) | cross-brand | 4000 | n/a | n/a |
 
-`scripts/cockpit-up.sh` detecta el worktree via `git rev-parse --show-toplevel`, infiere brand del basename, asigna puerto + `WORKSPACE_ROOT` + `DEFAULT_BRAND` envs antes de `exec pnpm dev`. Override puerto manual: `PORT=4099 make cockpit-up`.
+`scripts/cockpit-daemon.sh` (vía `make cockpit-up`) detecta el worktree via `git rev-parse --show-toplevel`, infiere brand del basename, asigna puerto + `WORKSPACE_ROOT` + `DEFAULT_BRAND` y lanza el binario alpaca con `-workspace -port`. Override puerto manual: `PORT=4099 make cockpit-up`. Override binario: `ALPACA_COCKPIT_BIN=/otro/path`.
 
 **Por qué per-worktree:** cuando Chris edita un story en `~/Proyectos/luana-vitalia/` (wip/vitalia), esos cambios viven SOLO en ese filesystem hasta squash-merge a main. Un cockpit central apuntando a main NO los vería. Cada worktree levanta SU propio cockpit que ve sus cambios live.
 
@@ -93,7 +93,7 @@ El cockpit es **filesystem-as-DB**: lee/escribe directo de `.md`/`.yaml` del wor
 | 2 | `refining` | `/pm-*` + `/po-ux`/`/po`/`/ux-agentico` | ≤ 3 |
 | 3 | `refined` | `/pm-*` cierra | ≤ 5 |
 | 4 | `ready` | `/architect` cierra (paquete completo: 03-arch + 04-validators + 05-guidelines + 06-tickets) | ≤ 5 |
-| 5 | `developing` | `/dev-team` (opencode/Sonnet, Opus si agentic prod) | ≤ 3 |
+| 5 | `developing` | `/dev-team` (opencode/workhorse · flagship si agentic prod) | ≤ 3 |
 | 6 | `developed` | `/dev-team` + AUTO-HANDOFF `/auditor` | ≤ 1 |
 | 7 | `reviewing` | `/auditor` + AUTO-HANDOFF `/pm-{brand}` merge si APPROVED | ≤ 1 |
 | 8 | `done` | `/pm-*` merge | rolling 90d |

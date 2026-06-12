@@ -15,13 +15,13 @@
 ## Anti-patterns (top 3 — lista completa en el detalle)
 
 - ❌ `06-tickets.yaml` sin bloque `assignment` per ticket (o con `primary_agent: general-purpose`)
-- ❌ Ticket AGENTIC con `model_preference: sonnet` o `opencode` (viola R23 — Opus obligatorio)
+- ❌ Ticket AGENTIC con `model_preference: sonnet` o `opencode` (viola R23 — tier **flagship** obligatorio, `models.flagship` del seam)
 - ❌ Architect declarando `autonomous_mode: true` sin Chris ratify (architect propone, Chris ratifica)
 
 ## Referencias
 
 - `.claude/skills/architect/references/autonomous-mode.md` — **cuerpo operativo completo** (autonomous_mode flag schema, agent_assignment YAML examples ×3 surfaces, playwright_visual_scope schema, dispatch-plan.md template, enforcement layers)
-- `.claude/rules/auditor-self-fix-policy.md` — R23 (AGENTIC production_code → Opus obligatorio)
+- `.claude/rules/auditor-self-fix-policy.md` — R23 (AGENTIC production_code → tier **flagship** obligatorio)
 - `.claude/rules/anti-duplication-refining.md` — prior art scan (precede assignment)
 - `docs/specs/templates/06-tickets-template.yaml` — template a expandir con assignment block
 - `docs/specs/templates/04-validators-template.yaml` — template a expandir con playwright_visual_scope

@@ -5,7 +5,7 @@ tools: Read, Bash, Grep, Glob
 maxTurns: 80
 skills: [frontend-expert, brand-expert, offer-expert, offer-type-preset-expert, copilot-expert, sales-agent-expert, metrics-expert, tessl__react-patterns, tessl__zod, tessl__shadcn-ui, tessl__tailwind, tessl__vitest, tessl__nextjs-app-router-modularization, tessl__graceful-degradation, chrome-devtools-verify]
 color: red
-model: opus
+model: fable
 ---
 
 ## Return format (anti-telephone-game)

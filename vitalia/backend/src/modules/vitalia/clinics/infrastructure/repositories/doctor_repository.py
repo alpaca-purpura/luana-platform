@@ -33,6 +33,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.modules.vitalia._shared.encryption.kek_client import KEKClient
 from src.modules.vitalia.clinics.domain.bio import BioPublic
 from src.modules.vitalia.clinics.domain.doctor import Doctor
+from src.modules.vitalia.clinics.domain.public_profile import DoctorPublicProfile
 from src.modules.vitalia.clinics.infrastructure.models.doctor_model import VitaliaDoctorModel
 
 logger = structlog.get_logger()
@@ -145,6 +146,7 @@ class DoctorRepository(CompoundScopeRepositoryBase[VitaliaDoctorModel, UUID]):
                    pgp_sym_decrypt(credential_encrypted, :kek)::text  AS credential,
                    credential_country, specialty, years_experience,
                    languages, bio_inputs_notes, bio_links, bio_public,
+                   public_profile, bio_generated_at, public_slug,
                    avatar_key, visible_en_landing, active,
                    created_at, updated_at, deleted_at
             FROM vitalia_doctors
@@ -229,6 +231,7 @@ class DoctorRepository(CompoundScopeRepositoryBase[VitaliaDoctorModel, UUID]):
                    pgp_sym_decrypt(credential_encrypted, :kek)::text  AS credential,
                    credential_country, specialty, years_experience,
                    languages, bio_inputs_notes, bio_links, bio_public,
+                   public_profile, bio_generated_at, public_slug,
                    avatar_key, visible_en_landing, active,
                    created_at, updated_at, deleted_at
             FROM vitalia_doctors
@@ -314,6 +317,7 @@ class DoctorRepository(CompoundScopeRepositoryBase[VitaliaDoctorModel, UUID]):
                    pgp_sym_decrypt(credential_encrypted, :kek)::text  AS credential,
                    credential_country, specialty, years_experience,
                    languages, bio_inputs_notes, bio_links, bio_public,
+                   public_profile, bio_generated_at, public_slug,
                    avatar_key, visible_en_landing, active,
                    created_at, updated_at, deleted_at
             FROM vitalia_doctors
@@ -494,6 +498,120 @@ class DoctorRepository(CompoundScopeRepositoryBase[VitaliaDoctorModel, UUID]):
         await self._session.flush()
         return doctor
 
+    async def update_public_profile(
+        self,
+        *,
+        doctor_id: UUID,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        public_profile: "DoctorPublicProfile",
+        bio_generated_at: datetime,
+        public_slug: str | None,
+    ) -> Doctor | None:
+        """Persist generated public profile, timestamp, and slug.
+
+        Raw SQL UPDATE — tenant+clinic dual filter (hipaa-lite.md).
+        bio_generated_at ONLY updated here (RN-D3B-4); NOT in update().
+        Returns updated Doctor entity or None if not found (dual filter miss).
+        """
+        import json as _json  # noqa: PLC0415
+
+        self.validate_dual_filter(tenant_id=tenant_id, clinic_id=clinic_id)
+
+        profile_dict = public_profile.to_dict()
+
+        stmt = text(
+            """
+            UPDATE vitalia_doctors SET
+              public_profile    = CAST(:public_profile AS jsonb),
+              bio_generated_at  = :bio_generated_at,
+              public_slug       = COALESCE(:public_slug, public_slug),
+              updated_at        = NOW()
+            WHERE id         = :doctor_id
+              AND tenant_id  = :tenant_id
+              AND clinic_id  = :clinic_id
+              AND deleted_at IS NULL
+            RETURNING id
+            """
+        )
+        result = await self._session.execute(
+            stmt,
+            {
+                "doctor_id": str(doctor_id),
+                "tenant_id": str(tenant_id),
+                "clinic_id": str(clinic_id),
+                "public_profile": _json.dumps(profile_dict),
+                "bio_generated_at": bio_generated_at,
+                "public_slug": public_slug,
+            },
+        )
+        await self._session.flush()
+
+        row = result.fetchone()
+        if row is None:
+            return None
+
+        # Fetch full entity (re-read with decryption)
+        return await self.get_by_id(
+            entity_id=doctor_id,
+            tenant_id=tenant_id,
+            clinic_id=clinic_id,
+        )
+
+    async def update_public_profile_sections(
+        self,
+        *,
+        doctor_id: UUID,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        public_profile: "DoctorPublicProfile",
+    ) -> Doctor | None:
+        """Persist manually-edited public profile sections WITHOUT touching bio_generated_at.
+
+        Raw SQL UPDATE — tenant+clinic dual filter (hipaa-lite.md).
+        RN-D3B-4: bio_generated_at is ONLY set by generate-profile, NEVER here.
+        Returns updated Doctor entity or None if not found (dual filter miss).
+        """
+        import json as _json  # noqa: PLC0415
+
+        self.validate_dual_filter(tenant_id=tenant_id, clinic_id=clinic_id)
+
+        profile_dict = public_profile.to_dict()
+
+        stmt = text(
+            """
+            UPDATE vitalia_doctors SET
+              public_profile = CAST(:public_profile AS jsonb),
+              updated_at     = NOW()
+            WHERE id        = :doctor_id
+              AND tenant_id = :tenant_id
+              AND clinic_id = :clinic_id
+              AND deleted_at IS NULL
+            RETURNING id
+            """
+        )
+        result = await self._session.execute(
+            stmt,
+            {
+                "doctor_id": str(doctor_id),
+                "tenant_id": str(tenant_id),
+                "clinic_id": str(clinic_id),
+                "public_profile": _json.dumps(profile_dict),
+            },
+        )
+        await self._session.flush()
+
+        row = result.fetchone()
+        if row is None:
+            return None
+
+        # Fetch full entity (re-read with decryption)
+        return await self.get_by_id(
+            entity_id=doctor_id,
+            tenant_id=tenant_id,
+            clinic_id=clinic_id,
+        )
+
     async def soft_deactivate(
         self,
         entity_id: UUID,
@@ -554,6 +672,7 @@ class DoctorRepository(CompoundScopeRepositoryBase[VitaliaDoctorModel, UUID]):
                    pgp_sym_decrypt(credential_encrypted, :kek)::text  AS credential,
                    credential_country, specialty, years_experience,
                    languages, bio_inputs_notes, bio_links, bio_public,
+                   public_profile, bio_generated_at, public_slug,
                    avatar_key, visible_en_landing, active,
                    created_at, updated_at, deleted_at
             FROM vitalia_doctors
@@ -576,13 +695,79 @@ class DoctorRepository(CompoundScopeRepositoryBase[VitaliaDoctorModel, UUID]):
         rows = result.mappings().all()
         return [_row_to_doctor(row) for row in rows]
 
+    async def get_by_public_slug(
+        self,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        doctor_slug: str,
+    ) -> Doctor | None:
+        """Retrieve a publicly-visible doctor by their public_slug.
+
+        Used by the public profile endpoint GET /{clinic_slug}/doctors/{doctor_slug}.
+        Returns None if not found, not visible, or deleted.
+        Applies dual filter (tenant_id + clinic_id) — tenant-scoped even though public.
+
+        Args:
+            tenant_id: Tenant UUID (resolved from clinic_slug by the router).
+            clinic_id: Clinic UUID (resolved from clinic_slug by the router).
+            doctor_slug: URL-safe slug assigned to the doctor.
+
+        Returns:
+            Doctor entity if found, visible_en_landing=True, active=True, not deleted.
+            None otherwise — router treats any None as generic 404 (anti-enumeration RN-D3D-9).
+        """
+        self.validate_dual_filter(tenant_id=tenant_id, clinic_id=clinic_id)
+        kek_val = self._kek.get_key()
+
+        stmt = text(
+            """
+            SELECT id, tenant_id, clinic_id,
+                   first_name, last_name,
+                   pgp_sym_decrypt(dni_encrypted, :kek)::text         AS dni,
+                   pgp_sym_decrypt(email_encrypted, :kek)::text       AS email,
+                   CASE WHEN phone_encrypted IS NOT NULL
+                        THEN pgp_sym_decrypt(phone_encrypted, :kek)::text
+                   END                                                AS phone,
+                   pgp_sym_decrypt(credential_encrypted, :kek)::text  AS credential,
+                   credential_country, specialty, years_experience,
+                   languages, bio_inputs_notes, bio_links, bio_public,
+                   public_profile, bio_generated_at, public_slug,
+                   avatar_key, visible_en_landing, active,
+                   created_at, updated_at, deleted_at
+            FROM vitalia_doctors
+            WHERE tenant_id = :tenant_id
+              AND clinic_id = :clinic_id
+              AND public_slug = :doctor_slug
+              AND visible_en_landing = TRUE
+              AND active = TRUE
+              AND deleted_at IS NULL
+            LIMIT 1
+            """
+        )
+        result = await self._session.execute(
+            stmt,
+            {
+                "tenant_id": str(tenant_id),
+                "clinic_id": str(clinic_id),
+                "doctor_slug": doctor_slug,
+                "kek": kek_val,
+            },
+        )
+        row = result.mappings().first()
+        if row is None:
+            return None
+        return _row_to_doctor(row)
+
 
 def _row_to_doctor(row: Any) -> Doctor:
     """Map a DB row mapping to a Doctor domain entity.
 
     Handles JSON deserialization and BioPublic reconstruction.
+    Includes new D3-D columns: public_profile, bio_generated_at, public_slug (migration 041).
     """
     import json as _json  # noqa: PLC0415
+
+    from src.modules.vitalia.clinics.domain.public_profile import DoctorPublicProfile  # noqa: PLC0415
 
     languages = row["languages"] if row["languages"] is not None else []
     if isinstance(languages, str):
@@ -596,6 +781,16 @@ def _row_to_doctor(row: Any) -> Doctor:
     if isinstance(bio_dict, str):
         bio_dict = _json.loads(bio_dict)
     bio_public = BioPublic.from_dict(bio_dict)
+
+    # D3-D: structured public_profile (migration 041)
+    pub_profile_dict = row["public_profile"] if "public_profile" in row.keys() else None
+    if isinstance(pub_profile_dict, str):
+        pub_profile_dict = _json.loads(pub_profile_dict)
+    public_profile = DoctorPublicProfile.from_dict(pub_profile_dict)
+
+    # bio_generated_at and public_slug — None if columns not yet present (pre-migration compat)
+    bio_generated_at = row["bio_generated_at"] if "bio_generated_at" in row.keys() else None
+    public_slug = row["public_slug"] if "public_slug" in row.keys() else None
 
     return Doctor(
         id=UUID(str(row["id"])),
@@ -614,6 +809,9 @@ def _row_to_doctor(row: Any) -> Doctor:
         bio_inputs_notes=row["bio_inputs_notes"],
         bio_links=bio_links,
         bio_public=bio_public,
+        public_profile=public_profile,
+        bio_generated_at=bio_generated_at,
+        public_slug=public_slug,
         avatar_key=row["avatar_key"],
         visible_en_landing=bool(row["visible_en_landing"]),
         active=bool(row["active"]),

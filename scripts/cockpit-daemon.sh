@@ -1,22 +1,25 @@
 #!/usr/bin/env bash
 # Luana Cockpit daemon · {start|stop|status|restart} con TRUE detach.
 #
-# POR QUÉ EXISTE (HB-55): `scripts/cockpit-up.sh` corre `exec pnpm dev` en FOREGROUND.
-# Muere al cerrar la terminal/task. Cuando Claude lo lanza via Bash backgrounded, el
-# harness lo REAPEA al cerrar la task. Resultado: "el cockpit se cae a cada rato".
-# Este daemon despega el proceso de la sesión (setsid + nohup + pidfile) → sobrevive
-# el cierre de terminal Y el reaping de Claude. Idempotente.
+# COCKPIT = binario ALPACA desde 2026-06-11 (pivote ratificado por Chris):
+# ~/Proyectos/alpaca-harness/cockpit-go/cockpit — Go + UI Next.js embebida
+# (go:embed), proceso v5 (tab Proceso · gate G signoff · DoD · gates G1-G9).
+# Los cockpits anteriores (Go-templates y Next) fueron ELIMINADOS del repo.
 #
-# Footgun cazado: el port-check de cockpit-up.sh usa `lsof -i :PORT` que matchea sockets
-# ESTABLISHED (ej. una pestaña Chrome abierta retiene bind aparente). Acá usamos
-# `lsof -ti :PORT -sTCP:LISTEN` → SOLO el listener real.
+# POR QUÉ EXISTE (HB-55): el launcher foreground muere al cerrar la terminal/task. Cuando
+# Claude lo lanza via Bash backgrounded, el harness lo REAPEA al cerrar la task. Resultado:
+# "el cockpit se cae a cada rato". Este daemon despega el proceso de la sesión (setsid +
+# nohup + pidfile) → sobrevive el cierre de terminal Y el reaping de Claude. Idempotente.
 #
-# Health real ≠ proceso vivo: `/api/watch` es un stream SSE (colgaría curl). Probamos
-# un endpoint JSON liviano con timeout → cualquier HTTP code = server responde = sano.
+# Footgun cazado: el port-check via `lsof -i :PORT` matchea sockets ESTABLISHED (ej. una
+# pestaña Chrome retiene bind aparente). Acá usamos `ss -ltn` → SOLO el listener real.
 #
-# Paths (gitignored): tools/luana-cockpit/.cockpit-{PORT}.{pid,log}
+# Health real: /api/brands (JSON liviano · no SSE). Cualquier HTTP code = sano.
+#
+# Paths (gitignored): $WS/.cockpit/cockpit-{PORT}.{pid,log}
 # Override puerto: PORT=4099 bash scripts/cockpit-daemon.sh start
-# Doc: tools/luana-cockpit/README.md · CLAUDE.md § Tools operativas.
+# Override binario: ALPACA_COCKPIT_BIN=/otro/path
+# Doc: CLAUDE.md § Tools operativas.
 
 set -euo pipefail
 
@@ -27,9 +30,10 @@ if [[ -z "$WS" ]]; then
   exit 1
 fi
 
-COCKPIT="$WS/tools/luana-cockpit"
-if [[ ! -d "$COCKPIT" ]]; then
-  echo "❌ No existe $COCKPIT" >&2
+ALPACA_BIN="${ALPACA_COCKPIT_BIN:-$HOME/Proyectos/alpaca-harness/cockpit-go/cockpit}"
+if [[ ! -x "$ALPACA_BIN" ]]; then
+  echo "❌ No existe el binario del cockpit: $ALPACA_BIN" >&2
+  echo "   Build: cd ~/Proyectos/alpaca-harness/cockpit-go && ./build-ui.sh && go build -o cockpit ." >&2
   exit 1
 fi
 
@@ -45,9 +49,11 @@ case "$WORKTREE_NAME" in
 esac
 
 PORT="${PORT:-$DEFAULT_PORT}"
-PIDFILE="$COCKPIT/.cockpit-${PORT}.pid"
-LOGFILE="$COCKPIT/.cockpit-${PORT}.log"
-HEALTH_PATH="/api/sessions"   # JSON liviano · no SSE · responde rápido
+RUNDIR="$WS/.cockpit"
+mkdir -p "$RUNDIR"
+PIDFILE="$RUNDIR/cockpit-${PORT}.pid"
+LOGFILE="$RUNDIR/cockpit-${PORT}.log"
+HEALTH_PATH="/api/brands"   # JSON liviano · no SSE · responde rápido
 
 # ── Helpers ─────────────────────────────────────────────────────────────────────
 
@@ -86,13 +92,6 @@ http_healthy() {
   [[ "$code" != "000" ]]
 }
 
-require_toolchain() {
-  command -v node >/dev/null 2>&1 || { echo "❌ Falta Node 20 (nvm install 20)." >&2; exit 1; }
-  local maj; maj="$(node -v | sed -E 's/^v([0-9]+).*/\1/')"
-  [[ "$maj" -ge 20 ]] || { echo "❌ Necesitás Node 20+. Tenés $(node -v)." >&2; exit 1; }
-  command -v pnpm >/dev/null 2>&1 || { echo "❌ Falta pnpm (corepack enable)." >&2; exit 1; }
-}
-
 # ── Acciones ────────────────────────────────────────────────────────────────────
 
 do_start() {
@@ -111,28 +110,18 @@ do_start() {
     exit 1
   fi
 
-  require_toolchain
-  cd "$COCKPIT"
-  if [[ ! -d node_modules ]]; then
-    echo "📦 Primera vez en este worktree · instalando deps (~2 min)..."
-    pnpm install --ignore-workspace
-  fi
-
-  echo "🚀 Arrancando Luana Cockpit (daemon) · $WORKTREE_NAME · brand=$BRAND · :$PORT"
+  echo "🚀 Arrancando Luana Cockpit (alpaca · daemon) · $WORKTREE_NAME · brand=$BRAND · :$PORT"
   # TRUE detach: setsid = nueva sesión (PID == PGID) → kill del grupo entero después.
   # </dev/null + nohup + redirect = sin tty, sobrevive cierre de terminal y reaping.
-  # NODE_OPTIONS heap bump: el dev server de Next moría con V8 heap OOM en recompiles
-  # HMR pesados (workspace grande + chokidar) = "se cae a cada rato". 4GB lo evita.
   WORKSPACE_ROOT="$WS" DEFAULT_BRAND="$BRAND" \
-  NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=4096}" \
-    setsid nohup pnpm dev --port "$PORT" >"$LOGFILE" 2>&1 </dev/null &
+    setsid nohup "$ALPACA_BIN" -workspace "$WS" -port "$PORT" >"$LOGFILE" 2>&1 </dev/null &
   local pid=$!
   echo "$pid" >"$PIDFILE"
   disown "$pid" 2>/dev/null || true
 
-  # Esperar a que el listener aparezca (dev server compila al arrancar).
+  # Go arranca instantáneo (sin compile-on-start) · esperar el listener.
   local i
-  for i in $(seq 1 60); do
+  for i in $(seq 1 20); do
     if listener_present; then
       echo "✅ Cockpit UP · PID $pid · http://localhost:$PORT"
       echo "   log: $LOGFILE"
@@ -144,9 +133,9 @@ do_start() {
       rm -f "$PIDFILE"
       exit 1
     fi
-    sleep 1
+    sleep 0.5
   done
-  echo "⚠️  Timeout (60s) esperando el listener en :$PORT. Revisá $LOGFILE" >&2
+  echo "⚠️  Timeout esperando el listener en :$PORT. Revisá $LOGFILE" >&2
   exit 1
 }
 
@@ -155,7 +144,7 @@ do_stop() {
   if [[ -f "$PIDFILE" ]]; then
     local pid; pid="$(cat "$PIDFILE" 2>/dev/null || echo "")"
     if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
-      # Matar el process-group entero (pnpm + node child). setsid → PGID == PID.
+      # Matar el process-group entero. setsid → PGID == PID.
       kill -TERM "-$pid" 2>/dev/null || kill -TERM "$pid" 2>/dev/null || true
       local i
       for i in $(seq 1 10); do
@@ -182,7 +171,7 @@ do_status() {
   listener_present && listen_up=yes
   if [[ "$listen_up" == yes ]] && http_healthy; then http_up=yes; fi
 
-  echo "[cockpit-status] worktree=$WORKTREE_NAME brand=$BRAND port=$PORT"
+  echo "[cockpit-status] worktree=$WORKTREE_NAME brand=$BRAND port=$PORT (alpaca)"
   echo "  process(pidfile): $proc_up (pid $pid)"
   echo "  listener(LISTEN): $listen_up"
   echo "  http(health):     $http_up"
@@ -190,7 +179,7 @@ do_status() {
     echo "  → ✅ UP · http://localhost:$PORT"
     return 0
   elif [[ "$listen_up" == yes ]]; then
-    echo "  → 🟠 listener vivo pero health no responde (¿compilando?). log: $LOGFILE"
+    echo "  → 🟠 listener vivo pero health no responde. log: $LOGFILE"
     return 0
   else
     echo "  → ⚪ DOWN. Levantá: make cockpit-up"

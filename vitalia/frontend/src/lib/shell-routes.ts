@@ -90,6 +90,8 @@ const N3_DEFAULT_LEAF: ReadonlyArray<readonly [RegExp, string]> = [
   [new RegExp(`^/(${UUID_SEG})/lisa/marca/?$`, "i"), "identidad"],
   [new RegExp(`^/(${UUID_SEG})/lisa/staff/(${UUID_SEG})/?$`, "i"), "perfil"],
   [new RegExp(`^/(${UUID_SEG})/adrian/embudo/(${UUID_SEG})/?$`, "i"), "resumen"],
+  // T-1 vitalia-fase2-config-cuenta — config.cuenta N3-static default leaf
+  [new RegExp(`^/(${UUID_SEG})/config/cuenta/?$`, "i"), "datos"],
 ];
 
 /** Agente bare (`/{uuid}/{agent}`) → su defaultSubtab (espejo de [agent]/page.tsx). */
@@ -146,6 +148,7 @@ export interface SubSubTabMeta {
  *
  * Current entries:
  *   - lisa.marca → 3 sub-sub-tabs: identidad · voz-y-tono · presencia (T-4 F2-S7)
+ *   - config.cuenta → 3 sub-sub-tabs: datos · preferencias · responsable (T-1 config-cuenta)
  */
 export const AGENT_SUBSUBTABS: Partial<
   Record<`${string}.${string}`, readonly SubSubTabMeta[]>
@@ -154,6 +157,12 @@ export const AGENT_SUBSUBTABS: Partial<
     { id: "identidad", label: "Identidad", icon: "🏥" },
     { id: "voz-y-tono", label: "Voz y tono", icon: "🎙️" },
     { id: "presencia", label: "Presencia", icon: "📍" },
+  ],
+  // T-1 vitalia-fase2-config-cuenta — Mi cuenta N3-static sub-sub-tabs
+  "config.cuenta": [
+    { id: "datos", label: "Datos", icon: "🏢" },
+    { id: "preferencias", label: "Preferencias", icon: "⚙️" },
+    { id: "responsable", label: "Responsable", icon: "🔐" },
   ],
 } as const;
 

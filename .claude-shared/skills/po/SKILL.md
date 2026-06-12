@@ -3,7 +3,7 @@
 name: po
 description: "Product Owner Nicolify v4 (post pm-redesign 2026-05 Punto 4). SCOPE: service-stories only (BE endpoint sin UI, sin agentic) o agentic-stories spec (que después /ux-agentico diseña flow). Para UI std (CRUD/list/form/dashboard) → use /po-ux fusión. Toma 1 user story state=refining → produce 01-spec.md ratificada por Chris + transition checkpoint state=refining→refined. Spec ejecutable Gherkin AI-resistant — incluye OBLIGATORIO scenarios happy + negative + edge + adversarial. Loop iterativo. Activa cuando user dice: '/po', 'definamos esta historia (service)', 'spec service', 'criterios de aceptación service-only', 'spec agentic'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
-model: opus
+model: fable
 ---
 
 # /po — Product Owner (Spec ejecutable, service-stories + agentic-stories)

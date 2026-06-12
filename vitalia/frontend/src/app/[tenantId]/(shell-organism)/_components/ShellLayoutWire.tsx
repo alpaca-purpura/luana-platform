@@ -32,6 +32,7 @@ import {
   type AgentClassBundle,
   type ShellAgentDescriptor,
   type ShellChatStore,
+  type ShellSubSubTabMeta,
   type ShellTestIds,
 } from "@luana/ui-kit";
 
@@ -43,6 +44,7 @@ import {
   type AgentSlug,
   type RibbonTabSlug,
 } from "@/lib/agent-catalog";
+import { AGENT_SUBSUBTABS } from "@/lib/shell-routes";
 import {
   agentBgClass,
   agentBgSoftClass,
@@ -184,6 +186,9 @@ export function ShellLayoutWire({ children }: ShellLayoutWireProps) {
       agentCatalog={AGENT_CATALOG_ARRAY}
       ribbonOrder={RIBBON_ORDER}
       subTabsByAgent={SUB_TABS_BY_AGENT}
+      // N3 sub-sub-tabs (lisa.marca, config.cuenta) — fix regresión lift 3cb9d5a0:
+      // el kit declaraba subSubTabsByKey en AppPanelSlot pero nadie lo cableaba.
+      subSubTabsByKey={AGENT_SUBSUBTABS as Record<string, readonly ShellSubSubTabMeta[]>}
       shippedStaticSubtabs={SHIPPED_STATIC_SUBTABS}
       getAgentClasses={getAgentClasses}
       useShellStore={useShellStoreKit}

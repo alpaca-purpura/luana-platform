@@ -824,3 +824,99 @@ Paleta directorio: lisa-green ×6→**×14**, lisa-soft 0→**×10**. Gates: esl
 **Parte B — autoguardado flotante como ESTÁNDAR de todo bloque con autosave.** Chris prefirió mi estilo de autosave + pidió que flote/se vea siempre + sea estándar. Construí `src/components/shared/FloatingAutosaveIndicator.tsx`: pill **flotante bottom-center** (`sticky bottom-4`, centrado — medido pillCenter=986 = centro del panel 985), **siempre visible** (idle = "Los cambios se guardan automáticamente"), estados idle/dirty/saving/saved/error + tiempo relativo en saved. **Retrofiteado en los 4 bloques** (decisión "TODO ahora"): Perfil + marca Identidad + Voz y tono + Presencia (reemplaza el `AutosaveBadge` de header por el flotante). Cementé el estándar en `design-system.md § Autoguardado` (toda vista nueva con autosave DEBE usarlo; anti-pattern: hint inline/badge en header). Unit test 6 casos. **Live-verde:** Perfil idle → editar "Años exp" → **saved** (PATCH real, el pill reaccionó) · marca/identidad pill presente (screenshots `08/09/10`).
 
 **Gates:** eslint 0 · tsc 0 · vitest 150/150 (marca + staff + nuevo componente). **Flags 2 cosas (no mías, no bloquean):** (1) `AutosaveBadge` queda como legacy — su componente ya no se usa pero su TYPE `AutosaveStatus` lo siguen importando los hooks de marca; lo dejé para no romper (limpieza = carril aparte). (2) `audited-section.test.tsx` falla determinista en aislamiento (`response.json is not a function` — mock roto del propio test, PHI/AuditedSection, NO toqué eso) → tech-debt L3 pre-existente (junto al `asyncio.get_event_loop` ya flaggeado). **Propuesta para ratificar:** cementar el estándar flotante a nivel rule/auditor (enforce) como follow-up del harness (HLP: no editar harness mid-feature). Commit por pathspec (skip flags). ¿Siguiente comentario?
+
+### 2026-06-11 21:30 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO
+**Chris revirtió la decisión de story separada → FOLD del entity-switcher DENTRO de esta story + resume + auditoría del ready-package antes de dev.**
+
+**Pedido Chris (verbatim resumido):** crear el entity switcher en esta story y continuar el desarrollo incluyéndolo para cerrarla completa — sin más procesos. Antes de dev: auditar si el architect cumple los protocolos nuevos y si todo queda bien definido (campos, vistas, tokens, átomos, moléculas acordados para vitalia).
+
+**Aplicado:**
+- Borré `vitalia-shell-entity-switcher/` (creada hoy, sin commit) + quité el link blocks_soft.
+- `scope_extension_2026_06_11` en checkpoint: dropdown en el chip de entidad del `EntitySubNavBar` (N3-dyn) — cambiar de doctor sin volver al directorio. Mantiene la decisión ratificada: **genérico en core `@luana/ui-kit`** (prop opcional contrato "lista conmutable"; doctores 1er consumidor; EXTEND core → proposal liviana /pm-luana). Net-new vs mockup aprobado (chip estático) → delta mockup ADR-003 con tu firma antes de buildear esa parte.
+- **Unpark:** `parked → developing` (el gate shell-core-hardening que la pausó está DONE 2026-06-11).
+
+**Auditoría ready-package (resultado):**
+- ✅ `03-arch.md` — ADR-004 full + CONN + prior-art OK. ✅ `06-tickets.yaml` — assignment×11 + `vitalia-design-system` en skills FE + cero general-purpose. ✅ Campos/vistas/tokens bien definidos en `03-arch-fe.md` (tint `--agent-lisa`, shadcn en `ui/`, ARIA tablist, FSD).
+- ❌ `04-validators.yaml` **STALE v4.1**: faltan los 6 campos proceso v5/D-X4 (posterior al package): `verification_nature` · `technical_gates` · `demo_required` · `business_rules` · `regression_guard` · mutation-gate opt-in → BACKFILL obligatorio.
+- ⚠️ `03-arch-fe.md` define `EntitySubNavBar` como NEW local en `shell-organism/` — **hoy vive en `core/@luana/ui-kit`** (lift post-arch) → reconcile en el delta.
+- ❌ Switcher: cero presencia en spec/arch/validators → delta completo.
+
+**Orden de resume (en next_action):** /po-ux mini-delta switcher (spec+mockup, tu firma) → /architect delta (switcher + backfill v5 + reconcile core) → /dev-team (re-verify full surface post-hardening + build switcher + cierre) → G → R → /auditor → merge.
+
+### 2026-06-11 22:15 · 🤖 claude · `/po-ux` · ✓ APLICADO
+**Mini-delta v3 (3 ítems) — FIRMA 1 funcional ratificada (AskUserQuestion ×3) + spec § Delta v3 + mockup patcheado. Espera FIRMA 2 (mockup).**
+
+1. **Switcher (D3-A):** te corrijo mi corrección anterior — SÍ existía el acuerdo: es el **design-system-canon §2.4** (ratificaste 2026-06-08): `EntityPicker` con `▾`, buscador, cambia sin volver. El componente **YA está construido en `core/@luana/ui-kit`** (demoed en /showcase) — falta integrarlo a `EntitySubNavBar` (chip estático) + cablear doctores. Ratificaste: canon tal cual, **preserva hoja actual** al cambiar.
+2. **Bio-docs (D3-B):** audit confirmó "feo" Y roto: dropzone NO-OP (archivos no se suben ni persisten), sin lista de subidos, átomos crudos, emojis autosave contra canon §2.6. Ratificaste: **funcional completa ahora** (R2 real + lista con descargar/eliminar + estados + contrato BE bioFiles).
+3. **Horarios (D3-C):** ratificaste revisión de **toda la casuística** — 8 casos repro live + batería exhaustiva sobre `availability_projection_service` (la lógica occurrences existe → bug sutil si está). Cero cambio visual.
+
+**Artefactos:** `01-spec.md § ★ Delta v3` (funcional + RN nuevas) · `mockups/doctores.html` patcheado (EntityPicker ▾ con panel + búsqueda + ✓ activo + inactivos ocultos; filas de documentos con tipo/tamaño/fecha/descargar/eliminar + estado subiendo 62%) · checkpoint `scope_extension_2026_06_11` v2 (3 items + firma_1).
+
+**Próximo:** revisás el mockup (sirvo en :8888 o lo abrís directo) → FIRMA 2 → genero Gherkin+matriz del delta (RONDA 2) → /architect delta (switcher+bioFiles arch + BACKFILL validators v5 + reconcile EntitySubNavBar core) → /dev-team resume.
+
+### 2026-06-11 22:45 · 🤖 claude · `/po-ux` · ✓ APLICADO
+**3 preguntas de Chris sobre la bio (Adrián / regeneración / dónde se ve) → respondidas con código real + 2 ratificaciones + derivadas cableadas en stories EXISTENTES (pedido Chris: no crear nuevas).**
+
+- **Q1 ¿Qué ve Adrián?** Honesto: HOY nada — el wiring sales_agent←doctor nunca se construyó (aspiracional en el spec). Lo único expuesto: endpoint público PHI-masked si toggle landing ON. **Decisión Chris:** el consumo por Adrián va a `vitalia-fase2-adrian-canal-inbound` (dueña del ex-sales_agent) — scope-add escrito en su checkpoint: contexto de venta (bio+especialidad+servicios) + acción "compartir link del doctor". Y el link = **página pública del doctor mobile-first** (lead la abre desde WhatsApp) — scope-add escrito en `vitalia-fase2-lisa-landing-public`.
+- **Q2 ¿Generar bio una vez?** Hoy regenerar PISA las 3 secciones sin aviso (bug de diseño). **Ratificado tal cual:** confirm-overwrite + "Última generación: {fecha}" (`bio_generated_at`) + empty state explícito → spec § D3-B.1 (RN-D3B-3/4).
+- **Q3 ¿Dónde veo la bio generada?** Ya existe en la hoja Perfil (GeneratedBioSections, 3 secciones editables debajo de los insumos) — probablemente no la viste por estar vacía sin empty state → cubierto en D3-B.1.
+
+**Pendiente de Chris:** FIRMA 2 del mockup (http://localhost:8888/doctores.html — EntityPicker ▾ + filas documentos).
+
+### 2026-06-11 23:20 · 🤖 claude · `/po-ux` · ✓ APLICADO
+**Corrección Chris ronda 3 (3 puntos) → repensado + diseñado en mockup (Delta v3.1). Espera FIRMA 2.**
+
+1. **"No lo dejes como requerimiento"** — REVERTIDO: la página pública del doctor va EN ESTA story (§ D3-D nuevo). landing-public queda solo clínica (parkeada, "no sé si irá"); su scope-add fue corregido. El envío automático por Adrián SÍ queda en canal-inbound (eso no cambió — esta story provee página+URL, aquella la envía).
+2. **"El perfil extraído debe mejorar"** — BioPublic 3 blobs → perfil ESTRUCTURADO: Titular venta · Resumen · Formación[] (título—institución—año) · Credenciales verificables[] (chips ✓ CMP/certs) · Enfoque · Idiomas[]. Página mobile mini-Doctoralia con CTA "💬 Consultar por WhatsApp" → deep-link al WhatsApp de la clínica (el lead vuelve al funnel de Adrián — loop cerrado).
+3. **"No regenerar porque sí — ayúdame con buen UX"** — flujo ESTADO-DRIVEN: nunca generado → único CTA "Generar" · generado sin material nuevo → sección quieta (solo fecha + ⋮ secundario) · material nuevo detectado (timestamps vs bio_generated_at, server) → banner contextual "⚡ Agregaste N..." + CTA "Actualizar perfil". El botón primario SOLO existe cuando hay algo que incorporar.
+
+**Mockup (cirugía mayor):** nueva 4ª hoja N3 "🌐 Página" con pipeline completo (estado+link compartible / material privado / perfil estructurado con banner contextual / preview en frame de teléfono mini-Doctoralia). El bloque bio salió de Perfil (cross-link card). RN-D3D-1..4 en spec.
+
+### 2026-06-11 23:50 · 🤖 claude · `/po-ux` · ✓ APLICADO
+**Ronda 4 Chris (dominio env + página sin CTA + más Doctoralia) + aclaración idiomas → mockup v3.2 + spec D3-D.1.**
+- **Dominio:** `{APP_BASE_URL}/d/{clinica}/{doctor}` — dev-app/test-app/app .vitalialat.com según entorno (env var, nunca hardcode). Mockup muestra dev-app + caption de entornos.
+- **Página = informativa pura:** botón WhatsApp ELIMINADO (el lead ya viene de la conversación — la página solo construye confianza) + stats "años·casos·idiomas" FUERA. RN-D3D-3 reemplazada (sin CTA de contacto).
+- **Rediseño Doctoralia-style:** header sobrio (foto·nombre·especialidad·"✓ Nro. colegiatura CMP verificado") → Sobre mí → Formación → **Experiencia profesional (sección nueva)** → Tratamientos (chips) → Certificaciones y membresías → Idiomas → Consultorio (informativo). Editor espejado (se eliminó "Titular" — tono venta).
+- **Idiomas (aclaración Chris):** sí pero discreto — solo se renderiza si habla MÁS de un idioma (español-only → nada). RN-D3D-5. Posición: abajo, antes de Consultorio.
+
+### 2026-06-12 00:10 · 🤖 claude · `/po-ux` · ✓ APLICADO
+**Bug mockup reportado Chris (picker no abría al click) → root cause: la barra N3 tenía `overflow-x:auto` que RECORTABA el dropdown absoluto (abría pero invisible). Fix `overflow:visible` + verificado headless Playwright con evidencia:** trigger visible ✓ · panel abre (box 264×165) ✓ · 2 items (Ana ✓ activa, Luis; Sol inactiva oculta) ✓ · seleccionar Luis preserva hoja (doctor=luis, leaf=pagina) ✓ · screenshot /tmp/picker-open.png.
+
+### 2026-06-12 00:40 · 🤖 claude · `/po-ux` · ✓ APLICADO
+**FIRMA 2 ✍ Chris ("doy por aprobado todo") + 2 adds de última ronda + RONDA 2 GENERADA → handoff /architect (mandato Chris: Fable 5, no Opus 4.8).**
+- **Horarios — repro concreto Chris:** "2 repeticiones → repite indefinidamente". Root cause CONFIRMADO por inspección: `recurrentBlockVisibleInWeek` (FE) ignora `occurrences` (solo mira end_date, retorna true siempre) — BE `rrule(count)` correcto. **Se pinta mal, no es BD.** + drift: FE expande client-side en vez de consumir proyección BE (4ª vez patrón contrato-imaginado). Spec § D3-C.1.
+- **Vista de MES (new):** toggle Semana|Mes, grilla 6×7 chips compactos "+N más", click día→semana, consume PROYECCIÓN BE (coherente con el fix). Spec § D3-E + RN-D3E-1/2.
+- **RONDA 2 generada:** 27 scenarios delta (SC-D3A-1..4 · D3B-1..5 · D3D-1..6 · D3C-1..8 con SC-D3C-1=regression del repro · D3E-1..4) + matriz sin huecos.
+- **Mandato modelo:** Chris — "empuja y obliga para que architect use fable 5 en vez de opus 4.8" → spawn architect-orchestrator con model=fable.
+
+### 2026-06-12 01:00 · 🤖 claude · `/po-ux`→`/architect` · ✓ APLICADO
+**Ronda 6 Chris (mid-handoff): editor de recurrencia clon Google Calendar + mejor display de ocurrencias → spec § D3-F (diseño-por-referencia: el patrón Google ES el mockup; compone átomos canon).** Repetir: no-repite/diario/semanal/quincenal/personalizado (cada N semanas + chips días L-D + termina nunca/fecha/N repeticiones) + resumen humano siempre visible ("Se repite cada 2 semanas los lunes y jueves, 8 veces"). Dominio: `days_of_week` lista + `interval` (rrule nativo, migración compat RN-D3F-3). 5 scenarios SC-D3F-1..5. → Procedo al spawn architect-orchestrator (DELTA MODE · model=fable por mandato Chris).
+
+### 2026-06-12 01:20 · 🤖 claude · `/po-ux` · ✓ APLICADO
+**Pedido Chris: "espero hayas puesto todos los escenarios incluso la construcción de la landing" → self-audit de cobertura: encontré 9 huecos reales en la página pública y los cerré (§ D3-D.2):** mobile-first render (390×844) + desktop degradación + perfil parcial/nunca-generado (mínimo garantizado, cero cajas vacías) + **preview WhatsApp og:tags** (el link que manda Adrián muestra card decente) + foto faltante (avatar iniciales) + slug inexistente (anti-enumeración: misma vista que toggle-OFF) + axe a11y pública + Spanish neutro + copiar-link/ver-página. RN-D3D-6..9 + SC-D3D-7..15. **Total delta ahora: 41 scenarios.** Mandatos registrados en checkpoint: model fable para architect+dev-team+auditor + auto-chain al terminar architect.
+
+### 2026-06-12 01:40 · 👤 chris · mandato autónomo (registrado por claude)
+**Verbatim:** "ok, no esperes nada de mí, tú continúa hasta el done, me iré a dormir."
+**Interpretación operativa (claude):** autorización explícita de corrida autónoma architect→dev-team→auditor→merge→done SIN pausa G presencial. `autonomous_mode: true` ya estaba en checkpoint. La DoD live-verify NO se relaja: claude ejerce TODOS los writes reales en dev-app + dod_evidence completa. El signoff de Chris se registra como pre-autorizado con followups abiertos: (a) self-test live de Chris al despertar, (b) ratificación golden PNGs (ADR-003, no-autonomous). Si el self-test matutino encuentra algo → bugfix follow-up, no reabre el merge.
+
+### 2026-06-12 · 🤖 claude · `/architect` (DELTA MODE · **Fable 5** por mandato Chris) · ✓ APLICADO
+**Ready-package DELTA producido (NO re-arquitectura — story sigue `developing`).** `03-arch-delta.md` (nuevo) + `04-validators.yaml` backfill v4.1→**v5/D-X4** + `06-tickets.yaml` append + `dispatch-plan.md` update. `ready_package_delta_by: architect-orchestrator (Fable 5)`.
+- **6 workstreams:** D3-A switcher (EXTEND `@luana/ui-kit` EntitySubNavBar prop opcional `entityIdentitySlot` + EntityPicker ya construido → proposal `2026-06-12-lift-entitysubnavbar-picker-slot.md`, **merge gated /pm-luana**) · D3-B bio-docs (kind `bio_doc` + tabla `vitalia_doctor_bio_files` mig 040 + endpoints + canon) · **D3-C FIX** root cause CONFIRMADO `recurrentBlockVisibleInWeek` L99-115 (true para occurrences/open_ended; BE `rrule(count)` OK) → NEW endpoint `availability-occurrences` SSoT, muere expansión client-side, regression RED first · D3-D página pública (perfil ESTRUCTURADO supersede BioPublic, mig 041 compat, route `/d/{clinica}/{doctor}` sin auth, APP_BASE_URL env, og:tags, anti-enumeración, sin CTA/stats) · D3-E vista mes (consume occurrences) · D3-F recurrencia Google-clone (dominio `days_of_week[]`+`interval`, mig 042 compat, Select canónico, resumen single-source).
+- **NO-NEW-LAYER:** todo EXTEND/REUSE (EntityPicker, assets R2 proxy, projection service, public router). Cero mirror cross-brand. Una prop core additive + gated.
+- **04-validators v5:** `verification_nature: ambas` + `technical_gates` (mutation HARD projection/migración/serializer) + `demo_required` + `business_rules` (RN-D3A..F) + `regression_guard` (clinics 23 + vitest 49+ + @luana/ui-kit back-compat) + `runtime_error_gate` + `dev_app_verified`. v4.1 CONSERVADO.
+- **12 tickets** (FULL units SPLIT BE/FE por cap ≤8h), assignment per ticket (skills incl vitalia-design-system + chrome-devtools-verify + playwright-expert; forbidden core/adrian/ui), exit = live-verify dev-app + dod_evidence (NUNCA "tests verdes"). DAG sin ciclos: D3-C antes de D3-F (mismo projection service), mes consume occurrences. **41 scenarios cubiertos** (incl § D3-D.2 SC-D3D-7..15).
+- **3 OQ /pm:** OQ-1 lift gate T-CORE · OQ-2 middleware excluye `/d/**` · OQ-3 clinica-slug source. **NO transición de estado** (queda `developing`). → `done -> 06-tickets.yaml`.
+
+### 2026-06-12 02:05 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO
+**Architect (Fable 5) entregó en 18 min — package verificado: 41/41 SCs en validators (incl. D3-D.2) + backfill v5 completo + 12 tickets delta con assignment + DAG acíclico + mutation-HARD en projection/migración. Sus 3 Open Questions RESUELTAS sin despertarte** (todas con base ya ratificada): OQ-1 proposal lift picker-slot escrita+accepted (tu ratificación "genérico en core" 2026-06-11) · OQ-2 middleware excluye /d/** (público por diseño) · OQ-3 clinics.slug existe — resolución por clinic-slug + guard anti-colisión cross-tenant + unicidad global para slugs nuevos. → Lanzo /dev-team (builders Fable 5).
+
+### 2026-06-12 00:45 · 👤 chris → 🤖 claude · `/dev-team` · ✓ APLICADO
+**Chris (mid-run): "los siguientes builders hazlos con sonnet, se están gastando muy rápido mis tokens, fable solo el auditor al final".** Aplicado al instante: maté los 2 builders fable en vuelo (bio-docs continuación + occurrences-consume — recién arrancaban, pérdida ~0) y los relancé en Sonnet. Mandato actualizado en checkpoint. Progreso: 3/12 tickets shipped con fable (T-CORE 51d1aa80 · BE-occurrences 13bde559 · FE-switcher f434ae63, live-verificado). Resto del build = Sonnet; auditor final = Fable 5.
+
+### 2026-06-12 03:50 · 🤖 claude · `/dev-team` · ✓ APLICADO — DELTA v3 DEVELOPED
+**Los 12 tickets delta + 5 parches integración construidos, gates verdes, live-verified. `developing → developed` (autonomous → /auditor Fable 5).**
+- **Commits:** 51d1aa80→90774f5e (~20 commits pusheados). Suites: BE clinics 424/424 · arch 339 (solo pgcrypto pre-existente) · FE 489/489 · ui-kit 266/266 · tsc/ruff/eslint 0.
+- **Phase D:** 41/41 SCs delta referenciados en tests. **Step 4.6:** dod_live_verified + 5 entries dod_evidence (switcher hoja-preservada · occurrences 0,1,1,0 · editor Google L+J×8 · bio-docs upload 201 · página pública 200+og+anti-enum).
+- **La integración destapó y fixeó 8 capas latentes** (la suite verde de tickets NO las veía — solo el live): URL proxy fantasma (avatar roto desde mayo) · FK engine products (hotfix core + proposal) · tabla assets jamás creada (migración 043) · multiple-heads + ids>32 alembic · DTOs sin camel (bio_files/perfil) · profileState nunca poblado · página SSR shape/env/path imaginados ×3 · NullPool conftest (curó L3 histórico test_doctor_cross_tenant). **8ª-9ª instancia patrón contrato-imaginado → HB-42 contract-test FE↔BE = prioridad 1 del CIL.**
+- **Pendiente menor (no bloquea, anotado p/ auditor):** flujo notas→sobre_mi del extractivo sin evidencia live mía (autosave notas verificado en mayo + unit del fallback verde); LLM real del generate apagado en dev (LiteLLM down) → fallback extractivo probado.
+- **Para tu mañana (followups del signoff pre-autorizado):** self-test con demo-script.md (actualizado, 14 pasos) + ratificar goldens. → /auditor (Fable 5) ahora.

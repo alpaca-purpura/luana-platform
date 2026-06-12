@@ -36,36 +36,52 @@ describe("staffKeys.blocks", () => {
 // ── AvailabilityBlock discriminated union (type-level) ────────────────────────
 
 describe("AvailabilityBlock discriminated union", () => {
-  it("recurrent block with end_date passes schema", () => {
+  it("D3-F recurrent block with daysOfWeek+interval (end_date) passes type", () => {
     const block: RecurrentBlock = {
       id: "blk-1",
       kind: "recurrent",
-      dayOfWeek: 0, // Monday
+      daysOfWeek: [0], // Monday
+      interval: 1,
       startTime: "09:00",
       endTime: "13:00",
-      freq: "weekly",
       endConditionKind: "end_date",
       endDate: "2025-12-31",
     };
-    // Type check: kind="recurrent" narrows union
     expect(block.kind).toBe("recurrent");
-    expect(block.dayOfWeek).toBe(0);
-    expect(block.freq).toBe("weekly");
+    expect(block.daysOfWeek).toEqual([0]);
+    expect(block.interval).toBe(1);
   });
 
-  it("recurrent block with occurrences passes schema", () => {
+  it("D3-F recurrent block multi-day biweekly with occurrences", () => {
     const block: RecurrentBlock = {
       id: "blk-2",
       kind: "recurrent",
-      dayOfWeek: 5, // Saturday
+      daysOfWeek: [0, 3], // Monday + Thursday
+      interval: 2,
       startTime: "10:00",
       endTime: "14:00",
-      freq: "biweekly",
+      endConditionKind: "occurrences",
+      occurrences: 8,
+    };
+    expect(block.occurrences).toBe(8);
+    expect(block.daysOfWeek).toContain(3);
+  });
+
+  it("legacy recurrent block with optional dayOfWeek/freq still type-checks", () => {
+    const block: RecurrentBlock = {
+      id: "blk-legacy",
+      kind: "recurrent",
+      daysOfWeek: [5],
+      interval: 2,
+      dayOfWeek: 5, // legacy optional
+      freq: "biweekly", // legacy optional
+      startTime: "10:00",
+      endTime: "14:00",
       endConditionKind: "occurrences",
       occurrences: 6,
     };
-    expect(block.occurrences).toBe(6);
     expect(block.freq).toBe("biweekly");
+    expect(block.dayOfWeek).toBe(5);
   });
 
   it("one_off block passes schema", () => {
@@ -83,34 +99,36 @@ describe("AvailabilityBlock discriminated union", () => {
 
 // ── availabilityBlockSchema Zod validation ────────────────────────────────────
 
-describe("availabilityBlockSchema (Zod)", () => {
-  it("accepts valid weekly recurrent block with end_date", () => {
+describe("availabilityBlockSchema (Zod) — D3-F updated schema", () => {
+  it("accepts D3-F weekly recurrent block with end_date", () => {
     const result = availabilityBlockSchema.safeParse({
       kind: "recurrent",
-      dayOfWeek: 0,
+      repeatPreset: "weekly",
+      daysOfWeek: [0],
+      interval: 1,
       startTime: "09:00",
       endTime: "13:00",
-      freq: "weekly",
       endConditionKind: "end_date",
       endDate: "2025-12-31",
     });
     expect(result.success).toBe(true);
   });
 
-  it("accepts biweekly block with occurrences=6 (SC-1b)", () => {
+  it("accepts D3-F biweekly multi-day block with occurrences (SC-D3F-3)", () => {
     const result = availabilityBlockSchema.safeParse({
       kind: "recurrent",
-      dayOfWeek: 5,
+      repeatPreset: "custom",
+      daysOfWeek: [0, 3],
+      interval: 2,
       startTime: "10:00",
       endTime: "14:00",
-      freq: "biweekly",
       endConditionKind: "occurrences",
-      occurrences: 6,
+      occurrences: 8,
     });
     expect(result.success).toBe(true);
   });
 
-  it("accepts one_off block (SC-1c: Solo esta semana)", () => {
+  it("accepts one_off block", () => {
     const result = availabilityBlockSchema.safeParse({
       kind: "one_off",
       specificDate: "2025-09-15",
@@ -123,10 +141,11 @@ describe("availabilityBlockSchema (Zod)", () => {
   it("rejects recurrent block with end_date condition but no date", () => {
     const result = availabilityBlockSchema.safeParse({
       kind: "recurrent",
-      dayOfWeek: 0,
+      repeatPreset: "weekly",
+      daysOfWeek: [0],
+      interval: 1,
       startTime: "09:00",
       endTime: "13:00",
-      freq: "weekly",
       endConditionKind: "end_date",
       endDate: null,
     });
@@ -140,10 +159,11 @@ describe("availabilityBlockSchema (Zod)", () => {
   it("rejects recurrent block with occurrences condition but no count", () => {
     const result = availabilityBlockSchema.safeParse({
       kind: "recurrent",
-      dayOfWeek: 0,
+      repeatPreset: "biweekly",
+      daysOfWeek: [0],
+      interval: 2,
       startTime: "09:00",
       endTime: "13:00",
-      freq: "biweekly",
       endConditionKind: "occurrences",
       occurrences: null,
     });
@@ -153,10 +173,11 @@ describe("availabilityBlockSchema (Zod)", () => {
   it("rejects invalid time format", () => {
     const result = availabilityBlockSchema.safeParse({
       kind: "recurrent",
-      dayOfWeek: 0,
+      repeatPreset: "weekly",
+      daysOfWeek: [0],
+      interval: 1,
       startTime: "9am",
       endTime: "1pm",
-      freq: "weekly",
       endConditionKind: "end_date",
       endDate: "2025-12-31",
     });

@@ -17,7 +17,7 @@ disable-model-invocation: true   # instruction-doc: architect-orchestrator lo LE
 date -u +%Y-%m-%d   # captura para WebSearch + Research Notes
 ```
 
-Knowledge cutoff Opus 4.8 = Aug 2025. Para LangGraph 2.0 / deepagents / Anthropic prompt caching state-of-the-art post-cutoff → WebSearch con `{current_year}` interpolated o WebFetch canonical docs.
+El modelo subyacente tiene un cutoff estático. Para LangGraph 2.0 / deepagents / Anthropic prompt caching state-of-the-art post-cutoff → WebSearch con `{current_year}` interpolated o WebFetch canonical docs.
 
 ## Skills cargados (HARD GATE)
 

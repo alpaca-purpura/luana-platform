@@ -25,6 +25,7 @@ from src.modules.vitalia.api.routes import router as vitalia_router
 from src.modules.vitalia.api.webhook_routes import webhook_router
 from src.modules.vitalia.audit.api.audit_log_router import router as audit_log_router
 from src.modules.vitalia.brand_studio.api.routers.marca_router import router as marca_router
+from src.modules.vitalia.clinics.api.account_router import router as account_router
 from src.modules.vitalia.clinics.api.assets_proxy_router import router as assets_proxy_router
 from src.modules.vitalia.clinics.api.doctors_router import router as doctors_router
 from src.modules.vitalia.clinics.api.public_doctors_router import router as public_doctors_router
@@ -99,6 +100,8 @@ app.include_router(telemetry_router, prefix="/api/telemetry", tags=["telemetry"]
 # vitalia-fase2-adrian-inbox (audit-log-404 twin-fix): FE PHI-read audit ingestion (AuditedSection).
 # Serves /api/v1/vitalia/audit-log — wires the FE beacon to AsyncAuditWriter (hipaa-lite dual filter).
 app.include_router(audit_log_router, prefix="/api/v1/vitalia", tags=["audit"])
+
+app.include_router(account_router, prefix="/api/v1/clinics/account", tags=["account"])
 
 
 class HealthResponse(BaseModel):

@@ -92,7 +92,10 @@ export function AppPanelSlot({
   const pathname = usePathname();
   const router = useRouter();
   const agentCatalogRecord = Object.fromEntries(agentCatalog.map((d) => [d.slug, d]));
-  const validSlugs = agentCatalog.map((d) => d.slug);
+  // configTabSlug incluido: la franja N3 aplica también a la caja config/Plataforma
+  // (e.g. vitalia config.cuenta) — sin esto extractAgentFromPath devuelve null para
+  // /tenant/config/... y la SubSubTabsBar nunca se pinta en esas rutas.
+  const validSlugs = [...agentCatalog.map((d) => d.slug), configTabSlug];
 
   return (
     <section

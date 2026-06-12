@@ -21,7 +21,10 @@ import { useAuth } from "@clerk/nextjs";
 import { useTenantId } from "@/hooks/useTenantId";
 import { useClinicId } from "@/hooks/useClinicId";
 import { fetchClient, ApiError } from "@/lib/api/fetchClient";
-import { conversationDetailKey, conversationsListKey } from "./_keys";
+import {
+  conversationDetailKeyForInvalidation,
+  conversationsListKeyForInvalidation,
+} from "./_keys";
 import type { ConversationDetail } from "../types/inbox.types";
 import type { Message } from "../types/inbox.types";
 
@@ -66,7 +69,7 @@ export function useRetractMessage() {
       );
     },
     onMutate: async (input) => {
-      const detailKey = conversationDetailKey(input.conversationId);
+      const detailKey = conversationDetailKeyForInvalidation(input.conversationId);
       await qc.cancelQueries({ queryKey: detailKey });
       const previousDetail = qc.getQueryData<ConversationDetail>(detailKey);
 
@@ -91,23 +94,23 @@ export function useRetractMessage() {
       // Rollback optimistic update
       if (ctx?.previousDetail) {
         qc.setQueryData(
-          conversationDetailKey(input.conversationId),
+          conversationDetailKeyForInvalidation(input.conversationId),
           ctx.previousDetail,
         );
       }
       // For 409: re-fetch to get fresh state
       if (err instanceof ApiError && err.status === 409) {
         void qc.invalidateQueries({
-          queryKey: conversationDetailKey(input.conversationId),
+          queryKey: conversationDetailKeyForInvalidation(input.conversationId),
         });
       }
       // 410 is handled by caller (show expired toast)
     },
     onSettled: (_data, _err, input) => {
       void qc.invalidateQueries({
-        queryKey: conversationDetailKey(input.conversationId),
+        queryKey: conversationDetailKeyForInvalidation(input.conversationId),
       });
-      void qc.invalidateQueries({ queryKey: conversationsListKey() });
+      void qc.invalidateQueries({ queryKey: conversationsListKeyForInvalidation() });
     },
   });
 }

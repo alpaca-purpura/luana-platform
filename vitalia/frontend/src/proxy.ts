@@ -47,6 +47,9 @@ const isPublicRoute = createRouteMatcher([
   // core-ds-foundation T-9: catalogo publico del design-system @luana/ui-kit.
   // Sin tenant, sin PHI — solo renderiza componentes con datos de ejemplo.
   "/showcase(.*)",
+  // T-FE-pagina-publica (D3-D): página pública del doctor — no auth.
+  // Anti-enumeration: BE returns identical 404 for toggle-OFF/unknown/cross-tenant.
+  "/d/(.*)",
 ]);
 
 export const proxy = clerkMiddleware(async (auth, request) => {

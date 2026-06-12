@@ -201,7 +201,7 @@ class AvailabilityBlockRepository(CompoundScopeRepositoryBase[VitaliaAvailabilit
         self.validate_dual_filter(tenant_id=tenant_id, clinic_id=clinic_id)
         today = _today_utc()
 
-        # Update block metadata
+        # Update block metadata (D3-F: include days_of_week + interval)
         update_stmt = (
             update(VitaliaAvailabilityBlockModel)
             .where(
@@ -212,6 +212,8 @@ class AvailabilityBlockRepository(CompoundScopeRepositoryBase[VitaliaAvailabilit
             )
             .values(
                 kind=block.kind,
+                days_of_week=block.days_of_week or None,
+                interval=block.interval,
                 day_of_week=block.day_of_week,
                 start_time=block.start_time,
                 end_time=block.end_time,
@@ -340,7 +342,12 @@ class AvailabilityBlockRepository(CompoundScopeRepositoryBase[VitaliaAvailabilit
 
 
 def _model_to_block(model: VitaliaAvailabilityBlockModel) -> AvailabilityBlock:
-    """Map ORM model to domain entity."""
+    """Map ORM model to domain entity.
+
+    D3-F: pass days_of_week + interval from model if present (post-042 migrated rows),
+    else pass legacy day_of_week + freq (pre-migration rows; domain __post_init__
+    will backfill days_of_week from day_of_week).
+    """
     return AvailabilityBlock(
         id=model.id,
         tenant_id=model.tenant_id,
@@ -349,6 +356,8 @@ def _model_to_block(model: VitaliaAvailabilityBlockModel) -> AvailabilityBlock:
         kind=model.kind,  # type: ignore[arg-type]
         start_time=model.start_time,
         end_time=model.end_time,
+        days_of_week=list(model.days_of_week) if model.days_of_week else [],
+        interval=model.interval if model.interval is not None else 1,
         day_of_week=model.day_of_week,
         freq=model.freq,  # type: ignore[arg-type]
         end_condition_kind=model.end_condition_kind,  # type: ignore[arg-type]
@@ -362,13 +371,18 @@ def _model_to_block(model: VitaliaAvailabilityBlockModel) -> AvailabilityBlock:
 
 
 def _block_to_model(block: AvailabilityBlock) -> VitaliaAvailabilityBlockModel:
-    """Map domain entity to ORM model (for INSERT)."""
+    """Map domain entity to ORM model (for INSERT).
+
+    D3-F: persist days_of_week + interval alongside legacy day_of_week + freq.
+    """
     return VitaliaAvailabilityBlockModel(
         id=block.id,
         tenant_id=block.tenant_id,
         clinic_id=block.clinic_id,
         doctor_id=block.doctor_id,
         kind=block.kind,
+        days_of_week=block.days_of_week or None,
+        interval=block.interval,
         day_of_week=block.day_of_week,
         start_time=block.start_time,
         end_time=block.end_time,

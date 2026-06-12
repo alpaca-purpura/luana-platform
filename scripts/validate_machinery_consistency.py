@@ -19,6 +19,7 @@ de drift reales encontradas. Agregá un CHECK cuando cementes un nuevo invariant
 
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 import sys
@@ -403,14 +404,22 @@ def check_cap_format_enforcement_wired() -> None:
 # versión interna del SDD. Si alguien reintroduce v3.x/F.3/migrará en el empty-state
 # de ScenariosSection, o borra el fallback a user_facing_description, el CHECK falla.
 # (negative-test: re-insertar "Cap todavía v3.1 · migrará…" → exit 1.)
-CAP_DISPLAY_FILE = "tools/luana-cockpit/components/cap-drawer/sections/ScenariosSection.tsx"
+# ★ Pivote cockpit 2026-06-11 (ratificado Chris): la UI del cockpit vive en el
+# repo alpaca-harness (cockpit-ui/, embebida en el binario Go) — ya NO en
+# tools/ de este workspace. El check evalúa la fuente externa si está presente
+# en la máquina; ausente (ej. CI sin el repo hermano) → pass con nota.
+COCKPIT_UI_ROOT = Path(os.environ.get("COCKPIT_UI_DIR", str(Path.home() / "Proyectos/alpaca-harness/cockpit-ui")))
+CAP_DISPLAY_FILE = "components/cap-drawer/sections/ScenariosSection.tsx"
 CAP_DISPLAY_VERSION_JARGON = re.compile(r"v3\.\d|F\.3|migrar|Fase\s+F\.3", re.IGNORECASE)
 
 
 def check_cap_display_no_version_jargon() -> None:
-    p = WS / CAP_DISPLAY_FILE
+    if not COCKPIT_UI_ROOT.exists():
+        check("CHECK 12 · cap-display (cockpit-ui externo no presente — no evaluable acá)", True, "")
+        return
+    p = COCKPIT_UI_ROOT / CAP_DISPLAY_FILE
     if not p.exists():
-        check("CHECK 12 · ScenariosSection existe", False, f"falta {CAP_DISPLAY_FILE}")
+        check("CHECK 12 · ScenariosSection existe", False, f"falta {COCKPIT_UI_ROOT / CAP_DISPLAY_FILE}")
         return
     text = p.read_text(encoding="utf-8", errors="ignore")
     jargon = CAP_DISPLAY_VERSION_JARGON.search(text)
@@ -582,13 +591,14 @@ def check_inherited_survivor_routes_l4() -> None:
 CIL_DOC = "docs/process/continuous-improvement.md"
 HARNESS_IMPROVE_SKILL = ".claude/skills/harnesses-improvement/SKILL.md"
 LEARNING_CAPTURE = ".claude/rules/learning-capture.md"
-COCKPIT_PARSER = "tools/luana-cockpit/lib/harness-backlog.ts"
+COCKPIT_PARSER = "lib/harness-backlog.ts"  # relativo a COCKPIT_UI_ROOT (pivote alpaca 2026-06-11)
 HARNESS_AUDIT_WF = ".claude/workflows/harness-audit.js"
 
 
 def check_cil_index_router() -> None:
     cil = _read(CIL_DOC)
-    parser = _read(COCKPIT_PARSER)
+    parser_path = COCKPIT_UI_ROOT / COCKPIT_PARSER
+    parser = parser_path.read_text(encoding="utf-8", errors="ignore") if parser_path.exists() else ""
     check(
         "CHECK 22 · CIL es router a los 4 hogares existentes (L1 backlog · L2 learnings · L3 tech-debt · L4 cap_doctor)",
         bool(cil)
@@ -599,6 +609,9 @@ def check_cil_index_router() -> None:
         f"{CIL_DOC} no apunta a los 4 hogares (debe ser router, NO 5º store: L1→harness-backlog, "
         "L2→learning-capture, L3→tech-debt, L4→cap_doctor). proceso v5 §5.7.",
     )
+    if not COCKPIT_UI_ROOT.exists():
+        check("CHECK 22 · cockpit parser (cockpit-ui externo no presente — no evaluable acá)", True, "")
+        return
     check(
         "CHECK 22 · cockpit parser tipa carril ADDITIVE (conserva severidad · D-C)",
         "HarnessCarril" in parser and "HarnessSeveridad" in parser,
@@ -777,6 +790,30 @@ def check_pm_template_instance_sync() -> None:
     )
 
 
+# ── CHECK 31 — frontmatter model: = seam models.* (sync_model_tiers --check) ──
+def check_model_tier_sync() -> None:
+    """Modelos Claude SOLO viven en project.config.yaml::models (SLOT 12).
+
+    Frontmatter `model:` de .claude/{agents,skills} (+espejos) es artefacto
+    generado por `make models-sync`. Drift = alguien editó frontmatter a mano
+    o agregó superficie sin mapearla en el seam.
+    """
+    import subprocess
+
+    script = WS / "scripts" / "sync_model_tiers.py"
+    if not script.exists():
+        check("CHECK 31 · model-tier sync script existe", False, "falta scripts/sync_model_tiers.py")
+        return
+    proc = subprocess.run(
+        [sys.executable, str(script), "--check"], capture_output=True, text=True, cwd=WS
+    )
+    check(
+        "CHECK 31 · frontmatter model: = project.config.yaml::models (cero modelos hardcodeados)",
+        proc.returncode == 0,
+        (proc.stdout + proc.stderr).strip()[:800],
+    )
+
+
 def main() -> int:
     print("validate_machinery_consistency.py — anti-drift lock-in\n")
     check_atomics_dead()
@@ -808,6 +845,7 @@ def main() -> int:
     check_ledger_happy_floor()
     check_core_harness_proxy_clean()
     check_pm_template_instance_sync()
+    check_model_tier_sync()
     check_harness_pointers()  # CHECK 28 — advisory (no afecta exit)
     print(f"\n{checks_run} checks · {len(failures)} fallos · {len(warnings)} advisory")
     if warnings:

@@ -296,6 +296,7 @@ export const SHIPPED_STATIC_SUBTABS: ReadonlySet<RibbonSubtabKey> = new Set<Ribb
   "lisa.marca",     // F2-S7 T-4 — N3-static subtab (identidad/voz-y-tono/presencia)
   "lisa.staff",     // F2-S8 T-FE-1 — Staff directory + workspace (vitalia-fase2-lisa-doctores)
   "adrian.inbox",   // F3-T-3 (2026-06-03): Adrián Inbox shipped — vitalia-fase2-adrian-inbox T-3
+  "config.cuenta",  // T-1 vitalia-fase2-config-cuenta — Mi cuenta N3-static (datos/preferencias/responsable)
 ]);
 
 /**

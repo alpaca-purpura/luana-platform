@@ -6,9 +6,10 @@ map_zone: agentes
 map_box: lisa
 module: clinics
 capability: lisa.doctores
-state: parked                          # ★ 2026-06-10 PAUSADA ratificado Chris (gate shell-core-hardening, opción a)
+state: developed                       # ★ 2026-06-12 delta v3 COMPLETO 12+5 tickets · Step 4.5 41/41 · Step 4.6 GREEN · 2026-06-11 REANUDADA ratificado Chris (gate shell-core-hardening DONE 2026-06-11) + scope extension entity-switcher folded (ver scope_extension_2026_06_11)
 prior_state_before_park: developing
-parked_at: 2026-06-10T00:00:00-05:00
+unparked_at: 2026-06-11T21:30:00-05:00
+parked_at: 2026-06-10T00:00:00-05:00   # histórico
 parked_reason: "Pausa ratificada Chris 2026-06-10 para liberar bucket clinics al build de vitalia-shell-core-hardening (consolidación chrome + lift @luana/ui-kit). ⚠️ KEYSTONE REGRESIÓN QUEDA VIVA en dev: /lisa/staff crashea (Maximum update depth — NuevoIntegranteModal.tsx:109-114 useEffect loop). NO es chrome (bug de feature Lisa) → NO lo cubre el hardening. Reanudar = primer trabajo post-hardening: fix modal TDD RED-first + live-verify FULL surface (5-day shell drift se vuelve mayor post-hardening → re-verify obligatorio contra el chrome nuevo)."
 defer_audit: false
 defer_audit_resolved_at: '2026-06-01'
@@ -53,12 +54,83 @@ blocks_hard: []
 blocks_soft:
   - vitalia-fase2-valeria-agenda
   - vitalia-fase2-lisa-servicios
+model_mandate_2026_06_12: "★ ACTUALIZADO Chris 2026-06-12 ~00:40 (verbatim: 'los siguientes builders hazlos con sonnet, se están gastando muy rápido mis tokens, fable solo el auditor al final'): builders → SONNET · auditor final → FABLE 5. Histórico: architect + 3 primeros builders (T-CORE/occurrences-BE/switcher-FE) corrieron Fable 5 bajo el mandato original."
+auto_chain_2026_06_12: "Chris: al terminar architect → /dev-team → /auditor (ambos fable). G (chris_verify) sigue vigente — autonomous hasta developed, pausa AWAIT_CHRIS_VERIFY salvo que checkpoint diga autonomous_mode true (está true — PERO el delta incluye goldens/demo: G aplica igual por demo_required true)."
+dod_live_verified: true
+dod_env: "localhost:3002 (Playwright headless storageState Clerk real · tenant sanare-latam-mx · dr.demo) — dev-app tunnel UP equivalente"
+dod_evidence:
+  - action: "Switcher: doctor abierto en Horarios → picker ▾ → buscar → elegir otro doctor (T-FE-switcher-wire builder)"
+    observed: "URL /staff/{otro}/horarios — hoja PRESERVADA + contenido renderiza + e2e SC-D3A 6/6 real-backend"
+    backend_log: "GET /clinics/doctors?q= 200 · 0 console errors"
+  - action: "Recurrencia bug Chris: bloque weekly occurrences=2 creado vía UI real (T-FE-occurrences-consume builder)"
+    observed: "calendario pinta EXACTAMENTE 2 semanas — semanas: 0,1,1,0 (semana 4 vacía; antes: infinito). Bloque test borrado"
+    backend_log: "GET availability-occurrences 200 por rango · delete {deleted:true}"
+  - action: "Editor Google: drag-create → Personalizado (interval=2 + chips L+J + después de 8 reps) → guardar → eliminar (orchestrator live)"
+    observed: "resumen humano EXACTO 'Se repite cada 2 semanas el lunes y jueves, 8 veces' + pinta semana/mes + delete limpio"
+    backend_log: "POST /availability-blocks 201 (daysOfWeek/interval) · GET occurrences 200 · 0 errors"
+  - action: "Bio-docs: PDF real subido vía dropzone hoja Página (orchestrator live)"
+    observed: "POST assets/upload 200 + register 201 + fila renderiza (nombre/tamaño/fecha) — destapó 3 capas latentes (URL fantasma + FK engine + tabla assets ausente) hoy fixeadas"
+    backend_log: "POST /api/v1/vitalia/assets/upload 200 · POST bio-files 201 · GET bio-files 200"
+  - action: "Página pública: generar perfil (write) + Publicar (PATCH visibleEnLanding) + abrir /d/sanare-principal/dra-ana-garcia-mendoza SIN auth viewport 390x844"
+    observed: "200 + og:title/description/image presentes + badge Colegiatura 12345 (PE) + Consultorio Sanaré LATAM + sin CTA/stats + slug inexistente y toggle-OFF → 'Perfil no disponible' idéntico (anti-enum) + sin overflow-x mobile"
+    backend_log: "POST generate-profile 200 (LLM down → fallback extractivo, graceful) · PATCH 200 · GET público 200 · public_profile+bio_generated_at+public_slug persistidos (DB verificado)"
+verified_at: 2026-06-12
+phase: HANDOFF_TO_AUDITOR
+prework_reverify_2026_06_12:
+  # ★ parked_reason exigía re-verify FULL surface vs chrome nuevo post-hardening
+  done: true
+  evidence: "Playwright headless autenticado (storageState fresco 06-11) localhost:3002 tenant sanare: directorio 4 cards → perfil (Identidad+Contacto) → horarios (calendar renderiza) → servicios. 0 pageerror/console-error, 0 HTTP>=400, 0 'Maximum update depth' (regresión modal CONFIRMADA fixed). Screenshots /tmp/staff-reverify*.png"
+  verified_at: 2026-06-12T02:30:00-05:00
+scope_extension_2026_06_11:
+  # ★ Delta v3 ratificado Chris 2026-06-11 — FIRMA 1 funcional (AskUserQuestion ×3) · spec § "Delta v3" appended
+  delta_spec_section: "01-spec.md § ★ Delta v3"
+  firma_1_funcional: true            # 3 ítems ratificados vía AskUserQuestion 2026-06-11
+  firma_2_mockup: true               # ★ FIRMA 2 Chris 2026-06-12 ("doy por aprobado todo para que pases a architect") — mockup v3.2 Doctoralia + picker verificado headless
+  items:
+    - slug: entity-switcher-n3
+      ratified: "canon §2.4 tal cual — preserva hoja actual al cambiar"
+      note: >-
+        EntityPicker YA EXISTE en core/@luana/ui-kit (core-ds-foundation T-6, canon §2.4) —
+        el "acuerdo de los mockups" que Chris recordaba ES el design-system-canon (2026-06-08).
+        Falta: integrarlo a EntitySubNavBar (chip estático hoy) vía prop opcional (EXTEND core →
+        promotion proposal liviana /pm-luana) + cablear doctores 1er consumidor real
+        (GET /clinics/doctors?q= existente; navegar preservando hoja).
+    - slug: bio-docs-upload-funcional
+      ratified: "funcional completa ahora (no solo visual)"
+      note: >-
+        Audit 2026-06-11: BioRepoInputs dropzone onFilesChange NO-OP (archivos no persisten),
+        sin lista de subidos, DoctorDetail sin bioFiles; <textarea>/<button> crudos (D1);
+        emojis autosave inline (viola canon §2.6). Delta: subida REAL a R2 (proxy assets,
+        patrón useAvatarUpload) + lista filas (icono tipo/nombre/tamaño/fecha/descargar/eliminar)
+        + estados subiendo/error/empty + homologación átomos + contrato BE bioFiles[] + DELETE.
+    - slug: horarios-casuistica-recurrencia
+      ratified: "revisar TODA la casuística desde cero — tests muy detallados"
+      repro_evidence:
+        repro_verified: true
+        reproduced_local: false
+        trace_evidence:
+          source: chris-live-dev-app + code-inspection
+          ref: "occurrences=2 repite indefinido · root cause CONFIRMADO: AvailabilityCalendar.tsx::recurrentBlockVisibleInWeek (~L93-115) ignora occurrences (solo evalúa end_date, retorna true siempre) — BE projection rrule(count) CORRECTO. Render FE, no BD. Spec § D3-C.1"
+    - slug: horarios-recurrencia-google-editor
+      ratified: "Chris 2026-06-12 ronda 6 — editor de recurrencia clon Google Calendar (repetir cada N + chips días específicos L-D + termina nunca/fecha/N-repeticiones + resumen humano) + display ocurrencias con resumen del patrón. Dominio: days_of_week lista + interval (migración compat). Spec § D3-F"
+    - slug: horarios-vista-mes
+      ratified: "Chris 2026-06-11 ronda 5 — vista de mes NEW (hoy solo week grid); consume proyección BE (mata expansión client-side, coherente con fix D3-C)"
+      note: >-
+        Sospecha Chris: occurrences no respetado en calendario. Código: lógica SÍ existe en
+        availability_projection_service.py → bug sutil probable. Mandato: repro live sistemático
+        8 casos (semanal×N exacto, quincenal×N=14d, end_date inclusivo, open_ended ventana,
+        edición sin reinicio, solape puntual+recurrente, borrado total, TZ midnight) + batería
+        exhaustiva proyección + regression RED first si confirma. Cero cambio visual.
+  ready_package_delta_required:
+    - "03-arch delta: contrato prop picker core + cableado vitalia + contrato BE bioFiles + reconcile ubicación EntitySubNavBar (arch dice shell-organism local; HOY vive en core/@luana/ui-kit post-lift)"
+    - "04-validators BACKFILL schema v5/D-X4: verification_nature + technical_gates + demo_required + business_rules + regression_guard (audit /pm-vitalia 2026-06-11: ausentes, schema v4.1 pre-proceso-v5) + validators D3-A/B/C"
+    - "06-tickets: tickets nuevos T-FE-switcher + T-FULL-bio-docs + T-FULL-pagina-publica (route /d/ + perfil estructurado BE) + T-FIX-horarios-occurrences (regression RED first) + T-FE-vista-mes + assignment per ticket"
 reuse_map_summary: >-
   REUSE patients+staff models shipped · NEW UI CRUD perfiles + N3-dyn workspace
   [doctor-id] · NEW personal-branding bio + horarios + KPIs · doctors-as-faces
   preview
 spawned_at: 2026-05-22T00:00:00.000Z
-next_action: "🔴 KEYSTONE REGRESIÓN (botando error · descubierto 2026-06-06): /lisa/staff tira 'Maximum update depth exceeded' (Next error bubble) — NuevoIntegranteModal.tsx:109-114 useEffect con createDoctor (react-query mutation, ref nueva cada render) en deps → loop infinito. Modal monta cerrado en el directorio → la página entera crashea. Handoff /dev-team (TDD RED-first) + live-verify FULL surface (#37, 5-day shell drift) + resolver 12 honest-RED con doctrina real-backend (no mock) + dod_evidence + demo-script. Luego G (Chris self-test dev-app + ratificar golden PNGs V-VIS-1..4 ADR-003) → R (reconcile /pm-vitalia) → /auditor → merge. Proceso v5: autonomous_mode efectivo=false (G pausa para Chris)."
+next_action: "★ RESUME 2026-06-11 (orden ratificado Chris): (1) /po-ux mini-round delta entity-switcher (spec § + mockup patch N3 dropdown-open, firma Chris — ADR-003) → (2) /architect delta: switcher arch (EXTEND EntitySubNavBar core prop opcional + proposal /pm-luana) + BACKFILL 04-validators a schema v5/D-X4 (verification_nature/technical_gates/demo_required/business_rules/regression_guard — audit 2026-06-11) + reconcile ubicación EntitySubNavBar (hoy core/@luana/ui-kit) + ticket T-FE switcher → (3) /dev-team resume: re-verify FULL surface /lisa/staff contra chrome nuevo (parked_reason flaggea drift post-hardening; regression modal marcada FIXED pero re-verificar live) + build switcher + honest-RED secundarios + demo-script + dod_evidence → (4) G (Chris self-test + ratificar goldens V-VIS-1..4) → R reconcile → /auditor → merge."
 regression_2026-06-06:
   id: nuevo-integrante-modal-infinite-loop
   severity: critical
@@ -136,9 +208,9 @@ write_live_verified_2026-06-06:
   audit_effect: "vitalia_audit_log action=doctor.created actor=527050c3 (DB user id correcto)"
   telemetry: "growth_studio_event lisa_staff_doctor_created"
   redirect: "/lisa/staff/88c931f3.../perfil (modal router.push OK)"
-dod_live_verified: true
-dod_env: "make dev-app-vitalia → dev-app.vitalialat.com (Playwright autenticado live, dr.demo owner)"
-dod_evidence:
+rescate_2026_06_06_dod_live_verified: true  # histórico rescate (bloque renombrado 06-12: keys top-level únicas)
+rescate_2026_06_06_dod_env: "make dev-app-vitalia → dev-app.vitalialat.com (Playwright autenticado live, dr.demo owner)"
+rescate_2026_06_06_dod_evidence:
   - action: "GET /clinics/doctors (directorio) autenticado"
     observed: "200 {items:[Ana Garcia Mendoza...]}, directorio renderiza, console errors=[], cero max-depth, sin error banner"
     backend_log: "GET /clinics/doctors 200 OK"
@@ -174,8 +246,7 @@ regression_2026-06-06_bug6:
     Misma clase que el {items} del directorio. Masked: horarios e2e era mock.
   fix: "useAvailabilityBlocks desempaqueta res.blocks ?? []"
   status: "✅ FIXED + live-verified (horarios renderiza)"
-verified_at: 2026-06-06
-phase: AWAIT_CHRIS_VERIFY
+rescate_2026_06_06_verified_at: 2026-06-06
 remaining_for_developed:
   - "demo-script.md (story funcional)"
   - "honest-RED secundarios: SC-1b/c/d calendar recurrence, SC-9 pagination, SC-11 i18n credencial país (mock→real o scope per #37)"

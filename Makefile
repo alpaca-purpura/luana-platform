@@ -179,6 +179,14 @@ extraction-contract:  ## Regenera core/luana-core-analytics-engine/docs/extracti
 machinery-check:
 	python3 scripts/validate_machinery_consistency.py
 
+# model tiers (pedido Chris 2026-06-12) — frontmatter `model:` = generado desde project.config.yaml::models.
+# Swap de modelo = 1 línea en el seam + `make models-sync`. Drift bloqueado por machinery CHECK 31.
+.PHONY: models-sync models-check
+models-sync:                     ## Parchea frontmatter model: de agents/skills desde el seam
+	python3 scripts/sync_model_tiers.py --write
+models-check:                    ## Verifica frontmatter model: == seam (exit 1 si drift)
+	python3 scripts/sync_model_tiers.py --check
+
 # anti-rot de punteros del harness (HB · 2026-06-08) — refs workspace-rooted rotos en skills/agents/rules.
 # Advisory + baseline-ratchet shrink-only. Surfaceado por machinery CHECK 28 + /harnesses-improvement.
 .PHONY: harness-pointers harness-pointers-baseline
