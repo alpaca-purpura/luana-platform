@@ -18,9 +18,13 @@ WORKDIR /app
 
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 COPY comunify/frontend/package.json ./comunify/frontend/package.json
+# Workspace packages @luana/* — sin sus package.json el install --filter no ve sus
+# deps → store de imagen incompleto → "Module not found" runtime (fix 2026-06-11,
+# learning fe-dev-image-frozen-pnpm-store; "..." incluye workspace deps)
+COPY core/@luana ./core/@luana
 
 RUN --mount=type=cache,id=pnpm-comunify,target=/pnpm/store \
-    pnpm install --frozen-lockfile --filter "@luana/comunify-web"
+    pnpm install --frozen-lockfile --filter "@luana/comunify-web..."
 
 WORKDIR /app/comunify/frontend
 EXPOSE 3003
@@ -32,9 +36,11 @@ FROM base AS builder
 WORKDIR /app
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 COPY comunify/frontend/package.json ./comunify/frontend/package.json
+# @luana/* completos (manifests + src TS): build transpila ui-kit/format desde source
+COPY core/@luana ./core/@luana
 
 RUN --mount=type=cache,id=pnpm-comunify,target=/pnpm/store \
-    pnpm install --frozen-lockfile --filter "@luana/comunify-web"
+    pnpm install --frozen-lockfile --filter "@luana/comunify-web..."
 
 COPY comunify/frontend/ ./comunify/frontend/
 
