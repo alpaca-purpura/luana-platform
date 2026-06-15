@@ -148,8 +148,11 @@ function renderRibbon(){
     const b = document.createElement('button');
     b.className = `flex items-center gap-2 px-3 h-11 rounded-full shrink-0 ${on?'':'text-[hsl(var(--muted))] hover:bg-[hsl(var(--bg))]'}`;
     if(on){ b.style.background=`hsl(${a.color}/0.12)`; b.style.boxShadow=`inset 0 0 0 1.5px hsl(${a.color})`; }
-    b.innerHTML = `<img class="av w-7 h-7 ring-2" style="--tw-ring-color:hsl(${a.color})" src="${av(a.name)}" alt=""/>
-      <span class="ribbon-name text-sm font-semibold" ${on?`style="color:hsl(${a.color})"`:''}>${a.label}</span>`;
+    b.innerHTML = `<img class="av w-8 h-8 ring-2" style="--tw-ring-color:hsl(${a.color})" src="${av(a.name)}" alt=""/>
+      <span class="flex flex-col items-start leading-tight">
+        <span class="ribbon-name text-sm font-semibold" ${on?`style="color:hsl(${a.color})"`:''}>${a.label}</span>
+        <span class="text-[10px] text-[hsl(var(--muted))]">${a.name}</span>
+      </span>`;
     b.onclick = ()=>{ active=a.slug; activeSub=0; render(); };
     ribbon.appendChild(b);
   });
