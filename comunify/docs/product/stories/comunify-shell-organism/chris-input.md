@@ -154,6 +154,19 @@ Antes de confirmar el sitemap: dale una última revisión vos mismo (juntar / fa
 ### 2026-06-15 16:30 · 🤖 claude · `/po-ux` · ✓ APLICADO (sitemap v2 ratificado) + 💡 PROPONE (mockup)
 v2 ratificado. **Mockup creativo** escrito `mockups/shell.html` (port re-temizado del shell canónico, tokens comunify morado/azul, fuentes Manrope/Inter): TopBar (logo comunify + tenant single-user Anabella Ríos) · **Luana sidebar full** (landing) con saludo + ejemplo conversa+anuncia (DelegateMarker → Nina) + composer + starters · **Ribbon** 6 tabs con agent-colors (Nina activa) · **SubTabsBar** Nina (Marca/Ofertas/Cohorts) · contenido = **empty-state "Próximamente"** con CTA "Hablar con Luana". Servido en `localhost:8893/shell.html`. **Esperando feedback/iteración → FIRMA 2** (la final). Pendiente: avatares (placeholders), Satoshi (self-host real en build).
 
+### 2026-06-15 16:50 · 👤 chris (feedback mockup)
+1. Avatares: usar imágenes generadas con IA por agente como thumbnail de cada tab + Luana en su lugar.
+2. Usar colores Comunify + logos.
+3. Ribbon: en lugar del nombre del agente, la **función** ("Mi Marca", "Atraer", "Vender", etc.) tal como vitalia/nicolify.
+4. No funciona modo nocturno + clicks no navegables (OK si es mockup, pero tomar el resto).
+
+### 2026-06-15 16:50 · 🤖 claude · `/po-ux` · ✓ APLICADO (mockup v2)
+- **Avatares generados** (DiceBear `personas`, seed por agente + ring de color) como thumbnail en Ribbon + Luana sidebar + tenant. ⚠️ son placeholders procedurales (NO tengo generador de difusión nativo) — se reemplazan por retratos IA reales cuando Chris los dé.
+- **Logo comunify** = isotipo gradiente (signature `--comunify-gradient`) + wordmark "comunify" (comunify no tiene archivo de logo; el logo ES wordmark+gradiente per design-system).
+- **Ribbon labels = función:** Mi Marca · Atraer · Vender · Operar · Retener · Plataforma (verificado: nicolify usa función "Estrategia/Growth/Ventas"). Nombre del agente → en el avatar/tooltip.
+- **Modo nocturno funcional** (toggle `.dark` + tokens dark) + **tabs clickeables** (Ribbon + SubTabsBar navegan el sitemap v2 completo, contenido "Próximamente" por hoja). Sigue siendo mockup (sin datos/routing reales — eso es dev-team).
+- Chrome MCP no pudo screenshot (SingletonLock otra sesión, HB-73). Chris abre `localhost:8893/shell.html`. **Esperando FIRMA 2.**
+
 ---
 
 ### 2026-06-15 15:18 · 🤖 claude · `/pm-comunify` · ✓ APLICADO

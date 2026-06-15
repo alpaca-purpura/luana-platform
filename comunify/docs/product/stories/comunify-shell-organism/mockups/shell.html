@@ -4,51 +4,44 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Comunify · Shell-organism (MVP) — mockup</title>
+<title>Comunify · Shell-organism (MVP) — mockup v2</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
 <style>
-  /* Comunify design tokens (HSL channels · design-system.md). Satoshi → fallback Manrope en el mockup. */
   :root{
-    --comunify-primary:264 92% 58%;       /* #7B2FF7 morado */
-    --comunify-primary-hover:254 79% 49%; /* #5A1EDC */
-    --comunify-purple-mid:252 100% 62%;   /* #6A3CFF · Nina */
-    --comunify-blue:217 95% 58%;          /* #2D7FF9 · Tomás */
-    --comunify-blue-deep:220 84% 45%;     /* #1246D6 · Lucía */
-    --comunify-stable:152 80% 43%;        /* #16C784 · Sofía */
-    --comunify-warning:45 100% 48%;       /* #F5B700 · Bruno */
-    --comunify-critical:0 84% 60%;        /* #EF4444 */
+    --comunify-primary:264 92% 58%; --comunify-primary-hover:254 79% 49%; --comunify-purple-mid:252 100% 62%;
+    --comunify-blue:217 95% 58%; --comunify-blue-deep:220 84% 45%; --comunify-stable:152 80% 43%;
+    --comunify-warning:45 100% 48%; --comunify-critical:0 84% 60%;
     --bg:240 20% 99%; --panel:0 0% 100%; --line:240 14% 92%; --muted:240 10% 46%; --ink:240 24% 14%;
-    /* agent colors */
     --agent-luana:264 92% 58%; --agent-nina:252 100% 62%; --agent-tomas:217 95% 58%;
-    --agent-sofia:152 80% 43%; --agent-bruno:45 100% 48%; --agent-lucia:220 84% 45%;
+    --agent-sofia:152 80% 43%; --agent-bruno:38 92% 50%; --agent-lucia:220 84% 45%;
   }
+  .dark{ --bg:240 18% 8%; --panel:240 16% 12%; --line:240 12% 22%; --muted:240 8% 62%; --ink:240 20% 96%; }
   *{font-family:Inter,system-ui,sans-serif}
   h1,h2,h3,.font-display,.ribbon-name{font-family:Manrope,Inter,sans-serif}
-  body{background:hsl(var(--bg));color:hsl(var(--ink))}
-  .grad{background:linear-gradient(120deg,hsl(var(--comunify-primary)),hsl(var(--comunify-purple-mid)) 55%,hsl(var(--comunify-blue)))}
+  body{background:hsl(var(--bg));color:hsl(var(--ink));transition:background .2s,color .2s}
+  .grad{background:linear-gradient(135deg,#7B2FF7 0%,#6A3CFF 35%,#2D7FF9 70%,#1E5EFF 100%)}
   .grad-text{background:linear-gradient(120deg,hsl(var(--comunify-primary)),hsl(var(--comunify-blue)));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .card{background:hsl(var(--panel));border:1px solid hsl(var(--line))}
+  .card{background:hsl(var(--panel));border-color:hsl(var(--line))}
   .scroll::-webkit-scrollbar{width:8px}.scroll::-webkit-scrollbar-thumb{background:hsl(var(--line));border-radius:8px}
   .chip{border:1px solid hsl(var(--line))}
+  .av{border-radius:9999px;object-fit:cover;background:hsl(var(--panel))}
 </style>
 </head>
 <body class="h-screen overflow-hidden">
 
-<!-- ===================== TopBar (TopBarShell) ===================== -->
+<!-- TopBar -->
 <header class="h-14 px-4 flex items-center justify-between border-b card" role="banner">
-  <div class="flex items-center gap-2">
-    <div class="w-8 h-8 rounded-lg grad flex items-center justify-center text-white font-bold">C</div>
-    <span class="font-display font-bold text-lg grad-text">comunify</span>
+  <div class="flex items-center gap-2.5">
+    <div class="w-8 h-8 rounded-xl grad flex items-center justify-center text-white font-extrabold shadow-sm">c</div>
+    <span class="font-display font-extrabold text-lg grad-text tracking-tight">comunify</span>
   </div>
-  <div class="flex items-center gap-3">
-    <button class="w-9 h-9 rounded-lg chip flex items-center justify-center text-[hsl(var(--muted))]" title="Vista del chat"><i data-lucide="panel-left"></i></button>
-    <button class="w-9 h-9 rounded-lg chip flex items-center justify-center text-[hsl(var(--muted))]" title="Tema"><i data-lucide="moon"></i></button>
-    <!-- TenantSwitcher (single-user: el creator) -->
-    <div class="flex items-center gap-2 pl-2 pr-3 h-9 rounded-full chip">
-      <div class="w-6 h-6 rounded-full grad flex items-center justify-center text-white text-xs font-bold">A</div>
+  <div class="flex items-center gap-2">
+    <button id="btnDark" class="w-9 h-9 rounded-lg chip flex items-center justify-center text-[hsl(var(--muted))] hover:bg-[hsl(var(--bg))]" title="Modo nocturno"><i data-lucide="moon" class="w-4 h-4"></i></button>
+    <button class="w-9 h-9 rounded-lg chip flex items-center justify-center text-[hsl(var(--muted))] hover:bg-[hsl(var(--bg))]" title="Vista del chat"><i data-lucide="panel-left" class="w-4 h-4"></i></button>
+    <div class="flex items-center gap-2 pl-1.5 pr-3 h-9 rounded-full chip">
+      <img class="av w-6 h-6" src="https://api.dicebear.com/9.x/personas/svg?seed=Anabella&backgroundColor=ffd5dc" alt="" />
       <div class="leading-tight">
         <div class="text-xs font-semibold">Anabella Ríos</div>
         <div class="text-[10px] text-[hsl(var(--muted))]">@anabella.crece</div>
@@ -57,140 +50,146 @@
   </div>
 </header>
 
-<!-- ===================== Shell dual-mode (Luana 50 / App 50) ===================== -->
 <div class="flex" style="height:calc(100vh - 3.5rem)">
 
-  <!-- ---------- LUANA sidebar (estado: full · landing) ---------- -->
-  <aside class="w-[42%] min-w-[360px] max-w-[560px] flex flex-col border-r card" role="complementary" aria-label="Luana, orquestadora">
-    <!-- ChatHeader -->
+  <!-- LUANA sidebar (full · landing) -->
+  <aside class="w-[40%] min-w-[360px] max-w-[540px] flex flex-col border-r card" role="complementary" aria-label="Luana">
     <div class="h-14 px-4 flex items-center gap-3 border-b">
       <div class="relative">
-        <div class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold" style="background:hsl(var(--agent-luana))">L</div>
-        <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white" style="background:hsl(var(--comunify-stable))" title="en línea"></span>
+        <img class="av w-9 h-9 ring-2" style="--tw-ring-color:hsl(var(--agent-luana))" src="https://api.dicebear.com/9.x/personas/svg?seed=Luana&backgroundColor=e7defe" alt="Luana" />
+        <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[hsl(var(--panel))]" style="background:hsl(var(--comunify-stable))"></span>
       </div>
       <div class="flex-1 leading-tight">
         <div class="font-display font-semibold text-sm">Luana</div>
         <div class="text-[11px] text-[hsl(var(--muted))]">Orquestadora · en línea</div>
       </div>
-      <div class="flex items-center gap-1 text-[hsl(var(--muted))]">
-        <button class="w-8 h-8 rounded-lg hover:bg-[hsl(var(--bg))] flex items-center justify-center" title="Historial"><i data-lucide="history" class="w-4 h-4"></i></button>
-        <button class="w-8 h-8 rounded-lg hover:bg-[hsl(var(--bg))] flex items-center justify-center" title="Colapsar"><i data-lucide="chevrons-left" class="w-4 h-4"></i></button>
-      </div>
+      <button class="w-8 h-8 rounded-lg hover:bg-[hsl(var(--bg))] flex items-center justify-center text-[hsl(var(--muted))]" title="Historial"><i data-lucide="history" class="w-4 h-4"></i></button>
+      <button class="w-8 h-8 rounded-lg hover:bg-[hsl(var(--bg))] flex items-center justify-center text-[hsl(var(--muted))]" title="Colapsar"><i data-lucide="chevrons-left" class="w-4 h-4"></i></button>
     </div>
 
-    <!-- ChatMessages -->
     <div class="flex-1 overflow-y-auto scroll px-4 py-5 space-y-4">
-      <!-- Luana saludo (landing) -->
       <div class="flex gap-2.5">
-        <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style="background:hsl(var(--agent-luana))">L</div>
-        <div class="rounded-2xl rounded-tl-sm card px-3.5 py-2.5 text-sm max-w-[85%]">
+        <img class="av w-7 h-7 shrink-0" src="https://api.dicebear.com/9.x/personas/svg?seed=Luana&backgroundColor=e7defe" alt="" />
+        <div class="rounded-2xl rounded-tl-sm card border px-3.5 py-2.5 text-sm max-w-[85%]">
           ¡Hola, Anabella! 👋 Soy <b>Luana</b>, tu supervisora. Coordino a tu equipo:
-          <b>Nina</b> (marca y producto), <b>Tomás</b> (contenido), <b>Sofía</b> (ventas),
-          <b>Bruno</b> (comunidad) y <b>Lucía</b> (fidelización). ¿En qué estás pensando hoy?
+          <b>Nina</b> (mi marca), <b>Tomás</b> (atraer), <b>Sofía</b> (vender),
+          <b>Bruno</b> (operar) y <b>Lucía</b> (retener). ¿En qué estás pensando hoy?
         </div>
       </div>
-
-      <!-- User -->
       <div class="flex justify-end">
-        <div class="rounded-2xl rounded-tr-sm grad text-white px-3.5 py-2.5 text-sm max-w-[85%]">
-          Quiero lanzar un cohort nuevo el mes que viene.
-        </div>
+        <div class="rounded-2xl rounded-tr-sm grad text-white px-3.5 py-2.5 text-sm max-w-[85%]">Quiero lanzar un cohort nuevo el mes que viene.</div>
       </div>
-
-      <!-- Luana: conversa + ANUNCIA delegación (DelegateMarker) -->
       <div class="flex gap-2.5">
-        <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style="background:hsl(var(--agent-luana))">L</div>
+        <img class="av w-7 h-7 shrink-0" src="https://api.dicebear.com/9.x/personas/svg?seed=Luana&backgroundColor=e7defe" alt="" />
         <div class="space-y-2 max-w-[85%]">
-          <!-- delegate marker -->
-          <div class="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded-full" style="background:hsl(var(--agent-nina)/0.12);color:hsl(var(--agent-nina))">
-            <i data-lucide="arrow-right-circle" class="w-3.5 h-3.5"></i> delega en Nina · Estratega
+          <div class="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded-full" style="background:hsl(var(--agent-nina)/0.14);color:hsl(var(--agent-nina))">
+            <i data-lucide="arrow-right-circle" class="w-3.5 h-3.5"></i> delega en Nina · Mi Marca
           </div>
-          <div class="rounded-2xl rounded-tl-sm card px-3.5 py-2.5 text-sm">
+          <div class="rounded-2xl rounded-tl-sm card border px-3.5 py-2.5 text-sm">
             Genial. El diseño del cohort lo arma <b>Nina</b> (lo conecta a tu escalera de ofertas).
             <span class="inline-flex items-center gap-1 text-[hsl(var(--muted))]"><i data-lucide="clock" class="w-3.5 h-3.5"></i> ese panel llega pronto.</span>
-            Mientras, lo pensamos juntas: ¿a qué audiencia apunta y qué transformación promete?
+            Mientras, lo pensamos: ¿a qué audiencia apunta y qué transformación promete?
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ChatComposer -->
     <div class="border-t px-3 py-3">
       <div class="flex flex-wrap gap-1.5 mb-2">
         <button class="chip text-xs px-2.5 py-1 rounded-full text-[hsl(var(--muted))] hover:bg-[hsl(var(--bg))]">💡 Idea de contenido</button>
         <button class="chip text-xs px-2.5 py-1 rounded-full text-[hsl(var(--muted))] hover:bg-[hsl(var(--bg))]">📊 ¿Cómo va mi semana?</button>
         <button class="chip text-xs px-2.5 py-1 rounded-full text-[hsl(var(--muted))] hover:bg-[hsl(var(--bg))]">🚀 Lanzar oferta</button>
       </div>
-      <div class="flex items-end gap-2 card rounded-2xl px-3 py-2">
-        <textarea rows="1" placeholder="Escríbele a Luana…" class="flex-1 resize-none outline-none bg-transparent text-sm py-1"></textarea>
+      <div class="flex items-end gap-2 card border rounded-2xl px-3 py-2">
+        <textarea id="composer" rows="1" placeholder="Escríbele a Luana…" class="flex-1 resize-none outline-none bg-transparent text-sm py-1 text-[hsl(var(--ink))]"></textarea>
         <button class="w-9 h-9 rounded-xl grad text-white flex items-center justify-center shrink-0"><i data-lucide="arrow-up" class="w-4 h-4"></i></button>
       </div>
     </div>
   </aside>
 
-  <!-- ---------- App panel (Ribbon + SubTabs + contenido) ---------- -->
+  <!-- App panel -->
   <main class="flex-1 flex flex-col min-w-0">
-
-    <!-- N1 Ribbon -->
-    <nav class="h-16 px-3 flex items-center gap-1 border-b card overflow-x-auto" role="tablist" aria-label="Agentes">
-      <!-- Nina ACTIVO -->
-      <button class="ribbon-tab flex items-center gap-2 px-3 h-11 rounded-xl shrink-0" role="tab" aria-selected="true"
-              style="background:hsl(var(--agent-nina)/0.10);box-shadow:inset 0 -2px 0 hsl(var(--agent-nina))">
-        <span class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background:hsl(var(--agent-nina))">N</span>
-        <span class="ribbon-name text-sm font-semibold" style="color:hsl(var(--agent-nina))">Nina</span>
-      </button>
-      <!-- otros -->
-      <button class="flex items-center gap-2 px-3 h-11 rounded-xl shrink-0 text-[hsl(var(--muted))] hover:bg-[hsl(var(--bg))]" role="tab" aria-selected="false">
-        <span class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background:hsl(var(--agent-tomas))">T</span>
-        <span class="ribbon-name text-sm font-medium">Tomás</span>
-      </button>
-      <button class="flex items-center gap-2 px-3 h-11 rounded-xl shrink-0 text-[hsl(var(--muted))] hover:bg-[hsl(var(--bg))]" role="tab" aria-selected="false">
-        <span class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background:hsl(var(--agent-sofia))">S</span>
-        <span class="ribbon-name text-sm font-medium">Sofía</span>
-      </button>
-      <button class="flex items-center gap-2 px-3 h-11 rounded-xl shrink-0 text-[hsl(var(--muted))] hover:bg-[hsl(var(--bg))]" role="tab" aria-selected="false">
-        <span class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background:hsl(var(--agent-bruno))">B</span>
-        <span class="ribbon-name text-sm font-medium">Bruno</span>
-      </button>
-      <button class="flex items-center gap-2 px-3 h-11 rounded-xl shrink-0 text-[hsl(var(--muted))] hover:bg-[hsl(var(--bg))]" role="tab" aria-selected="false">
-        <span class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background:hsl(var(--agent-lucia))">L</span>
-        <span class="ribbon-name text-sm font-medium">Lucía</span>
-      </button>
-      <div class="flex-1"></div>
-      <button class="flex items-center gap-2 px-3 h-11 rounded-xl shrink-0 text-[hsl(var(--muted))] hover:bg-[hsl(var(--bg))]" role="tab" aria-selected="false" title="Plataforma">
-        <i data-lucide="settings" class="w-5 h-5"></i><span class="ribbon-name text-sm font-medium hidden md:inline">Plataforma</span>
-      </button>
-    </nav>
-
-    <!-- N2 SubTabsBar (Nina) -->
-    <div class="h-12 px-4 flex items-center gap-1 border-b bg-[hsl(var(--bg))]" role="tablist" aria-label="Secciones de Nina">
-      <button class="px-3 h-8 rounded-lg text-sm font-medium" style="background:hsl(var(--agent-nina)/0.12);color:hsl(var(--agent-nina))">Marca</button>
-      <button class="px-3 h-8 rounded-lg text-sm text-[hsl(var(--muted))] hover:bg-white">Ofertas</button>
-      <button class="px-3 h-8 rounded-lg text-sm text-[hsl(var(--muted))] hover:bg-white">Cohorts</button>
-    </div>
-
-    <!-- Contenido — empty-state "Próximamente" (MVP placeholder) -->
+    <nav id="ribbon" class="h-16 px-3 flex items-center gap-1 border-b card overflow-x-auto" role="tablist" aria-label="Agentes"></nav>
+    <div id="subtabs" class="h-12 px-4 flex items-center gap-1 border-b bg-[hsl(var(--bg))]" role="tablist"></div>
     <div class="flex-1 overflow-y-auto scroll p-8 flex items-center justify-center">
       <div class="max-w-md text-center">
-        <div class="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center mb-5" style="background:hsl(var(--agent-nina)/0.12)">
-          <i data-lucide="sparkles" class="w-8 h-8" style="color:hsl(var(--agent-nina))"></i>
-        </div>
-        <h2 class="font-display text-xl font-bold mb-2">Marca · <span style="color:hsl(var(--agent-nina))">Próximamente</span></h2>
-        <p class="text-sm text-[hsl(var(--muted))] mb-5">
-          Acá <b>Nina</b> va a afinar tu identidad, tu voz clonada, tu bóveda de autoridad y tu narrativa.
-          Estamos construyéndolo. Mientras tanto, <b>Luana</b> ya está disponible para ayudarte a pensar.
-        </p>
-        <button onclick="document.querySelector('aside textarea').focus()" class="inline-flex items-center gap-2 px-4 h-10 rounded-xl grad text-white text-sm font-medium">
+        <div id="ctIcon" class="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center mb-5"><i data-lucide="sparkles" class="w-8 h-8"></i></div>
+        <h2 class="font-display text-xl font-bold mb-2"><span id="ctTitle"></span> · <span id="ctSoon" class="grad-text">Próximamente</span></h2>
+        <p id="ctDesc" class="text-sm text-[hsl(var(--muted))] mb-5"></p>
+        <button onclick="document.getElementById('composer').focus()" class="inline-flex items-center gap-2 px-4 h-10 rounded-xl grad text-white text-sm font-medium">
           <i data-lucide="message-circle" class="w-4 h-4"></i> Hablar con Luana
         </button>
         <div class="mt-6 text-[11px] text-[hsl(var(--muted))] flex items-center justify-center gap-1.5">
-          <i data-lucide="git-branch" class="w-3.5 h-3.5"></i> Se portará en una próxima entrega (R-shell+1)
+          <i data-lucide="git-branch" class="w-3.5 h-3.5"></i> Se portará en una próxima entrega
         </div>
       </div>
     </div>
   </main>
 </div>
 
-<script>lucide.createIcons()</script>
+<script>
+const AGENTS = [
+  {slug:'nina', label:'Mi Marca', name:'Nina', color:'var(--agent-nina)', sub:['Marca','Ofertas','Cohorts'], desc:'Acá Nina afina tu identidad, tu voz clonada, tu bóveda de autoridad, tus ofertas y tus cohorts.'},
+  {slug:'tomas', label:'Atraer', name:'Tomás', color:'var(--agent-tomas)', sub:['Referentes','Contenido','Audiencia','Pauta'], desc:'Tomás trae tus referentes + tendencias del nicho y arma tu contenido orgánico y pauta.'},
+  {slug:'sofia', label:'Vender', name:'Sofía', color:'var(--agent-sofia)', sub:['Conversaciones','Pipeline','Recuperación'], desc:'Sofía atiende tus canales de venta, mueve el pipeline y recupera leads.'},
+  {slug:'bruno', label:'Operar', name:'Bruno', color:'var(--agent-bruno)', sub:['Comunidad','Eventos','Moderación'], desc:'Bruno opera tu comunidad, las sesiones en vivo y la moderación día a día.'},
+  {slug:'lucia', label:'Retener', name:'Lucía', color:'var(--agent-lucia)', sub:['Suscripciones','Clientes','Fidelización'], desc:'Lucía cuida tus suscripciones, tu CRM y la fidelización de cada cliente.'},
+];
+const PLAT = {slug:'plataforma', label:'Plataforma', name:'Plataforma', color:'var(--comunify-primary)', sub:['Conexiones','Cuenta','Onboarding'], desc:'Conexiones (IG·TikTok·WhatsApp·Apify), tu cuenta y el onboarding.'};
+let active = 'nina', activeSub = 0;
+
+function av(name){ return `https://api.dicebear.com/9.x/personas/svg?seed=${name}`; }
+
+function renderRibbon(){
+  const ribbon = document.getElementById('ribbon');
+  ribbon.innerHTML = '';
+  AGENTS.forEach(a=>{
+    const on = a.slug===active;
+    const b = document.createElement('button');
+    b.className = `flex items-center gap-2 px-3 h-11 rounded-xl shrink-0 ${on?'':'text-[hsl(var(--muted))] hover:bg-[hsl(var(--bg))]'}`;
+    if(on){ b.style.background=`hsl(${a.color}/0.10)`; b.style.boxShadow=`inset 0 -2px 0 hsl(${a.color})`; }
+    b.innerHTML = `<img class="av w-7 h-7 ring-2" style="--tw-ring-color:hsl(${a.color})" src="${av(a.name)}" alt=""/>
+      <span class="ribbon-name text-sm font-semibold" ${on?`style="color:hsl(${a.color})"`:''}>${a.label}</span>`;
+    b.onclick = ()=>{ active=a.slug; activeSub=0; render(); };
+    ribbon.appendChild(b);
+  });
+  const sp = document.createElement('div'); sp.className='flex-1'; ribbon.appendChild(sp);
+  const on = active===PLAT.slug;
+  const p = document.createElement('button');
+  p.className=`flex items-center gap-2 px-3 h-11 rounded-xl shrink-0 ${on?'':'text-[hsl(var(--muted))] hover:bg-[hsl(var(--bg))]'}`;
+  if(on){ p.style.background=`hsl(${PLAT.color}/0.10)`; p.style.boxShadow=`inset 0 -2px 0 hsl(${PLAT.color})`; }
+  p.innerHTML=`<i data-lucide="settings" class="w-5 h-5"></i><span class="ribbon-name text-sm font-medium hidden md:inline">Plataforma</span>`;
+  p.onclick=()=>{ active=PLAT.slug; activeSub=0; render(); };
+  ribbon.appendChild(p);
+}
+function cur(){ return active===PLAT.slug ? PLAT : AGENTS.find(a=>a.slug===active); }
+function renderSub(){
+  const bar = document.getElementById('subtabs'); const a = cur(); bar.innerHTML='';
+  a.sub.forEach((s,i)=>{
+    const on=i===activeSub;
+    const b=document.createElement('button');
+    b.className=`px-3 h-8 rounded-lg text-sm ${on?'font-medium':'text-[hsl(var(--muted))] hover:bg-[hsl(var(--panel))]'}`;
+    if(on){ b.style.background=`hsl(${a.color}/0.12)`; b.style.color=`hsl(${a.color})`; }
+    b.textContent=s; b.onclick=()=>{ activeSub=i; render(); };
+    bar.appendChild(b);
+  });
+}
+function renderContent(){
+  const a=cur();
+  document.getElementById('ctTitle').textContent = a.sub[activeSub];
+  document.getElementById('ctDesc').innerHTML = a.desc + ' Mientras tanto, <b>Luana</b> ya está disponible.';
+  const ic=document.getElementById('ctIcon'); ic.style.background=`hsl(${a.color}/0.12)`;
+  ic.querySelector('i').style.color=`hsl(${a.color})`;
+}
+function render(){ renderRibbon(); renderSub(); renderContent(); lucide.createIcons(); }
+
+document.getElementById('btnDark').onclick = (e)=>{
+  document.documentElement.classList.toggle('dark');
+  const dark=document.documentElement.classList.contains('dark');
+  e.currentTarget.innerHTML = dark?'<i data-lucide="sun" class="w-4 h-4"></i>':'<i data-lucide="moon" class="w-4 h-4"></i>';
+  lucide.createIcons();
+};
+render();
+</script>
 </body>
 </html>
