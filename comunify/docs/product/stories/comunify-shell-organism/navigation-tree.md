@@ -48,7 +48,10 @@ AGENT_SUBTABS:
     - escalera                # ✱ offer ladder (lead-magnet → tripwire → core → premium)
     - cohorts                 # ✱ cohorts (diseño del cohort = producto)
   tomas:                      # Atraer · Marketing
-    - contenido               # △ calendario + ideas (usa la voz de Nina)
+    - referentes              # △ influencers de referencia + recomendados similares +
+                              #   tendencias del nicho (scraping Apify) → ideas → afina contenido.
+                              #   Hogar UI de la skill content-hunter. Story futura comunify-tomas-referentes.
+    - contenido               # △ calendario + ideas (usa la voz de Nina + lo que sale de referentes)
     - pauta                   # △ ads / paid (Meta·IG·TikTok)
     - audiencia               # △ lead magnets + captación de audiencia
   sofia:                      # Vender · Closer
@@ -64,7 +67,7 @@ AGENT_SUBTABS:
     - clientes                # △ CRM / cartera de miembros
     - fidelizacion            # △ acciones de retención / win-back
   plataforma:                 # Plataforma
-    - conexiones              # integraciones (IG·TikTok·WhatsApp·ElevenLabs·pago)
+    - conexiones              # integraciones (IG·TikTok·WhatsApp·ElevenLabs·pago·Apify-scraping)
     - cuenta                  # preferencias del creator/tenant
     - plan                    # tier (creator/pro/agency) + tokens/billing
     - onboarding              # link al wizard 4-step existente (intacto)

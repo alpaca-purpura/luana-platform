@@ -136,6 +136,12 @@ Escrito `01-spec.md` RONDA 1 (funcional, SIN mockup): § Context/Dónde vive + �
 - **Sitemap recomendado** escrito en `navigation-tree.md` (formato nicolify): N1 Ribbon (Nina/Tomás/Sofía/Bruno/Lucía + Plataforma) + N2 sub-tabs por agente (✱ existe → port · △ net-new) + N3 candidatos. Nina(marca/voz/autoridad/ofertas/escalera/cohorts) · Tomás(contenido/pauta/audiencia) · Sofía(conversaciones/pipeline/recuperación) · Bruno(comunidad/moderación/cohorts-en-curso) · Lucía(suscripciones/clientes/fidelización) · Plataforma(conexiones/cuenta/plan/onboarding).
 - **Decisiones abiertas del sitemap (Chris ratifica):** voz+autoridad → Nina o Tomás · cohorts split (diseño Nina / delivery Bruno) sí-o-no · nombres pulibles. → esperando a Chris. Tras ratificar → mockup creativo → FIRMA 2.
 
+### 2026-06-15 16:00 · 👤 chris (idea nueva → sitemap)
+Quiere: un lugar donde el creator ponga sus influencers de referencia → recomendar similares; vía **Apify** hacer scraping de tendencias del nicho + "qué está funcionando" → el creator elige/idea → ayudarlo a afinar el contenido de la semana. Proceso no claro aún. Pregunta: ¿dónde iría?
+
+### 2026-06-15 16:00 · 🤖 claude · `/po-ux` · ✓ APLICADO (ubicación) + 💡 PROPONE
+**Ubicación: Tomás (Atraer) → sub-tab nueva `referentes`** (referentes + recomendados + tendencias Apify → ideas → afina contenido; alimenta `contenido`). 3 dimensiones: UI en Tomás · integración Apify en Plataforma›conexiones + `core/luana-core-connections` · motor de recomendación backend. **Prior-art:** skill `content-hunter` (caza de referencias virales + swipe files + STEPPS) = esta sub-tab es su hogar UI. **NO es shell MVP** → story futura `comunify-tomas-referentes`; en MVP = "Próximamente". Agregado a `navigation-tree.md` (Tomás.referentes + Apify en conexiones). Proceso fino = en esa story.
+
 ---
 
 ### 2026-06-15 15:18 · 🤖 claude · `/pm-comunify` · ✓ APLICADO
