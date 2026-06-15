@@ -91,6 +91,45 @@ Revisé vitalia + nicolify. Hallazgos:
 ### 2026-06-15 15:18 · 👤 chris
 Supervisora = **Luana** (como nicolify).
 
+### 2026-06-15 15:25 · 🤖 claude · `/po-ux` · 💡 PROPONE (prior-art + 1ª pregunta funcional)
+**Prior-art scan (gate):** `@luana/ui-kit/organism/shell` trae el toolkit completo del shell (ShellLayout · Ribbon/RibbonTab · SupervisorSidebar · ChatPanel · ConfigTab · SubTabsBar · SubSubTabsBar · create-shell-store · routing.ts · keyboard shortcuts). nicolify + vitalia ya lo consumen vía wrapper fino en `app/[tenantId]/(shell-organism)`. comunify = port idéntico (wrapper marca + config), NO rebuild. `design-system-canon.md` existe (gate). Net-new comunify: config del shell (cast/colores/nav-tree) + reskin tokens.
+
+**1ª pregunta funcional (migración):** ¿qué pasa con las 10 áreas dashboard durante la transición?
+→ **Chris: (b) reemplazo.** El shell reemplaza el dashboard viejo; portamos cada área conforme avanzamos. Post-login aterriza en `[tenantId]/(shell-organism)`; el grupo `(dashboard)` se retira del routing (queda en git, no reachable). Las tabs de agente arrancan placeholder ("Próximamente") hasta portarse.
+
+**2ª pregunta funcional (landing + estado MVP):** con reemplazo + tabs placeholder, ¿dónde aterriza el creator post-login y qué ve útil?
+→ **Chris: (a) Luana viva.** El chat orquestador funciona de verdad en el MVP (saluda, entiende intención, delega-anuncia "eso lo hará Nina/Sofía… próximamente"). Da write real para DoD #37 (mensaje → respuesta → traza `copilot_trace_event`). Tabs de agente = "Próximamente".
+→ "Landing" Chris no lo conocía; aclarado = pantalla/estado inicial post-login. **Chris CONFIRMÓ:** Luana expandida (saluda) + Ribbon con Nina activa en "Próximamente".
+
+**3ª pregunta funcional (rol/quién usa):** ¿quién entra al shell — solo el creator dueño, o también equipo/multi-usuario?
+→ **Chris: solo el creator.** En esta marca SOLO lo usa una persona = el creator. Sin role-gating, nunca (dato durable: comunify = single-user brand). Coherente con `multi_account_creator_switcher: false`.
+
+**4ª pregunta funcional (acotar "Luana viva"):** ¿hasta dónde llega Luana en el MVP?
+→ **Chris: (a) conversa + anuncia.** LLM real + traza real; entiende intención; tareas concretas → "lo hará Nina/Sofía… próximamente". NO ejecuta acciones ni lee datos del tenant todavía. Write real para DoD (#37).
+→ **Chris (estratégico):** esto se replica en nicolify+vitalia. ¿Build-order? "Investigá primero qué conviene, vos decidís."
+
+**INVESTIGACIÓN cross-brand (Explore) — resultado:**
+- `core/luana-core-copilot` = supervisor chat engine **LIVE production-grade** (`POST /chat` SSE, deep-agent, observabilidad+cost). El motor YA EXISTE.
+- vitalia (Valeria): UI shell shipped pero **chat-store MOCK** (`MOCK_RESPONSES_BY_AGENT`); solo el wizard onboarding consume copilot real. Sidebar NO cableado.
+- nicolify (Luana): **100% MOCK**, sin router copilot montado.
+- comunify: ausente. `@luana/ui-kit ChatPanel` = presentacional (`useChatStore` inyectado por marca).
+- **Conclusión:** "Luana viva de verdad" es net-new en TODAS (ninguna tiene el sidebar cableado al motor). No hay marca "más avanzada" en esto específico.
+
+**DECISIÓN (Claude, ratificable por Chris) — comunify-FIRST + consumir motor + liftear cableado:**
+- comunify **consume** `core/luana-core-copilot /chat` (cero engine build).
+- BE comunify: montar router copilot core en `/api/v1/comunify/copilot` (thin).
+- FE comunify: `chat-store` real (SSE) → inyecta a `@luana/ui-kit ChatPanel`. System prompt supervisora = conversa+anuncia; **sin tools de dominio → no ejecuta** (= acota "(a)").
+- **comunify-first** porque: motor ya compartido/listo · comunify = lienzo limpio (sin mock legacy) · ya construimos su shell ahora.
+- `chat-store` real = **lift candidate → `@luana`**; después vitalia/nicolify cambian mock→compartido (follow-up). Coordina `/pm-luana` (promotion proposal) post-prueba.
+
+**5ª pregunta funcional (onboarding / tab Plataforma):** ¿qué hacemos con el wizard onboarding 4-step en el MVP?
+→ **Chris: (a)** wizard intacto, fuera de scope (sigue como flujo pre-shell). Tab Plataforma = mínimo. Integración Luana↔onboarding = story futura.
+
+### 2026-06-15 15:40 · 🤖 claude · `/po-ux` · 💡 PROPONE (RONDA 1 lista — FIRMA 1)
+Escrito `01-spec.md` RONDA 1 (funcional, SIN mockup): § Context/Dónde vive + § Mapa funcional (happy path + árbol bifurcaciones + RN-1..7 + AC-1..8) + § Pantallas (tabla campos) + § Dudas (Q1-Q3) + § Prior art applied. Refleja las 5 decisiones (reemplazo · Luana viva conversa+anuncia vía core copilot · landing Luana+Nina · single-user · onboarding intacto). **Esperando FIRMA 1 de Chris** ("esto es lo que quiero") → recién ahí nace el mockup.
+
+---
+
 ### 2026-06-15 15:18 · 🤖 claude · `/pm-comunify` · ✓ APLICADO
 Cast cementado en **`ADR-comunify-001-agentes-cast.md`** (status accepted):
 - Sidebar: **Luana** (supervisora+orquestadora+onboarding).
