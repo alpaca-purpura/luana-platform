@@ -148,6 +148,12 @@ Antes de confirmar el sitemap: dale una última revisión vos mismo (juntar / fa
 ### 2026-06-15 16:20 · 🤖 claude · `/po-ux` · 💡 PROPONE (sitemap v2 research-informed)
 **Research (WebSearch 2026):** creator economy → interactivo (cohorts/comunidad) > curso estático (Skool/Maven ganan) · agentes IA por etapa (research/contenido/campañas/analytics) + research-agent escanea tendencias diario · funnel retención = post-compra+loyalty+LTV+email ciclo. **Autocrítica + v2 en `navigation-tree.md`:** Nina 6→3 (voz+autoridad→N3 marca; escalera→N3 ofertas) · Bruno `cohorts-en-curso`→`eventos` (delivery) · Tomás `audiencia` incluye email/nurture · Plataforma 4→3 (plan→N3 cuenta) · **analytics + email = transversales, NO tabs** (Luana digest + per-agent KPIs; email donde se usa). Resuelve las 3 decisiones abiertas: voz+autoridad=Nina · cohorts no-split (diseño Nina / delivery Bruno-eventos) · nombres pulidos. **Esperando que Chris elija: v2 / mezcla / ajustes** → luego mockup → FIRMA 2.
 
+### 2026-06-15 16:30 · 👤 chris
+"dale, va con v2, armá el mockup".
+
+### 2026-06-15 16:30 · 🤖 claude · `/po-ux` · ✓ APLICADO (sitemap v2 ratificado) + 💡 PROPONE (mockup)
+v2 ratificado. **Mockup creativo** escrito `mockups/shell.html` (port re-temizado del shell canónico, tokens comunify morado/azul, fuentes Manrope/Inter): TopBar (logo comunify + tenant single-user Anabella Ríos) · **Luana sidebar full** (landing) con saludo + ejemplo conversa+anuncia (DelegateMarker → Nina) + composer + starters · **Ribbon** 6 tabs con agent-colors (Nina activa) · **SubTabsBar** Nina (Marca/Ofertas/Cohorts) · contenido = **empty-state "Próximamente"** con CTA "Hablar con Luana". Servido en `localhost:8893/shell.html`. **Esperando feedback/iteración → FIRMA 2** (la final). Pendiente: avatares (placeholders), Satoshi (self-host real en build).
+
 ---
 
 ### 2026-06-15 15:18 · 🤖 claude · `/pm-comunify` · ✓ APLICADO
