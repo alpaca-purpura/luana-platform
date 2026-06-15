@@ -2,10 +2,10 @@
 capability_id: vitalia-lisa-doctores
 module: clinics
 slug: lisa-doctores
-status: partial          # in-development · NO live hasta scenarios+e2e GREEN-real (DoD cement 2026-05-28)
-date_introduced: null    # se setea al merge reviewing→done
+status: live              # ★ 2026-06-12 merge delta v3 — live-verify real ×7 writes + e2e real-backend + APPROVED
+date_introduced: 2026-06-12
 story_introduced: vitalia-fase2-lisa-doctores
-package_version: 0.2.0
+package_version: 1.0.0
 package_path: vitalia/backend/src/modules/vitalia/clinics/ + vitalia/frontend/src/features/lisa/components/doctores/
 license: proprietary
 
@@ -28,14 +28,18 @@ user_facing_description: >
 
 dev_preview:
   route: "/lisa/staff"
-  how_to_navigate: "Login → ribbon avatar Lisa → sub-tab Doctores → card 'Ver perfil' → workspace [doctor-id] con tabs Bio/Horarios/Servicios/KPIs."
-  main_component: "vitalia/frontend/src/features/lisa/components/doctores/DoctorsDirectoryView.tsx"
+  how_to_navigate: "Login → Lisa → Staff → card Ver perfil → workspace [doctor-id] hojas Perfil/Horarios/Servicios/Página (delta v3: 4ª hoja Página = material+perfil IA+link público; picker ▾ en franja N3 cambia doctor preservando hoja; Horarios con vista Semana|Mes + editor recurrencia Google)."
+  main_component: "vitalia/frontend/src/features/lisa/components/staff/StaffDirectoryView.tsx"
   api_endpoints:
     - "GET /api/v1/vitalia/clinics/doctors"
     - "POST /api/v1/vitalia/clinics/doctors"
     - "GET /api/v1/vitalia/clinics/doctors/{id}"
     - "PATCH /api/v1/vitalia/clinics/doctors/{id}"
-  e2e_test: null            # se ancla al cerrar live-verify real (no mock)
+    - "GET /api/v1/vitalia/clinics/doctors/{id}/availability-occurrences (D3-C paint SSoT)"
+    - "POST|GET|DELETE /api/v1/vitalia/clinics/doctors/{id}/bio-files (+/download) (D3-B)"
+    - "POST /api/v1/vitalia/clinics/doctors/{id}/generate-profile · PATCH .../public-profile (D3-D)"
+    - "GET /api/public/clinic/{clinic_slug}/doctors/{doctor_slug} (público sin auth) + ruta FE /d/{clinica}/{doctor}"
+  e2e_test: "vitalia/frontend/e2e/specs/vitalia/pagina-publica-editor.spec.ts (+ staff switcher/horarios/mes specs delta · axe a11y/pagina-publica-axe.spec.ts)"
   fixtures_required: ["3-clinic-fixture-latam"]
   storybook_url: null
   loom_demo: null
@@ -45,8 +49,8 @@ adr_004_compliance: full
 
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-fase2-lisa-doctores
-created_date: null         # mirror de date_introduced · se setea al merge
-last_modified: 2026-06-01
+created_date: 2026-06-12
+last_modified: 2026-06-15
 parent_cap: null
 derives_capabilities: []
 
@@ -58,14 +62,8 @@ consumes_engine:
   - luana-core-scheduling
   - luana-core-commercial-calendar
 
-# Pendientes para flip a status: live (DoD)
-done_blockers:
-  - "[RESUELTO 2026-06-01 · BE 81a32173 + FE 99589cb2] doctors-500 fix (BE 422 guard UUID headers + FE useClinicId sin fallback Clerk-org) — keystone"
-  - "[RESUELTO 2026-06-01 · merge 14af22b2] tenant-resolution FE-wide no-clerk-org (bug sistémico que ocultaba el 500 a escala plataforma)"
-  - "live-verify REAL (no mock) de los scenarios contra dev-app + dev_app_verified.evidence — vía seed-by-WRITE real (decisión Chris a)"
-  - "visual goldens V-VIS-1..4 a project=visual + regen baselines + ratificación Chris (ADR-vitalia-003) (decisión Chris c)"
-  - "flujos workspace/calendar (SC-1/1b/1c/1d/3/3b) + i18n credencial AR/MX/CL"
-  - "quitar workaround .filter({visible:true}) de POMs (dual-mount fixed → slot resuelve a 1) + fix medición perf (debounce 500ms en POM searchFor)"
+# DoD blockers — TODOS RESUELTOS al merge 2026-06-12 (histórico en git)
+done_blockers: []   # live-verify real ×7 (checkpoint dod_evidence) · keystone+regresión modal fixed · flujos+i18n cubiertos en delta · goldens = followup ratificación Chris (signoff pre-autorizado, no bloquea funcionalidad — ADR-003 ratchet)
 
 change_log:
   - story_id: vitalia-fase2-lisa-doctores
@@ -135,7 +133,52 @@ change_log:
     scenarios_added: []
     status: in-progress
 
-# Scenarios (Gherkin del 01-spec.md · verbatim) — verificación pendiente live-verify real
+  - story_id: vitalia-fase2-lisa-doctores
+    date: 2026-06-12
+    type: extend
+    summary: >-
+      DELTA v3 (FIRMA 1+2 Chris): (D3-A) switcher EntityPicker en franja N3 — cambia
+      doctor sin volver al directorio, preserva hoja (EXTEND core entityIdentitySlot,
+      proposal accepted); (D3-B) bio-docs FUNCIONAL (upload R2 real + lista + descargar/
+      eliminar — el stub anterior no subía nada); (D3-C) FIX bug repro Chris: occurrences
+      respetadas — paint consume proyección BE SSoT (muere expansión client); (D3-D)
+      página pública del doctor /d/{clinica}/{doctor} mini-Doctoralia mobile-first
+      (sin CTA/stats, og:tags, anti-enum) + perfil ESTRUCTURADO (supersede BioPublic
+      3-blobs) + generación estado-driven + PATCH public-profile editor; (D3-E) vista
+      MES del calendario; (D3-F) editor recurrencia Google (multi-día + interval +
+      resumen humano, migración compat). Migraciones 040-043. 9 instancias contrato-
+      imaginado FE↔BE cazadas en integración live (HB-42/71). Audit APPROVED
+      (CHECKPOINTS 26/26, Phase D 41/41).
+    scenarios_added: [switcher-preserva-hoja, bio-docs-upload-real, occurrences-exactas-fix, pagina-publica-doctoralia, vista-mes, recurrencia-google-editor]
+    status: shipped
+  - story_id: vitalia-fase2-lisa-doctores
+    date: 2026-06-15
+    type: fix
+    summary: >-
+      bug7 G-verify rounds 4-6 (Chris live dev-app). round-4 FIX día-de-semana: el
+      bloque se pintaba en la columna equivocada (lunes→domingo) por drift TZ de
+      getCurrentWeekMonday (toISOString tras setDate local, Lima −05 de noche) → SSoT
+      TZ-estable calendarDates + descarta out-of-window. round-5 EXTEND: borrar
+      recurrente con scope 'Solo este turno' (excluded_dates, migr 044) / 'Este y los
+      siguientes' (trunca) + no-crear-en-pasado (FE celdas grisadas + BE 422). round-6
+      FIX: 'N repeticiones' = N ciclos completos del patrón (count = occurrences ×
+      len(days)), antes daba N totales y dejaba la última semana a medias en multi-día.
+      Verificado real-backend (DB ISODOW/excluded_dates/end_date + geometría) + chris_verify
+      SATISFIED + auditor APPROVED. Commits 8d211f8f/e3c79f3a/fe8786d4/3c75252b/2ba3852d.
+    scenarios_added: [dia-de-semana-tz-paint, borrar-recurrente-scope, no-crear-en-pasado, occurrences-ciclos-completos]
+    status: shipped
+  - story_id: vitalia-bugfix-horarios-toolbar-sticky
+    date: 2026-06-15
+    type: fix
+    summary: >-
+      Toolbar de Horarios queda fijo al scrollear (fix CORE @luana/ui-kit 0.4.1: AppPanelSlot
+      content-area +flex flex-col → EntityWorkspaceLayout clampa + scroll interno). Solo layout,
+      sin cambio de comportamiento. chris_verify SATISFIED + verificado live (Chrome MCP + Playwright 3/3).
+    scenarios_added: []
+    merge_sha: null
+    status: done
+
+# Scenarios (Gherkin del 01-spec.md · verbatim) — delta v3 verificado REAL (live writes + e2e real-backend)
 scenarios:
   - id: crear-doctor-horarios
     title: "happy: crear doctor + horarios"
@@ -178,6 +221,122 @@ scenarios:
     e2e_test: null
     status: pending
 ---
+
+  # ── Delta v3 (added_in_story: vitalia-fase2-lisa-doctores · 2026-06-12 · verificación REAL) ──
+  - id: switcher-preserva-hoja
+    title: "happy D3-A: cambiar doctor desde el picker preserva la hoja actual"
+    gherkin: >-
+      Given doctor abierto en hoja Horarios
+      When clic ▾ del nombre (EntityPicker) + buscar + elegir otro doctor
+      Then navega a /staff/{otro}/horarios (hoja PRESERVADA) + contenido renderiza + inactivos ocultos
+    e2e_test: "vitalia/frontend/e2e (SC-D3A specs, 6/6 real-backend)"
+    status: verified_real
+  - id: bio-docs-upload-real
+    title: "happy D3-B: subir documento persiste (R2+DB) + descargar + eliminar"
+    gherkin: >-
+      Given hoja Página de un doctor
+      When drop PDF válido / clic descargar / eliminar+confirmar
+      Then POST upload 200 + register 201 + fila (nombre/tamaño/fecha) + download 200 + delete con audit; inválido → error inline sin subida
+    e2e_test: "SC-D3B specs + live-verify orchestrator (dod_evidence)"
+    status: verified_real
+  - id: occurrences-exactas-fix
+    title: "regression D3-C (bug Chris): occurrences=N pinta EXACTAMENTE N"
+    gherkin: >-
+      Given bloque weekly con 2 repeticiones creado vía UI
+      When navego semanas / abro vista Mes
+      Then EXACTAMENTE 2 ocurrencias pintadas (semana 3 vacía; antes infinito) — paint = proyección BE
+    e2e_test: "test_availability_occurrences.py SC-D3C-1..8 + e2e + live 0,1,1,0"
+    status: verified_real
+  - id: pagina-publica-doctoralia
+    title: "happy D3-D: página pública mobile-first informativa"
+    gherkin: >-
+      Given doctor con perfil generado + Visible ON
+      When lead abre /d/{clinica}/{doctor} SIN auth (390x844)
+      Then 200 + og:tags + Doctoralia (Sobre mí→Consultorio, colegiatura verificada) + SIN CTA/stats + secciones vacías omitidas; OFF/slug-desconocido → 'Perfil no disponible' IDÉNTICO (anti-enum)
+    e2e_test: "pagina-publica-editor.spec.ts + a11y/pagina-publica-axe.spec.ts (wcag2aa 2/2)"
+    status: verified_real
+  - id: vista-mes
+    title: "happy D3-E: vista Mes consume proyección"
+    gherkin: >-
+      Given bloques con occurrences=2
+      When toggle Mes / clic en un día
+      Then chips en exactamente 2 fechas + salto a la semana del día + empty/error states
+    e2e_test: "SC-D3E specs 4/4"
+    status: verified_real
+  - id: recurrencia-google-editor
+    title: "happy D3-F: editor recurrencia estilo Google"
+    gherkin: >-
+      Given popover de bloque
+      When Personalizado: cada 2 semanas + chips L,J + después de 8 repeticiones
+      Then resumen humano EXACTO 'Se repite cada 2 semanas el lunes y jueves, 8 repeticiones' + POST 201 (daysOfWeek/interval) + 8 CICLOS completos = 16 ocurrencias (8 L + 8 J · round-6) + legacy single-day proyecta idéntico (migración 042)
+    e2e_test: "SC-D3F battery + bug7-r4 case 18 + bug7-r5 #R6 + live"
+    status: verified_real
+  - id: dia-de-semana-tz-paint
+    title: "bug7 round-4: el día seleccionado pinta en su columna real (no domingo)"
+    gherkin: >-
+      Given un bloque weekly el lunes (en horario tarde/noche, TZ Lima −05)
+      When el calendario lo pinta
+      Then aparece en la columna Lun (no Dom); la semana abre en el lunes real (sin drift toISOString)
+    e2e_test: "bug7-r4-dow.spec.ts (22 casos DB ISODOW + geometría) + calendarDates.test.ts"
+    status: verified_real
+  - id: borrar-recurrente-scope
+    title: "bug7 round-5: borrar recurrente pregunta 'Solo este' / 'Este y los siguientes'"
+    gherkin: >-
+      Given un bloque recurrente con varias ocurrencias
+      When elijo 'Solo este turno' / 'Este y los siguientes'
+      Then occurrence excluye esa fecha (resto sigue) / this_and_future trunca desde ahí (pasado intacto); confirmados preservados; one_off borra sin diálogo
+    e2e_test: "bug7-r5-dow.spec.ts #1a/#1b/#1c + test_availability_block_scoped_delete.py"
+    status: verified_real
+  - id: no-crear-en-pasado
+    title: "bug7 round-5: no se crean bloques en fechas/horas pasadas"
+    gherkin: >-
+      Given el calendario de horarios
+      When intento crear en una celda pasada
+      Then la celda está grisada/no-interactiva (FE) y el BE rechaza one_off pasado con 422
+    e2e_test: "bug7-r5-dow.spec.ts #2-FE + availability-calendar-past-cell.test.tsx + test_availability_block_scoped_delete.py (BE 422)"
+    status: verified_real
+  - id: occurrences-ciclos-completos
+    title: "bug7 round-6: 'N repeticiones' = N semanas completas del patrón"
+    gherkin: >-
+      Given un bloque Mar+Jue con 3 repeticiones
+      When el BE proyecta
+      Then 6 ocurrencias (3 martes + 3 jueves) — 3 semanas completas, ninguna a medias
+    e2e_test: "bug7-r5-dow.spec.ts #R6 + test_availability_projection.py (multi-día ciclos) + SC-D3F-1/2"
+    status: verified_real
+
+# v3.2 (cement 2026-05-28): access + business_rules
+access:
+  roles: [owner, admin_clinic]
+  entry_point: "Ribbon Lisa → Staff (N2) · pública: /d/{clinica}/{doctor} sin auth (solo visible ON)"
+business_rules:
+  - id: RN-D3A-2
+    rule: "Doctor inactivo no aparece en el picker"
+    enforcement: "filtro active=true server-side"
+    code_ref: "vitalia/frontend/src/features/lisa/api/staff.ts::doctorPickerSearchFn"
+  - id: RN-D3B-4
+    rule: "bio_generated_at SOLO se actualiza en generación IA (no en ediciones manuales)"
+    enforcement: "PATCH public-profile no toca el timestamp (test assert)"
+    code_ref: "vitalia/backend/src/modules/vitalia/clinics/infrastructure/repositories/doctor_repository.py::update_public_profile_sections"
+  - id: RN-D3D-9
+    rule: "Anti-enumeración: toggle OFF / slug desconocido / colisión → respuesta idéntica"
+    enforcement: "404 genérico único en public router + tests ×3 casos"
+    code_ref: "vitalia/backend/src/modules/vitalia/clinics/api/public_doctors_router.py"
+  - id: RN-D3F-2
+    rule: "'N repeticiones' = N ciclos COMPLETOS del patrón (cada repetición incluye todos los días); multi-día → occurrences × len(days). Single-día = N (round-6, Chris 2026-06-15)"
+    enforcement: "rrule(count = occurrences × len(days_of_week)) + SC-D3F-1/2 + bug7-r5 #R6"
+    code_ref: "vitalia/backend/src/modules/vitalia/clinics/application/availability_projection_service.py"
+  - id: RN-D3F-4
+    rule: "El bloque se pinta en la columna del día REAL seleccionado (lunes→Lun, nunca Dom); semana anclada en el lunes real sin drift TZ"
+    enforcement: "calendarDates SSoT (componentes locales, nunca toISOString) + occurrenceDayOfWeek descarta out-of-[0,6]"
+    code_ref: "vitalia/frontend/src/lib/format/calendarDates.ts"
+  - id: RN-D3G-1
+    rule: "Borrar bloque recurrente ofrece 'Solo este turno' (excluye esa fecha) / 'Este y los siguientes' (trunca); confirmados nunca se borran; one_off borra directo"
+    enforcement: "DELETE ?scope=occurrence|this_and_future + excluded_dates JSONB (migr 044) + has_confirmed_appointment guard"
+    code_ref: "vitalia/backend/src/modules/vitalia/clinics/application/availability_block_service.py"
+  - id: RN-D3G-2
+    rule: "No se pueden crear bloques en fechas/horas pasadas (celdas grisadas + BE 422)"
+    enforcement: "FE isCellPast data-past + onMouseDown no-op · BE create_block ValueError→422"
+    code_ref: "vitalia/frontend/src/features/lisa/components/staff/workspace/horarios/AvailabilityCalendar.tsx"
 
 # Capability: lisa.doctores (status: partial · in-development)
 

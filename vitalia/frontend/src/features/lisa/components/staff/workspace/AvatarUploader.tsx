@@ -5,10 +5,10 @@
  * AvatarUploader.tsx — Doctor avatar upload via proxy (D-3).
  *
  * Uses Dropzone (accept="image/*", maxSizeBytes=10MB) → proxy POST to
- * /api/v1/vitalia/clinics/assets/upload (kind=avatar) → PATCH doctor avatarKey.
+ * /api/v1/vitalia/assets/upload (kind=avatar) → PATCH doctor avatarKey.
  *
  * Business rule (avatar-presigned-direct-r2 → corrected per D-3):
- *   Proxy upload to /api/v1/vitalia/clinics/assets/upload (NOT presigned).
+ *   Proxy upload to /api/v1/vitalia/assets/upload (NOT presigned).
  *
  * T-FE-2 vitalia-fase2-lisa-doctores
  * spec_anchor: 03-arch-fe.md § AvatarUploader + 03-arch.md § D-3

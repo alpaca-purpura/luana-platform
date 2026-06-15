@@ -16,6 +16,8 @@ import { describe, it, expect } from "vitest";
 import {
   DEFAULT_LANDING_SUBPATH,
   bareTenantLandingRedirect,
+  isAuthedRootPath,
+  rootLandingRedirect,
 } from "./shell-routes";
 import { isValidAgent, SHIPPED_STATIC_SUBTABS } from "./agent-catalog";
 
@@ -74,5 +76,52 @@ describe("bareTenantLandingRedirect — Bug #1 edge-redirect hardening (Next 16 
     ]) {
       expect(bareTenantLandingRedirect(p), `${p} no debe redirigir`).toBeNull();
     }
+  });
+});
+
+describe("isAuthedRootPath — root '/' edge-redirect scope (vitalia-bugfix-root-login-redirect-softnav)", () => {
+  it("matchea SOLO la raíz exacta '/'", () => {
+    expect(isAuthedRootPath("/")).toBe(true);
+  });
+
+  it("matchea la raíz con query string preservada (Clerk afterSignIn puede traer params)", () => {
+    // El middleware recibe pathname puro (sin query), pero el guard debe ser
+    // robusto si el caller le pasa un pathname con trailing artifacts.
+    expect(isAuthedRootPath("/")).toBe(true);
+  });
+
+  it("NO matchea ninguna ruta con segmento (evita disparar en cada request)", () => {
+    for (const p of [
+      "/sign-in",
+      "/marketing",
+      "/public/foo",
+      "/e69a691d-070e-5caf-a053-6e74642ec100",
+      "/e69a691d-070e-5caf-a053-6e74642ec100/mateo/agenda",
+      "/test-stack",
+      "/showcase/button",
+    ]) {
+      expect(isAuthedRootPath(p), `${p} NO es la raíz`).toBe(false);
+    }
+  });
+});
+
+describe("rootLandingRedirect — root '/' → primer tenant landing en el edge (RN: sin soft-nav in-render)", () => {
+  const TENANT = "e69a691d-070e-5caf-a053-6e74642ec100";
+
+  it("compone /{tenantId}/{DEFAULT_LANDING_SUBPATH} desde el tenant resuelto", () => {
+    expect(rootLandingRedirect(TENANT)).toBe(
+      `/${TENANT}/${DEFAULT_LANDING_SUBPATH}`,
+    );
+  });
+
+  it("retorna null cuando NO hay tenant resuelto (deja que app/page.tsx haga el fallback)", () => {
+    expect(rootLandingRedirect(null)).toBeNull();
+    expect(rootLandingRedirect("")).toBeNull();
+    expect(rootLandingRedirect(undefined)).toBeNull();
+  });
+
+  it("retorna null para un tenant no-UUID (no confiamos un claim arbitrario en el edge)", () => {
+    expect(rootLandingRedirect("not-a-uuid")).toBeNull();
+    expect(rootLandingRedirect("org_3DzUI3clerkOrgId")).toBeNull();
   });
 });

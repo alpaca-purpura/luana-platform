@@ -1,5 +1,6 @@
 // cap: crm.adrian-embudo
 // story-origin: vitalia-fase2-adrian-embudo
+// T-1 vitalia-fase2-config-cuenta: config.cuenta removed from PLACEHOLDER_MAP (shipped N3-static)
 /**
  * SubTabContent — dispatcher organismo.
  * F1-S10 vitalia-fase1-empty-states — T-9 (PLACEHOLDER_MAP fully populated)
@@ -74,9 +75,9 @@ import {
   ReputacionPlaceholder,
 } from "@/features/camila";
 
-// ── Config placeholders — via public API (T-2 generic + T-3 special) ─────────────
+// ── Config placeholders — via public API (T-3 special) ───────────────────────────
+// config.cuenta EXCLUDED: shipped as N3-static route (T-1 vitalia-fase2-config-cuenta) — see SHIPPED_STATIC_SUBTABS.
 import {
-  CuentaPlaceholder,
   ConexionesPlaceholder,
   AvanzadoPlaceholder,
 } from "@/features/config";
@@ -85,13 +86,14 @@ import {
 type PlaceholderComponent = ComponentType;
 type SubTabKey = `${RibbonTabSlug}.${string}`;
 
-// ── PLACEHOLDER_MAP — 19 keys (RIBBON_SUBTABS - SHIPPED_STATIC_SUBTABS) ──────────
+// ── PLACEHOLDER_MAP — 18 keys (RIBBON_SUBTABS - SHIPPED_STATIC_SUBTABS) ──────────
 // Architecture test verifies this map === RIBBON_SUBTABS minus SHIPPED_STATIC_SUBTABS.
 // v1.2 (2026-05-30): mateo.pacientes replaces valeria.pacientes (paradigm-map-zones T-5).
 // F2-S8 T-FE-1 (2026-05-31): lisa.staff shipped as static route → removed from PLACEHOLDER_MAP.
 // F3-T-3 (2026-06-03): adrian.inbox shipped as static route → removed from PLACEHOLDER_MAP.
 // T-FE-1 (2026-06-03): +adrian.recuperar (placeholder; real page ships in T-FE-3).
 // RIBBON_SUBTABS.adrian count: 4→5 (+recuperar). SHIPPED_STATIC_SUBTABS+adrian.inbox = net 0 change in PLACEHOLDER_MAP.adrian count: 3→4 (+recuperar, -inbox).
+// T-1 vitalia-fase2-config-cuenta (2026-06-11): config.cuenta shipped N3-static → removed from PLACEHOLDER_MAP.
 // DO NOT hardcode these keys elsewhere — arch test enforces this file as SSoT.
 const PLACEHOLDER_MAP = {
   // lisa (2) — lisa.marca shipped N3-static (F2-S7 T-4), lisa.staff shipped static (F2-S8 T-FE-1)
@@ -115,8 +117,7 @@ const PLACEHOLDER_MAP = {
   "camila.reactivar": ReactivarPlaceholder,
   "camila.multiplicar": MultiplicarPlaceholder,
   "camila.reputacion": ReputacionPlaceholder,
-  // config (3) — T-2 generic + T-3 conexiones special
-  "config.cuenta": CuentaPlaceholder,
+  // config (2) — T-3 conexiones special (config.cuenta shipped N3-static T-1 vitalia-fase2-config-cuenta)
   "config.conexiones": ConexionesPlaceholder,
   "config.avanzado": AvanzadoPlaceholder,
 } as const satisfies Record<SubTabKey, PlaceholderComponent>;

@@ -10,6 +10,7 @@ Extended by T-inbox-be-5: list_for_inbox, create, update methods.
 
 from __future__ import annotations
 
+from decimal import Decimal
 from uuid import UUID, uuid4
 
 import structlog
@@ -117,8 +118,16 @@ class LeadService:
         status: str,
         notes: str | None,
         marketing_opt_in: bool,
+        stage: str = "interesado",
+        channel: str | None = None,
+        service_interest: str | None = None,
+        estimated_value: Decimal | None = None,
+        currency: str | None = None,
     ) -> Lead:
         """Create a new lead — non-PHI.
+
+        Nota: el DTO LeadCreateRequest acepta `tags` pero NO se persiste
+        (vitalia_leads no tiene columna tags; el form FE tampoco tiene input).
 
         Args:
             tenant_id: Tenant UUID.
@@ -129,6 +138,11 @@ class LeadService:
             status: Initial lead status (default 'new').
             notes: Optional free-text notes.
             marketing_opt_in: Whether lead opted in to marketing.
+            stage: Funnel stage (default 'interesado').
+            channel: Acquisition channel (whatsapp, instagram, etc.).
+            service_interest: Service of interest.
+            estimated_value: Estimated deal value.
+            currency: Currency code.
 
         Returns:
             Created Lead.
@@ -143,6 +157,11 @@ class LeadService:
             status=status,
             notes=notes,
             marketing_opt_in=marketing_opt_in,
+            stage=stage,
+            channel=channel,
+            service_interest=service_interest,
+            estimated_value=estimated_value,
+            currency=currency,
         )
         logger.info(
             "lead_service.create",

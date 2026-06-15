@@ -82,6 +82,10 @@ export default defineConfig({
         // F3 vitalia-fase2-adrian-inbox behavioral specs (modes/nudge/phi/tenant/states).
         // a11y → project=a11y, visual → project=visual (excluded below).
         /.*\/e2e\/shell-organism\/adrian-inbox-(modes|nudge|phi-redirect|tenant|states)\.spec\.ts/,
+        // F4 vitalia-fase2-config-cuenta live-verify spec (datos/preferencias/responsable + WRITE real)
+        /.*\/e2e\/shell-organism\/config-cuenta\.spec\.ts/,
+        // D3-E vitalia-fase2-lisa-doctores month view specs (SC-D3E-1..4)
+        /.*\/e2e\/specs\/vitalia\/.*\.spec\.ts/,
       ],
       // Exclude visual-goldens: corren EXCLUSIVAMENTE en project=visual que tiene
       // snapshotPathTemplate + maxDiffPixelRatio: 0.001 config. Sin esa config,

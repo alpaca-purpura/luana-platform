@@ -23,9 +23,14 @@ class AssetModel(Base):
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=True)
 
     # Optional Link to Offer (Backward Compatibility & Offer Context)
+    # HOTFIX 2026-06-12: sin ForeignKey("products.id") — la FK model-level rompía el
+    # mapper en brands SIN tabla products (vitalia: NoReferencedTableError al primer
+    # uso real del proxy). Cero relationship() la usaba y las migraciones (raw SQL)
+    # nunca crearon la FK en DB → quitar el constraint del modelo es behavior-preserving.
+    # Cross-module hard-FK viola boundaries del monolito modular (backend-ddd.md).
+    # Proposal: docs/promotion-protocol/proposals/2026-06-12-assets-offer-fk-hotfix.md
     offer_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("products.id"),
         nullable=True,
         index=True,
     )

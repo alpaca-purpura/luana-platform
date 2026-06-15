@@ -13,6 +13,15 @@
  * Tenant isolation: every request passes tenantId via vitaliaFetch (X-Tenant-ID header).
  * HIPAA-lite: PHI is masked server-side — FE only receives masked strings.
  *
+ * ★ Actor headers (vitalia-bugfix-agenda-actor-headers-422, 2026-06-15):
+ *   The scheduling/agenda endpoints (agenda_router.py) REQUIRE the HIPAA-lite dual filter
+ *   + audit actor: X-Tenant-ID + X-Clinic-ID + X-User-ID, and gate RBAC on X-User-Role
+ *   (ALLOWED_PHI_ROLES). Sending only X-Tenant-ID → 422 (Field required) + empty grid.
+ *   X-Clinic-ID comes from useClinicId(); X-User-ID (DB UUID) + X-User-Role (per-tenant)
+ *   come from the shared useActorHeaders() hook (lifted from features/lisa — FSD-Lite, no
+ *   cross-feature import). PHI queries gate on a non-empty X-User-ID (avoids the 422 race
+ *   of firing before /me resolves).
+ *
  * downstream-regression-na: brand-local FE hooks; no cross-brand consumers
  * spec_anchor: 03-arch.md § 5.1 + 06-tickets.yaml T-12
  */
@@ -27,6 +36,8 @@ import {
   type UseQueryOptions,
 } from "@tanstack/react-query";
 import { vitaliaFetch } from "@/lib/fetch-client";
+import { useClinicId } from "@/hooks/useClinicId";
+import { useActorHeaders } from "@/hooks/useActorHeaders";
 import type {
   AgendaGridResponse,
   AgendaView,
@@ -69,6 +80,24 @@ const PAYMENTS_BASE = "/api/v1/payments";
 const FISCAL_BASE = "/api/v1/fiscal";
 const NOTIFY_BASE = "/api/v1/notify";
 
+// ── Actor headers helper ────────────────────────────────────────────────────────
+
+/**
+ * useAgendaActorHeaders — merges the HIPAA-lite headers every scheduling/agenda call
+ * needs beyond X-Tenant-ID (which vitaliaFetch injects): X-Clinic-ID + X-User-ID + X-User-Role.
+ * Returns the merged record + a `ready` flag (true once X-User-ID resolved) so PHI queries
+ * can gate their `enabled` on it (avoids the 422 race of firing before /me resolves).
+ */
+function useAgendaActorHeaders(): { headers: Record<string, string>; ready: boolean } {
+  const clinicId = useClinicId();
+  const actorHeaders = useActorHeaders();
+  const headers: Record<string, string> = {
+    ...actorHeaders,
+    ...(clinicId ? { "X-Clinic-ID": clinicId } : {}),
+  };
+  return { headers, ready: Boolean(actorHeaders["X-User-ID"]) };
+}
+
 // ── 3. useAgendaGrid — polling hook for calendar grid ─────────────────────────
 
 export interface UseAgendaGridOptions {
@@ -93,6 +122,7 @@ export function useAgendaGrid({
   queryOptions,
 }: UseAgendaGridOptions) {
   const { getToken, isLoaded, isSignedIn } = useAuth();
+  const { headers, ready } = useAgendaActorHeaders();
 
   return useQuery<AgendaGridResponseDTO>({
     queryKey: agendaKeys.grid(tenantId, view, date, presetFilter),
@@ -105,10 +135,11 @@ export function useAgendaGrid({
 
       return vitaliaFetch<AgendaGridResponseDTO>(
         `${BASE}/agenda/grid?${params.toString()}`,
-        { token, tenantId },
+        { token, tenantId, headers },
       );
     },
-    enabled: isLoaded && isSignedIn === true,
+    // Gate until X-User-ID (from /me) resolved — firing before it sends X-User-ID:"" → 422.
+    enabled: isLoaded && isSignedIn === true && ready,
     refetchInterval: 30_000,
     staleTime: 25_000,
     ...queryOptions,
@@ -139,6 +170,7 @@ export function useAgendaAggregates({
   dateTo,
 }: UseAgendaAggregatesOptions) {
   const { getToken, isLoaded, isSignedIn } = useAuth();
+  const { headers, ready } = useAgendaActorHeaders();
 
   return useQuery<AgendaAggregatesResponse>({
     queryKey: agendaKeys.aggregates(tenantId, dateFrom, dateTo),
@@ -150,10 +182,11 @@ export function useAgendaAggregates({
 
       return vitaliaFetch<AgendaAggregatesResponse>(
         `${BASE}/agenda/aggregates?${params.toString()}`,
-        { token, tenantId },
+        { token, tenantId, headers },
       );
     },
-    enabled: isLoaded && isSignedIn === true,
+    // Gate until X-User-ID (from /me) resolved — firing before it sends X-User-ID:"" → 422.
+    enabled: isLoaded && isSignedIn === true && ready,
     staleTime: 60_000,
   });
 }
@@ -172,6 +205,7 @@ export function useAppointmentDetail({
   enabled = true,
 }: UseAppointmentDetailOptions) {
   const { getToken, isLoaded, isSignedIn } = useAuth();
+  const { headers, ready } = useAgendaActorHeaders();
 
   return useQuery<Appointment>({
     queryKey: agendaKeys.detail(tenantId, appointmentId ?? ""),
@@ -182,10 +216,11 @@ export function useAppointmentDetail({
 
       return vitaliaFetch<Appointment>(
         `${BASE}/appointments/${appointmentId}`,
-        { token, tenantId },
+        { token, tenantId, headers },
       );
     },
-    enabled: isLoaded && isSignedIn === true && !!appointmentId && enabled,
+    // Gate until X-User-ID (from /me) resolved — firing before it sends X-User-ID:"" → 422.
+    enabled: isLoaded && isSignedIn === true && !!appointmentId && enabled && ready,
     staleTime: 30_000,
   });
 }
@@ -198,6 +233,7 @@ export interface CreateAppointmentMutationContext {
 
 export function useCreateAppointment(tenantId: string) {
   const { getToken } = useAuth();
+  const { headers } = useAgendaActorHeaders();
   const queryClient = useQueryClient();
 
   return useMutation<AgendaGridResponse, Error, CreateAppointmentRequestDTO>({
@@ -209,6 +245,7 @@ export function useCreateAppointment(tenantId: string) {
         method: "POST",
         token,
         tenantId,
+        headers,
         body: JSON.stringify(payload),
       });
     },
@@ -228,6 +265,7 @@ export interface PatchAppointmentVariables {
 
 export function usePatchAppointmentStatus(tenantId: string) {
   const { getToken } = useAuth();
+  const { headers } = useAgendaActorHeaders();
   const queryClient = useQueryClient();
 
   return useMutation<Appointment, Error, PatchAppointmentVariables>({
@@ -241,6 +279,7 @@ export function usePatchAppointmentStatus(tenantId: string) {
           method: "PATCH",
           token,
           tenantId,
+          headers,
           body: JSON.stringify(payload),
         },
       );
@@ -267,6 +306,7 @@ export interface ChargeAppointmentVariables {
 
 export function useChargeAppointment(tenantId: string) {
   const { getToken } = useAuth();
+  const { headers: actorHeaders } = useAgendaActorHeaders();
   const queryClient = useQueryClient();
 
   return useMutation<ChargeResponseDTO, Error, ChargeAppointmentVariables>({
@@ -280,7 +320,10 @@ export function useChargeAppointment(tenantId: string) {
           method: "POST",
           token,
           tenantId,
+          // Merge actor headers (X-Clinic-ID + X-User-ID + X-User-Role) WITH the
+          // per-call idempotency key — payments/charge requires the dual filter + audit actor.
           headers: {
+            ...actorHeaders,
             "X-Idempotency-Key": idempotencyKey,
           },
           body: JSON.stringify({ appointment_id: appointmentId, ...payload }),
@@ -306,6 +349,7 @@ export interface EmitFiscalDocVariables {
 
 export function useEmitFiscalDoc(tenantId: string) {
   const { getToken } = useAuth();
+  const { headers } = useAgendaActorHeaders();
   const queryClient = useQueryClient();
 
   return useMutation<FiscalDocument, Error, EmitFiscalDocVariables>({
@@ -319,6 +363,7 @@ export function useEmitFiscalDoc(tenantId: string) {
           method: "POST",
           token,
           tenantId,
+          headers,
           body: JSON.stringify({ payment_id: paymentId, doc_type: docType }),
         },
       );
@@ -340,6 +385,7 @@ export interface SendReminderResponse {
 
 export function useSendReminder(tenantId: string) {
   const { getToken } = useAuth();
+  const { headers } = useAgendaActorHeaders();
 
   return useMutation<SendReminderResponse, Error, NotifyRequestDTO>({
     mutationFn: async (payload) => {
@@ -352,6 +398,7 @@ export function useSendReminder(tenantId: string) {
           method: "POST",
           token,
           tenantId,
+          headers,
           body: JSON.stringify(payload),
         },
       );

@@ -42,6 +42,7 @@ from src.modules.vitalia.scheduling.api.dtos.notify_dtos import (
     NotificationSentResponse,
     SendNotificationRequestDTO,
 )
+from src.modules.vitalia.scheduling.api.rbac import SCHEDULING_PHI_ROLES
 from src.modules.vitalia.scheduling.application.services.notify_service import (
     NotifyService,
 )
@@ -58,8 +59,9 @@ logger = structlog.get_logger()
 
 router = APIRouter(tags=["scheduling-notify"])
 
-# RBAC roles allowed to send notifications (per hipaa-lite.md § Access control)
-_PHI_ROLES: frozenset[str] = frozenset(["doctor", "nurse", "admin_clinic", "valeria_assistant"])
+# RBAC roles allowed to send notifications (per hipaa-lite.md § Access control).
+# Single source of truth: scheduling.api.rbac.SCHEDULING_PHI_ROLES (includes `owner`).
+_PHI_ROLES: frozenset[str] = SCHEDULING_PHI_ROLES
 
 
 def _make_notify_service(session: AsyncSession) -> NotifyService:
@@ -145,7 +147,7 @@ async def send_appointment_reminder(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=(
                 f"Rol '{user_role}' no tiene acceso a notificaciones PHI. "
-                "Roles permitidos: doctor, nurse, admin_clinic, valeria_assistant."
+                f"Roles permitidos: {', '.join(sorted(_PHI_ROLES))}."
             ),
         )
 

@@ -86,4 +86,37 @@ describe("useLeadStageMutation", () => {
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect((result.current.error as unknown as ApiErrorLike).status).toBe(422);
   });
+
+  // ★ EMBUDO-INBOX-SYNC-FIX (2026-06-11): moving a lead stage in Embudo must
+  // refresh the Inbox conversation thread, which renders lead.stage from the
+  // crm-shared key ['crm','conversation',id]. Regression guard: onSuccess must
+  // cross-invalidate the Inbox namespaces, not only the board/detail.
+  it("onSuccess cross-invalidates Inbox + Embudo namespaces (embudo↔inbox sync)", async () => {
+    vi.mocked(fetchClient).mockResolvedValueOnce(MOCK_SUCCESS);
+    const qc = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    });
+    const invalidateSpy = vi.spyOn(qc, "invalidateQueries");
+    const localWrapper = ({ children }: { children: React.ReactNode }) =>
+      createElement(QueryClientProvider, { client: qc }, children);
+
+    const { result } = renderHook(() => useLeadStageMutation(), {
+      wrapper: localWrapper,
+    });
+    act(() => {
+      result.current.mutate({
+        leadId: "lead-001",
+        toStage: "calificando",
+        reason: "coordiné por teléfono",
+        version: 1,
+        triggeredBy: "manual_override",
+      });
+    });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const invalidatedKeys = invalidateSpy.mock.calls.map((c) => c[0]?.queryKey);
+    // The renderered Inbox thread key namespace + the inbox list namespace
+    expect(invalidatedKeys).toContainEqual(["crm", "conversation"]);
+    expect(invalidatedKeys).toContainEqual(["adrian", "inbox"]);
+  });
 });

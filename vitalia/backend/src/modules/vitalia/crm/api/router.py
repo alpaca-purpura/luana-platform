@@ -527,6 +527,12 @@ async def create_lead(
         status=body.status,
         notes=body.notes,
         marketing_opt_in=body.marketing_opt_in,
+        stage=body.stage,
+        channel=body.channel,
+        service_interest=body.service_interest,
+        # body.tags aceptado en el DTO pero NO persistido (sin columna en vitalia_leads)
+        estimated_value=body.estimated_value,
+        currency=body.currency,
     )
 
     return LeadResponse(

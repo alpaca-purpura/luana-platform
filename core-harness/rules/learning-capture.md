@@ -6,6 +6,8 @@
 
 Cada aprendizaje vive en un archivo `.md` dedicado bajo un path canónico. **MEMORY.md sólo guarda pointer + 1-line hook** — nunca el contenido.
 
+**★ Ciclo de vida (2026-06-11):** capturado NO es estado final. Cada learning lleva `applied:` en su frontmatter (`pending` ausente-default · `applied` · `promoted` · `wont-apply`; `promotable: no` ⇒ referencia, no espera acción). El triage lo fuerza el stop `/harnesses-improvement` (hasta 3 `pending` por sesión, jerarquía: gate/hook > rule/skill > proposal core > descarte consciente) y el cockpit (tab Learnings) lo escribe con un click. La métrica del loop: "esperando decisión" BAJA entre stops.
+
 | Tipo | Path canónico |
 |---|---|
 | Técnico transversal (≥2 brands) | `docs/learnings/{date}-{slug}.md` |

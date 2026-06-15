@@ -45,3 +45,17 @@ class ClinicModel(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
     deleted_at = Column(DateTime(timezone=True), nullable=True)
+
+    # --- Account / fiscal identity fields (migration 039 — vitalia-fase2-config-cuenta T-2) ---
+    # Non-PHI clinic identity fields. All nullable (backwards-compatible with existing rows).
+    legal_name = Column(String, nullable=True, comment="Razón social o nombre legal")
+    fiscal_id = Column(String, nullable=True, comment="ID fiscal por país (CUIT/RUC/RFC/NIT/RUT)")
+    address = Column(String, nullable=True, comment="Dirección fiscal o de atención")
+    phone = Column(String, nullable=True, comment="Teléfono de contacto")
+    email = Column(String, nullable=True, comment="Email de contacto clínica")
+    language = Column(String, nullable=False, server_default="es-419", comment="Locale preferido (IETF BCP 47)")
+    currency = Column(
+        String(3),
+        nullable=True,
+        comment="Moneda ISO 4217 preferida (NULL = usa moneda del país del tenant)",
+    )

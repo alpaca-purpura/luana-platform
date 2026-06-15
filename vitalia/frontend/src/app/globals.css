@@ -27,7 +27,7 @@
  * the @source ensures the JIT scanner sees the kit's static class usages.
  * See: vitalia/docs/product/stories/platform-lift-shell-chrome-ui-kit/03-arch.md § FE-3
  */
-@source "../../../core/@luana/ui-kit/src/organism/shell";
+@source "../../../../core/@luana/ui-kit/src";
 
 /* ─── Shadcn standard tokens + agent tokens (F1-S0) ─────────────────────────
  * SSoT: vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md § 5.1

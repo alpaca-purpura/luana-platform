@@ -48,6 +48,13 @@ export interface EntityWorkspaceLayoutProps {
    */
   onAddAffordance?: () => void;
   /**
+   * Optional entity-identity selector node forwarded verbatim to
+   * EntitySubNavBar.entityIdentitySlot (mirror of onAddAffordance forwarding).
+   * Canon §6.3: identity = selector (EntityPicker) — "cambiar sin volver".
+   * Absent → static identity renders (back-compat). Master mode → never rendered.
+   */
+  entityIdentitySlot?: ReactNode;
+  /**
    * Optional override for the active leaf id.
    *
    * When NOT provided, the active leaf is derived from the `[leaf]` dynamic
@@ -90,6 +97,7 @@ export function EntityWorkspaceLayout({
   isLoading = false,
   placeholder,
   onAddAffordance,
+  entityIdentitySlot,
   activeLeaf: activeLeafProp,
   children,
   className,
@@ -132,6 +140,7 @@ export function EntityWorkspaceLayout({
           activeLeaf={activeLeaf}
           placeholder={placeholder}
           onAddAffordance={onAddAffordance}
+          entityIdentitySlot={entityIdentitySlot}
         />
       )}
 

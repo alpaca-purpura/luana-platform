@@ -30,13 +30,15 @@ from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, Uploa
 
 from src.modules.vitalia._shared.auth.rbac import require_brand_owner_access
 from src.modules.vitalia.clinics.api.dtos import AssetUploadResponse
+from src.modules.vitalia.clinics.domain.bio_file import BIO_DOC_ALLOWED_CONTENT_TYPES
 
 logger = structlog.get_logger()
 
 router = APIRouter()
 
 # Allowed roles for upload mutations — admin_clinic only (hipaa-lite.md § RBAC)
-_ADMIN_CLINIC_ROLES: frozenset[str] = frozenset(["admin_clinic"])
+# RBAC ratificado Chris 2026-06-07 (rescate): {owner, admin_clinic} — alineado a bio-files/staff
+_ADMIN_CLINIC_ROLES: frozenset[str] = frozenset(["owner", "admin_clinic"])
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -55,8 +57,8 @@ _CREDENTIAL_DOC_ALLOWED_CONTENT_TYPES: frozenset[str] = frozenset(
     }
 )
 
-# Valid kinds (spec § Business rules + 03-arch-be § 4)
-_VALID_KINDS: frozenset[str] = frozenset({"avatar", "credential_doc"})
+# Valid kinds (spec § Business rules + 03-arch-be § 4 + delta v3 D3-B bio_doc)
+_VALID_KINDS: frozenset[str] = frozenset({"avatar", "credential_doc", "bio_doc"})
 
 
 # ── Validation helpers ────────────────────────────────────────────────────────
@@ -67,7 +69,7 @@ def _validate_kind(kind: str) -> None:
     if kind not in _VALID_KINDS:
         raise HTTPException(
             status_code=422,
-            detail=f"kind debe ser 'avatar' o 'credential_doc'. Recibido: '{kind}'",
+            detail=f"kind debe ser 'avatar', 'credential_doc' o 'bio_doc'. Recibido: '{kind}'",
         )
 
 
@@ -93,6 +95,14 @@ def _validate_content_type(kind: str, content_type: str | None) -> str:
             raise HTTPException(
                 status_code=422,
                 detail=(f"Para kind='credential_doc' se aceptan: {allowed}. Tipo recibido: '{ct}'"),
+            )
+    elif kind == "bio_doc":
+        # bio_doc: same allow-list as credential_doc (PDF/JPG/PNG/DOCX, RN-D3B-2)
+        if ct not in BIO_DOC_ALLOWED_CONTENT_TYPES:
+            allowed = ", ".join(sorted(BIO_DOC_ALLOWED_CONTENT_TYPES))
+            raise HTTPException(
+                status_code=422,
+                detail=(f"Para kind='bio_doc' se aceptan: {allowed}. Tipo recibido: '{ct}'"),
             )
     return ct
 

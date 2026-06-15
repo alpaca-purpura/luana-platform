@@ -62,6 +62,7 @@ class TestLeadRepositoryTenantFilter:
         with pytest.raises(ValueError, match="tenant_id"):
             import asyncio
 
-            asyncio.get_event_loop().run_until_complete(
+            # asyncio.run (no get_event_loop): py3.12 RuntimeError sin loop corriente
+            asyncio.run(
                 repo.get_by_id(entity_id=uuid4(), tenant_id=None)  # type: ignore[arg-type]
             )

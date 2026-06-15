@@ -791,6 +791,11 @@ class FunnelService:
             status="new",
             notes=notes,
             marketing_opt_in=marketing_opt_in,
+            stage=stage,
+            channel=channel,
+            service_interest=service_interest,
+            estimated_value=estimated_value,
+            currency=currency,
         )
 
         # Record initial activity

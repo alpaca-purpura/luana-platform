@@ -1,6 +1,6 @@
 ---
 name: dev-team
-description: "Developer team router v4 (Conv 2 autonomous build) — lee ready package, itera ticket-por-ticket implement→validators→fix hasta GREEN, decide owner (R23, Opus obligatorio para agentic prod), TDD, mantiene impl-log, ready→developing→developed + auto-handoff /auditor."
+description: "Developer team router v4 (Conv 2 autonomous build) — lee ready package, itera ticket-por-ticket implement→validators→fix hasta GREEN, decide owner (R23, tier flagship obligatorio para agentic prod), TDD, mantiene impl-log, ready→developing→developed + auto-handoff /auditor."
 when_to_use: "Activa cuando user dice: '/dev-team', 'toma ticket T-N', 'implementa T-N', 'arranca build', 'autonomous build'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
@@ -179,7 +179,7 @@ Si `{brand}/docs/product/stories/{story-id}/dispatch-plan.md` existe (producido 
 
 1. **`assignment` block en cada ticket de `06-tickets.yaml`** dicta:
    - `primary_agent`: el sub-agent type EXACTO a spawnar (NO usar `general-purpose` default — usar el agente nombrado: `builder-backend`, `builder-frontend`, `builder-agentic`)
-   - `model_preference`: el modelo (sonnet | opus | opencode) — respetar salvo override hard de R23
+   - `model_preference`: el TIER (workhorse | flagship | opencode), resuelto en `project.config.yaml::models` — respetar salvo override hard de R23 (agentic prod → `flagship`)
    - `must_load_skills`: lista verbatim a citar en spawn prompt
    - `forbidden_to_touch`: pasar al builder como guardrail explícito
    - `rationale`: respeta razón (no override silencioso)
@@ -203,25 +203,25 @@ Filtrar tickets con `state: ready` (deps cumplidas). Decidir owner según `owner
 | Surface | production_code | Owner preferido | Razón |
 |---|---|---|---|
 | BE no-agentic | true | qwen-opencode | costo, qwen capable |
-| BE no-agentic | false (tests/docs/tooling) | qwen-opencode o claude-sonnet | trivial test/doc work |
+| BE no-agentic | false (tests/docs/tooling) | qwen-opencode o workhorse | trivial test/doc work |
 | FE no-agentic | true | qwen-opencode | costo, qwen capable |
 | FE no-agentic | false | qwen-opencode | trivial |
-| AGENTIC | true | claude-opus (MISMA sesión, NO opencode) | brand voice + protected surfaces + Opus prompt eng |
-| **AGENTIC** | **false (tests/docs only)** | **claude-sonnet** | **R23 — test-only/doc-only sobre módulo agentic NO requiere Opus** |
+| AGENTIC | true | flagship (MISMA sesión, NO opencode) | brand voice + protected surfaces + prompt eng del flagship |
+| **AGENTIC** | **false (tests/docs only)** | **workhorse** | **R23 — test-only/doc-only sobre módulo agentic NO requiere el flagship** |
 | Migration aislada | true | qwen-opencode | trivial DDL |
-| Cross-module shared | true | claude-sonnet o opus | complexity |
+| Cross-module shared | true | workhorse o flagship | complexity |
 
 **Reglas hard:**
-- AGENTIC ticket + `production_code: true` → SIEMPRE Opus 4.8. Esto se ejecuta en MISMA sesión Claude Code (tú como `/dev-team` con Opus).
+- AGENTIC ticket + `production_code: true` → SIEMPRE el tier flagship (`models.flagship` del seam). Esto se ejecuta en MISMA sesión Claude Code (tú como `/dev-team` corriendo el flagship).
 - AGENTIC ticket + `production_code: false` → Sonnet OK. Tests/docs/tooling
-  sobre `modules/{copilot,sales_agent}/` no requieren Opus reasoning.
-- Si no estás en Opus y ticket=AGENTIC + production_code=true → STOP, escala
-  Chris: "necesito Opus 4.8 para este ticket. Cambiame de modelo."
+  sobre `modules/{copilot,sales_agent}/` no requieren el reasoning del flagship.
+- Si tu modelo de sesión NO es el flagship (`models.flagship` en project.config.yaml) y ticket=AGENTIC + production_code=true → STOP, escala
+  Chris: "necesito el modelo flagship (ver project.config.yaml::models) para este ticket. Cambiame de modelo."
 
 Update `06-tickets.yaml` ticket `T-{n}`:
 ```yaml
 state: assigned
-assigned_to: qwen-opencode | claude-opus | claude-sonnet
+assigned_to: qwen-opencode | flagship | workhorse   # tiers → project.config.yaml::models
 assigned_at: 2026-05-06T...
 transitions:
   - { state: assigned, at: ..., by: "/dev-team", to: "<owner>" }
@@ -367,9 +367,9 @@ Mientras qwen trabaja → tú NO interfieres. Cuando termina:
 3. Actualizás `06-tickets.yaml` ticket → state: pushed o blocked
 4. Si pushed → continúa Step 4 (next ticket). Si blocked → escalate.
 
-### Step 2B — Owner = claude-opus (AGENTIC production code)
+### Step 2B — Owner = flagship (AGENTIC production code)
 
-Spawnás agent `builder-agentic` (Opus 4.8) via Agent tool. REQUIRED: pasá `<brand>: {brand}` en prompt.
+Spawnás agent `builder-agentic` (tier flagship) via Agent tool. REQUIRED: pasá `<brand>: {brand}` en prompt.
 
 ```
 Agent({
@@ -394,7 +394,7 @@ Agent({
 
 `builder-agentic` corre validators + push. Devuelve `done -> T-{n}-result.md`.
 
-### Step 2C — Owner = claude-sonnet (cross-module shared o tests/docs sobre agentic)
+### Step 2C — Owner = workhorse (cross-module shared o tests/docs sobre agentic)
 
 Spawnás agent `builder-backend` o `builder-frontend` con model=sonnet (default). Prompt SIEMPRE referencia `CONTEXT-BRIEF.md` + propaga `<brand>`:
 
@@ -501,7 +501,7 @@ echo "✅ Phase D local coverage: $SCENARIO_COUNT/$SCENARIO_COUNT scenarios mape
 
 Si Phase D local detecta gap → `/dev-team` REFUSE auto-handoff. Update `T-{n}-impl-log.md § Phase D gap` + revolver al loop autonomous para completar cobertura. Si gap es de spec (scenario sin test natural) → ESCALATE Chris ("scenario X de 01-spec.md no es testeable como definido").
 
-**Justificación:** auditor Phase D antes detectaba gaps post-handoff → CHANGES_REQUESTED round-trip. Pre-check local en dev-team cierra el loop sin desperdiciar audit cycle Opus.
+**Justificación:** auditor Phase D antes detectaba gaps post-handoff → CHANGES_REQUESTED round-trip. Pre-check local en dev-team cierra el loop sin desperdiciar audit cycle del flagship.
 
 ### ★ Step 4.5b — Ledger de cobertura vivo: PRODUCTOR (proceso v5 §5.2)
 
@@ -760,15 +760,15 @@ Si 2 tickets independientes (no `depends_on`) están `ready` simultáneamente:
 
 | Tarea | subagent_type correcto | Por qué |
 |---|---|---|
-| Implementar BE ticket | `builder-backend` (Sonnet/Opus) | DDD/FastAPI/SA patterns embedded en su system prompt |
-| Implementar FE ticket | `builder-frontend` (Sonnet/Opus) | FSD-Lite/React Query/RHF patterns embedded |
-| Implementar AGENTIC ticket production_code:true | `builder-agentic` (Opus 4.8 OBLIGATORIO) | LangGraph + prompt cache + voice + observability |
+| Implementar BE ticket | `builder-backend` (workhorse/flagship) | DDD/FastAPI/SA patterns embedded en su system prompt |
+| Implementar FE ticket | `builder-frontend` (workhorse/flagship) | FSD-Lite/React Query/RHF patterns embedded |
+| Implementar AGENTIC ticket production_code:true | `builder-agentic` (flagship OBLIGATORIO) | LangGraph + prompt cache + voice + observability |
 | Run quality gates + write gate-output.json | `gate-runner` (Haiku) | Specialized para ruff+pytest+playwright+JSON output |
 | Build CONTEXT-BRIEF.md (Phase 0 pre-flight) | `context-builder` (Haiku) | Specialized compression spec+arch+rules → 5-8k tokens |
 | Validate CONTEXT-BRIEF.md adversarially | `context-validator` (Haiku) | Specialized re-scan + spot-check + verdict |
-| Audit ticket (BE) | `auditor-backend` (Opus) | 11 categorías DDD/tenant/migrations + 13 gates |
-| Audit ticket (FE) | `auditor-frontend` (Opus) | 12 categorías FSD/Server-Client/forms + 8 gates |
-| Audit ticket (AGENTIC) | `auditor-agentic` (Opus) | 14 categorías LangGraph/cache/observability |
+| Audit ticket (BE) | `auditor-backend` (flagship) | 11 categorías DDD/tenant/migrations + 13 gates |
+| Audit ticket (FE) | `auditor-frontend` (flagship) | 12 categorías FSD/Server-Client/forms + 8 gates |
+| Audit ticket (AGENTIC) | `auditor-agentic` (flagship) | 14 categorías LangGraph/cache/observability |
 | Open-ended research / catch-all | `general-purpose` (Sonnet/Haiku) | Cuando NO existe especialista; raro en /dev-team flow |
 
 **Hard ban:** NO usar `general-purpose` para:
@@ -821,7 +821,7 @@ Orchestrator DELEGA via Agent tool:
 
 ## Anti-patterns
 
-- ❌ AGENTIC ticket production_code=true asignado a qwen/Sonnet (HARD BAN — Opus only)
+- ❌ AGENTIC ticket production_code=true asignado a qwen/workhorse (HARD BAN — flagship only)
 - ❌ **Delegar finalize (commit+push+result file) a `general-purpose` Haiku** — orchestrator hace Bash directo (caso origen lisa-marca 2026-05-27)
 - ❌ Spawn nuevo agent cuando uno stalled — si tree tiene partial progress, continúa via SendMessage o continuation prompt explícito
 - ❌ Restart from scratch tras API Overload — preserve partial work first

@@ -51,12 +51,31 @@ def _import_preset_filter():
 
 
 def _make_mock_session() -> MagicMock:
-    """Build a minimal AsyncSession mock that supports execute() + scalars()."""
+    """Build a minimal AsyncSession mock that supports execute() + mappings()."""
     session = MagicMock()
     result = MagicMock()
     result.all.return_value = []
+    mappings_result = MagicMock()
+    mappings_result.all.return_value = []
+    mappings_result.first.return_value = None
+    result.mappings.return_value = mappings_result
     session.execute = AsyncMock(return_value=result)
     return session
+
+
+def _stmt_text_and_params(session: MagicMock) -> tuple[str, dict[str, Any]]:
+    """Extract (sql_text, bound_params) from the last execute() call.
+
+    Post-bugfix (vitalia-bugfix-agenda-actor-headers-422 T-2) the repo issues a
+    parameterized SQLAlchemy ``text()`` statement (no ORM ``whereclause``). The dual
+    filter lives in the bound params + SQL text, NOT in a ``.whereclause`` attribute.
+    """
+    call_args = session.execute.call_args
+    stmt = call_args[0][0] if call_args[0] else call_args.args[0]
+    sql_text = str(stmt)
+    # text().bindparams() exposes bound values via the compiled params.
+    params: dict[str, Any] = {bp.key: bp.value for bp in stmt._bindparams.values()}
+    return sql_text, params
 
 
 def _make_mock_session_with_rows(rows: list[Any]) -> MagicMock:
@@ -134,17 +153,14 @@ class TestAgendaGridDualFilter:
 
         # Session.execute MUST have been called
         assert session.execute.call_count >= 1
-        # Verify tenant_id + clinic_id appear in the WHERE conditions.
-        # AgendaGridRepositoryImpl embeds UUIDs via f-string text() clauses.
-        # We inspect the whereclause text directly (avoids full compile which fails on
-        # mixed text()+ORM select_from patterns).
-        call_args = session.execute.call_args
-        stmt = call_args[0][0] if call_args[0] else call_args.args[0]
-        # Extract whereclause string (text clauses expose their text attribute)
-        whereclause = stmt.whereclause
-        where_str = str(whereclause)
-        assert str(tenant_id) in where_str, "tenant_id must appear in WHERE clause"
-        assert str(clinic_id) in where_str, "clinic_id must appear in WHERE clause (HIPAA-lite dual filter)"
+        # Verify tenant_id + clinic_id are bound as params (HIPAA-lite dual filter).
+        # Post-bugfix the repo uses a parameterized text() statement — the dual filter
+        # is in the bound params + SQL text, not a deprecated f-string WHERE clause.
+        sql_text, params = _stmt_text_and_params(session)
+        assert "va.tenant_id = :tenant_id" in sql_text, "tenant_id filter must be in WHERE"
+        assert "va.clinic_id = :clinic_id" in sql_text, "clinic_id filter must be in WHERE (HIPAA-lite)"
+        assert params.get("tenant_id") == tenant_id, "tenant_id must be bound to the actual value"
+        assert params.get("clinic_id") == clinic_id, "clinic_id must be bound (HIPAA-lite dual filter)"
 
     @pytest.mark.asyncio
     async def test_agenda_grid_cross_clinic_returns_empty(self) -> None:
@@ -225,12 +241,9 @@ class TestAgendaGridPresetFilters:
             preset_filter=AgendaPresetFilter.POR_CONFIRMAR_MANANA,
         )
 
-        call_args = session.execute.call_args
-        stmt = call_args[0][0] if call_args[0] else call_args.args[0]
-        # Preset conditions embedded via text() clauses — inspect whereclause directly
-        where_str = str(stmt.whereclause)
+        sql_text, _ = _stmt_text_and_params(session)
         # POR_CONFIRMAR_MANANA should filter on SCHEDULED status
-        assert "SCHEDULED" in where_str or "scheduled" in where_str.lower(), (
+        assert "SCHEDULED" in sql_text or "scheduled" in sql_text.lower(), (
             "POR_CONFIRMAR_MANANA preset must filter by SCHEDULED status"
         )
 
@@ -255,11 +268,8 @@ class TestAgendaGridPresetFilters:
             preset_filter=AgendaPresetFilter.NO_SHOWS_DIA,
         )
 
-        call_args = session.execute.call_args
-        stmt = call_args[0][0] if call_args[0] else call_args.args[0]
-        # Preset conditions embedded via text() clauses — inspect whereclause directly
-        where_str = str(stmt.whereclause)
-        assert "NO_SHOW" in where_str or "no_show" in where_str.lower(), (
+        sql_text, _ = _stmt_text_and_params(session)
+        assert "NO_SHOW" in sql_text or "no_show" in sql_text.lower(), (
             "NO_SHOWS_DIA preset must filter by NO_SHOW status"
         )
 
@@ -273,14 +283,22 @@ class TestAgendaGridJoinContract:
     """Repo must JOIN vitalia_appointment_clinic_map to get service_label + origin."""
 
     def test_agenda_grid_joins_engine_appointments_correctly(self) -> None:
-        """AgendaGridRepositoryImpl joins vitalia_appointment_clinic_map."""
+        """AgendaGridRepositoryImpl joins vitalia_appointment_clinic_map.
+
+        Post-bugfix the JOIN lives in the module-level _GRID_FROM_JOINS constant
+        (parameterized text() statement), so inspect the MODULE source, not just
+        the class body.
+        """
         import inspect
 
-        impl_cls = _import_agenda_grid_repo()
-        source = inspect.getsource(impl_cls)
-        # Must reference the clinic_map model or table name
-        assert "AppointmentClinicMapModel" in source or "appointment_clinic_map" in source, (
-            "AgendaGridRepositoryImpl must JOIN AppointmentClinicMapModel "
+        from src.modules.vitalia.scheduling.infrastructure.repositories import (  # noqa: PLC0415
+            agenda_grid_repository_impl as mod,
+        )
+
+        source = inspect.getsource(mod)
+        # Must reference the clinic_map table name in the JOIN
+        assert "vitalia_appointment_clinic_map" in source, (
+            "AgendaGridRepositoryImpl must JOIN vitalia_appointment_clinic_map "
             "to resolve service_label + origin per 03-arch A12"
         )
 
@@ -288,11 +306,14 @@ class TestAgendaGridJoinContract:
         """AgendaGridRepositoryImpl must NOT select raw patient.name column directly."""
         import inspect
 
-        impl_cls = _import_agenda_grid_repo()
-        source = inspect.getsource(impl_cls)
-        # The impl must not select "patient.name" or "patient_name" raw column
-        # It MUST use masked projection (patient_name_masked)
+        from src.modules.vitalia.scheduling.infrastructure.repositories import (  # noqa: PLC0415
+            agenda_grid_repository_impl as mod,
+        )
+
+        source = inspect.getsource(mod)
+        # The impl must use masked projection (patient_name_masked alias) and never
+        # select a raw patient name column from the DB.
         assert "patient_name_masked" in source, (
-            "AgendaGridRepositoryImpl MUST use patient_name_masked column "
+            "AgendaGridRepositoryImpl MUST project patient_name_masked "
             "— never raw patient.name (HIPAA-lite PHI masking server-side)"
         )

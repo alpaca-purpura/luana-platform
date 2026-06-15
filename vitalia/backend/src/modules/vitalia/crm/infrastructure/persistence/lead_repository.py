@@ -196,11 +196,16 @@ class LeadRepository:
         status: str,
         notes: str | None,
         marketing_opt_in: bool,
+        stage: str = "interesado",
+        channel: str | None = None,
+        service_interest: str | None = None,
+        estimated_value: Decimal | None = None,
+        currency: str | None = None,
     ) -> Lead:
         """Create a new Lead with PII columns encrypted at-rest.
 
         PII columns (name/email/phone/notes) are wrapped in pgp_sym_encrypt.
-        source/status/marketing_opt_in are stored plaintext.
+        source/status/marketing_opt_in + funnel fields are stored plaintext.
         NULL values for email/phone/notes are handled:
           pgp_sym_encrypt(NULL, :kek) = NULL — OK per pgcrypto behavior.
 
@@ -214,6 +219,11 @@ class LeadRepository:
             status: Lead status (plaintext, default 'new').
             notes: Optional notes (encrypted if set, NULL if None).
             marketing_opt_in: Marketing consent flag (plaintext boolean).
+            stage: Initial funnel stage (default 'interesado' — RN-11).
+            channel: Origin channel (wa|ig|meta|web|referido|tiktok).
+            service_interest: Service the lead expressed interest in.
+            estimated_value: Estimated treatment value (NON-PHI).
+            currency: Currency code — from tenant locale, NEVER hardcoded (RN-15).
 
         Returns:
             Created Lead domain entity (re-read via get_by_id to return decrypted).
@@ -228,6 +238,8 @@ class LeadRepository:
             """
             INSERT INTO vitalia_leads
                 (id, tenant_id, name, email, phone, source, status, notes,
+                 marketing_opt_in, stage, stage_entered_at, channel,
+                 service_interest, estimated_value, currency,
                  deleted_at, created_at, updated_at)
             VALUES (
                 :id, :tenant_id,
@@ -236,6 +248,8 @@ class LeadRepository:
                 pgp_sym_encrypt(:phone, :kek),
                 :source, :status,
                 pgp_sym_encrypt(:notes, :kek),
+                :marketing_opt_in, :stage, :stage_entered_at, :channel,
+                :service_interest, :estimated_value, :currency,
                 NULL, :created_at, :updated_at
             )
             RETURNING id
@@ -252,6 +266,13 @@ class LeadRepository:
                 "source": source,
                 "status": status,
                 "notes": notes,
+                "marketing_opt_in": marketing_opt_in,
+                "stage": stage,
+                "stage_entered_at": now,
+                "channel": channel,
+                "service_interest": service_interest,
+                "estimated_value": estimated_value,
+                "currency": currency,
                 "kek": kek_val,
                 "created_at": now,
                 "updated_at": now,
@@ -277,6 +298,14 @@ class LeadRepository:
                 source=source,
                 status=status,
                 notes=notes,
+                # marketing_opt_in NO está en el domain Lead (vive solo como columna
+                # DB + consent flow) — no pasarlo al constructor
+                stage=stage,
+                stage_entered_at=now,
+                channel=channel,
+                service_interest=service_interest,
+                estimated_value=estimated_value,
+                currency=currency,
                 created_at=now,
                 updated_at=now,
             )

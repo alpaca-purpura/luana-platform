@@ -451,3 +451,71 @@ def test_no_slots_when_end_date_before_reference() -> None:
     # Reference date after end_date → no slots
     slots = service.project_block(block, reference_date=date(2026, 6, 1))
     assert len(slots) == 0
+
+
+# ── bug7 round-6: "N repeticiones" = N ciclos completos (multi-día) ──────────
+
+
+def test_project_multi_day_occurrences_counts_complete_cycles() -> None:
+    """Mar+Jue, occurrences=3 → 6 ocurrencias (3 Mar + 3 Jue), NO 3 totales.
+
+    Chris ratificó 2026-06-15: 'N repeticiones' = N ciclos completos del patrón;
+    cada repetición incluye TODOS los días. Antes count=N dejaba la 2da semana
+    a medias (Mar,Jue,Mar).
+    """
+    from src.modules.vitalia.clinics.application.availability_projection_service import (
+        AvailabilityProjectionService,
+    )
+
+    block = AvailabilityBlock(
+        id=uuid4(),
+        tenant_id=uuid4(),
+        clinic_id=uuid4(),
+        doctor_id=uuid4(),
+        kind="recurrent",
+        start_time=time(14, 0),
+        end_time=time(15, 0),
+        days_of_week=[1, 3],  # Tue, Thu
+        interval=1,
+        day_of_week=None,
+        freq=None,
+        end_condition_kind="occurrences",
+        end_date=None,
+        occurrences=3,
+        specific_date=None,
+    )
+    service = AvailabilityProjectionService(slot_duration_minutes=30)
+    slots = service.project_block(block, reference_date=date(2026, 6, 15))
+    dates = sorted({s.slot_date for s in slots})
+    assert len(dates) == 6, f"3 repeticiones x 2 dias = 6, got {len(dates)}: {dates}"
+    assert len([d for d in dates if d.isoweekday() == 2]) == 3, "3 martes"
+    assert len([d for d in dates if d.isoweekday() == 4]) == 3, "3 jueves"
+
+
+def test_project_single_day_occurrences_unchanged() -> None:
+    """Single-day occurrences=N sigue = N (N x 1 ciclo) — regresion de no-cambio."""
+    from src.modules.vitalia.clinics.application.availability_projection_service import (
+        AvailabilityProjectionService,
+    )
+
+    block = AvailabilityBlock(
+        id=uuid4(),
+        tenant_id=uuid4(),
+        clinic_id=uuid4(),
+        doctor_id=uuid4(),
+        kind="recurrent",
+        start_time=time(9, 0),
+        end_time=time(10, 0),
+        days_of_week=[0],  # Monday only
+        interval=1,
+        day_of_week=None,
+        freq=None,
+        end_condition_kind="occurrences",
+        end_date=None,
+        occurrences=4,
+        specific_date=None,
+    )
+    service = AvailabilityProjectionService(slot_duration_minutes=30)
+    slots = service.project_block(block, reference_date=date(2026, 6, 15))
+    dates = sorted({s.slot_date for s in slots})
+    assert len(dates) == 4, f"single-day occurrences=4 -> 4, got {len(dates)}"

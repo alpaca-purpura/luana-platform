@@ -85,6 +85,12 @@ export function useLeadStageMutation(currentFilters?: BoardFilters) {
       queryClient.invalidateQueries({ queryKey: boardKey(currentFilters) });
       // Invalidate lead detail if it was open
       queryClient.invalidateQueries({ queryKey: leadDetailKey(vars.leadId) });
+      // ★ Cross-invalidation: Inbox + Embudo must stay synced on stage changes
+      // useConversationDetail uses ["crm","conversation",conversationId] (contains lead + stage)
+      // invalidate the entire crm.conversation namespace to refresh all open conversations
+      queryClient.invalidateQueries({ queryKey: ["crm", "conversation"] });
+      // Also invalidate whole inbox namespace as fallback for other refs
+      queryClient.invalidateQueries({ queryKey: ["adrian", "inbox"] });
     },
     // Note: optimistic rollback is handled in AdrianEmbudoView via onMutate/onError
     // callbacks at the call site (not here — keeps mutation clean, state in store).

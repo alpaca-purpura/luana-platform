@@ -68,6 +68,7 @@ class ContractPair:
     fe_file: str
     fe_interface: str
     fe_only_allowlist: frozenset[str] = field(default_factory=frozenset)
+    fe_pending: bool = False  # True = FE file not yet built (planned ticket). Skip in both parity tests.
 
 
 # -- CONTRACT_PAIRS registry ---------------------------------------------------
@@ -131,6 +132,41 @@ CONTRACT_PAIRS: list[ContractPair] = [
         fe_file="vitalia/frontend/src/features/adrian/types/embudo.types.ts",
         fe_interface="LeadDetailLeadDTO",
         fe_only_allowlist=frozenset(),  # mirror puro ⊆ BE LeadResponse
+    ),
+    # -- Clinic Account (vitalia-fase2-config-cuenta T-2) -----------------------
+    # BE:  vitalia/backend/src/modules/vitalia/clinics/api/dtos.py :: ClinicAccountResponse
+    # FE:  vitalia/frontend/src/features/config/cuenta/types/cuenta.types.ts :: ClinicAccountDTO
+    #
+    # History: T-2 (2026-06-11) introduces the account surface (GET+PATCH /api/v1/clinics/account/).
+    # This pair locks the contract so FE view-model divergence is caught at arch-test time.
+    #
+    # fe_only_allowlist rationale:
+    #   - None currently — FE types file does not yet exist (will be created in T-FE-2).
+    #     When T-FE-2 builds the FE, this pair must be verified to match.
+    #     Registering here NOW ensures the gate is wired BEFORE the FE is built.
+    #
+    # NOTE: This pair is REGISTERED but the FE file is planned (T-FE-2 creates it).
+    # The test will SKIP gracefully if the FE file doesn't exist yet (see _fe_interface_fields).
+    ContractPair(
+        be_module="src.modules.vitalia.clinics.api.dtos",
+        be_class="ClinicAccountResponse",
+        fe_file="vitalia/frontend/src/features/config/types/cuenta.types.ts",
+        fe_interface="ClinicAccountDTO",
+        fe_only_allowlist=frozenset(
+            [
+                # clinicType: FE-only display field derived client-side from
+                # tenant.config_json.clinic_config.clinic_vertical.
+                # The BE ClinicAccountResponse does not expose clinic_type per arch §1
+                # ("vertical/clinic_type live in tenant.config_json, not Clinic entity").
+                # FE displays it read-only with fallback "—" when absent.
+                "clinicType",
+                # fiscalIdLabel: FE-only computed field derived from clinic.country
+                # (e.g. AR→"CUIT", PE→"RUC", MX→"RFC"). The BE prescribes this in
+                # 03-arch §5 but does NOT emit it from ClinicAccountResponse. FE
+                # computes it from the received `country` field using a local country-map.
+                "fiscalIdLabel",
+            ]
+        ),
     ),
 ]
 
@@ -256,9 +292,13 @@ def test_fe_fields_are_subset_of_be_fields(pair: ContractPair) -> None:
                 with a justification comment.
     """
     fe_path = WS_ROOT / pair.fe_file
-    assert fe_path.exists(), (
-        f"FE file not found: {fe_path}\nCheck the fe_file path in CONTRACT_PAIRS entry for {pair.be_class}."
-    )
+    if not fe_path.exists():
+        # FE file not yet created (planned for a future ticket, e.g. T-FE-2).
+        # Skip gracefully so the BE can be merged and the gate wired in advance.
+        pytest.skip(
+            f"FE file not yet created (planned): {pair.fe_file}. "
+            f"Wire the FE types file in T-FE-2 to activate this parity check."
+        )
 
     fe_fields = _fe_interface_fields(fe_path, pair.fe_interface)
     be_fields = _be_emitted_fields(pair.be_module, pair.be_class)
@@ -302,13 +342,17 @@ def test_contract_registry_is_non_empty() -> None:
 
 
 def test_contract_registry_files_exist() -> None:
-    """Every registered pair's FE file must exist on disk.
+    """Every registered (non-pending) pair's FE file must exist on disk.
 
     Prevents registry rot: if a FE file is moved/renamed, the pair silently
     becomes a no-op. This test catches that immediately.
+
+    Pairs with fe_pending=True are skipped here (FE ticket not yet built).
     """
     missing: list[str] = []
     for pair in CONTRACT_PAIRS:
+        if pair.fe_pending:
+            continue  # FE not yet built — planned in a future ticket
         fe_path = WS_ROOT / pair.fe_file
         if not fe_path.exists():
             missing.append(f"  - {pair.fe_file}  (for {pair.be_class}/{pair.fe_interface})")

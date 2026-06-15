@@ -65,7 +65,11 @@ export default async function MateoAgendaPage({
   // Unknown values reach the server as null (no PHI in URL per HIPAA-lite).
   const presetFilter = (sp.preset_filter ?? null) as import("@/features/mateo").AgendaFilter | null;
 
-  // SSR initial data — graceful degradation (returns empty grid on error)
+  // SSR initial data — graceful degradation (returns empty grid on error).
+  // The HIPAA-lite actor context (X-Clinic-ID + X-User-ID + X-User-Role) the agenda grid
+  // endpoint REQUIRES is resolved server-side inside getInitialAgendaState (X-Clinic-ID from
+  // the Clerk user's publicMetadata.clinicId — the dev JWT has no clinic claim, which was the
+  // bug). vitalia-bugfix-agenda-actor-headers-422.
   const initialData = await getInitialAgendaState({
     tenantId,
     view,

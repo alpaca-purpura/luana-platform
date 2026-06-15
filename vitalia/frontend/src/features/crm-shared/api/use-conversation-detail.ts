@@ -44,6 +44,10 @@ export function useConversationDetail(
       );
     },
     enabled: isLoaded && isSignedIn === true && !!conversationId,
-    staleTime: 10_000,
+    // ★ staleTime reduced from 10s → 5s to sync faster with Embudo stage changes.
+    // When stage is overridden in Embudo, this conversation detail re-fetches immediately
+    // (lead.stage displayed in the conversation thread will update in ~5s max).
+    // invalidateQueries at mutation onSuccess ensures instant refresh when possible.
+    staleTime: 5_000,
   });
 }

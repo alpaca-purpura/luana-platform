@@ -21,15 +21,12 @@ import { useAuth } from "@clerk/nextjs";
 import { useTenantId } from "@/hooks/useTenantId";
 import { useClinicId } from "@/hooks/useClinicId";
 import { fetchClient, ApiError } from "@/lib/api/fetchClient";
+import {
+  conversationDetailKeyForInvalidation,
+  conversationsListKeyForInvalidation,
+} from "./_keys";
 import type { ConversationDetail } from "../types/inbox.types";
 import type { Conversation } from "@/features/crm-shared";
-
-// The thread + list render from the crm-shared query keys (useConversationDetail
-// / useConversations). The mutation MUST optimistic-update + invalidate THOSE keys
-// — the legacy ["adrian","inbox",…] keys are not what the UI reads, so writing to
-// them left the mode toggle visually stuck even on a 200 (Chris UI #8 root cause 3).
-const crmDetailKey = (id: string) => ["crm", "conversation", id] as const;
-const crmListKey = ["crm", "conversations"] as const;
 
 export interface SetModeInput {
   /** New handler mode */
@@ -76,7 +73,7 @@ export function useSetMode(conversationId: string) {
       );
     },
     onMutate: async (input) => {
-      const key = crmDetailKey(conversationId);
+      const key = conversationDetailKeyForInvalidation(conversationId);
       await qc.cancelQueries({ queryKey: key });
       const previous = qc.getQueryData<ConversationDetail>(key);
 
@@ -97,16 +94,16 @@ export function useSetMode(conversationId: string) {
     onError: (err, _input, ctx) => {
       // Rollback optimistic update
       if (ctx?.previous) {
-        qc.setQueryData(crmDetailKey(conversationId), ctx.previous);
+        qc.setQueryData(conversationDetailKeyForInvalidation(conversationId), ctx.previous);
       }
       // On OCC conflict: re-fetch fresh state so UI reflects server truth
       if (err instanceof ApiError && err.status === 409) {
-        void qc.invalidateQueries({ queryKey: crmDetailKey(conversationId) });
+        void qc.invalidateQueries({ queryKey: conversationDetailKeyForInvalidation(conversationId) });
       }
     },
     onSettled: () => {
-      void qc.invalidateQueries({ queryKey: crmDetailKey(conversationId) });
-      void qc.invalidateQueries({ queryKey: crmListKey });
+      void qc.invalidateQueries({ queryKey: conversationDetailKeyForInvalidation(conversationId) });
+      void qc.invalidateQueries({ queryKey: conversationsListKeyForInvalidation() });
     },
   });
 }

@@ -56,18 +56,32 @@ export { GeneratedBioSections } from "./components/staff/workspace/perfil/Genera
 export { DoctorServiciosView } from "./components/staff/workspace/servicios/DoctorServiciosView";
 export { AvatarUploader } from "./components/staff/workspace/AvatarUploader";
 
-// ── Staff horarios workspace (T-FE-3) ───────────────────────────────────────────
+// ── Staff pagina workspace (T-FE-pagina-publica) ───────────────────────────────
+export { DoctorPaginaView } from "./components/staff/workspace/pagina/DoctorPaginaView";
+export { StructuredProfileEditor } from "./components/staff/workspace/pagina/StructuredProfileEditor";
+export { PhonePreview } from "./components/staff/workspace/pagina/PhonePreview";
+export { PublicLinkBar } from "./components/staff/workspace/pagina/PublicLinkBar";
+
+// ── Staff horarios workspace (T-FE-3 + T-FE-vista-mes) ─────────────────────────
 export { DoctorHorariosView } from "./components/staff/workspace/horarios/DoctorHorariosView";
 export { AvailabilityCalendar } from "./components/staff/workspace/horarios/AvailabilityCalendar";
 export { BloquePopover } from "./components/staff/workspace/horarios/BloquePopover";
 export type { BloquePopoverAnchor } from "./components/staff/workspace/horarios/BloquePopover";
+export { MonthCalendar } from "./components/staff/workspace/horarios/MonthCalendar";
+export type { MonthCalendarProps } from "./components/staff/workspace/horarios/MonthCalendar";
 
 // ── Staff API + types (T-FE-1) ─────────────────────────────────────────────────
-export { staffKeys, useStaffList, useCreateDoctor, mapDoctorCreateToPayload, useDoctor, usePatchDoctor, useGenerateBio, useAvatarUpload, useAvailabilityBlocks, useCreateBlock, useUpdateBlock, useDeleteBlock } from "./api/staff";
+export { staffKeys, useStaffList, useCreateDoctor, mapDoctorCreateToPayload, useDoctor, usePatchDoctor, useGenerateBio, useAvatarUpload, useAvailabilityBlocks, useAvailabilityOccurrences, useCreateBlock, useUpdateBlock, useDeleteBlock } from "./api/staff";
 export type { CreateBlockPayload, UpdateBlockPayload, DeleteBlockResponse } from "./api/staff";
+// Staff pagina API (T-FE-pagina-publica)
+export { useGenerateProfile, useSavePublicProfile, useTogglePublicVisible } from "./api/staff";
+export type { SavePublicProfilePayload } from "./api/staff";
 // Staff server-side fetch helpers (for Server Component pages)
 export { getStaffInitialState, getDoctorInitialState } from "./api/staff-server";
-export type { DoctorListItem, DoctorDetail, PaginatedDoctors, StaffFilters, AvailabilityBlock, BioPublic } from "./types/staff.types";
+export type { DoctorListItem, DoctorDetail, PaginatedDoctors, StaffFilters, AvailabilityBlock, AvailabilityOccurrence, BioPublic } from "./types/staff.types";
+// Pagina types (T-FE-pagina-publica)
+// Note: StructuredCertificacion + StructuredIdioma DELETED (F3 fix — wire is string[])
+export type { DoctorPublicProfile, ProfileState, PublicDoctorPageData, StructuredFormacion, StructuredExperiencia } from "./types/staff.types";
 export type { DoctorCreateFormValues } from "./types/staff-schema";
 
 // ── Staff hooks + store (T-FE-1) ───────────────────────────────────────────────

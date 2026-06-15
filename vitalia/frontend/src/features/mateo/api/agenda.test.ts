@@ -10,7 +10,12 @@
  *   - usePatchAppointmentStatus: invalidates grid + detail on success
  *   - useChargeMutation (payments.ts): sends X-Idempotency-Key header
  *
- * Pattern: vi.fn() mocks for Clerk + vitaliaFetch (MSW not installed).
+ * Pattern: vi.fn() mocks for Clerk + vitaliaFetch + actor-header hooks (MSW not installed).
+ *
+ * ★ Actor headers (vitalia-bugfix-agenda-actor-headers-422): the hooks now inject
+ *   X-Clinic-ID (useClinicId) + X-User-ID/X-User-Role (useActorHeaders) and gate PHI
+ *   queries on a non-empty X-User-ID (`ready`). Tests mock both hooks + assert the
+ *   merged headers reach vitaliaFetch.
  *
  * downstream-regression-na: brand-local FE tests; no cross-brand consumers
  * spec_anchor: 06-tickets.yaml T-12 (A2, A3, A4)
@@ -49,6 +54,17 @@ vi.mock("@/lib/fetch-client", () => ({
       this.status = response.status;
     }
   },
+}));
+
+// Mock the HIPAA-lite actor-header hooks (X-Clinic-ID + X-User-ID + X-User-Role)
+vi.mock("@/hooks/useClinicId", () => ({
+  useClinicId: vi.fn(() => "clinic-1"),
+}));
+vi.mock("@/hooks/useActorHeaders", () => ({
+  useActorHeaders: vi.fn(() => ({
+    "X-User-ID": "db-user-uuid",
+    "X-User-Role": "doctor",
+  })),
 }));
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -150,6 +166,59 @@ describe("useAgendaGrid", () => {
       expect.stringContaining("/api/v1/scheduling/agenda/grid"),
       expect.objectContaining({ token: "test-token", tenantId: "tenant-1" }),
     );
+  });
+
+  // ★ Regression (vitalia-bugfix-agenda-actor-headers-422): the grid call MUST carry
+  //   X-Clinic-ID + X-User-ID + X-User-Role — only X-Tenant-ID was a 422.
+  it("sends X-Clinic-ID + X-User-ID + X-User-Role actor headers", async () => {
+    const { vitaliaFetch } = await import("@/lib/fetch-client");
+    vi.mocked(vitaliaFetch).mockResolvedValueOnce(MOCK_GRID);
+
+    const { result } = renderHook(
+      () =>
+        useAgendaGrid({
+          tenantId: "tenant-1",
+          view: "semana",
+          date: "2026-05-26",
+        }),
+      { wrapper: makeWrapper() },
+    );
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(vitaliaFetch).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          "X-Clinic-ID": "clinic-1",
+          "X-User-ID": "db-user-uuid",
+          "X-User-Role": "doctor",
+        }),
+      }),
+    );
+  });
+
+  // ★ Regression: gate on X-User-ID — firing before /me resolves sends X-User-ID:"" → 422.
+  it("is disabled until X-User-ID (actor header) resolves", async () => {
+    const { useActorHeaders } = await import("@/hooks/useActorHeaders");
+    vi.mocked(useActorHeaders).mockReturnValueOnce({
+      "X-User-ID": "", // /me not resolved yet
+      "X-User-Role": "doctor",
+    });
+    const { vitaliaFetch } = await import("@/lib/fetch-client");
+
+    const { result } = renderHook(
+      () =>
+        useAgendaGrid({
+          tenantId: "tenant-1",
+          view: "semana",
+          date: "2026-05-26",
+        }),
+      { wrapper: makeWrapper() },
+    );
+
+    await new Promise((r) => setTimeout(r, 50));
+    expect(result.current.status).toBe("pending");
+    expect(vitaliaFetch).not.toHaveBeenCalled();
   });
 
   it("passes view + date as query params", async () => {

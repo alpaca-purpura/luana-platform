@@ -70,10 +70,32 @@
         <button class="subtab-btn" data-color="lisa">Compliance</button>
       </nav>
 
-      <!-- EntitySubNavBar (patrón staff) -->
+      <!-- EntitySubNavBar canon (§2.2 full-bleed · bg-card · sticky · border-radius:0) -->
+      <!-- ★ Cambio B (2026-06-12): root "‹ Servicios" = primer leaf del tablist (peer-leaf) -->
       <div class="entity-subnav" role="navigation" aria-label="Servicio">
-        <a class="entity-back" href="catalogo.html">‹ Servicios</a>
-        <span class="entity-id">✨ Diseño de sonrisa</span>
+        <div class="entity-leaves" role="tablist" style="gap:0;margin:0;">
+          <a class="entity-leaf-root" href="catalogo.html" role="tab" data-testid="entity-leaf-root"><span class="rl-arrow">‹</span> Servicios</a>
+        </div>
+        <!-- EntityPicker (§2.4) — cambia de servicio sin volver al catálogo -->
+        <div class="entity-picker" id="ep" style="margin-left:.5rem;">
+          <button class="entity-picker-trigger" onclick="document.getElementById('ep-panel').classList.toggle('open')" aria-haspopup="listbox" aria-expanded="false">
+            <span class="ep-avatar">DS</span>
+            <span>Diseño de sonrisa</span>
+            <span class="ep-chevron">▾</span>
+          </button>
+          <div class="entity-picker-panel" id="ep-panel" role="listbox">
+            <div class="entity-picker-search"><input placeholder="Buscar servicio…" aria-label="Buscar servicio"></div>
+            <div class="entity-picker-list">
+              <div class="entity-picker-option" data-active="true" role="option"><span class="ep-opt-avatar">DS</span><span>Diseño de sonrisa</span></div>
+              <div class="entity-picker-option" role="option"><span class="ep-opt-avatar" style="background:hsl(var(--rung-primera));">LD</span><span>Limpieza dental</span></div>
+              <div class="entity-picker-option" role="option"><span class="ep-opt-avatar" style="background:hsl(var(--rung-principal));">ID</span><span>Implante dental</span></div>
+              <div class="entity-picker-option" role="option"><span class="ep-opt-avatar" style="background:hsl(var(--rung-magnet));">EI</span><span>Evaluación inicial gratuita</span></div>
+              <div class="entity-picker-option" role="option"><span class="ep-opt-avatar" style="background:hsl(var(--rung-premium));">CP</span><span>Carillas de porcelana</span></div>
+              <div class="entity-picker-option" role="option"><span class="ep-opt-avatar" style="background:hsl(var(--agent-camila));">BF</span><span>Botox facial</span></div>
+            </div>
+            <div class="entity-picker-footer">Mostrando 6 de 7 servicios</div>
+          </div>
+        </div>
         <div class="entity-leaves" role="tablist">
           <button class="entity-leaf" data-active="true" data-leaf="resumen">Resumen</button>
           <button class="entity-leaf" data-leaf="adrian">⭐ Para Adrián</button>
@@ -86,9 +108,16 @@
       <div class="panel-content">
         <div class="panel-inner">
 
-          <!-- strip service-level: Activo + KEYSTONE -->
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
-            <span class="chip chip-primary">🤖 Activo → Adrián conoce este servicio y lo ofrece (2 especialistas vinculados).</span>
+          <!-- strip service-level: Activo + origen + completeness (AC-19 · NUNCA bloquea Activo) -->
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem;">
+            <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
+              <span class="chip chip-primary">🤖 Activo → Adrián conoce este servicio y lo ofrece (2 especialistas vinculados).</span>
+              <span class="chip-origen estandar" title="Vinculado a la biblioteca estándar: 'Diseño de sonrisa dental'">📚 Estándar</span>
+              <span class="completeness-chip" title="Completa los campos faltantes para que Adrián pueda responder con más detalle. No bloquea 'Activo'.">
+                <span class="cc-bar"><span class="cc-fill" style="width:88%;"></span></span>
+                ficha 23/26 · faltan: expectativas realistas, duración resultado, tiempo de recuperación
+              </span>
+            </div>
             <span class="switch-label" style="color:hsl(var(--foreground));font-size:.8125rem;"><span class="switch"><input type="checkbox" checked><span class="track"></span></span> Activo</span>
           </div>
 
@@ -106,51 +135,101 @@
             </div>
           </details>
 
-          <!-- ===== RESUMEN ===== -->
+          <!-- ===== RESUMEN (★ reagrupado v3 2026-06-12 · 6 grupos) ===== -->
           <div class="leaf-pane active" data-pane="resumen">
             <div class="section-header"><div><h1 class="section-title">Resumen</h1><p class="section-subtitle">Qué es y qué se lleva el paciente.</p></div></div>
             <div class="cards-stack">
+
+              <!-- GRUPO 1: Identidad -->
               <section class="card">
                 <h2 class="card-title">📋 Identidad</h2>
                 <div class="field-row">
                   <div><label class="label">Nombre</label><input value="Diseño de sonrisa"></div>
-                  <div><label class="label"><span class="tip" title="Las opciones salen del TIPO DE CLÍNICA que definiste en el Onboarding (se edita en Lisa → Marca). Acá solo eliges la categoría de este servicio.">Especialidad / categoría</span></label><select><option>Estética dental</option><option>Odontología general</option><option>Ortodoncia</option><option>Implantología</option></select></div>
+                  <div><label class="label"><span class="tip" title="Las opciones salen del TIPO DE CLÍNICA que definiste en el Onboarding (se edita en Lisa → Marca). Acá solo eliges la categoría de este servicio.">Especialidad / categoría</span></label><span class="select-canon" style="display:block;"><select><option>Estética dental</option><option>Odontología general</option><option>Ortodoncia</option><option>Implantología</option></select></span></div>
                 </div>
-                <div style="margin-top:.625rem;"><label class="label"><span class="tip" title="En qué momento del recorrido del paciente entra: gancho gratuito → primera visita → tratamiento principal → premium → plan. Ordena cómo Adrián lo ofrece.">Peldaño</span></label>
-                  <div style="display:flex;align-items:center;gap:.625rem;flex-wrap:wrap;"><select style="max-width:240px;"><option>Tratamiento principal</option><option>Gancho gratuito</option><option>Primera visita</option><option>Premium</option><option>Plan / convenio</option></select><span class="hint" style="margin:0;">también lo mueves arrastrando en la vista <strong>Escalera</strong></span></div>
+                <div style="margin-top:.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
+                  <span class="chip-origen estandar">📚 Servicio estándar: <strong>Diseño de sonrisa dental</strong></span>
                 </div>
-                <label class="label" style="margin-top:.75rem;">Descripción (lenguaje paciente) <span class="chip chip-lisa tip" title="El tono/voz lo toma de Lisa → Marca (tu voz de marca). El texto es editable aquí; el estilo viene de Marca." style="margin-left:.25rem;">✨ voz de marca</span></label>
-                <textarea rows="2">Transformamos la forma, el color y la alineación de tus dientes frontales para una sonrisa armónica y natural. Te acompañamos sin apuro en cada paso.</textarea>
+                <div style="margin-top:.625rem;">
+                  <label class="label"><span class="tip" title="En qué momento del recorrido del paciente entra: gancho gratuito → primera visita → tratamiento principal → premium → plan. Ordena cómo Adrián lo ofrece.">Peldaño</span></label>
+                  <div style="display:flex;align-items:center;gap:.625rem;flex-wrap:wrap;"><span class="select-canon"><select style="max-width:240px;"><option>Tratamiento principal</option><option>Gancho gratuito</option><option>Primera visita</option><option>Premium</option><option>Plan / convenio</option></select></span><span class="hint" style="margin:0;">también lo mueves arrastrando en la vista <strong>Escalera</strong></span></div>
+                </div>
+                <div style="margin-top:.625rem;"><label class="label">¿Recurrente?</label><span class="switch-label" style="color:hsl(var(--foreground));"><span class="switch"><input type="checkbox"><span class="track"></span></span> Sí, se repite periódicamente</span></div>
               </section>
+
+              <!-- GRUPO 2: Qué es -->
               <section class="card">
-                <h2 class="card-title">📦 Qué incluye / no incluye</h2>
-                <div class="cards-grid" style="grid-template-columns:1fr 1fr;">
-                  <div><label class="label">Incluye <span class="ai-fill" title="Lisa lo completó desde folleto-diseno-sonrisa.pdf. Revísalo y ajusta.">✨ de un documento</span></label><textarea rows="3">Diagnóstico · mockup digital previsualizable · 8 carillas de porcelana · prueba en boca · ajustes finales</textarea></div>
-                  <div><label class="label">No incluye</label><textarea rows="3">Tratamientos previos de encías o caries (se cotizan aparte si se requieren).</textarea></div>
+                <h2 class="card-title">📝 Qué es</h2>
+                <label class="label">Descripción corta (lenguaje paciente) <span class="chip chip-lisa tip" title="El tono/voz lo toma de Lisa → Marca (tu voz de marca). El texto es editable; el estilo viene de Marca.">✨ voz de marca</span></label>
+                <textarea rows="2">Transformamos la forma, el color y la alineación de tus dientes frontales para una sonrisa armónica y natural. Te acompañamos sin apuro en cada paso.</textarea>
+                <label class="label" style="margin-top:.625rem;">Descripción larga (FAQ + landing)</label>
+                <textarea rows="3">El diseño de sonrisa es un tratamiento integral que combina diagnóstico digital, preparación mínima del diente y colocación de carillas de porcelana o composite. Resultado visible desde la primera sesión de mockup.</textarea>
+                <div class="cards-grid" style="grid-template-columns:1fr 1fr;margin-top:.625rem;">
+                  <div><label class="label">Qué incluye <span class="field-sparkle" title="Pre-llenado desde la biblioteca — revísalo">✨</span></label><textarea rows="3">Diagnóstico · mockup digital previsualizable · 8 carillas de porcelana · prueba en boca · ajustes finales</textarea></div>
+                  <div><label class="label">Qué no incluye</label><textarea rows="3">Tratamientos previos de encías o caries (se cotizan aparte si se requieren).</textarea></div>
                 </div>
                 <div class="field-row" style="margin-top:.625rem;"><div><label class="label">Variantes</label><input value="Composite (económica) · Porcelana (premium)"></div><div><label class="label">Garantía</label><input value="5 años sobre las carillas"></div></div>
               </section>
+
+              <!-- GRUPO 3: El procedimiento (★ NUEVO v3 · RN-26 ficha completa paciente) -->
               <section class="card">
-                <h2 class="card-title">⏱️ Duración y resultado</h2>
-                <div style="display:grid;grid-template-columns:170px 1fr;gap:.5rem 1rem;font-size:.8125rem;">
-                  <span class="text-muted-foreground">Tipo</span><span>Paquete · 4 sesiones (~60 min c/u)</span>
-                  <span class="text-muted-foreground">Tiempo total</span><span>≈ 2-3 semanas</span>
-                  <span class="text-muted-foreground">Resultado esperado</span><span>Sonrisa pareja, blanca y armónica con tu rostro</span>
-                  <span class="text-muted-foreground">Dura</span><span>15-20 años (porcelana) con buen cuidado</span>
-                  <span class="text-muted-foreground">Se ve el resultado</span><span>Al colocar las carillas finales</span>
-                  <span class="text-muted-foreground">Recurrente</span><span>No</span>
+                <h2 class="card-title">🔬 El procedimiento</h2>
+                <p class="hint" style="margin-bottom:.625rem;">Adrián cita esto textual en las conversaciones. Lo clínico escala al doctor.</p>
+                <label class="label">Cómo se hace (pasos numerados) <span class="field-sparkle" title="Pre-llenado desde la biblioteca — revísalo">✨</span></label>
+                <textarea rows="4">1. Diagnóstico y toma de fotos · 2. Mockup digital para que lo visualices · 3. Preparación mínima del diente con anestesia local · 4. Prueba de las carillas en boca · 5. Cementación definitiva y ajustes · 6. Control a los 7-10 días</textarea>
+                <div class="field-row" style="margin-top:.625rem;">
+                  <div><label class="label">¿Lleva anestesia / duele? <span class="field-sparkle" title="Pre-llenado desde la biblioteca — revísalo">✨</span></label><input value="Anestesia local; molestias leves los primeros días"></div>
+                  <div><label class="label">Duración de cada sesión</label><input value="~60 min por sesión"></div>
+                </div>
+                <div class="field-row" style="margin-top:.625rem;">
+                  <div><label class="label">Número de sesiones</label><input value="2–3 sesiones (~4 semanas)"></div>
+                  <div><label class="label">Preparación previa <span class="field-sparkle" title="Pre-llenado desde la biblioteca — revísalo">✨</span></label><input value="Encías sanas + limpieza si hay sarro"></div>
+                </div>
+                <div class="field-row" style="margin-top:.625rem;">
+                  <div><label class="label">Cuidados posteriores <span class="field-sparkle" title="Pre-llenado desde la biblioteca — revísalo">✨</span></label><input value="Higiene normal; evitar morder hielo o abrir cosas con los dientes"></div>
+                  <div><label class="label">Tiempo de recuperación / downtime <span class="field-sparkle" title="Pre-llenado desde la biblioteca — revísalo">✨</span></label><input value="Sin downtime"></div>
                 </div>
               </section>
+
+              <!-- GRUPO 4: Resultados -->
               <section class="card">
-                <h2 class="card-title">🪥 Preparación y cuidados · 🗓️ Operación</h2>
-                <div class="cards-grid" style="grid-template-columns:1fr 1fr;">
-                  <div><label class="label">Preparación previa</label><input value="Encías sanas + limpieza si hay sarro"></div>
-                  <div><label class="label">Cuidados posteriores</label><input value="Higiene normal; evitar morder hielo/abrir cosas con los dientes"></div>
-                  <div><label class="label">Recuperación / downtime</label><input value="Sin downtime"></div>
-                  <div><label class="label">Cita inicial</label><input value="Valoración + diseño (30-40 min)"></div>
+                <h2 class="card-title">🌟 Resultados</h2>
+                <div class="field-row">
+                  <div><label class="label">Resultado esperado</label><input value="Sonrisa pareja, blanca y armónica con tu rostro"></div>
+                  <div><label class="label">¿Cuándo se ve el resultado?</label><input value="Al colocar las carillas finales (sesión 2-3)"></div>
+                </div>
+                <div class="field-row" style="margin-top:.625rem;">
+                  <div><label class="label">¿Cuánto dura el resultado?</label><input value="15-20 años (porcelana) con buen cuidado"></div>
+                  <div><label class="label">Expectativas realistas <span class="hint" style="display:inline;margin:0;">(AC-19 campo faltante)</span></label><input placeholder="Ej: Las carillas no blanquean los dientes adyacentes sin tratar"></div>
                 </div>
               </section>
+
+              <!-- GRUPO 5: Riesgos (★ NUEVO v3 · RN-26 · "Adrián cita esto textual") -->
+              <section class="card">
+                <h2 class="card-title">⚠️ Riesgos y cuidados</h2>
+                <div class="safety" style="margin-bottom:.625rem;">🛡️ Adrián cita esto textual en las conversaciones — siempre deriva al doctor para diagnóstico clínico.</div>
+                <label class="label">Riesgos y efectos secundarios <span class="field-sparkle" title="Pre-llenado desde la biblioteca — revísalo">✨</span></label>
+                <textarea rows="3">• Sensibilidad temporal (1-2 semanas): normal y cede sola.
+• Discrepancia de color con dientes no tratados: se evalúa antes.
+• En bruxismo severo sin férula: mayor desgaste a largo plazo.</textarea>
+                <label class="label" style="margin-top:.625rem;">Señales de alarma <span class="field-sparkle" title="Pre-llenado desde la biblioteca — revísalo">✨</span></label>
+                <textarea rows="2">Si hay dolor intenso, hinchazón o la carilla se afloja: contactar a la clínica inmediatamente. No intentar recolocarla.</textarea>
+              </section>
+
+              <!-- GRUPO 6: Operación -->
+              <section class="card">
+                <h2 class="card-title">🗓️ Operación</h2>
+                <div class="field-row">
+                  <div><label class="label">Duración de la cita inicial</label><input value="30-40 min (valoración + diseño digital)"></div>
+                  <div><label class="label">Tipo de cita inicial</label><span class="select-canon" style="display:block;"><select><option>Valoración + diagnóstico</option><option>Primera sesión directa</option><option>Consulta informativa gratuita</option></select></span></div>
+                </div>
+              </section>
+
             </div>
+          </div>
+          <!-- FloatingAutosaveIndicator (canon §2.6 · UNA por página, fixed bottom-center) -->
+          <div class="floating-autosave" data-state="saved" role="status" aria-live="polite">
+            <span class="fa-dot"></span> Guardado hace 4 s
           </div>
 
           <!-- ===== PARA ADRIÁN ===== -->
@@ -287,7 +366,7 @@
 
         </div>
       </div>
-      <div class="footer-meta"><span>💾 Guardado hace 4s</span><span>Última edición: <strong>Dra. Camila Llerena</strong></span></div>
+      <div class="footer-meta"><span>Última edición: <strong>Dra. Camila Llerena</strong></span><span></span></div>
     </main>
   </div>
 </div>
@@ -300,6 +379,21 @@
     document.querySelectorAll('.entity-leaf').forEach(x=>x.removeAttribute('data-active')); b.setAttribute('data-active','true');
     document.querySelectorAll('.leaf-pane').forEach(p=>p.classList.remove('active'));
     document.querySelector(`[data-pane="${b.dataset.leaf}"]`).classList.add('active');
+  }));
+  // EntityPicker: cerrar al hacer click fuera
+  document.addEventListener('click', e => {
+    const ep = document.getElementById('ep');
+    const panel = document.getElementById('ep-panel');
+    if (ep && panel && !ep.contains(e.target)) panel.classList.remove('open');
+  });
+  // FloatingAutosave: simular estados al editar campos
+  let autosaveTimer;
+  document.querySelectorAll('input,textarea,select').forEach(el => el.addEventListener('input', () => {
+    const fa = document.querySelector('.floating-autosave');
+    if (!fa) return;
+    fa.setAttribute('data-state','saving'); fa.innerHTML = '<span class="fa-dot"></span> Guardando…';
+    clearTimeout(autosaveTimer);
+    autosaveTimer = setTimeout(() => { fa.setAttribute('data-state','saved'); fa.innerHTML = '<span class="fa-dot"></span> Guardado'; }, 900);
   }));
 </script>
 </body>

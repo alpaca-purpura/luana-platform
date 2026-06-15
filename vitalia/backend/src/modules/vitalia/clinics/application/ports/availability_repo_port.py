@@ -12,6 +12,7 @@ isolation consistency (same repo contract as DoctorRepository).
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from datetime import date
 from uuid import UUID
 
 from src.modules.vitalia.clinics.domain.availability_block import AvailabilityBlock
@@ -99,4 +100,68 @@ class AvailabilityRepoPort(ABC):
         clinic_id: UUID,
     ) -> int:
         """Count future slots with confirmed appointments (slot_date >= today)."""
+        ...
+
+    @abstractmethod
+    async def persist_excluded_dates(
+        self,
+        block_id: UUID,
+        excluded_dates: list[str],
+        *,
+        tenant_id: UUID,
+        clinic_id: UUID,
+    ) -> "AvailabilityBlock":
+        """Persist updated excluded_dates on an active block (scope=occurrence delete).
+
+        Does NOT soft-delete the block — only updates the excluded_dates column.
+        Returns the updated block entity.
+        """
+        ...
+
+    @abstractmethod
+    async def retire_free_slots_on_date(
+        self,
+        block_id: UUID,
+        *,
+        slot_date: date,
+        tenant_id: UUID,
+        clinic_id: UUID,
+    ) -> int:
+        """Soft-delete FREE slots for block on a specific date (scope=occurrence).
+
+        Slots with has_confirmed_appointment=True are NEVER touched.
+        Returns count of slots retired.
+        """
+        ...
+
+    @abstractmethod
+    async def truncate_block(
+        self,
+        block_id: UUID,
+        *,
+        new_end_date: date,
+        tenant_id: UUID,
+        clinic_id: UUID,
+    ) -> "AvailabilityBlock":
+        """Set end_condition_kind='end_date' and end_date=new_end_date (scope=this_and_future).
+
+        Block stays active (deleted_at stays NULL).
+        Returns the updated block entity.
+        """
+        ...
+
+    @abstractmethod
+    async def retire_free_slots_from_date(
+        self,
+        block_id: UUID,
+        *,
+        from_date: date,
+        tenant_id: UUID,
+        clinic_id: UUID,
+    ) -> int:
+        """Soft-delete FREE slots for block where slot_date >= from_date (scope=this_and_future).
+
+        Slots with has_confirmed_appointment=True are NEVER touched.
+        Returns count of slots retired.
+        """
         ...

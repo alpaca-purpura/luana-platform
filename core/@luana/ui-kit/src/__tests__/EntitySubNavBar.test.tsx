@@ -226,4 +226,35 @@ describe("EntitySubNavBar (canon @luana/ui-kit)", () => {
       expect(mockPush).toHaveBeenCalledWith("/tenant-abc/collection/entity-001/buyer-a1b2");
     });
   });
+
+  describe("entityIdentitySlot (canon §6.3 — identity = selector)", () => {
+    const customSlot = <div data-testid="custom-picker">Picker</div>;
+
+    it("back-compat: absent slot → static identity renders, no slot wrapper", () => {
+      renderDetail();
+      expect(screen.getByText("Tech B2B Mid-Market")).toBeTruthy();
+      expect(screen.queryByTestId("entity-identity-slot")).toBeNull();
+    });
+
+    it("renders the custom node INSTEAD of the static identity when provided (workspace mode)", () => {
+      renderDetail({ entityIdentitySlot: customSlot });
+      expect(screen.getByTestId("entity-identity-slot")).toBeTruthy();
+      expect(screen.getByTestId("custom-picker")).toBeTruthy();
+      // Static identity block is replaced (name + aria-label gone)
+      expect(screen.queryByText("Tech B2B Mid-Market")).toBeNull();
+      expect(document.querySelector('[aria-label="Editando: Tech B2B Mid-Market"]')).toBeNull();
+    });
+
+    it("does NOT affect the tablist — slot is not a tab", () => {
+      renderDetail({ entityIdentitySlot: customSlot });
+      const tabs = screen.getAllByRole("tab");
+      expect(tabs).toHaveLength(4); // root + 3 content leaves, unchanged
+    });
+
+    it("master mode (entity=null): slot NOT rendered even when provided", () => {
+      renderDetail({ entity: null, activeLeaf: null, entityIdentitySlot: customSlot });
+      expect(screen.queryByTestId("entity-identity-slot")).toBeNull();
+      expect(screen.queryByTestId("custom-picker")).toBeNull();
+    });
+  });
 });

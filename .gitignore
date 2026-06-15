@@ -204,13 +204,9 @@ docs/promotion-protocol/scan-*.yaml
 # Phase execution log (autonomous /goal runs · ephemeral)
 .phase-execution-log.md
 
-# Cockpit local artifacts (Next.js standalone build)
-tools/luana-cockpit/.next/
-tools/luana-cockpit/node_modules/
-tools/luana-cockpit/.env.local
-tools/luana-cockpit/migrate-report-*.json
-tools/luana-cockpit/.cockpit-*.pid
-tools/luana-cockpit/.cockpit-*.log
+# Cockpit (binario alpaca · pidfile/log del daemon per-worktree)
+.cockpit/
+
 
 # Cap verification outputs (auto-gen R3 v2)
 **/docs/product/capabilities/_status-computed.json

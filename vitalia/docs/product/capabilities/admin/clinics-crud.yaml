@@ -12,7 +12,7 @@ license: MIT
 # v3 cement 2026-05-27 · 4 dimensiones + dev_preview (ADR-vitalia-005)
 tech_module: admin
 agent_owner: configuracion
-functional_area: configuracion.admin
+functional_area: admin.panel
 user_visible: true
 nature: feature
 ui_paradigm: admin-panel  # T-3 reconcile 2026-05-29
@@ -115,7 +115,7 @@ scenarios:
     verification_method: admin-panel
     added_in_story: vitalia-stub-caps-scenario-backfill
     added_date: 2026-05-30
-map_box: configuracion
+map_box: admin
 
 ---
 

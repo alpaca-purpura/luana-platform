@@ -19,9 +19,13 @@ WORKDIR /app
 # Pre-instalar dependencias (package.json viene via bind mount en dev, pero pre-instalamos)
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 COPY vitalia/frontend/package.json ./vitalia/frontend/package.json
+# Workspace packages @luana/* (ui-kit, hooks, format, ...): sin sus package.json el
+# install --filter no ve sus deps (ej. tailwind-merge de @luana/format) → store de la
+# imagen incompleto → "Module not found" en runtime (bug 2026-06-11 post-lift ui-kit 0.4.0).
+COPY core/@luana ./core/@luana
 
 RUN --mount=type=cache,id=pnpm-vitalia,target=/pnpm/store \
-    pnpm install --frozen-lockfile --filter "@luana/vitalia-web"
+    pnpm install --frozen-lockfile --filter "@luana/vitalia-web..."
 
 WORKDIR /app/vitalia/frontend
 EXPOSE 3002
@@ -33,9 +37,11 @@ FROM base AS builder
 WORKDIR /app
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 COPY vitalia/frontend/package.json ./vitalia/frontend/package.json
+# @luana/* completos (manifests + src TS): pnpm build transpila ui-kit/format desde source
+COPY core/@luana ./core/@luana
 
 RUN --mount=type=cache,id=pnpm-vitalia,target=/pnpm/store \
-    pnpm install --frozen-lockfile --filter "@luana/vitalia-web"
+    pnpm install --frozen-lockfile --filter "@luana/vitalia-web..."
 
 COPY vitalia/frontend/ ./vitalia/frontend/
 

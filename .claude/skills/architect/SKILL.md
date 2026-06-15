@@ -151,7 +151,7 @@ Agent({
 
            CRITICAL CONSTRAINTS:
            - Cross-module audit anti-duplication.md (no mirror shared abstractions cross-brand)
-           - R23: AGENTIC tickets production_code:true → claude_opus_required:true
+           - R23: AGENTIC tickets production_code:true → flagship_required:true
            - AGENTIC tickets SEPARADOS de BE/FE (R23 enforcement)
            - Tickets > 10 → split story
            - Each ticket: acceptance.validator_ids + DAG + gherkin_coverage (post 2026-05-18)
@@ -560,7 +560,7 @@ Template:
 
 ## Files Sonnet NEVER touches (escalate to Chris / /pm-luana)
 - core/luana-core-*/src/luana_core_*/** (engine — requires lift via /pm-luana promotion gate; NUNCA en story brand-específica)
-- {brand}/backend/src/modules/{brand}/{copilot,sales_agent}/** runtime (agentic — solo via builder-agentic Opus; brand-extension surface OK con R23 check)
+- {brand}/backend/src/modules/{brand}/{copilot,sales_agent}/** runtime (agentic — solo via builder-agentic (tier flagship); brand-extension surface OK con R23 check)
 - {other_brand}/** (cross-brand edit — escalate /pm-luana outcome platform)
 - {brand}/backend/src/core/config.py (default flag flips require R31 anti-default-flip-audit)
 - {brand}/frontend/src/components/ui/** (Shadcn primitives per-brand — extend via wrappers, no edit; cross-brand reuse = promotion candidate /pm-luana)
@@ -634,7 +634,7 @@ Seguir template `docs/specs/templates/06-tickets-template.yaml` (post-redesign �
 
 **Owner eligibility (CRÍTICO):**
 
-| Surface | production_code | qwen-opencode | claude-sonnet | claude-opus |
+| Surface | production_code | qwen-opencode | workhorse | flagship |
 |---|---|---|---|---|
 | BE/FE no-agentic | true | ✅ default | ✅ | ✅ |
 | BE/FE no-agentic | false (tests/docs) | ✅ default | ✅ | ✅ |
@@ -697,7 +697,7 @@ repro_evidence:
 
 Cada ticket en `06-tickets.yaml` MUST incluir bloque `assignment` con:
 - `primary_agent`: sub-agent type EXACTO (NO `general-purpose`). Opciones: `builder-backend`, `builder-frontend`, `builder-agentic`. Otros (general-purpose) sólo si no aplica ninguno (raro).
-- `model_preference`: sonnet | opus | opencode (defaults per surface)
+- `model_preference`: workhorse | flagship | opencode — TIERS, resueltos de `project.config.yaml::models` (agentic prod → `flagship` HARD R23)
 - `must_load_skills`: lista verbatim (heredada de `05-guidelines.md § must_load_skills`)
 - `forbidden_to_touch`: paths explícitos que el builder NO puede tocar
 - `rationale`: 1-2 líneas por qué este agent + modelo
@@ -708,10 +708,10 @@ Ejemplo:
   title: "BE endpoint create-appointment"
   surface: BE
   production_code: true
-  owner_eligibility: [opencode, sonnet, opus]
+  owner_eligibility: [opencode, workhorse, flagship]
   assignment:
     primary_agent: builder-backend
-    model_preference: sonnet
+    model_preference: workhorse
     must_load_skills: [backend-expert, "FastAPI canonical patterns", .claude/rules/tenant-isolation.md, .claude/rules/backend-ddd.md]
     forbidden_to_touch: ["core/luana-core-*/src/", "{other_brand}/", "{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/"]
     rationale: "BE CRUD non-agentic, Sonnet sweet spot"
@@ -720,13 +720,13 @@ Ejemplo:
   title: "AGENTIC tool wire"
   surface: AGENTIC
   production_code: true
-  owner_eligibility: [opus]   # HARD R23
+  owner_eligibility: [flagship]  # HARD R23
   assignment:
     primary_agent: builder-agentic
-    model_preference: opus    # HARD per R23
+    model_preference: flagship  # HARD per R23
     must_load_skills: [sales-agent-expert, "LangGraph canonical docs", claude-api]
     forbidden_to_touch: ["core/luana-core-{copilot,sales-agent}/src/"]
-    rationale: "AGENTIC production R23 → Opus obligatorio"
+    rationale: "AGENTIC production R23 → tier flagship obligatorio"
 ```
 
 Adicionalmente, en `04-validators.yaml § test_construction_plan` MUST incluir `playwright_visual_scope`:
@@ -761,9 +761,9 @@ Producir `dispatch-plan.md` (≤100 líneas, 1 sólo file por story) en `{brand}
 ## Ticket→Agent→Model→Cost matrix
 | T-id | Title | Surface | Agent | Model | Est. cost | Est. time |
 |---|---|---|---|---|---|---|
-| T-1 | ... | BE | builder-backend | sonnet | $0.30 | 25min |
-| T-2 | ... | AGENTIC | builder-agentic | opus (R23) | $1.20 | 35min |
-| T-3 | ... | FE | builder-frontend | sonnet | $0.40 | 30min |
+| T-1 | ... | BE | builder-backend | workhorse | $0.30 | 25min |
+| T-2 | ... | AGENTIC | builder-agentic | flagship (R23) | $1.20 | 35min |
+| T-3 | ... | FE | builder-frontend | workhorse | $0.40 | 30min |
 | Total | — | — | — | — | $1.90 | ~90min |
 
 ## DAG dependencies
@@ -801,7 +801,7 @@ Antes de cerrar story como ready:
 - [ ] `05-guidelines.md` lista patterns required + forbidden + files in scope
 - [ ] `06-tickets.yaml` cada ticket: `production_code` flag set, `owner_eligibility` coherente, `acceptance.validator_ids` mapea a 04-validators.yaml ids
 - [ ] Dependencies son DAG (no ciclos)
-- [ ] AGENTIC tickets con `production_code: true` → claude_opus_required: true (HARD)
+- [ ] AGENTIC tickets con `production_code: true` → flagship_required: true (HARD)
 - [ ] Estimate hours razonables (alerta si > 8h por ticket → split)
 - [ ] Tickets > 10 total → STOP, split story
 
@@ -816,7 +816,7 @@ Antes de cerrar story como ready:
 **★ v4.2 cement 2026-05-27 expanded gates:**
 - [ ] `03-arch.md § Prior art audit` sección presente con paths verbatim del scan cross-brand (consumed engine + reused brands + lift candidates + net-new justificado)
 - [ ] `06-tickets.yaml` cada ticket tiene `assignment` block: `primary_agent` (no general-purpose), `model_preference`, `must_load_skills`, `forbidden_to_touch`, `rationale`
-- [ ] AGENTIC tickets con `production_code: true` → `assignment.model_preference: opus` (HARD R23)
+- [ ] AGENTIC tickets con `production_code: true` → `assignment.model_preference: flagship` (HARD R23)
 - [ ] `04-validators.yaml § playwright_visual_scope` presente para UI stories con `story_scope_routes` + `forbidden_visual_changes` + `non_egoismo_clause`
 - [ ] `dispatch-plan.md` producido (5th artifact) con `autonomous_mode: false` default + caps + cost matrix
 - [ ] `checkpoint.md::autonomous_mode` campo presente (default false; Chris ratifica true al cerrar review ready)
@@ -861,9 +861,9 @@ Artifacts (en {brand}/docs/product/stories/{id}/):
 - 06-tickets.yaml ({N} tickets)
 
 Owner mix:
-- T-1 (BE, qwen/sonnet, 2h)
-- T-2 (AGENTIC, opus-only, 3h)
-- T-3 (FE, qwen/sonnet, 2h)
+- T-1 (BE, qwen/workhorse, 2h)
+- T-2 (AGENTIC, flagship-only, 3h)
+- T-3 (FE, qwen/workhorse, 2h)
 
 Dependencies: T-2 depends T-1; T-3 depends T-2.
 
@@ -884,7 +884,7 @@ Próximo: Conv 2 (autonomous build). /dev-team <brand>: {brand} toma T-1 (state:
 - ❌ Tickets cross-stack sin `notes_for_downstream`
 - ❌ **Intentar spawnar `architect-be` / `architect-fe` / `architect-agentic` como agent types** — NO existen en `.claude/agents/`. Solo `architect-orchestrator` existe. Los instruction docs por surface viven en `.claude/skills/architect/references/{be,fe,agentic}.md` (cargados contextualmente por orchestrator), no son agent types spawnables ni skills.
 - ❌ Aprobar tu propio ready package sin verificar 03-arch.md coherencia cross-surface
-- ❌ Asignar Opus a tickets BE/FE non-agentic (cost waste)
+- ❌ Asignar el tier flagship a tickets BE/FE non-agentic (cost waste — esos van al workhorse)
 - ❌ Editar paths legacy `docs/archive/2026/legacy-pis/PI-N/...` o `docs/archive/2026/snapshot-pre-multibrand-pm-redesign/` (snapshot inmutable)
 - ❌ Cerrar state=ready con WIP cap=5 ya alcanzado (escalate Chris primero)
 - ❌ `05-guidelines.md` con "be careful" / "follow best practices" (vago — usa patterns concretos)

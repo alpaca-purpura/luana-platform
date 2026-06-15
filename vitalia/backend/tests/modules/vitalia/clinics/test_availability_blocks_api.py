@@ -726,3 +726,152 @@ def test_delete_block_response_dto_fields() -> None:
     resp = DeleteBlockResponse(deleted=True, preserved_appointments=3)
     assert resp.deleted is True
     assert resp.preserved_appointments == 3
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Patch create-request: D3-F daysOfWeek+interval in request DTO
+# TDD RED-first: these fail BEFORE the fix (day_of_week/freq currently REQUIRED)
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+def test_recurrent_block_create_request_accepts_days_of_week_primary() -> None:
+    """RecurrentBlockCreateRequest accepts daysOfWeek+interval (primary D3-F fields).
+
+    SC-D3F-CREATE-1: FE sends daysOfWeek=[0,3]+interval=2+occurrences=8 → 201.
+    day_of_week and freq must be OPTIONAL (legacy backward compat).
+    """
+    from src.modules.vitalia.clinics.api.dtos import RecurrentBlockCreateRequest
+
+    # Primary D3-F path — no legacy day_of_week / freq provided
+    req = RecurrentBlockCreateRequest(
+        kind="recurrent",
+        start_time=time(9, 0),
+        end_time=time(17, 0),
+        days_of_week=[0, 3],  # Monday + Thursday
+        interval=2,
+        end_condition_kind="occurrences",
+        occurrences=8,
+    )
+    assert req.days_of_week == [0, 3]
+    assert req.interval == 2
+    assert req.occurrences == 8
+    # legacy fields are None / default when not provided
+    assert req.day_of_week is None
+    assert req.freq is None
+
+
+def test_recurrent_block_create_request_accepts_legacy_only() -> None:
+    """RecurrentBlockCreateRequest accepts legacy day_of_week+freq (regression guard).
+
+    SC-D3F-CREATE-2: legacy clients send day_of_week+freq → 201 identical to before.
+    """
+    from src.modules.vitalia.clinics.api.dtos import RecurrentBlockCreateRequest
+
+    req = RecurrentBlockCreateRequest(
+        kind="recurrent",
+        start_time=time(9, 0),
+        end_time=time(17, 0),
+        day_of_week=0,
+        freq="weekly",
+        end_condition_kind="occurrences",
+        occurrences=4,
+    )
+    assert req.day_of_week == 0
+    assert req.freq == "weekly"
+    # days_of_week should be empty/None (legacy path — service derives from day_of_week)
+    assert not req.days_of_week
+
+
+def test_recurrent_block_create_request_rejects_neither_form() -> None:
+    """RecurrentBlockCreateRequest rejects payloads with no day specification.
+
+    SC-D3F-CREATE-3: no day_of_week AND no days_of_week → 422 with Spanish error.
+    The validator must raise ValidationError before hitting the domain.
+    """
+    import pytest
+    from pydantic import ValidationError
+
+    from src.modules.vitalia.clinics.api.dtos import RecurrentBlockCreateRequest
+
+    with pytest.raises(ValidationError) as exc_info:
+        RecurrentBlockCreateRequest(
+            kind="recurrent",
+            start_time=time(9, 0),
+            end_time=time(17, 0),
+            # Neither days_of_week nor day_of_week provided
+            end_condition_kind="open_ended",
+        )
+    errors = exc_info.value.errors()
+    assert any(errors), "ValidationError must have at least one error"
+    # Error message must be in Spanish neutro
+    all_msgs = " ".join(str(e.get("msg", "")) for e in errors)
+    # Check for Spanish error hint (must contain at least 'día' or 'semana')
+    assert "día" in all_msgs or "semana" in all_msgs or "day_of_week" in all_msgs or "days_of_week" in all_msgs, (
+        f"Error message must reference day fields. Got: {all_msgs!r}"
+    )
+
+
+def test_recurrent_block_create_request_days_of_week_field_exists() -> None:
+    """RecurrentBlockCreateRequest must have days_of_week and interval fields (D3-F)."""
+    from src.modules.vitalia.clinics.api.dtos import RecurrentBlockCreateRequest
+
+    fields = set(RecurrentBlockCreateRequest.model_fields.keys())
+    assert "days_of_week" in fields, "RecurrentBlockCreateRequest must have 'days_of_week' field (D3-F)"
+    assert "interval" in fields, "RecurrentBlockCreateRequest must have 'interval' field (D3-F)"
+
+
+def test_recurrent_block_create_request_day_of_week_optional_now() -> None:
+    """day_of_week must be OPTIONAL in RecurrentBlockCreateRequest (legacy field, backward compat)."""
+    from src.modules.vitalia.clinics.api.dtos import RecurrentBlockCreateRequest
+
+    field_info = RecurrentBlockCreateRequest.model_fields.get("day_of_week")
+    assert field_info is not None, "day_of_week field must exist"
+    # The field must be optional (default is None, not required)
+    assert field_info.default is None or field_info.is_required() is False, (
+        "day_of_week must be OPTIONAL in RecurrentBlockCreateRequest (D3-F patch)"
+    )
+
+
+def test_recurrent_block_create_request_freq_optional_now() -> None:
+    """freq must be OPTIONAL in RecurrentBlockCreateRequest (legacy field, backward compat)."""
+    from src.modules.vitalia.clinics.api.dtos import RecurrentBlockCreateRequest
+
+    field_info = RecurrentBlockCreateRequest.model_fields.get("freq")
+    assert field_info is not None, "freq field must exist"
+    assert field_info.default is None or field_info.is_required() is False, (
+        "freq must be OPTIONAL in RecurrentBlockCreateRequest (D3-F patch)"
+    )
+
+
+def test_service_create_block_accepts_days_of_week() -> None:
+    """AvailabilityBlockService.create_block must accept days_of_week + interval params.
+
+    SC-D3F-CREATE-4: service signature updated to accept primary D3-F fields.
+    """
+    import inspect
+
+    from src.modules.vitalia.clinics.application.availability_block_service import (
+        AvailabilityBlockService,
+    )
+
+    sig = inspect.signature(AvailabilityBlockService.create_block)
+    params = set(sig.parameters.keys())
+    assert "days_of_week" in params, "create_block must accept days_of_week param"
+    assert "interval" in params, "create_block must accept interval param"
+
+
+def test_service_update_block_accepts_days_of_week() -> None:
+    """AvailabilityBlockService.update_block must accept days_of_week + interval params.
+
+    SC-D3F-CREATE-5: update_block (PATCH) also needs the new params.
+    """
+    import inspect
+
+    from src.modules.vitalia.clinics.application.availability_block_service import (
+        AvailabilityBlockService,
+    )
+
+    sig = inspect.signature(AvailabilityBlockService.update_block)
+    params = set(sig.parameters.keys())
+    assert "days_of_week" in params, "update_block must accept days_of_week param"
+    assert "interval" in params, "update_block must accept interval param"

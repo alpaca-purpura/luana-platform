@@ -176,4 +176,43 @@ describe("EntityWorkspaceLayout (canon @luana/ui-kit)", () => {
       expect(tabs[1]).toHaveAttribute("aria-selected", "false");
     });
   });
+
+  describe("entityIdentitySlot forwarding (canon §6.3 — mirror of onAddAffordance)", () => {
+    const customSlot = <div data-testid="custom-picker">Picker</div>;
+
+    it("forwards the slot verbatim to EntitySubNavBar (detail mode)", () => {
+      mockLeaf = "datos";
+      render(
+        <EntityWorkspaceLayout {...baseProps} entity={entity} entityIdentitySlot={customSlot}>
+          <div>content</div>
+        </EntityWorkspaceLayout>,
+      );
+      const navBar = screen.getByTestId("entity-sub-nav-bar");
+      expect(navBar).toBeTruthy();
+      expect(screen.getByTestId("custom-picker")).toBeTruthy();
+      // Static identity replaced by the slot
+      expect(screen.queryByText("Tech B2B Mid-Market")).toBeNull();
+    });
+
+    it("back-compat: absent slot → static identity renders unchanged", () => {
+      mockLeaf = "datos";
+      render(
+        <EntityWorkspaceLayout {...baseProps} entity={entity}>
+          <div>content</div>
+        </EntityWorkspaceLayout>,
+      );
+      expect(screen.getByText("Tech B2B Mid-Market")).toBeTruthy();
+      expect(screen.queryByTestId("entity-identity-slot")).toBeNull();
+    });
+
+    it("master mode (entity=null): slot NOT rendered even when provided", () => {
+      mockLeaf = undefined;
+      render(
+        <EntityWorkspaceLayout {...baseProps} entity={null} entityIdentitySlot={customSlot}>
+          <div>content</div>
+        </EntityWorkspaceLayout>,
+      );
+      expect(screen.queryByTestId("custom-picker")).toBeNull();
+    });
+  });
 });

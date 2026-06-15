@@ -170,3 +170,12 @@ Origen: Chris preguntó cómo Adrián entiende la necesidad del paciente + prese
 - **Caps shipped (deprecated):** `vitalia/docs/product/capabilities/sales_agent/{inbox-handler-mode-occ,adrian-3-tools-mvp}.yaml`
 - **Slice-1 archived:** `vitalia/docs/archive/2026/stories/vitalia-slice-1-inbox/`
 - **Rules:** `.claude/rules/anti-duplication.md` · `.claude/rules/anti-duplication-refining.md` · `.claude/rules/definition-of-done-live-verify.md` (regression scope) · `vitalia/.claude/rules/hipaa-lite.md` (firewall PHI por canal)
+
+## Scope-add ratificado Chris 2026-06-11 (origen: delta doctores D3-B — /po-ux)
+
+**Adrián consume el perfil del doctor para la venta.** Hoy NADA del doctor llega al sales_agent (verificado por grep — el "la consume el agente de ventas" del spec doctores era aspiracional). Esta story, como dueña del runtime Adrián, suma:
+1. **Contexto de venta:** bio_public (Resumen/Formación/Enfoque) + especialidad + servicios del doctor asignado/preguntado entran al contexto del agente (slot/KB — architect decide mecanismo).
+2. **Acción "compartir perfil del doctor":** cuando el lead pregunta por el doctor o se le informa quién lo atenderá, Adrián envía el **link de la página pública mobile-first del doctor** (página = scope de `vitalia-fase2-lisa-doctores` § D3-D — corrección Chris 2026-06-11; esta story consume la URL).
+3. Solo doctores con "Visible en landing" ON son compartibles/citables.
+
+El architect de esta story debe declarar el contrato con la página del doctor (URL pattern `/d/{clinica}/{doctor}` — D3-D doctores) + el slot de contexto. Registrado también en `vitalia-fase2-lisa-doctores/01-spec.md § Derivadas del delta`.

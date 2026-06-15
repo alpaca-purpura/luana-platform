@@ -1,5 +1,6 @@
 // cap: platform.lift-shell-chrome-ui-kit
 import type { ReactNode } from "react";
+import type { ShellSubSubTabMeta } from "./SubSubTabsBar";
 import type {
   SsrSafeHydration,
   SsrSafePersistedStore,
@@ -224,6 +225,12 @@ export interface ShellLayoutProps {
   /** agent slugs in ribbon order. */
   ribbonOrder: string[];
   subTabsByAgent: Record<string, readonly ShellSubTabMeta[]>;
+  /**
+   * N3 sub-sub-tabs por key "agent.subtab" (brand inyecta su AGENT_SUBSUBTABS).
+   * Optional + default {} — fix regresión lift 3cb9d5a0: AppPanelSlot declaraba la
+   * prop pero ShellLayoutClient nunca la recibía → barra N3 nunca se pintaba.
+   */
+  subSubTabsByKey?: Record<string, readonly ShellSubSubTabMeta[]>;
   shippedStaticSubtabs?: ReadonlySet<string>;
   /** brand-injected per-agent class bundle (JIT-static literals stay brand-side). */
   getAgentClasses: GetAgentClasses;

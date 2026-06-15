@@ -14,8 +14,13 @@ from unittest.mock import MagicMock
 from uuid import uuid4
 
 import pytest
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from httpx import ASGITransport, AsyncClient
+
+
+async def _async_return(value: object) -> object:
+    """Awaitable helper that returns a fixed value — used to stub async resolvers."""
+    return value
 
 
 def _make_app() -> FastAPI:
@@ -78,8 +83,8 @@ async def test_get_conversation_detail_404_slice1(
     Slice 2 will inject a real ConversationRepository and return actual data.
     """
     monkeypatch.setattr(
-        "src.modules.vitalia.crm.api.router._get_resolver",
-        lambda: MagicMock(**{"resolve.return_value": mock_clinic_ctx_doctor}),
+        "src.modules.vitalia.crm.api.router._resolve_context_async",
+        lambda *a, **kw: _async_return(mock_clinic_ctx_doctor),
     )
 
     app = _make_app()
@@ -109,8 +114,8 @@ async def test_get_conversation_detail_403_marketing(
 ) -> None:
     """Marketing role cannot view PHI conversation detail → 403."""
     monkeypatch.setattr(
-        "src.modules.vitalia.crm.api.router._get_resolver",
-        lambda: MagicMock(**{"resolve.return_value": mock_clinic_ctx_marketing}),
+        "src.modules.vitalia.crm.api.router._resolve_context_async",
+        lambda *a, **kw: _async_return(mock_clinic_ctx_marketing),
     )
 
     app = _make_app()
@@ -135,11 +140,13 @@ async def test_get_conversation_detail_403_marketing(
 @pytest.mark.asyncio
 async def test_get_conversation_detail_401(monkeypatch: pytest.MonkeyPatch) -> None:
     """Invalid token → 401."""
-    from src.modules.vitalia.iam.infrastructure.clerk_jwt_decoder import JwtDecodeError
+
+    async def _raise_401(*a: object, **kw: object) -> None:
+        raise HTTPException(status_code=401, detail="Token inválido o expirado.")
 
     monkeypatch.setattr(
-        "src.modules.vitalia.crm.api.router._get_resolver",
-        lambda: MagicMock(**{"resolve.side_effect": JwtDecodeError("bad token")}),
+        "src.modules.vitalia.crm.api.router._resolve_context_async",
+        _raise_401,
     )
 
     app = _make_app()
