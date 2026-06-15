@@ -167,6 +167,14 @@ v2 ratificado. **Mockup creativo** escrito `mockups/shell.html` (port re-temizad
 - **Modo nocturno funcional** (toggle `.dark` + tokens dark) + **tabs clickeables** (Ribbon + SubTabsBar navegan el sitemap v2 completo, contenido "Próximamente" por hoja). Sigue siendo mockup (sin datos/routing reales — eso es dev-team).
 - Chrome MCP no pudo screenshot (SingletonLock otra sesión, HB-73). Chris abre `localhost:8893/shell.html`. **Esperando FIRMA 2.**
 
+### 2026-06-15 17:05 · 👤 chris (feedback mockup)
+Coherencia total: si la base es Fully Rounded (pill), que TODO sea pill — textbox, dropdowns, etc.
+
+### 2026-06-15 17:05 · 🤖 claude · `/po-ux` · ✓ APLICADO + ⚠️ DUDA (design-system)
+**Hallazgo:** el design-system comunify documenta `--radius: 0.75rem (12px)` para "botones/inputs/cards — premium pero no agresivo". La base **documentada NO es pill**; lo pill eran chips/avatares. El pedido cambia la base.
+**Aplicado al mockup:** todos los **controles** → full-pill (botones, icon-buttons→círculos, Ribbon tabs, sub-tabs, composer, send, CTA, logo→círculo). Cards + burbujas de chat conservan su radio (pill en card se ve mal). Ribbon activo: subrayado → ring (mejor en pill). Audit: 18 full-pill / 3 rounded-2xl (solo burbujas).
+⚠️ **Implicación de design-system (a cementar en build/architect):** cambiar `--radius` de comunify a pill para controles + **verificar que `@luana/ui-kit` honre el token de radio de la marca** (si no, comunify divergiría del kit compartido → riesgo anti-duplication). El architect lo resuelve en 03-arch (token-driven, no override per-componente). **Esperando FIRMA 2.**
+
 ---
 
 ### 2026-06-15 15:18 · 🤖 claude · `/pm-comunify` · ✓ APLICADO

@@ -34,12 +34,12 @@
 <!-- TopBar -->
 <header class="h-14 px-4 flex items-center justify-between border-b card" role="banner">
   <div class="flex items-center gap-2.5">
-    <div class="w-8 h-8 rounded-xl grad flex items-center justify-center text-white font-extrabold shadow-sm">c</div>
+    <div class="w-8 h-8 rounded-full grad flex items-center justify-center text-white font-extrabold shadow-sm">c</div>
     <span class="font-display font-extrabold text-lg grad-text tracking-tight">comunify</span>
   </div>
   <div class="flex items-center gap-2">
-    <button id="btnDark" class="w-9 h-9 rounded-lg chip flex items-center justify-center text-[hsl(var(--muted))] hover:bg-[hsl(var(--bg))]" title="Modo nocturno"><i data-lucide="moon" class="w-4 h-4"></i></button>
-    <button class="w-9 h-9 rounded-lg chip flex items-center justify-center text-[hsl(var(--muted))] hover:bg-[hsl(var(--bg))]" title="Vista del chat"><i data-lucide="panel-left" class="w-4 h-4"></i></button>
+    <button id="btnDark" class="w-9 h-9 rounded-full chip flex items-center justify-center text-[hsl(var(--muted))] hover:bg-[hsl(var(--bg))]" title="Modo nocturno"><i data-lucide="moon" class="w-4 h-4"></i></button>
+    <button class="w-9 h-9 rounded-full chip flex items-center justify-center text-[hsl(var(--muted))] hover:bg-[hsl(var(--bg))]" title="Vista del chat"><i data-lucide="panel-left" class="w-4 h-4"></i></button>
     <div class="flex items-center gap-2 pl-1.5 pr-3 h-9 rounded-full chip">
       <img class="av w-6 h-6" src="https://api.dicebear.com/9.x/personas/svg?seed=Anabella&backgroundColor=ffd5dc" alt="" />
       <div class="leading-tight">
@@ -63,8 +63,8 @@
         <div class="font-display font-semibold text-sm">Luana</div>
         <div class="text-[11px] text-[hsl(var(--muted))]">Orquestadora · en línea</div>
       </div>
-      <button class="w-8 h-8 rounded-lg hover:bg-[hsl(var(--bg))] flex items-center justify-center text-[hsl(var(--muted))]" title="Historial"><i data-lucide="history" class="w-4 h-4"></i></button>
-      <button class="w-8 h-8 rounded-lg hover:bg-[hsl(var(--bg))] flex items-center justify-center text-[hsl(var(--muted))]" title="Colapsar"><i data-lucide="chevrons-left" class="w-4 h-4"></i></button>
+      <button class="w-8 h-8 rounded-full hover:bg-[hsl(var(--bg))] flex items-center justify-center text-[hsl(var(--muted))]" title="Historial"><i data-lucide="history" class="w-4 h-4"></i></button>
+      <button class="w-8 h-8 rounded-full hover:bg-[hsl(var(--bg))] flex items-center justify-center text-[hsl(var(--muted))]" title="Colapsar"><i data-lucide="chevrons-left" class="w-4 h-4"></i></button>
     </div>
 
     <div class="flex-1 overflow-y-auto scroll px-4 py-5 space-y-4">
@@ -100,9 +100,9 @@
         <button class="chip text-xs px-2.5 py-1 rounded-full text-[hsl(var(--muted))] hover:bg-[hsl(var(--bg))]">📊 ¿Cómo va mi semana?</button>
         <button class="chip text-xs px-2.5 py-1 rounded-full text-[hsl(var(--muted))] hover:bg-[hsl(var(--bg))]">🚀 Lanzar oferta</button>
       </div>
-      <div class="flex items-end gap-2 card border rounded-2xl px-3 py-2">
+      <div class="flex items-end gap-2 card border rounded-full px-4 py-2">
         <textarea id="composer" rows="1" placeholder="Escríbele a Luana…" class="flex-1 resize-none outline-none bg-transparent text-sm py-1 text-[hsl(var(--ink))]"></textarea>
-        <button class="w-9 h-9 rounded-xl grad text-white flex items-center justify-center shrink-0"><i data-lucide="arrow-up" class="w-4 h-4"></i></button>
+        <button class="w-9 h-9 rounded-full grad text-white flex items-center justify-center shrink-0"><i data-lucide="arrow-up" class="w-4 h-4"></i></button>
       </div>
     </div>
   </aside>
@@ -113,10 +113,10 @@
     <div id="subtabs" class="h-12 px-4 flex items-center gap-1 border-b bg-[hsl(var(--bg))]" role="tablist"></div>
     <div class="flex-1 overflow-y-auto scroll p-8 flex items-center justify-center">
       <div class="max-w-md text-center">
-        <div id="ctIcon" class="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center mb-5"><i data-lucide="sparkles" class="w-8 h-8"></i></div>
+        <div id="ctIcon" class="w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-5"><i data-lucide="sparkles" class="w-8 h-8"></i></div>
         <h2 class="font-display text-xl font-bold mb-2"><span id="ctTitle"></span> · <span id="ctSoon" class="grad-text">Próximamente</span></h2>
         <p id="ctDesc" class="text-sm text-[hsl(var(--muted))] mb-5"></p>
-        <button onclick="document.getElementById('composer').focus()" class="inline-flex items-center gap-2 px-4 h-10 rounded-xl grad text-white text-sm font-medium">
+        <button onclick="document.getElementById('composer').focus()" class="inline-flex items-center gap-2 px-4 h-10 rounded-full grad text-white text-sm font-medium">
           <i data-lucide="message-circle" class="w-4 h-4"></i> Hablar con Luana
         </button>
         <div class="mt-6 text-[11px] text-[hsl(var(--muted))] flex items-center justify-center gap-1.5">
@@ -146,8 +146,8 @@ function renderRibbon(){
   AGENTS.forEach(a=>{
     const on = a.slug===active;
     const b = document.createElement('button');
-    b.className = `flex items-center gap-2 px-3 h-11 rounded-xl shrink-0 ${on?'':'text-[hsl(var(--muted))] hover:bg-[hsl(var(--bg))]'}`;
-    if(on){ b.style.background=`hsl(${a.color}/0.10)`; b.style.boxShadow=`inset 0 -2px 0 hsl(${a.color})`; }
+    b.className = `flex items-center gap-2 px-3 h-11 rounded-full shrink-0 ${on?'':'text-[hsl(var(--muted))] hover:bg-[hsl(var(--bg))]'}`;
+    if(on){ b.style.background=`hsl(${a.color}/0.12)`; b.style.boxShadow=`inset 0 0 0 1.5px hsl(${a.color})`; }
     b.innerHTML = `<img class="av w-7 h-7 ring-2" style="--tw-ring-color:hsl(${a.color})" src="${av(a.name)}" alt=""/>
       <span class="ribbon-name text-sm font-semibold" ${on?`style="color:hsl(${a.color})"`:''}>${a.label}</span>`;
     b.onclick = ()=>{ active=a.slug; activeSub=0; render(); };
@@ -156,8 +156,8 @@ function renderRibbon(){
   const sp = document.createElement('div'); sp.className='flex-1'; ribbon.appendChild(sp);
   const on = active===PLAT.slug;
   const p = document.createElement('button');
-  p.className=`flex items-center gap-2 px-3 h-11 rounded-xl shrink-0 ${on?'':'text-[hsl(var(--muted))] hover:bg-[hsl(var(--bg))]'}`;
-  if(on){ p.style.background=`hsl(${PLAT.color}/0.10)`; p.style.boxShadow=`inset 0 -2px 0 hsl(${PLAT.color})`; }
+  p.className=`flex items-center gap-2 px-3 h-11 rounded-full shrink-0 ${on?'':'text-[hsl(var(--muted))] hover:bg-[hsl(var(--bg))]'}`;
+  if(on){ p.style.background=`hsl(${PLAT.color}/0.12)`; p.style.boxShadow=`inset 0 0 0 1.5px hsl(${PLAT.color})`; }
   p.innerHTML=`<i data-lucide="settings" class="w-5 h-5"></i><span class="ribbon-name text-sm font-medium hidden md:inline">Plataforma</span>`;
   p.onclick=()=>{ active=PLAT.slug; activeSub=0; render(); };
   ribbon.appendChild(p);
@@ -168,7 +168,7 @@ function renderSub(){
   a.sub.forEach((s,i)=>{
     const on=i===activeSub;
     const b=document.createElement('button');
-    b.className=`px-3 h-8 rounded-lg text-sm ${on?'font-medium':'text-[hsl(var(--muted))] hover:bg-[hsl(var(--panel))]'}`;
+    b.className=`px-3 h-8 rounded-full text-sm ${on?'font-medium':'text-[hsl(var(--muted))] hover:bg-[hsl(var(--panel))]'}`;
     if(on){ b.style.background=`hsl(${a.color}/0.12)`; b.style.color=`hsl(${a.color})`; }
     b.textContent=s; b.onclick=()=>{ activeSub=i; render(); };
     bar.appendChild(b);
