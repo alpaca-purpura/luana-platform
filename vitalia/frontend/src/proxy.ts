@@ -22,13 +22,47 @@
  * F1-S9 routing-shell: matcher polish + /marketing(.*) explicit
  */
 
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import {
+  clerkClient,
+  clerkMiddleware,
+  createRouteMatcher,
+} from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import {
   bareTenantLandingRedirect,
+  isAuthedRootPath,
+  rootLandingRedirect,
   shellInRenderRedirectTarget,
 } from "@/lib/shell-routes";
+
+/**
+ * Resolves the user's tenant UUID from Clerk `publicMetadata.tenant_id` —
+ * the SAME canonical source as the client `useTenantId()` + the server-side
+ * `resolveClinicId()` in features/mateo/api/agenda-server.ts. Read via the
+ * Clerk Backend API (clerkClient) because the dev JWT template does NOT inject
+ * custom claims into sessionClaims (the agenda-actor-headers-422 fix proved the
+ * claim path was empty). clerkClient uses HTTPS fetch → edge-runtime safe.
+ *
+ * Graceful: returns null on ANY failure (no tenant provisioned, Clerk API down,
+ * non-string metadata) → the caller skips the 307 and lets the Server Component
+ * `app/page.tsx` run its full fallback (fetchUserTenants → no_tenants_assigned /
+ * network-error). The login flow is NEVER broken by this resolver.
+ */
+async function resolveTenantId(userId: string): Promise<string | null> {
+  try {
+    const client = await clerkClient();
+    const user = await client.users.getUser(userId);
+    const tenantId = (user.publicMetadata as Record<string, unknown>)[
+      "tenant_id"
+    ];
+    return typeof tenantId === "string" && tenantId.length > 0
+      ? tenantId
+      : null;
+  } catch {
+    return null;
+  }
+}
 
 const isPublicRoute = createRouteMatcher([
   "/sign-in(.*)",
@@ -47,11 +81,41 @@ const isPublicRoute = createRouteMatcher([
   // core-ds-foundation T-9: catalogo publico del design-system @luana/ui-kit.
   // Sin tenant, sin PHI — solo renderiza componentes con datos de ejemplo.
   "/showcase(.*)",
+  // T-FE-pagina-publica (D3-D): página pública del doctor — no auth.
+  // Anti-enumeration: BE returns identical 404 for toggle-OFF/unknown/cross-tenant.
+  "/d/(.*)",
 ]);
 
 export const proxy = clerkMiddleware(async (auth, request) => {
   if (!isPublicRoute(request)) {
     await auth.protect();
+  }
+
+  // Root-login hardening (vitalia-bugfix-root-login-redirect-softnav): Clerk
+  // afterSignIn redirige client-side a "/". El Server Component app/page.tsx
+  // hacía ahí un redirect() IN-RENDER hacia /{tenant}/mateo/agenda → soft-nav
+  // intra route-group (shell-organism) cuyo layout es dynamic({ssr:false}) →
+  // dispara "Rendered more hooks than during the previous render" en el Router
+  // de Next 16 (~40% flake → render colgado hasta refrescar a mano). Mismo
+  // bug-class que el landing bare-tenant de abajo, pero el caso root "/" (sin
+  // tenant en la URL) quedó SIN edge-ificar. Acá lo movemos al EDGE (307): para
+  // usuarios YA autenticados (auth.protect arriba mandó a sign-in a los
+  // anónimos), resolvemos el tenant de publicMetadata.tenant_id (Clerk Backend
+  // API — el JWT dev no trae el claim) y 307 a su landing. Si el tenant no
+  // resuelve / no es UUID → NO redirige acá y deja que app/page.tsx haga su
+  // fallback completo (fetchUserTenants → no_tenants_assigned / error de red).
+  // Scope HARD a pathname === "/" (raíz exacta) — la resolución del tenant (una
+  // llamada a Clerk) corre SOLO en ese caso, nunca en cada request.
+  if (isAuthedRootPath(request.nextUrl.pathname)) {
+    const { userId } = await auth();
+    if (userId) {
+      const tenantId = await resolveTenantId(userId);
+      const target = rootLandingRedirect(tenantId);
+      if (target) {
+        return NextResponse.redirect(new URL(target, request.url));
+      }
+      // tenant no resuelto / no-UUID → cae a app/page.tsx (fallback defensivo).
+    }
   }
 
   // Bug #1 hardening (vitalia-bugfix-shell-nav-scroll-errors): el redirect de

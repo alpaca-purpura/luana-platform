@@ -20,11 +20,11 @@ import { useAuth } from "@clerk/nextjs";
 import { useTenantId } from "@/hooks/useTenantId";
 import { useClinicId } from "@/hooks/useClinicId";
 import { fetchClient } from "@/lib/api/fetchClient";
+import {
+  conversationDetailKeyForInvalidation,
+  conversationsListKeyForInvalidation,
+} from "./_keys";
 import type { Conversation } from "@/features/crm-shared";
-
-// Invalidate the crm-shared keys the thread/list actually read (see use-set-mode).
-const crmDetailKey = (id: string) => ["crm", "conversation", id] as const;
-const crmListKey = ["crm", "conversations"] as const;
 
 /** Far-future duration used for "Pausar permanente" (BE has no indefinite flag). */
 export const PERMANENT_PAUSE_MINUTES = 52_560_000; // ~100 years
@@ -68,9 +68,9 @@ export function usePauseAdrian() {
     },
     onSettled: (_data, _err, input) => {
       void qc.invalidateQueries({
-        queryKey: crmDetailKey(input.conversationId),
+        queryKey: conversationDetailKeyForInvalidation(input.conversationId),
       });
-      void qc.invalidateQueries({ queryKey: crmListKey });
+      void qc.invalidateQueries({ queryKey: conversationsListKeyForInvalidation() });
     },
   });
 }

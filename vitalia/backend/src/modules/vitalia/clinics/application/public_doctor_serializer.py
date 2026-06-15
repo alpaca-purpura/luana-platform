@@ -19,7 +19,13 @@ Per 03-arch-be.md § 6:
 
 from __future__ import annotations
 
-from src.modules.vitalia.clinics.api.dtos import BioPublicDTO, PublicDoctorDTO
+from src.modules.vitalia.clinics.api.dtos import (
+    BioPublicDTO,
+    ExperienciaItemDTO,
+    FormacionItemDTO,
+    PublicDoctorDTO,
+    PublicDoctorProfileDTO,
+)
 from src.modules.vitalia.clinics.domain.doctor import Doctor
 
 
@@ -77,4 +83,95 @@ def to_public_dto(
         languages=doctor.languages,  # 5. languages list
         bio_public=bio_dto,  # 6. generated public bio
         credential_label=credential_label,  # 7. optional display string
+    )
+
+
+def to_public_profile_dto(
+    doctor: Doctor,
+    clinic_name: str | None = None,
+) -> PublicDoctorProfileDTO:
+    """Map a Doctor domain entity to a PublicDoctorProfileDTO (structured D3-D profile).
+
+    CHANNEL GUARD (hipaa-lite.md): only allow-listed professional fields are serialized.
+    PHI fields (dni, email, phone, credential) are NEVER accessed here.
+
+    Business rules enforced:
+      - RN-D3D-5: idiomas only exposed if len > 1 (single language omitted)
+      - RN-D3D-6: all sections nullable — minimum identity = display_name
+      - RN-D3D-7: OG-safe fields (display_name, specialty, sobre_mi, avatar_key)
+        available for FE generateMetadata
+
+    Args:
+        doctor: Domain entity. Only non-PHI allow-listed fields are read.
+
+    Returns:
+        PublicDoctorProfileDTO with structured sections. Zero PHI fields.
+    """
+    profile = doctor.public_profile
+
+    # Structured sections — None if no profile generated yet
+    sobre_mi: str | None = None
+    formacion: list[FormacionItemDTO] | None = None
+    experiencia: list[ExperienciaItemDTO] | None = None
+    tratamientos: list[str] | None = None
+    certificaciones: list[str] | None = None
+
+    if profile is not None and not profile.is_empty():
+        sobre_mi = profile.sobre_mi or None
+
+        if profile.formacion:
+            formacion = [
+                FormacionItemDTO(
+                    titulo=item.get("titulo", ""),
+                    institucion=item.get("institucion", ""),
+                    anio=item.get("anio"),
+                )
+                for item in profile.formacion
+                if isinstance(item, dict)
+            ]
+
+        if profile.experiencia:
+            experiencia = [
+                ExperienciaItemDTO(
+                    puesto=item.get("puesto", ""),
+                    lugar=item.get("lugar", ""),
+                    anios=item.get("anios"),
+                )
+                for item in profile.experiencia
+                if isinstance(item, dict)
+            ]
+
+        if profile.tratamientos:
+            tratamientos = list(profile.tratamientos)
+
+        if profile.certificaciones:
+            certificaciones = list(profile.certificaciones)
+
+    # RN-D3D-5: idiomas only if len > 1 — single language does NOT signal multilingual
+    idiomas: list[str] | None = None
+    languages_source = (profile.idiomas if profile is not None else None) or doctor.languages
+    if len(languages_source) > 1:
+        idiomas = list(languages_source)
+
+    # Construct the channel-guarded DTO — NEVER access doctor.dni / email / phone.
+    # credential_number/country = licencia PROFESIONAL pública (badge colegiatura,
+    # mockup v3.2 firmado + RN-D3D) — no es PHI de paciente.
+    credential_label = None
+    cred_number = getattr(doctor, "credential", None)
+    if cred_number:
+        cc = getattr(doctor, "credential_country", None)
+        credential_label = f"{cred_number}" + (f" ({cc})" if cc else "")
+
+    return PublicDoctorProfileDTO(
+        clinic_name=clinic_name,
+        credential_label=credential_label,
+        display_name=doctor.display_name,  # derived property, not PHI
+        specialty=doctor.specialty,  # professional specialty, not PHI
+        avatar_key=doctor.avatar_key,  # R2 key for public avatar, not PHI
+        sobre_mi=sobre_mi,  # professional summary (OG-safe RN-D3D-7)
+        formacion=formacion,  # academic background
+        experiencia=experiencia,  # work experience
+        tratamientos=tratamientos,  # treatment chips
+        certificaciones=certificaciones,  # certifications
+        idiomas=idiomas,  # languages (only if len>1)
     )

@@ -44,7 +44,7 @@ architecture_pattern: ADR-vitalia-004
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-fase2-valeria-agenda   # v2 cement · mirror of story_introduced
 created_date: 2026-05-27   # v2 cement · mirror of date_introduced
-last_modified: 2026-05-29   # T-3 reconcile 2026-05-29
+last_modified: 2026-06-15   # bugfix-agenda-actor-headers-422 (fix)
 parent_cap: null   # v2 cement · mirror of extends_capability
 derives_capabilities: []   # v2 cement · initial empty list
 
@@ -73,6 +73,17 @@ change_log:
       - navegacion-teclado-y-lector-pantalla
       - cobro-multi-moneda-override
       - cobro-en-mobile-bottom-sheet
+    merge_sha: null
+    status: done
+  - story_id: vitalia-bugfix-agenda-actor-headers-422
+    date: 2026-06-15
+    type: fix
+    summary: >-
+      Agenda cargaba vacía + 422: el FE no mandaba X-Clinic-ID/X-User-ID/X-User-Role (lift a
+      useActorHeaders compartido). BE: +owner en SCHEDULING_PHI_ROLES (rbac.py SSoT), repo SQLA-2.0
+      TextClause fix, audit-persist (get_async_session_committing). chris_verify SATISFIED +
+      verificado live (owner→200 + audit persistido). Commits 729613aa + b7ccc360.
+    scenarios_added: []
     merge_sha: null
     status: done
 

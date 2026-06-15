@@ -104,6 +104,11 @@ vi.mock("../../../api/staff", () => ({
     isLoading: false,
     isError: false,
   })),
+  useAvailabilityOccurrences: vi.fn(() => ({
+    data: [],
+    isLoading: false,
+    isError: false,
+  })),
   useCreateBlock: vi.fn(() => ({
     mutateAsync: vi.fn(),
     isPending: false,
@@ -123,6 +128,15 @@ vi.mock("../../../api/staff", () => ({
     details: () => ["lisa", "staff", "detail"],
     detail: (id: string) => ["lisa", "staff", "detail", id],
     blocks: (id: string) => ["lisa", "staff", "detail", id, "blocks"],
+    occurrences: (id: string, from: string, to: string) => [
+      "lisa",
+      "staff",
+      "detail",
+      id,
+      "occurrences",
+      from,
+      to,
+    ],
   },
 }));
 
@@ -221,19 +235,20 @@ describe("AvailabilityCalendar — 24h toggle", () => {
   });
 });
 
-describe("BloquePopover — recurrence form", () => {
+describe("BloquePopover — recurrence form (D3-F rewrite)", () => {
+  // D3-F: mockBlock uses the new daysOfWeek + interval fields
   const mockBlock = {
     id: "blk-new",
     kind: "recurrent" as const,
-    dayOfWeek: 0,
+    daysOfWeek: [0], // Monday
+    interval: 1,
     startTime: "09:00",
     endTime: "13:00",
-    freq: "weekly" as const,
     endConditionKind: "end_date" as const,
     endDate: "2025-12-31",
   };
 
-  it("renders recurrence frequency options", () => {
+  it("D3-F: renders 'Repetir' Select with preset options", () => {
     render(
       React.createElement(BloquePopover, {
         doctorId: "doctor-123",
@@ -243,12 +258,13 @@ describe("BloquePopover — recurrence form", () => {
         anchor: { x: 100, y: 100 },
       }),
     );
-    // Frequency options: semanal (weekly) + quincenal (biweekly)
-    expect(screen.getAllByText(/semanal/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/quincenal/i).length).toBeGreaterThan(0);
+    // The "Repetir" label should be visible
+    expect(screen.getByText(/repetir/i)).toBeTruthy();
+    // Select trigger with testid
+    expect(screen.getByTestId("select-repetir")).toBeTruthy();
   });
 
-  it("shows end condition options (fecha de fin, iteraciones, solo esta semana)", () => {
+  it("D3-F: recurrence summary is visible for recurrent block", () => {
     render(
       React.createElement(BloquePopover, {
         doctorId: "doctor-123",
@@ -258,11 +274,11 @@ describe("BloquePopover — recurrence form", () => {
         anchor: { x: 100, y: 100 },
       }),
     );
-    // End condition options (SC-1, SC-1b, SC-1c)
-    // Use getAllByText since some options may appear in both label and select
-    expect(screen.getAllByText(/fecha de fin/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/iteraciones/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/solo esta semana/i).length).toBeGreaterThan(0);
+    // Human summary (RN-D3F-1) should always be visible
+    const summary = screen.getByTestId("recurrence-summary");
+    expect(summary).toBeTruthy();
+    // Should contain "cada semana" or "lunes"
+    expect(summary.textContent).toMatch(/cada semana|lunes/i);
   });
 
   it("shows delete button for existing blocks (SC-1d, SC-3b)", () => {

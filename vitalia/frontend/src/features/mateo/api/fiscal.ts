@@ -17,6 +17,8 @@
 import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { vitaliaFetch } from "@/lib/fetch-client";
+import { useClinicId } from "@/hooks/useClinicId";
+import { useActorHeaders } from "@/hooks/useActorHeaders";
 import type { FiscalDocument } from "../types/agenda.types";
 import { agendaKeys } from "./agenda";
 
@@ -38,6 +40,8 @@ export interface FiscalEmitVariables {
  */
 export function useFiscalEmitMutation(tenantId: string) {
   const { getToken } = useAuth();
+  const clinicId = useClinicId();
+  const actorHeaders = useActorHeaders();
   const queryClient = useQueryClient();
 
   return useMutation<FiscalDocument, Error, FiscalEmitVariables>({
@@ -45,10 +49,16 @@ export function useFiscalEmitMutation(tenantId: string) {
       const token = await getToken();
       if (!token) throw new Error("Not authenticated");
 
+      // fiscal/emit requires the HIPAA-lite dual filter + audit actor
+      // (X-Clinic-ID + X-User-ID + X-User-Role) — only X-Tenant-ID → 422.
       return vitaliaFetch<FiscalDocument>("/api/v1/fiscal/emit", {
         method: "POST",
         token,
         tenantId,
+        headers: {
+          ...actorHeaders,
+          ...(clinicId ? { "X-Clinic-ID": clinicId } : {}),
+        },
         body: JSON.stringify({
           payment_id: paymentId,
           doc_type: docType,

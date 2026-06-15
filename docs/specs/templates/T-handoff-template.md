@@ -1,6 +1,6 @@
 # T-{n}-handoff.md — Template (input al developer)
 
-> Owner: `/architect`. Lo que el dev (qwen|opus|sonnet) lee antes de codear.
+> Owner: `/architect`. Lo que el dev (qwen|flagship|workhorse) lee antes de codear.
 > Self-contained — el dev NO debe leer otros archivos del story salvo los explícitos.
 
 ---
@@ -17,7 +17,7 @@ estimate_hours: 2
 owner_eligibility:
   qwen_opencode: true                            # acepta opencode/qwen
   claude_sonnet: true                            # acepta Claude Code Sonnet
-  claude_opus_required: false                    # FORZAR Opus 4.8 (true para AGENTIC)
+  flagship_required: false                    # FORZAR tier flagship (true para AGENTIC)
 assigned_to: null                                # rellena /dev-team al tomar
 assigned_at: null
 ---

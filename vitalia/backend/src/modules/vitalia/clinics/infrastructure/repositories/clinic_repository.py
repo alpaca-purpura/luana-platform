@@ -144,6 +144,86 @@ class ClinicRepository:
         await self.db.refresh(model)
         return Clinic.model_validate(model)
 
+    async def get_active_for_tenant(self, tenant_id: UUID) -> Clinic | None:
+        """Return the first active, non-deleted clinic for a tenant.
+
+        In Vitalia MVP (single-clinic-per-tenant), there is at most one active
+        clinic per tenant. Returns the first ordered by created_at ASC.
+
+        Args:
+            tenant_id: Tenant context filter.
+
+        Returns:
+            Clinic entity or None if no active clinic exists.
+        """
+        result = await self.db.execute(
+            select(ClinicModel)
+            .where(ClinicModel.tenant_id == tenant_id)
+            .where(ClinicModel.is_active.is_(True))
+            .where(ClinicModel.deleted_at.is_(None))
+            .order_by(ClinicModel.created_at.asc())
+            .limit(1)
+        )
+        model = result.scalars().first()
+        return Clinic.model_validate(model) if model else None
+
+    async def update_account(
+        self,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        **fields: object,
+    ) -> Clinic:
+        """Update account fields for a clinic.
+
+        Performs a targeted UPDATE of only the provided fields, then re-fetches
+        the updated row to return a fresh Clinic entity.
+
+        Args:
+            tenant_id: Tenant context filter (dual filter).
+            clinic_id: Clinic to update.
+            **fields: Field names and new values to update.
+
+        Returns:
+            Updated Clinic entity.
+
+        Raises:
+            ClinicNotFoundError: If clinic not found or belongs to different tenant.
+        """
+        from sqlalchemy import func, update  # noqa: PLC0415
+
+        from src.modules.vitalia.clinics.domain.exceptions import (  # noqa: PLC0415
+            ClinicNotFoundError,
+        )
+
+        # Always touch updated_at
+        update_values = {**fields, "updated_at": func.now()}
+
+        await self.db.execute(
+            update(ClinicModel)
+            .where(ClinicModel.tenant_id == tenant_id)
+            .where(ClinicModel.id == clinic_id)
+            .where(ClinicModel.deleted_at.is_(None))
+            .values(**update_values)
+        )
+        # NOTE: commit() removed — caller owns the unit-of-work (Option A fix C9-1).
+        # When called from account_router._get_db (get_async_session_committing),
+        # the commit happens once on clean return, atomically with
+        # update_specialties + audit_writer.write(). A flush is needed so the
+        # re-fetch below sees the updated values within the same transaction.
+        await self.db.flush()
+
+        # Re-fetch to return fresh entity
+        result = await self.db.execute(
+            select(ClinicModel)
+            .where(ClinicModel.tenant_id == tenant_id)
+            .where(ClinicModel.id == clinic_id)
+            .where(ClinicModel.deleted_at.is_(None))
+        )
+        model = result.scalars().first()
+        if model is None:
+            raise ClinicNotFoundError(tenant_id=tenant_id, clinic_id=clinic_id)
+        return Clinic.model_validate(model)
+
     async def soft_delete(self, tenant_id: UUID, clinic_id: UUID) -> bool:
         """Soft-delete a clinic by setting deleted_at = NOW().
 

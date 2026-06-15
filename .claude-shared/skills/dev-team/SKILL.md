@@ -1,13 +1,13 @@
 ---
 name: dev-team
-description: "Developer team router v4 (Conv 2 — autonomous build, post pm-redesign 2026-05 Punto 4). Reads ready package (01-spec.md + 03-arch.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml) en docs/product/stories/{story-id}/ state=ready. Itera ticket-por-ticket: implement → run validators (4 categorías: non_functional/functional/visual/agentic_eval) → fix targeted file → repeat hasta GREEN o cap_reached. Decide owner según owner_eligibility + production_code flag (R23). qwen-opencode/Sonnet preferido para BE/FE no-agentic + tests/docs sobre agentic. Opus 4.7 obligatorio para AGENTIC production code. Mantiene T-{n}-impl-log.md vivo. TDD obligatorio. On pickup: state=ready→developing. On all GREEN all tickets: state=developing→developed. On cap reached: state=developing→blocked, escalate. Activa cuando user dice: '/dev-team', 'toma ticket T-N', 'implementa T-N', 'arranca build', 'autonomous build'."
+description: "Developer team router v4 (Conv 2 — autonomous build, post pm-redesign 2026-05 Punto 4). Reads ready package (01-spec.md + 03-arch.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml) en docs/product/stories/{story-id}/ state=ready. Itera ticket-por-ticket: implement → run validators (4 categorías: non_functional/functional/visual/agentic_eval) → fix targeted file → repeat hasta GREEN o cap_reached. Decide owner según owner_eligibility + production_code flag (R23). qwen-opencode/Sonnet preferido para BE/FE no-agentic + tests/docs sobre agentic. Tier flagship obligatorio para AGENTIC production code. Mantiene T-{n}-impl-log.md vivo. TDD obligatorio. On pickup: state=ready→developing. On all GREEN all tickets: state=developing→developed. On cap reached: state=developing→blocked, escalate. Activa cuando user dice: '/dev-team', 'toma ticket T-N', 'implementa T-N', 'arranca build', 'autonomous build'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
 model: opus
 ---
 
 # /dev-team — Developer Team Router (Conv 2 autonomous build)
 
-> Owner: `T-{n}-impl-log.md` + `T-{n}-result.md` en `docs/product/stories/{story-id}/`. Toma 1 ticket → ejecuta TDD + iteración contra `04-validators.yaml` → push. On pickup: state=ready→developing. On GREEN all tickets → state=developing→developed (awaiting QA, NO automatic transition a reviewing — Chris triggers /auditor manualmente para controlar gasto Opus).
+> Owner: `T-{n}-impl-log.md` + `T-{n}-result.md` en `docs/product/stories/{story-id}/`. Toma 1 ticket → ejecuta TDD + iteración contra `04-validators.yaml` → push. On pickup: state=ready→developing. On GREEN all tickets → state=developing→developed (awaiting QA, NO automatic transition a reviewing — Chris triggers /auditor manualmente para controlar gasto del flagship).
 
 ## Inputs obligatorios (ready package)
 
@@ -99,17 +99,17 @@ Filtrar tickets con `state: ready` (deps cumplidas). Decidir owner según `owner
 | BE no-agentic | false (tests/docs/tooling) | qwen-opencode o claude-sonnet | trivial test/doc work |
 | FE no-agentic | true | qwen-opencode | costo, qwen capable |
 | FE no-agentic | false | qwen-opencode | trivial |
-| AGENTIC | true | claude-opus (MISMA sesión, NO opencode) | brand voice + protected surfaces + Opus prompt eng |
-| **AGENTIC** | **false (tests/docs only)** | **claude-sonnet** | **R23 — test-only/doc-only sobre módulo agentic NO requiere Opus** |
+| AGENTIC | true | flagship (MISMA sesión, NO opencode) | brand voice + protected surfaces + prompt eng del flagship |
+| **AGENTIC** | **false (tests/docs only)** | **claude-sonnet** | **R23 — test-only/doc-only sobre módulo agentic NO requiere el flagship** |
 | Migration aislada | true | qwen-opencode | trivial DDL |
 | Cross-module shared | true | claude-sonnet o opus | complexity |
 
 **Reglas hard:**
-- AGENTIC ticket + `production_code: true` → SIEMPRE Opus 4.7. Esto se ejecuta en MISMA sesión Claude Code (tú como `/dev-team` con Opus).
+- AGENTIC ticket + `production_code: true` → SIEMPRE el tier flagship (`models.flagship` del seam). Esto se ejecuta en MISMA sesión Claude Code (tú como `/dev-team` corriendo el flagship).
 - AGENTIC ticket + `production_code: false` → Sonnet OK. Tests/docs/tooling
-  sobre `modules/{copilot,sales_agent}/` no requieren Opus reasoning.
-- Si no estás en Opus y ticket=AGENTIC + production_code=true → STOP, escala
-  Chris: "necesito Opus 4.7 para este ticket. Cambiame de modelo."
+  sobre `modules/{copilot,sales_agent}/` no requieren el reasoning del flagship.
+- Si tu modelo de sesión NO es el flagship y ticket=AGENTIC + production_code=true → STOP, escala
+  Chris: "necesito el modelo flagship (ver project.config.yaml::models) para este ticket. Cambiame de modelo."
 
 Update `06-tickets.yaml` ticket `T-{n}`:
 ```yaml
@@ -213,9 +213,9 @@ Mientras qwen trabaja → tú NO interfieres. Cuando termina:
 3. Actualizás `06-tickets.yaml` ticket → state: pushed o blocked
 4. Si pushed → continúa Step 4 (next ticket). Si blocked → escalate.
 
-### Step 2B — Owner = claude-opus (AGENTIC production code)
+### Step 2B — Owner = flagship (AGENTIC production code)
 
-Spawnás agent `builder-agentic` (Opus 4.7) via Agent tool:
+Spawnás agent `builder-agentic` (flagship) via Agent tool:
 
 ```
 Agent({
@@ -235,7 +235,7 @@ Agent({
 
 `builder-agentic` corre validators + push. Devuelve `done -> T-{n}-result.md`.
 
-### Step 2C — Owner = claude-sonnet (cross-module shared o tests/docs sobre agentic)
+### Step 2C — Owner = workhorse (cross-module shared o tests/docs sobre agentic)
 
 Spawnás agent `builder-backend` o `builder-frontend` con model=sonnet (default). Prompt SIEMPRE referencia `CONTEXT-BRIEF.md`:
 
@@ -417,7 +417,7 @@ Si 2 tickets independientes (no `depends_on`) están `ready` simultáneamente:
 
 ## Anti-patterns
 
-- ❌ AGENTIC ticket production_code=true asignado a qwen/Sonnet (HARD BAN — Opus only)
+- ❌ AGENTIC ticket production_code=true asignado a qwen/Sonnet (HARD BAN — flagship only)
 - ❌ Skip TDD (escribir código sin validators RED primero)
 - ❌ `git add .` / `git add -A` / `git add -u` (parallel-safety)
 - ❌ `git commit --no-verify`

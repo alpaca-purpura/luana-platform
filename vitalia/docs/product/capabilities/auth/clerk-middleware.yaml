@@ -37,7 +37,7 @@ dev_preview:
 # Capability ledger v2 (cement 2026-05-27)
 created_in_story: vitalia-auth-base-functional   # v2 cement · mirror of story_introduced
 created_date: 2026-05-18   # v2 cement · mirror of date_introduced
-last_modified: 2026-06-03   # bugfix shell-nav-scroll-errors #1 (edge-redirect /{tenant}→landing en proxy)
+last_modified: 2026-06-15   # bugfix-root-login-redirect-softnav (edge-redirect root / en proxy)
 parent_cap: null   # v2 cement · mirror of extends_capability
 derives_capabilities: []   # v2 cement · initial empty list
 
@@ -55,6 +55,17 @@ change_log:
     date: 2026-05-18
     type: new
     summary: "Implementación inicial · migración legacy a schema v2"
+    merge_sha: null
+    status: done
+  - story_id: vitalia-bugfix-root-login-redirect-softnav
+    date: 2026-06-15
+    type: fix
+    summary: >-
+      Post-login se colgaba en / ("rendering", Next 16 soft-nav → ssr:false shell). Edge-redirect
+      307 del root / en proxy.ts (scoped pathname==='/' autenticado, tenant via clerkClient
+      publicMetadata) → mata el soft-nav, igual patrón que el edge-redirect bare-tenant (bug#1).
+      chris_verify SATISFIED + Playwright 8/8 determinístico (0× 'Rendered more hooks'). Commit a4345e74.
+    scenarios_added: []
     merge_sha: null
     status: done
 

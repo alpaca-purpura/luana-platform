@@ -126,18 +126,35 @@ export const bioSchema = z.object({
 export type BioFormValues = z.infer<typeof bioSchema>;
 
 // ── Availability block schema (recurrent vs one-off — discriminated union) ─────
+//
+// D3-F: RepeatPreset drives the Select "Repetir":
+//   "none"      → kind: one_off (crear bloque puntual desde recurrente)
+//   "daily"     → daysOfWeek: [0,1,2,3,4,5,6], interval: 1
+//   "weekly"    → daysOfWeek: [dayOfWeek from draft], interval: 1
+//   "biweekly"  → daysOfWeek: [dayOfWeek from draft], interval: 2
+//   "custom"    → user configures daysOfWeek[] + interval via sub-editor
+//
+// Human summary (formatRecurrenceSummary) derives from daysOfWeek + interval + endConditionKind.
+
+export type RepeatPreset = "none" | "daily" | "weekly" | "biweekly" | "custom";
 
 const recurrentBlockSchema = z
   .object({
     kind: z.literal("recurrent"),
-    dayOfWeek: z.number().int().min(0).max(6),
+    /** D3-F: repeat preset driving the Select "Repetir" */
+    repeatPreset: z.enum(["none", "daily", "weekly", "biweekly", "custom"]),
+    /** D3-F: list of weekday indices — 0=Monday..6=Sunday (min 1 element) */
+    daysOfWeek: z
+      .array(z.number().int().min(0).max(6))
+      .min(1, "Selecciona al menos un día"),
+    /** D3-F: recurrence interval in weeks (≥1) */
+    interval: z.number().int().min(1, "El intervalo debe ser al menos 1"),
     startTime: z
       .string()
       .regex(/^\d{2}:\d{2}$/, "Formato inválido (HH:mm)"),
     endTime: z
       .string()
       .regex(/^\d{2}:\d{2}$/, "Formato inválido (HH:mm)"),
-    freq: z.enum(["weekly", "biweekly"]),
     endConditionKind: z.enum(["end_date", "occurrences", "open_ended"]),
     endDate: z.string().optional().nullable(),
     occurrences: z.number().int().min(1).optional().nullable(),
@@ -153,8 +170,15 @@ const recurrentBlockSchema = z
     if (data.endConditionKind === "occurrences" && !data.occurrences) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Ingresa el número de iteraciones",
+        message: "Ingresa el número de repeticiones",
         path: ["occurrences"],
+      });
+    }
+    if (data.repeatPreset === "custom" && data.daysOfWeek.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Selecciona al menos un día",
+        path: ["daysOfWeek"],
       });
     }
   });

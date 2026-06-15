@@ -89,14 +89,14 @@ zones:
 
       - id: configuracion
         name: "Configuración"
-        description: "Ajustes del espacio: cuenta/tenant, clínicas, equipo, conexiones, historial de pacientes, panel admin."
-        absorbs: [config.cuenta, config.clinics, config.conexiones, config.patients-records, config.admin, config.avanzado, config.fiscal]
+        description: "Ajustes del espacio: cuenta/tenant, clínicas, equipo, conexiones, historial de pacientes."
+        absorbs: [config.cuenta, config.clinics, config.conexiones, config.patients-records, config.avanzado, config.fiscal]
         functional_areas:
           - id: cuenta
             name: "Cuenta del tenant"
-            status: planned
-            target_release: F2
-            description: "Datos legales (RUC/RUT/CUIT), billing, plan suscripción, info contacto del owner."
+            status: live              # vitalia-fase2-config-cuenta 2026-06-12 (sin billing — D1 defer)
+            target_release: F4
+            description: "Datos legales (RUC/RUT/CUIT por país), contacto, especialidades editables, preferencias regionales (timezone/moneda), DPO referencia. Sin billing (defer a vitalia-pricing-decision)."
           - id: clinics
             name: "Multi-clínica"
             status: live
@@ -109,10 +109,6 @@ zones:
             name: "Historial médico de pacientes"
             status: live
             description: "Sección registros médicos del paciente: historial tratamientos, controles, prescripciones. RBAC + audit log + dual filter."
-          - id: admin
-            name: "Panel admin (staff Vitalia)"
-            status: live
-            description: "Streamlit admin paralelo BE principal. Gestión cross-tenant, debugging, ops, CRUD tenants/users/clinics."
           - id: fiscal
             name: "Facturación fiscal"
             status: live
@@ -122,6 +118,19 @@ zones:
             status: planned
             target_release: F4
             description: "Webhooks custom, exports, integraciones avanzadas, opciones devs."
+
+      # Separado de configuracion (2026-06-11, pedido Chris): el panel admin es
+      # tooling de staff INTERNO Vitalia (cross-tenant), no un ajuste del espacio
+      # del cliente — módulo propio en el mapa.
+      - id: admin
+        name: "Panel admin (staff interno)"
+        description: "Streamlit admin paralelo al BE principal. Para staff Vitalia (no clientes): gestión cross-tenant, debugging, ops, CRUD tenants/users/clinics."
+        absorbs: [config.admin]
+        functional_areas:
+          - id: panel
+            name: "Panel admin (staff Vitalia)"
+            status: live
+            description: "Streamlit admin paralelo BE principal. Gestión cross-tenant, debugging, ops, CRUD tenants/users/clinics."
 
   - id: infraestructura
     name: "Infraestructura"

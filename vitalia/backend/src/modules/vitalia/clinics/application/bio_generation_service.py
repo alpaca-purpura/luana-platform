@@ -35,6 +35,7 @@ import structlog
 
 from src.modules.vitalia.clinics.domain.bio import BioPublic
 from src.modules.vitalia.clinics.domain.doctor import Doctor
+from src.modules.vitalia.clinics.domain.public_profile import DoctorPublicProfile
 
 logger = structlog.get_logger(__name__)
 
@@ -116,6 +117,56 @@ class LLMServiceProtocol(Protocol):
             Raw text response from the LLM.
         """
         ...
+
+
+# ── Structured profile prompt templates ──────────────────────────────────────
+
+_STRUCTURED_SYSTEM_PROMPT = """\
+Eres un asistente que genera perfiles públicos estructurados para médicos.
+Tu tarea es crear un perfil profesional en 6 secciones usando SOLO el material provisto.
+
+REGLAS ESTRICTAS:
+- Usa únicamente la información del material provisto.
+- No inventes logros, credenciales, instituciones ni experiencias que no estén mencionados.
+- Si falta información para una sección, usa null o lista vacía [] según corresponda.
+- Español neutro latinoamericano (sin voseo). Tono profesional y cálido.
+- Devuelve exclusivamente un JSON con la estructura indicada. Cero texto fuera del JSON.
+
+Estructura de respuesta (JSON):
+{{
+  "sobre_mi": "string o null",
+  "formacion": [
+    {{"titulo": "string", "institucion": "string", "anio": "string o null"}}
+  ],
+  "experiencia": [
+    {{"puesto": "string", "lugar": "string", "anios": "string o null"}}
+  ],
+  "tratamientos": ["string", ...],
+  "certificaciones": ["string", ...],
+  "idiomas": ["string", ...]
+}}
+"""
+
+_STRUCTURED_USER_TEMPLATE = """\
+Genera el perfil público estructurado para el siguiente médico usando solo el material provisto.
+
+NOMBRE: {display_name}
+ESPECIALIDAD: {specialty}
+AÑOS DE EXPERIENCIA: {years_experience}
+CREDENCIAL: {credential}
+PAÍS CREDENCIAL: {credential_country}
+
+IDIOMAS DECLARADOS: {languages}
+
+MATERIAL PROVISTO:
+{notes_section}
+{links_section}
+{files_section}
+
+RECORDATORIO: Usa solo la información de arriba. No inventes.
+Si falta información para una sección, usa null o [] vacío.
+Devuelve solo el JSON, sin markdown, sin texto adicional.
+"""
 
 
 # ── Main service ─────────────────────────────────────────────────────────────
@@ -291,3 +342,201 @@ class BioGenerationService:
                 error=str(exc),
             )
             return BioPublic(), BIO_GENERATION_FALLBACK_MESSAGE
+
+    def _build_structured_user_message(
+        self,
+        doctor: Doctor,
+        bio_file_filenames: list[str],
+    ) -> str:
+        """Build user message for structured 6-section profile generation."""
+        notes_section = f"Notas:\n{doctor.bio_inputs_notes}" if doctor.bio_inputs_notes else "(Sin notas)"
+        links_section = "Links:\n" + "\n".join(f"- {link}" for link in doctor.bio_links) if doctor.bio_links else ""
+        files_section = (
+            "Archivos adjuntos:\n" + "\n".join(f"- {f}" for f in bio_file_filenames) if bio_file_filenames else ""
+        )
+        languages_str = ", ".join(doctor.languages) if doctor.languages else "No especificados"
+
+        return _STRUCTURED_USER_TEMPLATE.format(
+            display_name=doctor.display_name,
+            specialty=doctor.specialty or "No especificada",
+            years_experience=(f"{doctor.years_experience} años" if doctor.years_experience else "No especificada"),
+            credential=doctor.credential or "No especificada",
+            credential_country=doctor.credential_country,
+            languages=languages_str,
+            notes_section=notes_section,
+            links_section=links_section,
+            files_section=files_section,
+        )
+
+    def _parse_structured_response(self, raw_response: str) -> DoctorPublicProfile:
+        """Parse LLM JSON response into DoctorPublicProfile (6-section schema).
+
+        Handles partial/missing sections — all fields optional per RN-D3D-6.
+        On parse error: returns empty DoctorPublicProfile (graceful degradation).
+        """
+        try:
+            text = raw_response.strip()
+            # Strip markdown fences if present
+            if text.startswith("```"):
+                lines = text.split("\n")
+                text = "\n".join(line for line in lines if not line.strip().startswith("```"))
+
+            data = json.loads(text)
+
+            def _safe_list(val: Any) -> list[Any]:
+                return val if isinstance(val, list) else []
+
+            def _safe_str(val: Any) -> str | None:
+                return val if isinstance(val, str) and val.strip() else None
+
+            def _safe_year(val: Any) -> int | None:
+                """LLM devuelve años como string ('2008', '2015-2019') — el DTO tipa int|None.
+
+                Dígitos puros → int; cualquier otra cosa → None (un anio no-numérico
+                persistido rompía la validación Pydantic en CADA GET posterior —
+                audit DELTA-BE 2026-06-12).
+                """
+                if isinstance(val, bool):
+                    return None
+                if isinstance(val, int):
+                    return val
+                if isinstance(val, str) and val.strip().isdigit():
+                    return int(val.strip())
+                return None
+
+            return DoctorPublicProfile(
+                sobre_mi=_safe_str(data.get("sobre_mi")),
+                formacion=[
+                    {
+                        "titulo": item.get("titulo", ""),
+                        "institucion": item.get("institucion", ""),
+                        "anio": _safe_year(item.get("anio")),
+                    }
+                    for item in _safe_list(data.get("formacion"))
+                    if isinstance(item, dict)
+                ],
+                experiencia=[
+                    {
+                        "puesto": item.get("puesto", ""),
+                        "lugar": item.get("lugar", ""),
+                        "anios": _safe_year(item.get("anios")),
+                    }
+                    for item in _safe_list(data.get("experiencia"))
+                    if isinstance(item, dict)
+                ],
+                tratamientos=[t for t in _safe_list(data.get("tratamientos")) if isinstance(t, str)],
+                certificaciones=[c for c in _safe_list(data.get("certificaciones")) if isinstance(c, str)],
+                idiomas=[i for i in _safe_list(data.get("idiomas")) if isinstance(i, str)],
+            )
+        except (json.JSONDecodeError, AttributeError, TypeError, KeyError) as exc:
+            logger.warning(
+                "structured_profile_parse_error",
+                error=str(exc),
+                raw_response=raw_response[:300],
+            )
+            return DoctorPublicProfile(
+                sobre_mi=None,
+                formacion=[],
+                experiencia=[],
+                tratamientos=[],
+                certificaciones=[],
+                idiomas=[],
+            )
+
+    def generate_structured(
+        self,
+        doctor: Doctor,
+        bio_file_filenames: list[str] | None = None,
+    ) -> DoctorPublicProfile:
+        """Generate structured 6-section public profile from doctor material.
+
+        DETERMINISTIC extractive — same style as generate_with_error (no-invent guardrail).
+        Derives sections from provided material:
+          - sobre_mi: from summary/notes
+          - formacion[]: from credential/notes
+          - experiencia[]: from notes
+          - tratamientos[]: from specialty + notes
+          - certificaciones[]: from credential if verified
+          - idiomas[]: from doctor.languages if present
+
+        Empty sections → None/[] (RN-D3D-6). Never raises — graceful degradation.
+
+        Args:
+            doctor: Doctor domain entity with bio_inputs_notes, bio_links, specialty.
+            bio_file_filenames: List of uploaded bio file names (filenames only, not URLs).
+
+        Returns:
+            DoctorPublicProfile with 6 sections (empty fallback on LLM failure).
+        """
+        user_message = self._build_structured_user_message(
+            doctor,
+            bio_file_filenames=bio_file_filenames or [],
+        )
+        messages = [{"role": "user", "content": user_message}]
+
+        try:
+            llm = self._get_llm_service()
+            raw_response = llm.generate_response(
+                messages=messages,
+                system_prompt=_STRUCTURED_SYSTEM_PROMPT,
+                model_type="fast",
+            )
+            return self._parse_structured_response(raw_response)
+        except Exception as exc:
+            logger.warning(
+                "structured_profile_llm_error",
+                doctor_id=str(getattr(doctor, "id", "unknown")),
+                tenant_id=str(getattr(doctor, "tenant_id", "unknown")),
+                error_type=type(exc).__name__,
+                error=str(exc),
+            )
+            return self._extractive_structured_fallback(doctor)
+
+    def _extractive_structured_fallback(self, doctor: Doctor) -> "DoctorPublicProfile":
+        """Fallback extractivo determinístico cuando el LLM falla (RN-D3D-6, no-invent).
+
+        Mapea material EXISTENTE (bio_public legacy + specialty + credential + notas):
+        nunca inventa — solo reordena lo que el dueño ya escribió/verificó.
+        Fix 2026-06-12: el branch devolvía perfil VACÍO pese al docstring extractivo
+        (live-verify: perfil generado sin contenido con material presente).
+        """
+        bio = getattr(doctor, "bio_public", None)
+        sobre_parts: list[str] = []
+        if bio is not None and getattr(bio, "resumen", None):
+            sobre_parts.append(bio.resumen.strip())
+        if bio is not None and getattr(bio, "enfoque", None):
+            sobre_parts.append(bio.enfoque.strip())
+        notes = (getattr(doctor, "bio_inputs_notes", None) or "").strip()
+        if not sobre_parts and notes:
+            sobre_parts.append(notes[:400])
+        sobre_mi = " ".join(sobre_parts) or None
+
+        formacion = []
+        if bio is not None and getattr(bio, "formacion", None):
+            # texto libre legacy → 1 item por oración significativa (sin parsear años/instituciones)
+            for frag in [f.strip() for f in bio.formacion.replace("\n", ". ").split(". ") if len(f.strip()) > 8][:5]:
+                formacion.append({"titulo": frag.rstrip("."), "institucion": "", "anio": None})
+
+        tratamientos: list[str] = []
+        specialty = getattr(doctor, "specialty", None)
+        if specialty:
+            tratamientos.append(str(specialty))
+
+        certificaciones: list[str] = []
+        cred_number = getattr(doctor, "credential", None)
+        cred_country = getattr(doctor, "credential_country", None)
+        if cred_number:
+            label = f"Colegiatura {cred_number}" + (f" ({cred_country})" if cred_country else "")
+            certificaciones.append(label)
+
+        # formacion items quedan como list[dict] PLANOS (JSONB-ready): to_dict()
+        # pasa la lista cruda a json.dumps en update_public_profile — un dataclass
+        # acá rompía la persistencia con TypeError (audit DELTA-BE 2026-06-12).
+        return DoctorPublicProfile(
+            sobre_mi=sobre_mi,
+            formacion=formacion,
+            experiencia=[],
+            tratamientos=tratamientos,
+            certificaciones=certificaciones,
+            idiomas=[],
+        )

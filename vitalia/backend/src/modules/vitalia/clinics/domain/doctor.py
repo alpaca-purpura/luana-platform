@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
 from src.modules.vitalia.clinics.domain.bio import BioPublic
+from src.modules.vitalia.clinics.domain.public_profile import DoctorPublicProfile
 
 
 def _utc_now() -> datetime:
@@ -59,7 +60,16 @@ class Doctor:
     """URLs to publications, profiles, or attachments (PDFs, images)."""
 
     bio_public: BioPublic | None = None
-    """Generated/edited public bio (3 sections: resumen/formacion/enfoque)."""
+    """Generated/edited public bio (3 sections: resumen/formacion/enfoque). Legacy — kept for compat."""
+
+    public_profile: DoctorPublicProfile | None = None
+    """Structured public profile — supersedes bio_public. 6-section schema (D3-D)."""
+
+    bio_generated_at: datetime | None = None
+    """Timestamp of last bio/profile generation. Used for RN-D3D-4 material_new detection."""
+
+    public_slug: str | None = None
+    """URL-safe slug for public doctor profile. Unique per (tenant_id, clinic_id)."""
 
     avatar_key: str | None = None
     """Cloudflare R2 object key for doctor avatar."""

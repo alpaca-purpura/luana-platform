@@ -168,6 +168,31 @@ Modelo v2 permite N sesiones Claude/opencode en MISMO canónico `~/Proyectos/lua
 
 **Commits:** cada sesión stagea por nombre exacto, commits separados al mismo branch. Push intercalados sin conflict porque scope físicamente disjunto.
 
+### Chrome DevTools MCP — aislamiento per-sesión vía `LUANA_LANE` (HB-73, 2026-06-15)
+
+El MCP `chrome-devtools` (`~/.claude.json`, user-level global) lanza un Chrome con perfil
+`--userDataDir=…/chrome-devtools-mcp/luana-vitalia-${LUANA_LANE:-solo}`. Chrome protege su
+perfil con `SingletonLock` → **dos sesiones que comparten el mismo perfil chocan**: la 2ª no
+toma el lock y **toda tool-call de Chrome DevTools de esa sesión falla** (sin error legible).
+
+El env se **fija al arrancar `claude`** (el server MCP lo hereda) → no se puede inyectar desde
+dentro de la sesión ni con `/mcp` reconnect. **Por eso es un paso de arranque humano**, no algo
+que el agente pueda hacer.
+
+**Regla:** con **≥2 sesiones `claude` concurrentes** (mismo o distinto worktree — el base
+`luana-vitalia` está hardcodeado global, así que `LUANA_LANE` es el ÚNICO diferenciador entre
+cualquier par de sesiones vivas), exportá un lane único en CADA terminal **antes** de lanzar
+claude:
+
+```bash
+export LUANA_LANE=A          # B, C, … único por terminal (igual convención que el bucket-lock M14)
+claude --dangerously-skip-permissions
+```
+
+1 sola sesión → no hace falta (cae en `…-solo`). Stale lock tras crash → limpiar SOLO el lock,
+nunca el perfil entero (perderías el login Clerk): `rm -f ~/.cache/chrome-devtools-mcp/luana-vitalia*/Singleton*`.
+SSoT del diagnóstico: `docs/learnings/tooling/2026-06-15-chrome-devtools-mcp-per-session-isolation.md`.
+
 ## Inicio de conversacion (branch check + sync activo v2)
 
 ```bash

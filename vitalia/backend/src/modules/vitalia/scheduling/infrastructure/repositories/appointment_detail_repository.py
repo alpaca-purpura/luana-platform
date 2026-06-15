@@ -23,17 +23,41 @@ import structlog
 from luana_core_platform.repositories.compound_scope_repository import (
     CompoundScopeRepositoryBase,
 )
-from sqlalchemy import select, text
+from sqlalchemy import bindparam, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.modules.vitalia.scheduling.persistence.models.appointment_clinic_map_model import (
-    AppointmentClinicMapModel,
-)
 from src.modules.vitalia.scheduling.persistence.models.appointment_payment_model import (
     AppointmentPaymentModel,
 )
 
 logger = structlog.get_logger()
+
+# SQLAlchemy 2.0 note (bug fix vitalia-bugfix-agenda-actor-headers-422 T-2):
+# this detail query had the same TextClause crash as agenda_grid_repository_impl
+# (select(...).select_from(text(...)).outerjoin(ORMModel, ...) → ORM compile path
+# reads `.selectable` on a TextClause → AttributeError / HTTP 500). It is rewritten
+# as a single parameterized text() statement: dual filter (tenant_id + clinic_id)
+# as bound params, only real-schema columns projected. PHI name/DNI are masked
+# placeholders (vitalia_appointments has no name column; patient name is encrypted
+# bytea in vitalia_patients) — real masked-name resolution is an architect follow-up.
+_DETAIL_PROJECTION = """
+    va.id AS appointment_id,
+    va.patient_id AS patient_id,
+    '—' AS patient_name_masked,
+    '—' AS dni_masked,
+    COALESCE(map.service_label, 'Consulta') AS service_label,
+    va.doctor_id AS doctor_id,
+    va.slot_iso AS start_time,
+    va.slot_iso + (va.duration_minutes * INTERVAL '1 minute') AS end_time,
+    va.duration_minutes AS duration_minutes,
+    va.status AS appointment_status,
+    va.payment_status AS payment_status,
+    COALESCE(map.origin, va.origin) AS origin,
+    COALESCE(map.currency_override, va.currency) AS currency,
+    va.booking_metadata AS booking_metadata,
+    va.created_at AS created_at,
+    va.updated_at AS updated_at
+"""
 
 
 class AppointmentDetailRepository(CompoundScopeRepositoryBase):  # type: ignore[type-arg]
@@ -79,41 +103,19 @@ class AppointmentDetailRepository(CompoundScopeRepositoryBase):  # type: ignore[
             clinic_id=str(clinic_id),
         )
 
-        stmt = (
-            select(
-                text("va.id AS appointment_id"),
-                text(f"'{tenant_id}'::uuid AS tenant_id"),
-                text(f"'{clinic_id}'::uuid AS clinic_id"),
-                text("va.patient_name_masked"),
-                text("va.dni_masked"),
-                text("va.patient_id"),
-                text("COALESCE(map.service_label, va.summary) AS service"),
-                text("va.doctor_id"),
-                text("va.slot_iso AS start_at"),
-                text("va.slot_iso + (va.duration_minutes * INTERVAL '1 minute') AS end_at"),
-                text("va.duration_minutes"),
-                text("va.status"),
-                text("va.payment_status"),
-                text("COALESCE(map.origin, va.origin) AS origin"),
-                text("COALESCE(map.currency_override, va.currency) AS currency"),
-                text("va.booking_metadata"),
-                text("va.created_at"),
-                text("va.updated_at"),
-            )
-            .select_from(text("vitalia_appointments va"))
-            .outerjoin(
-                AppointmentClinicMapModel,
-                text(
-                    "vitalia_appointment_clinic_map.appointment_id = va.id "
-                    "AND vitalia_appointment_clinic_map.deleted_at IS NULL"
-                ),
-            )
-            .where(
-                text(f"va.tenant_id = '{tenant_id}'"),
-                text(f"va.clinic_id = '{clinic_id}'"),
-                text(f"va.id = '{entity_id}'"),
-                text("va.deleted_at IS NULL"),
-            )
+        stmt = text(
+            f"SELECT {_DETAIL_PROJECTION}"  # noqa: S608 — static projection + bound params, no user input
+            " FROM vitalia_appointments va"
+            " LEFT OUTER JOIN vitalia_appointment_clinic_map map"
+            "   ON map.appointment_id = va.id AND map.deleted_at IS NULL"
+            " WHERE va.tenant_id = :tenant_id"
+            "   AND va.clinic_id = :clinic_id"
+            "   AND va.id = :appointment_id"
+            "   AND va.deleted_at IS NULL"
+        ).bindparams(
+            bindparam("tenant_id", value=tenant_id),
+            bindparam("clinic_id", value=clinic_id),
+            bindparam("appointment_id", value=entity_id),
         )
 
         result = await self._session.execute(stmt)

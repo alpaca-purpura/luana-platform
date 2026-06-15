@@ -88,6 +88,7 @@ export function ShellLayoutClient({
   agentCatalog,
   ribbonOrder,
   subTabsByAgent,
+  subSubTabsByKey,
   shippedStaticSubtabs,
   getAgentClasses,
   useShellStore,
@@ -478,6 +479,7 @@ export function ShellLayoutClient({
               agentCatalog={agentCatalog}
               ribbonOrder={ribbonOrder}
               subTabsByAgent={subTabsByAgent}
+              subSubTabsByKey={subSubTabsByKey}
               shippedStaticSubtabs={shippedStaticSubtabs}
               getAgentClasses={getAgentClasses}
               useShellStore={useShellStore}

@@ -255,7 +255,7 @@ vi.mock("../api/x", () => ({
 
 ## Auditor invocation checklist (read source + grep)
 
-Cuando builder spawnea auditor o auditor agent paused/killed → resume Opus auditor (NO PM fallback). Auditor MUST execute en orden:
+Cuando builder spawnea auditor o auditor agent paused/killed → resume flagship auditor (NO PM fallback). Auditor MUST execute en orden:
 
 1. ✅ Run gates locales nativo (tsc/eslint/vitest) — necesario pero NO suficiente
 2. ✅ **Read full source de cada archivo PR-touched** — buscar anti-patterns:

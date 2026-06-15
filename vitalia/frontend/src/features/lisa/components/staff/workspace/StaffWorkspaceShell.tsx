@@ -6,7 +6,10 @@
  *
  * Renders:
  *   1. EntityWorkspaceLayout (@luana/ui-kit) — N3 canon ribbon + content slot
- *   2. Children slot — perfil/horarios/servicios page content
+ *   2. EntityPicker via entityIdentitySlot (canon §6.3 — "cambiar sin volver",
+ *      D3-A switcher: change doctor WITHOUT going back to the directory,
+ *      PRESERVING the current leaf)
+ *   3. Children slot — perfil/horarios/servicios page content
  *
  * Builds leaf hrefs relative to doctor workspace.
  * activeLeaf passed explicitly (vitalia uses static leaf segments, not [leaf] param).
@@ -14,17 +17,22 @@
  * Per ADR-vitalia-004 § 3: Client Component (needs usePathname for active leaf).
  * MIGRATED to @luana/ui-kit EntityWorkspaceLayout (vitalia-shell-core-hardening T-5).
  *
- * T-FE-2 vitalia-fase2-lisa-doctores
- * spec_anchor: 03-arch-fe.md § FSD-Lite + § EntitySubNavBar
+ * T-FE-2 + T-FE-switcher-wire vitalia-fase2-lisa-doctores
+ * spec_anchor: 03-arch-fe.md § FSD-Lite + § EntitySubNavBar + 03-arch-delta.md § 2.2
  * downstream-regression-na: brand-local vitalia feature component
  */
 
-import { usePathname } from "next/navigation";
+import { useCallback, useMemo } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
-import { EntityWorkspaceLayout } from "@luana/ui-kit";
-import type { EntitySubNavLeaf } from "@luana/ui-kit";
-import { staffKeys, useStaffActorHeaders } from "../../../api/staff";
+import { EntityWorkspaceLayout, EntityPicker } from "@luana/ui-kit";
+import type { EntitySubNavLeaf, EntityPickerItem } from "@luana/ui-kit";
+import {
+  staffKeys,
+  useStaffActorHeaders,
+  useDoctorPickerSearchFn,
+} from "../../../api/staff";
 import { fetchClient } from "@/lib/api/fetchClient";
 import { useClinicId } from "@/hooks/useClinicId";
 import { useTenantId } from "@/hooks/useTenantId";
@@ -46,6 +54,7 @@ const LEAF_DEFS = [
   { id: "perfil", label: "Perfil" },
   { id: "horarios", label: "Horarios" },
   { id: "servicios", label: "Servicios" },
+  { id: "pagina", label: "Página" },
 ] as const;
 
 /**
@@ -58,6 +67,33 @@ function extractLeafFromPath(pathname: string | null): string | null {
   const segments = pathname.split("/").filter(Boolean);
   // [0]=tenantId, [1]=lisa, [2]=staff, [3]=doctorId, [4]=leaf
   return segments[4] ?? null;
+}
+
+/**
+ * Known workspace leaves for leaf-preserving navigation. Includes "pagina"
+ * (4th leaf, D3-D) so the switcher keeps working when that leaf lands —
+ * the leaf itself is NOT added here (T-FE-pagina-publica owns LEAF_DEFS).
+ */
+const PRESERVABLE_LEAVES = new Set(["perfil", "horarios", "servicios", "pagina"]);
+
+/**
+ * buildDoctorWorkspaceHref — pure leaf-preserving navigation target (D3-A).
+ *
+ * Derives the CURRENT leaf from the pathname and rebuilds the workspace URL
+ * for the picked doctor: /{tenantId}/lisa/staff/{doctorId}/{currentLeaf}.
+ * Unknown/missing leaf → "perfil" (workspace default).
+ *
+ * Ratified by Chris: switching doctor PRESERVES the active leaf (SC-D3A-1:
+ * Horarios de Ana → Horarios de Carlos).
+ */
+export function buildDoctorWorkspaceHref(
+  tenantId: string,
+  doctorId: string,
+  pathname: string | null,
+): string {
+  const leaf = extractLeafFromPath(pathname);
+  const targetLeaf = leaf && PRESERVABLE_LEAVES.has(leaf) ? leaf : "perfil";
+  return `/${tenantId}/lisa/staff/${doctorId}/${targetLeaf}`;
 }
 
 export function StaffWorkspaceShell({
@@ -104,13 +140,49 @@ export function StaffWorkspaceShell({
     staleTime: 30_000,
   });
 
-  const entity = doctor
-    ? {
-        id: doctor.id,
-        name: `${doctor.firstName} ${doctor.lastName}`,
-        avatarUrl: doctor.avatarUrl ?? null,
-      }
-    : null;
+  // Memoized: `doctor` (React Query data) is referentially stable between
+  // renders unless the data changes → entity (and the slot below) stay stable.
+  const entity = useMemo(
+    () =>
+      doctor
+        ? {
+            id: doctor.id,
+            name: `${doctor.firstName} ${doctor.lastName}`,
+            avatarUrl: doctor.avatarUrl ?? null,
+          }
+        : null,
+    [doctor],
+  );
+
+  // ── D3-A entity switcher (canon §6.3 — EntityPicker in the identity slot) ──
+  const router = useRouter();
+  const pickerSearchFn = useDoctorPickerSearchFn();
+
+  // Navigate to the picked doctor PRESERVING the current leaf (SC-D3A-1).
+  // Same doctor → no-op (no redundant navigation).
+  const onPickDoctor = useCallback(
+    (picked: EntityPickerItem) => {
+      if (picked.id === doctorId) return;
+      router.push(buildDoctorWorkspaceHref(tenantId, picked.id, pathname));
+    },
+    [doctorId, tenantId, pathname, router],
+  );
+
+  // Memoized slot node (stable unless inputs change — avoids re-creating the
+  // picker subtree on unrelated shell re-renders).
+  const entityIdentitySlot = useMemo(
+    () =>
+      entity ? (
+        <EntityPicker
+          value={entity}
+          searchFn={pickerSearchFn}
+          onChange={onPickDoctor}
+          searchPlaceholder="Buscar integrante…"
+          testId="doctor-picker"
+        />
+      ) : undefined,
+    [entity, pickerSearchFn, onPickDoctor],
+  );
 
   return (
     <EntityWorkspaceLayout
@@ -120,6 +192,7 @@ export function StaffWorkspaceShell({
       leaves={leaves}
       activeLeaf={activeLeaf}
       isLoading={isDoctorLoading && !initialDoctor}
+      entityIdentitySlot={entityIdentitySlot}
     >
       {children}
     </EntityWorkspaceLayout>

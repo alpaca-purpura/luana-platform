@@ -64,7 +64,7 @@ Auditor REFUSE editar (spawn dev-team autónomo en su lugar):
 | 5 | Modificar SQL query / SQLAlchemy `select(...)` | data model = dev-team |
 | 6 | Modificar migration (`alembic/versions/*.py`) | irreversible side effect |
 | 7 | Modificar Pydantic DTO field (add/remove) | contract change |
-| 8 | Modificar prompt slot (sales_agent/copilot) | agentic territory, R23 Opus required dev-team |
+| 8 | Modificar prompt slot (sales_agent/copilot) | agentic territory, R23 tier flagship required dev-team |
 | 9 | Modificar React Query keys o invalidation | data flow = FE dev-team |
 | 10 | Modificar Zod schema fields | contract |
 | 11 | Modificar wireframe / mockup / spec gherkin scenario | escala /po-ux o /po (no auditor) |
@@ -88,7 +88,7 @@ Cuando finding es de la lista NUNCA self-fix, auditor:
 Agent({
   description: "Auto-fix T-{n} brand={brand} (auditor handoff)",
   subagent_type: "builder-{backend|frontend|agentic}",
-  model: "<sonnet | opus si AGENTIC production_code:true>",
+  model: "<workhorse | flagship si AGENTIC production_code:true (R23) — resolver tier en project.config.yaml::models>",
   prompt: "<brand>: {brand}
            <pr_folder>: {brand}/docs/product/stories/{story-id}/
            ticket: T-{n}

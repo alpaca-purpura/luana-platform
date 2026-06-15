@@ -18,9 +18,42 @@ import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
+# ── Test-hermetic env defaults (fix 2026-06-11) ──────────────────────────────
+# luana_core_platform.core.config instancia Settings() al IMPORT con
+# env_file=".env" cwd-relativo — corriendo pytest nativo desde vitalia/backend
+# ese archivo no existe → ValidationError (16 campos required) en ~20 tests.
+# setdefault: NO pisa env real exportado (CI/container); solo llena lo ausente
+# con valores sintéticos. La suite debe ser hermética — nunca depender de un
+# .env local presente (synthetic-first, ver pii-sanitisation.md).
+_SETTINGS_TEST_DEFAULTS = {
+    "LOG_LEVEL": "INFO",
+    "DOMAIN_NAME": "test.localhost",
+    "TRAEFIK_NETWORK": "test-net",
+    "API_SECRET_KEY": "test-secret-key-not-real",
+    "WHATSAPP_API_TOKEN": "test-wa-token",
+    "WHATSAPP_PHONE_NUMBER_ID": "0000000000",
+    "WHATSAPP_VERIFY_TOKEN": "test-verify",
+    "OPENAI_API_KEY": "sk-test-not-real",
+    "REDIS_URL": "redis://localhost:6379/9",
+    "QDRANT_URL": "http://localhost:6333",
+    "POSTGRES_USER": "postgres",
+    "POSTGRES_PASSWORD": "password",
+    "POSTGRES_DB": "vitalia_test",
+    "POSTGRES_HOST": "localhost",
+    "POSTGRES_PORT": "5435",
+    "API_URL": "http://localhost:8002",
+    # KEK sintético: unit tests de repos PHI construyen KEKClient.from_env()
+    "VITALIA_PHI_KEK": "a" * 64,
+}
+for _k, _v in _SETTINGS_TEST_DEFAULTS.items():
+    os.environ.setdefault(_k, _v)
+
+# DSN default alineado a la infra dev REAL del workspace: postgres compartido
+# en host:5435 (compose luana_postgres_dev), creds postgres/password, DB de
+# tests dedicada vitalia_test (creada + migrada vía alembic — ver README tests).
 POSTGRES_DSN = os.getenv(
     "POSTGRES_DSN",
-    "postgresql+asyncpg://postgres:postgres@localhost:5432/vitalia_test",
+    "postgresql+asyncpg://postgres:password@localhost:5435/vitalia_test",
 )
 
 
@@ -76,8 +109,16 @@ def pytest_collection_modifyitems(items):  # noqa: ANN001
 
 @pytest.fixture(scope="session")
 def engine():  # noqa: ANN201
-    """Session-scoped async engine. Schema must already exist (alembic upgrade head)."""
-    return create_async_engine(POSTGRES_DSN, echo=False)
+    """Session-scoped async engine. Schema must already exist (alembic upgrade head).
+
+    NullPool (fix 2026-06-12): el pool por default ataba conexiones al PRIMER event
+    loop → 2º test async en otro loop reventaba con "attached to a different loop"
+    (clase L3 pre-existente: test_doctor_cross_tenant). Sin pool, cada connect se
+    ata al loop vigente. Costo: reconexión por test (aceptable en suite local).
+    """
+    from sqlalchemy.pool import NullPool  # noqa: PLC0415
+
+    return create_async_engine(POSTGRES_DSN, echo=False, poolclass=NullPool)
 
 
 @pytest_asyncio.fixture

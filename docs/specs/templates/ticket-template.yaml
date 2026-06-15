@@ -20,7 +20,7 @@ tickets:
     owner_eligibility:
       qwen_opencode: true                        # ¿qwen via opencode puede tomarlo?
       claude_sonnet: true                        # ¿Claude Code Sonnet?
-      claude_opus_required: false                # ¿obliga Opus? (true para agentic)
+      flagship_required: false                # ¿obliga el tier flagship? (true para agentic)
     priority: 1                                  # 1=blocker, 2=high, 3=normal
     estimate_hours: 2
     decisions_applicable: []                     # ⚠️ R6 — list IDs (D1, A5, X2) ratified upstream
@@ -84,7 +84,7 @@ tickets:
     # ── State machine fields (auto-update) ────
     transitions:                                  # log auto append
       - { state: draft, at: "2026-05-04T15:00Z", by: "/architect" }
-    assigned_to: null                             # qwen-opencode | claude-opus | claude-sonnet
+    assigned_to: null                             # qwen-opencode | flagship | workhorse
     assigned_at: null
     push_commit_sha: null
     audit_verdict: null                           # APPROVED | CHANGES_REQUESTED
@@ -98,8 +98,8 @@ tickets:
     state: draft
     owner_eligibility:
       qwen_opencode: false                       # ⛔ qwen prohibido en agentic
-      claude_sonnet: false                       # ⛔ Sonnet también — agentic exige Opus
-      claude_opus_required: true                 # ✅ Opus 4.8 mandatory
+      claude_sonnet: false                       # ⛔ Sonnet también — agentic exige el flagship
+      flagship_required: true                 # ✅ tier flagship mandatory
     priority: 1
     estimate_hours: 3
     decisions_applicable: []                     # ⚠️ R6 — agentic decisions (slot architecture, voice fidelity, cost budget)

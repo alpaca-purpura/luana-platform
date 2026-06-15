@@ -331,6 +331,29 @@ class TestLeadRepositoryNullSafe:
 
         fake_row.created_at = datetime.now(tz=timezone.utc)
         fake_row.updated_at = datetime.now(tz=timezone.utc)
+        # Funnel columns (fix 2026-06-11): _row_to_lead usa getattr(row, attr, default)
+        # — un MagicMock pelado tiene TODOS los attrs (auto-mock) → _get() nunca cae
+        # al default → UUID(str(MagicMock)) explota. Setear explícito.
+        fake_row.stage = "interesado"
+        fake_row.stage_entered_at = None
+        fake_row.score = 0
+        fake_row.temperature = "cold"
+        fake_row.operated_by = "agent"
+        fake_row.channel = None
+        fake_row.service_interest = None
+        fake_row.assigned_doctor_id = None
+        fake_row.estimated_value = None
+        fake_row.currency = None
+        fake_row.buying_signals = []
+        fake_row.is_frozen = False
+        fake_row.frozen_reason = None
+        fake_row.frozen_at = None
+        fake_row.closure_reason = None
+        fake_row.reactivation_cohort_at = None
+        fake_row.deposit_status = None
+        fake_row.is_blacklisted = False
+        fake_row.version = 1
+        fake_row.marketing_opt_in = False
 
         mock_result = MagicMock()
         mock_result.fetchone.return_value = fake_row

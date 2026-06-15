@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
 import { TenantStoreBootstrap } from "@/components/shared/shell-organism/TenantStoreBootstrap";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "Vitalia — Plataforma de salud",
@@ -43,6 +44,10 @@ export default function RootLayout({
           {/* TenantStoreBootstrap: invisible Client Component — hydrates tenant store on boot */}
           <TenantStoreBootstrap />
           {children}
+          {/* bug7 r3: Toaster sonner NUNCA estuvo montado — todos los
+              toast.success/error del app (lisa/adrian/mateo) eran no-ops
+              live. El feedback de guardado del round-1 dependía de esto. */}
+          <Toaster position="bottom-right" richColors />
         </Providers>
       </body>
     </html>

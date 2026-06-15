@@ -13,6 +13,7 @@ import { renderHook, waitFor, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createElement } from "react";
 import { useRetractMessage } from "../use-retract-message";
+import { conversationDetailKeyForInvalidation } from "../_keys";
 import { ApiError } from "@/lib/api/fetchClient";
 import type { ConversationDetail } from "../../types/inbox.types";
 
@@ -152,7 +153,7 @@ describe("useRetractMessage", () => {
 
   it("optimistically marks message as retracted and removes action receipt", async () => {
     queryClient.setQueryData(
-      ["adrian", "inbox", "conversation", CONVERSATION_ID],
+      conversationDetailKeyForInvalidation(CONVERSATION_ID),
       buildDetail(),
     );
     let resolvePromise!: (value: unknown) => void;
@@ -173,12 +174,9 @@ describe("useRetractMessage", () => {
     });
 
     await waitFor(() => {
-      const cached = queryClient.getQueryData<ConversationDetail>([
-        "adrian",
-        "inbox",
-        "conversation",
-        CONVERSATION_ID,
-      ]);
+      const cached = queryClient.getQueryData<ConversationDetail>(
+        conversationDetailKeyForInvalidation(CONVERSATION_ID),
+      );
       // Optimistic: retracted_at is set
       expect(cached?.messages[0].retracted_at).toBeTruthy();
       // Action receipt removed
@@ -192,7 +190,7 @@ describe("useRetractMessage", () => {
   it("rolls back optimistic update on network error", async () => {
     const detail = buildDetail();
     queryClient.setQueryData(
-      ["adrian", "inbox", "conversation", CONVERSATION_ID],
+      conversationDetailKeyForInvalidation(CONVERSATION_ID),
       detail,
     );
     vi.mocked(fetchClient).mockRejectedValue(new Error("Network error"));
@@ -211,19 +209,16 @@ describe("useRetractMessage", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 
-    const cached = queryClient.getQueryData<ConversationDetail>([
-      "adrian",
-      "inbox",
-      "conversation",
-      CONVERSATION_ID,
-    ]);
+    const cached = queryClient.getQueryData<ConversationDetail>(
+      conversationDetailKeyForInvalidation(CONVERSATION_ID),
+    );
     expect(cached?.messages[0].retracted_at).toBeNull();
     expect(cached?.action_receipts.length).toBe(1);
   });
 
   it("invalidates detail query on 409 conflict", async () => {
     queryClient.setQueryData(
-      ["adrian", "inbox", "conversation", CONVERSATION_ID],
+      conversationDetailKeyForInvalidation(CONVERSATION_ID),
       buildDetail(),
     );
     const conflictError = new ApiError({

@@ -339,7 +339,7 @@ def use_x():
 
 ## Auditor invocation checklist (read source + grep)
 
-Cuando builder Sonnet spawnea auditor o auditor agent paused/killed → resume Opus auditor (NO PM fallback). Auditor MUST execute en orden:
+Cuando builder Sonnet spawnea auditor o auditor agent paused/killed → resume flagship auditor (NO PM fallback). Auditor MUST execute en orden:
 
 1. ✅ Run gates locales nativo (ruff/mypy/pytest/pytest-arch) — necesario pero NO suficiente
 2. ✅ **Read full source de cada archivo PR-touched** — buscar anti-patterns:

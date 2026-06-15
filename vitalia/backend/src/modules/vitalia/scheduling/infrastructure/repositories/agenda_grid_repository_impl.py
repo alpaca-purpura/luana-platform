@@ -8,11 +8,12 @@ JOINs:
   vitalia_appointment_payments (balance aggregation)
 
 PHI masking contract (HIPAA-lite, 03-arch § 2.2):
-  patient_name_masked — computed column "P. Hernández" format
-  dni_masked          — "12.***.***" format
-  Both applied server-side. FE NEVER receives raw PHI.
+  patient_name_masked / dni_masked — projected as masked placeholders ('—').
+  The patient name lives encrypted (bytea) in vitalia_patients; vitalia_appointments
+  has no name column. FE NEVER receives raw PHI.
 
-Dual filter: EVERY query WHERE tenant_id = ? AND clinic_id = ?
+Dual filter: EVERY query WHERE tenant_id = :tenant_id AND clinic_id = :clinic_id
+(bound params — never f-string interpolation).
 
 Per 03-arch § 3.1 + vitalia/.claude/rules/hipaa-lite.md
 """
@@ -27,28 +28,65 @@ import structlog
 from luana_core_platform.repositories.compound_scope_repository import (
     CompoundScopeRepositoryBase,
 )
-from sqlalchemy import literal_column, select, text
+from sqlalchemy import bindparam, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.modules.vitalia.scheduling.domain.agenda_filter import AgendaPresetFilter
-from src.modules.vitalia.scheduling.persistence.models.appointment_clinic_map_model import (
-    AppointmentClinicMapModel,
-)
-from src.modules.vitalia.scheduling.persistence.models.appointment_payment_model import (
-    AppointmentPaymentModel,
-)
 
 logger = structlog.get_logger()
 
 # ---------------------------------------------------------------------------
-# Vitalia appointments table — accessed via text() for raw SQL projection
-# because there is no dedicated Python model class yet (table created via
-# migration 002_vitalia_appointments_columns.py without a model).
-# The AgendaGridRepositoryImpl reads from vitalia_appointments using Core
-# select() + text() for columns while joining SA 2.0 ORM models for the
-# brand-local extensions.
+# Raw-SQL projection over vitalia_appointments (no ORM model — the table is
+# created by migration 002_vitalia_appointments_columns.py without a Python
+# Mapped class). The grid query JOINs the brand-local extension tables
+# vitalia_appointment_clinic_map + vitalia_appointment_payments.
+#
+# SQLAlchemy 2.0 note (bug fix vitalia-bugfix-agenda-actor-headers-422 T-2):
+#   the previous implementation used
+#     select(...).select_from(text("vitalia_appointments va")).outerjoin(ORMModel, ...)
+#   Mixing a text() FROM with ORM-model join targets routes compilation through the
+#   ORM context (`_normalize_froms`), which reads `info.selectable` on every entry in
+#   `_from_obj` — a TextClause has no `.selectable` → AttributeError at COMPILE time
+#   (HTTP 500 before reaching the DB). It also interpolated UUIDs via f-strings
+#   (SQL-injection surface). The fix below uses a single parameterized text() statement:
+#   it compiles + executes, keeps the HIPAA-lite dual filter (tenant_id + clinic_id) as
+#   bound params, and references only columns that exist in the real schema.
 # ---------------------------------------------------------------------------
-_VITALIA_APPOINTMENTS_TBL = text("vitalia_appointments")
+
+# Projection column list shared by list_slots + get_by_id (router-aligned aliases).
+# PHI name/DNI are projected as masked placeholders: vitalia_appointments has no name
+# column and the patient name lives encrypted (bytea) in vitalia_patients, so the grid
+# never carries raw PHI. Real masked-name resolution from the encrypted source is an
+# architect-level follow-up (see T-2 result § Upstream deficiency).
+_GRID_PROJECTION = """
+    va.id AS appointment_id,
+    va.patient_id AS patient_id,
+    '—' AS patient_name_masked,
+    '—' AS dni_masked,
+    COALESCE(map.service_label, 'Consulta') AS service_label,
+    va.doctor_id AS doctor_id,
+    va.slot_iso AS start_time,
+    va.slot_iso + (va.duration_minutes * INTERVAL '1 minute') AS end_time,
+    va.status AS appointment_status,
+    va.payment_status AS payment_status,
+    COALESCE(map.origin, va.origin) AS origin,
+    COALESCE(SUM(pay.amount), 0) AS balance_amount_cents,
+    COALESCE(map.currency_override, va.currency) AS currency
+"""
+
+_GRID_FROM_JOINS = """
+    FROM vitalia_appointments va
+    LEFT OUTER JOIN vitalia_appointment_clinic_map map
+        ON map.appointment_id = va.id AND map.deleted_at IS NULL
+    LEFT OUTER JOIN vitalia_appointment_payments pay
+        ON pay.appointment_id = va.id AND pay.deleted_at IS NULL
+"""
+
+_GRID_GROUP_BY = """
+    GROUP BY va.id, va.slot_iso, va.duration_minutes, va.status,
+             va.payment_status, va.origin, va.doctor_id, va.patient_id,
+             va.currency, map.service_label, map.origin, map.currency_override
+"""
 
 # Preset → appointment status filter mapping
 _PRESET_STATUS_MAP: dict[str, str] = {
@@ -69,11 +107,14 @@ class AgendaGridRepositoryImpl(CompoundScopeRepositoryBase):  # type: ignore[typ
     are fully overridden — the base class get_by_id/list_for_scope are never
     called. scope_field="clinic_id" per vitalia HIPAA-lite overlay.
 
-    Query strategy:
-    - SELECT from vitalia_appointments (text table) + JOINs via SQLA Core
-    - PHI masking via SQL expression (SPLIT_PART / REGEXP_REPLACE)
-    - patient_name_masked: first-initial + surname from full_name
-    - dni_masked: first 2 digits + masked rest
+    Query strategy (SQLA 2.0, bug fix T-2):
+    - Single parameterized text() statement over vitalia_appointments + JOINs to the
+      brand-local extension tables (clinic_map, payments).
+    - Dual filter (tenant_id + clinic_id) bound as params on EVERY query.
+    - PHI name/DNI projected as masked placeholders ('—') — vitalia_appointments has
+      no name column and the patient name is encrypted (bytea) in vitalia_patients,
+      so the grid never carries raw PHI. Real masked-name resolution from the
+      encrypted source is an architect follow-up (T-2 § Upstream deficiency).
     """
 
     MODEL = None  # Complex JOIN repo — overrides all query methods, never calls super().get_by_id()
@@ -102,55 +143,23 @@ class AgendaGridRepositoryImpl(CompoundScopeRepositoryBase):  # type: ignore[typ
     ) -> dict[str, Any] | None:
         """Get single slot by appointment_id with dual filter.
 
-        Delegates to list_slots with specific appointment_id filter.
+        Parameterized text() statement (SQLA 2.0). Dual filter tenant_id + clinic_id
+        bound as params (HIPAA-lite). Returns None if not found / cross-clinic.
         """
         self._check_dual_filter(tenant_id=tenant_id, clinic_id=clinic_id)
-        # Narrow to single appointment via list_slots contract
 
-        stmt = (
-            select(
-                text("va.id AS slot_id"),
-                text("va.id AS appointment_id"),
-                text(f"'{tenant_id}'::uuid AS tenant_id"),
-                text(f"'{clinic_id}'::uuid AS clinic_id"),
-                literal_column(
-                    "COALESCE(SPLIT_PART(va.patient_name_masked, ' ', 1), 'P.') "
-                    "|| ' ' || COALESCE(SPLIT_PART(va.patient_name_masked, ' ', 2), 'Paciente') "
-                    "AS patient_name_masked"
-                ),
-                text("va.dni_masked"),
-                text("COALESCE(map.service_label, va.summary) AS service"),
-                text("va.doctor_id::text AS doctor"),
-                text("va.slot_iso AS start_at"),
-                text("va.slot_iso + (va.duration_minutes * INTERVAL '1 minute') AS end_at"),
-                text("va.payment_status"),
-                text("COALESCE(map.origin, va.origin) AS origin"),
-                text("COALESCE(SUM(pay.amount), 0) AS balance_amount_cents"),
-                text("COALESCE(map.currency_override, va.currency) AS currency"),
-            )
-            .select_from(text("vitalia_appointments va"))
-            .outerjoin(
-                AppointmentClinicMapModel,
-                text("map.appointment_id = va.id"),
-            )
-            .outerjoin(
-                AppointmentPaymentModel,
-                text("pay.appointment_id = va.id AND pay.deleted_at IS NULL"),
-            )
-            .where(
-                text(f"va.tenant_id = '{tenant_id}'"),
-                text(f"va.clinic_id = '{clinic_id}'"),
-                text(f"va.id = '{entity_id}'"),
-                text("va.deleted_at IS NULL"),
-            )
-            .group_by(
-                text(
-                    "va.id, va.slot_iso, va.duration_minutes, va.patient_name_masked, "
-                    "va.dni_masked, va.payment_status, va.origin, va.summary, "
-                    "va.doctor_id, va.currency, map.service_label, map.origin, "
-                    "map.currency_override"
-                )
-            )
+        stmt = text(
+            f"SELECT {_GRID_PROJECTION}"  # noqa: S608 — static projection, no user input
+            f"{_GRID_FROM_JOINS}"
+            " WHERE va.tenant_id = :tenant_id"
+            "   AND va.clinic_id = :clinic_id"
+            "   AND va.id = :appointment_id"
+            "   AND va.deleted_at IS NULL"
+            f"{_GRID_GROUP_BY}"
+        ).bindparams(
+            bindparam("tenant_id", value=tenant_id),
+            bindparam("clinic_id", value=clinic_id),
+            bindparam("appointment_id", value=entity_id),
         )
         result = await self._session.execute(stmt)
         row = result.mappings().first()
@@ -206,83 +215,52 @@ class AgendaGridRepositoryImpl(CompoundScopeRepositoryBase):  # type: ignore[typ
             preset_filter=str(preset_filter) if preset_filter else None,
         )
 
-        # Build WHERE conditions
-        where_conditions = [
-            text(f"va.tenant_id = '{tenant_id}'"),
-            text(f"va.clinic_id = '{clinic_id}'"),
-            text(f"va.slot_iso >= '{date_from.isoformat()}'"),
-            text(f"va.slot_iso <= '{date_to.isoformat()}'"),
-            text("va.deleted_at IS NULL"),
+        # WHERE clauses + bound params (dual filter + date range — HIPAA-lite).
+        where_sql = [
+            "va.tenant_id = :tenant_id",
+            "va.clinic_id = :clinic_id",
+            "va.slot_iso >= :date_from",
+            "va.slot_iso <= :date_to",
+            "va.deleted_at IS NULL",
+        ]
+        params: list[Any] = [
+            bindparam("tenant_id", value=tenant_id),
+            bindparam("clinic_id", value=clinic_id),
+            bindparam("date_from", value=date_from),
+            bindparam("date_to", value=date_to),
         ]
 
-        # Preset filter → additional status conditions
+        # Preset filter → additional status conditions (static SQL — no user input).
         if preset_filter == AgendaPresetFilter.HOY:
-            where_conditions.append(text("DATE(va.slot_iso) = CURRENT_DATE"))
+            where_sql.append("DATE(va.slot_iso) = CURRENT_DATE")
         elif preset_filter == AgendaPresetFilter.NO_SHOWS_DIA:
-            where_conditions.append(text("va.status = 'NO_SHOW'"))
-            where_conditions.append(text("DATE(va.slot_iso) = CURRENT_DATE"))
+            where_sql.append("va.status = 'NO_SHOW'")
+            where_sql.append("DATE(va.slot_iso) = CURRENT_DATE")
         elif preset_filter == AgendaPresetFilter.POR_CONFIRMAR_MANANA:
-            where_conditions.append(text("va.status = 'SCHEDULED'"))
-            where_conditions.append(text("DATE(va.slot_iso) = CURRENT_DATE + INTERVAL '1 day'"))
+            where_sql.append("va.status = 'SCHEDULED'")
+            where_sql.append("DATE(va.slot_iso) = CURRENT_DATE + INTERVAL '1 day'")
         elif preset_filter == AgendaPresetFilter.REAGENDAR_PENDIENTES:
-            where_conditions.append(text("va.status = 'RESCHEDULED'"))
+            where_sql.append("va.status = 'RESCHEDULED'")
         elif preset_filter == AgendaPresetFilter.SALDOS_PENDIENTES:
-            where_conditions.append(text("va.balance_status = 'pending' OR va.balance_status = 'deposit_paid'"))
+            where_sql.append("(va.balance_status = 'pending' OR va.balance_status = 'deposit_paid')")
 
-        # Doctor filter
+        # Doctor filter (bound param)
         if doctor_id is not None:
-            where_conditions.append(text(f"va.doctor_id = '{doctor_id}'"))
+            where_sql.append("va.doctor_id = :doctor_id")
+            params.append(bindparam("doctor_id", value=doctor_id))
 
-        # Build SELECT with PHI masking applied server-side
-        # patient_name_masked column in vitalia_appointments stores the masked version
-        # (set by AgendaSlotService when creating/updating appointments)
-        stmt = (
-            select(
-                text("va.id AS slot_id"),
-                text("va.id AS appointment_id"),
-                text(f"'{tenant_id}'::uuid AS tenant_id"),
-                text(f"'{clinic_id}'::uuid AS clinic_id"),
-                text("va.patient_name_masked"),
-                text("va.dni_masked"),
-                text("COALESCE(map.service_label, va.summary) AS service"),
-                text("va.doctor_id::text AS doctor"),
-                text("va.slot_iso AS start_at"),
-                text("va.slot_iso + (va.duration_minutes * INTERVAL '1 minute') AS end_at"),
-                text("va.payment_status"),
-                text("COALESCE(map.origin, va.origin) AS origin"),
-                text("COALESCE(SUM(pay.amount), 0) AS balance_amount_cents"),
-                text("COALESCE(map.currency_override, va.currency) AS currency"),
-            )
-            .select_from(text("vitalia_appointments va"))
-            .outerjoin(
-                AppointmentClinicMapModel,
-                text(
-                    "vitalia_appointment_clinic_map.appointment_id = va.id "
-                    "AND vitalia_appointment_clinic_map.deleted_at IS NULL"
-                ),
-            )
-            .outerjoin(
-                AppointmentPaymentModel,
-                text(
-                    "vitalia_appointment_payments.appointment_id = va.id "
-                    "AND vitalia_appointment_payments.deleted_at IS NULL"
-                ),
-            )
-            .where(*where_conditions)
-            .group_by(
-                text(
-                    "va.id, va.slot_iso, va.duration_minutes, va.patient_name_masked, "
-                    "va.dni_masked, va.payment_status, va.origin, va.summary, "
-                    "va.doctor_id, va.currency, "
-                    "vitalia_appointment_clinic_map.service_label, "
-                    "vitalia_appointment_clinic_map.origin, "
-                    "vitalia_appointment_clinic_map.currency_override"
-                )
-            )
-            .order_by(text("va.slot_iso ASC"))
-            .limit(limit)
-            .offset(offset)
-        )
+        params.append(bindparam("row_limit", value=limit))
+        params.append(bindparam("row_offset", value=offset))
+
+        where_clause = " AND ".join(where_sql)
+        stmt = text(
+            f"SELECT {_GRID_PROJECTION}"  # noqa: S608 — static projection + bound params, no user input
+            f"{_GRID_FROM_JOINS}"
+            f" WHERE {where_clause}"
+            f"{_GRID_GROUP_BY}"
+            " ORDER BY va.slot_iso ASC"
+            " LIMIT :row_limit OFFSET :row_offset"
+        ).bindparams(*params)
 
         result = await self._session.execute(stmt)
         rows = result.mappings().all()

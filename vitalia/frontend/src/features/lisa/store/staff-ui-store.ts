@@ -19,6 +19,7 @@
 "use client";
 
 import { create } from "zustand";
+import { mondayOfWeek } from "@/lib/format/calendarDates";
 
 /** Drag draft for availability calendar (T-FE-3) */
 export interface CalendarDragDraft {
@@ -43,14 +44,17 @@ interface StaffUiState {
   resetUiState: () => void;
 }
 
-/** Get ISO string for the Monday of the current week */
+/**
+ * Get ISO string for the Monday of the current week.
+ *
+ * bug7 r4: was `monday.toISOString().split("T")[0]` AFTER a local setDate →
+ * under a negative UTC offset (America/Lima −05) in the evening the UTC date is
+ * the NEXT day → returned a TUESDAY → the whole week grid shifted one column →
+ * a Monday block painted in the Sunday column. mondayOfWeek() builds the date
+ * from LOCAL components only (TZ-stable). SSoT: lib/format/calendarDates.
+ */
 function getCurrentWeekMonday(): string {
-  const today = new Date();
-  const dayOfWeek = today.getDay(); // 0=Sun
-  const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-  const monday = new Date(today);
-  monday.setDate(today.getDate() + diff);
-  return monday.toISOString().split("T")[0] ?? today.toISOString().split("T")[0] ?? "";
+  return mondayOfWeek(new Date());
 }
 
 const initialState = {

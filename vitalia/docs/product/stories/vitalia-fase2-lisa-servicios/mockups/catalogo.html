@@ -13,11 +13,21 @@
 <title>Servicios · Catálogo — shell</title>
 <link rel="stylesheet" href="_shared.css" />
 <style>
+  /* entity-info-card Opción B (canon §2.3) */
+  .eic { display:flex; flex-direction:column; gap:.5rem; cursor:pointer; position:relative; border-top:4px solid hsl(var(--agent-lisa)); }
+  .eic .eic-media { width:44px; height:44px; border-radius:9999px; background:hsl(var(--muted)); display:flex; align-items:center; justify-content:center; font-size:1.375rem; flex-shrink:0; }
+  .eic .eic-head { display:flex; align-items:flex-start; justify-content:space-between; gap:.5rem; }
+  .eic .eic-title { font-size:.875rem; font-weight:600; }
+  .eic .eic-kebab { flex-shrink:0; color:hsl(var(--muted-foreground)); font-size:1rem; padding:.125rem; border-radius:.25rem; transition:background .15s; }
+  .eic .eic-kebab:hover { background:hsl(var(--muted)); color:hsl(var(--foreground)); }
+  .eic .eic-metrics { display:flex; align-items:center; gap:.75rem; font-size:.75rem; color:hsl(var(--muted-foreground)); flex-wrap:wrap; }
+  .eic .eic-foot { display:flex; align-items:center; justify-content:space-between; padding-top:.5rem; border-top:1px solid hsl(var(--border)); }
+  .eic-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(250px,1fr)); gap:.875rem; }
+  /* search row */
   .search-row { display:flex; flex-wrap:wrap; align-items:center; gap:.5rem; margin-bottom:1rem; }
   .search-box { position:relative; flex:1; min-width:12rem; }
   .search-box input { padding-left:2rem; }
   .search-box .ico { position:absolute; left:.625rem; top:.625rem; color:hsl(var(--muted-foreground)); pointer-events:none; }
-  .search-row select { width:auto; min-width:9rem; }
 </style>
 </head>
 <body>
@@ -80,95 +90,148 @@
             </div>
           </div>
 
-          <!-- buscador + filtros (patrón staff) -->
+          <!-- buscador + filtros (patrón staff · select canónico §2.5) -->
           <div class="search-row" data-pane="full">
             <div class="search-box"><span class="ico">🔍</span><input placeholder="Buscar servicio…" aria-label="Buscar servicio"></div>
-            <select aria-label="Filtrar por especialidad"><option>Todas las especialidades</option><option>Odontología</option><option>Estética</option></select>
-            <select aria-label="Filtrar por peldaño"><option>Todos los peldaños</option><option>Gancho gratuito</option><option>Primera visita</option><option>Tratamiento principal</option><option>Premium</option><option>Plan / convenio</option></select>
-            <select aria-label="Filtrar por estado"><option>Todos</option><option>Activos</option><option>Borradores</option></select>
+            <span class="select-canon"><select aria-label="Filtrar por especialidad" style="width:auto;min-width:9rem;"><option>Todas las especialidades</option><option>Odontología</option><option>Estética</option></select></span>
+            <span class="select-canon"><select aria-label="Filtrar por peldaño" style="width:auto;min-width:10rem;"><option>Todos los peldaños</option><option>Gancho gratuito</option><option>Primera visita</option><option>Tratamiento principal</option><option>Premium</option><option>Plan / convenio</option></select></span>
+            <span class="select-canon"><select aria-label="Filtrar por estado" style="width:auto;min-width:8rem;"><option>Todos</option><option>Activos</option><option>Borradores</option></select></span>
           </div>
 
-          <!-- con datos -->
-          <div data-pane="full" class="cards-grid">
+          <!-- con datos · EntityInfoCard Opción B (canon §2.3) -->
+          <div data-pane="full" class="eic-grid">
 
-            <article class="card svc-card" onclick="location.href='servicio-workspace.html'">
-              <div style="display:flex;align-items:flex-start;justify-content:space-between;"><div class="svc-icon">🔎</div></div>
-              <div style="font-weight:600;">Evaluación inicial gratuita</div>
+            <article class="card eic" onclick="location.href='servicio-workspace.html'">
+              <div class="eic-head">
+                <div class="eic-media">🔎</div>
+                <button class="eic-kebab" onclick="event.stopPropagation()" title="Opciones">⋮</button>
+              </div>
+              <div class="eic-title">Evaluación inicial gratuita</div>
               <div class="hint" style="margin:0;">Odontología · 30 min</div>
-              <div class="text-agent-lisa" style="font-weight:600;">Gratis</div>
-              <div style="display:flex;align-items:center;justify-content:space-between;"><div class="avatar-stack"><span class="avatar bg-agent-valeria">CL</span></div></div>
-              <div class="svc-foot"><span class="switch-label" style="color:hsl(var(--foreground));"><span class="switch"><input type="checkbox" checked><span class="track"></span></span> Activo</span><span class="hint" style="margin:0;">5 leads / 30d</span></div>
+              <div class="eic-metrics"><span class="text-agent-lisa" style="font-weight:600;">Gratis</span><span>5 leads / 30d</span></div>
+              <div class="eic-foot">
+                <div class="avatar-stack"><span class="avatar bg-agent-valeria">CL</span></div>
+                <span class="chip-origen estandar">📚 Estándar</span>
+                <span class="switch-label" style="color:hsl(var(--foreground));"><span class="switch"><input type="checkbox" checked><span class="track"></span></span> Activo</span>
+              </div>
             </article>
 
-            <article class="card svc-card" onclick="location.href='servicio-workspace.html'">
-              <div style="display:flex;align-items:flex-start;justify-content:space-between;"><div class="svc-icon">🦷</div></div>
-              <div style="font-weight:600;">Limpieza dental</div>
+            <article class="card eic" onclick="location.href='servicio-workspace.html'">
+              <div class="eic-head">
+                <div class="eic-media">🦷</div>
+                <button class="eic-kebab" onclick="event.stopPropagation()" title="Opciones">⋮</button>
+              </div>
+              <div class="eic-title">Limpieza dental</div>
               <div class="hint" style="margin:0;">Odontología · 30 min</div>
-              <div style="font-weight:600;">S/ 120</div>
-              <div style="display:flex;align-items:center;justify-content:space-between;"><div class="avatar-stack"><span class="avatar bg-agent-valeria">CL</span><span class="avatar bg-agent-adrian">JR</span></div></div>
-              <div class="svc-foot"><span class="switch-label" style="color:hsl(var(--foreground));"><span class="switch"><input type="checkbox" checked><span class="track"></span></span> Activo</span><span class="hint" style="margin:0;">12 leads / 30d</span></div>
+              <div class="eic-metrics"><span style="font-weight:600;">S/ 120</span><span>12 leads / 30d</span></div>
+              <div class="eic-foot">
+                <div class="avatar-stack"><span class="avatar bg-agent-valeria">CL</span><span class="avatar bg-agent-adrian">JR</span></div>
+                <span class="chip-origen estandar">📚 Estándar</span>
+                <span class="switch-label" style="color:hsl(var(--foreground));"><span class="switch"><input type="checkbox" checked><span class="track"></span></span> Activo</span>
+              </div>
             </article>
 
-            <article class="card svc-card" onclick="location.href='servicio-workspace.html'">
-              <div style="display:flex;align-items:flex-start;justify-content:space-between;"><div class="svc-icon">✨</div></div>
-              <div style="font-weight:600;">Diseño de sonrisa</div>
+            <article class="card eic" onclick="location.href='servicio-workspace.html'">
+              <div class="eic-head">
+                <div class="eic-media">✨</div>
+                <button class="eic-kebab" onclick="event.stopPropagation()" title="Opciones">⋮</button>
+              </div>
+              <div class="eic-title">Diseño de sonrisa</div>
               <div class="hint" style="margin:0;">Odontología · paquete 4 sesiones</div>
-              <div style="font-weight:600;">desde S/ 4,500</div>
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;"><div class="avatar-stack"><span class="avatar bg-agent-valeria">CL</span><span class="avatar bg-agent-adrian">JR</span></div><span class="chip">💳 6 cuotas</span></div>
-              <div class="svc-foot"><span class="switch-label" style="color:hsl(var(--foreground));"><span class="switch"><input type="checkbox" checked><span class="track"></span></span> Activo</span><span class="hint" style="margin:0;">38 leads / 30d</span></div>
+              <div class="eic-metrics"><span style="font-weight:600;">desde S/ 4,500</span><span class="chip" style="font-size:.6875rem;padding:.125rem .4375rem;">💳 6 cuotas</span><span>38 leads / 30d</span></div>
+              <div class="eic-foot">
+                <div class="avatar-stack"><span class="avatar bg-agent-valeria">CL</span><span class="avatar bg-agent-adrian">JR</span></div>
+                <span class="chip-origen estandar">📚 Estándar</span>
+                <span class="switch-label" style="color:hsl(var(--foreground));"><span class="switch"><input type="checkbox" checked><span class="track"></span></span> Activo</span>
+              </div>
             </article>
 
-            <article class="card svc-card" onclick="location.href='servicio-workspace.html'">
-              <div style="display:flex;align-items:flex-start;justify-content:space-between;"><div class="svc-icon">🦴</div></div>
-              <div style="font-weight:600;">Implante dental</div>
+            <article class="card eic" onclick="location.href='servicio-workspace.html'">
+              <div class="eic-head">
+                <div class="eic-media">🦴</div>
+                <button class="eic-kebab" onclick="event.stopPropagation()" title="Opciones">⋮</button>
+              </div>
+              <div class="eic-title">Implante dental</div>
               <div class="hint" style="margin:0;">Odontología · 90 min</div>
-              <div style="font-weight:600;">desde S/ 2,400</div>
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;"><div class="avatar-stack"><span class="avatar bg-agent-adrian">JR</span></div><span class="chip">💳 12 cuotas</span></div>
-              <div class="svc-foot"><span class="switch-label" style="color:hsl(var(--foreground));"><span class="switch"><input type="checkbox" checked><span class="track"></span></span> Activo</span><span class="hint" style="margin:0;">21 leads / 30d</span></div>
+              <div class="eic-metrics"><span style="font-weight:600;">desde S/ 2,400</span><span class="chip" style="font-size:.6875rem;padding:.125rem .4375rem;">💳 12 cuotas</span><span>21 leads / 30d</span></div>
+              <div class="eic-foot">
+                <div class="avatar-stack"><span class="avatar bg-agent-adrian">JR</span></div>
+                <span class="chip-origen estandar">📚 Estándar</span>
+                <span class="switch-label" style="color:hsl(var(--foreground));"><span class="switch"><input type="checkbox" checked><span class="track"></span></span> Activo</span>
+              </div>
             </article>
 
-            <article class="card svc-card" onclick="location.href='servicio-workspace.html'">
-              <div style="display:flex;align-items:flex-start;justify-content:space-between;"><div class="svc-icon">💎</div></div>
-              <div style="font-weight:600;">Carillas de porcelana</div>
+            <article class="card eic" onclick="location.href='servicio-workspace.html'">
+              <div class="eic-head">
+                <div class="eic-media">💎</div>
+                <button class="eic-kebab" onclick="event.stopPropagation()" title="Opciones">⋮</button>
+              </div>
+              <div class="eic-title">Carillas de porcelana</div>
               <div class="hint" style="margin:0;">Odontología · paquete 3 sesiones</div>
-              <div style="font-weight:600;">desde S/ 6,800</div>
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;"><div class="avatar-stack"><span class="avatar bg-agent-valeria">CL</span></div><span class="chip">💳 12 cuotas</span></div>
-              <div class="svc-foot"><span class="switch-label" style="color:hsl(var(--foreground));"><span class="switch"><input type="checkbox" checked><span class="track"></span></span> Activo</span><span class="hint" style="margin:0;">7 leads / 30d</span></div>
+              <div class="eic-metrics"><span style="font-weight:600;">desde S/ 6,800</span><span class="chip" style="font-size:.6875rem;padding:.125rem .4375rem;">💳 12 cuotas</span><span>7 leads / 30d</span></div>
+              <div class="eic-foot">
+                <div class="avatar-stack"><span class="avatar bg-agent-valeria">CL</span></div>
+                <span class="chip-origen estandar">📚 Estándar</span>
+                <span class="switch-label" style="color:hsl(var(--foreground));"><span class="switch"><input type="checkbox" checked><span class="track"></span></span> Activo</span>
+              </div>
             </article>
 
-            <article class="card svc-card" onclick="location.href='servicio-workspace.html'">
-              <div style="display:flex;align-items:flex-start;justify-content:space-between;"><div class="svc-icon">💉</div></div>
-              <div style="font-weight:600;display:flex;align-items:center;gap:.375rem;">Botox facial <span class="rung-badge rung-magnet">↻ recurrente</span></div>
+            <article class="card eic" onclick="location.href='servicio-workspace.html'">
+              <div class="eic-head">
+                <div class="eic-media">💉</div>
+                <button class="eic-kebab" onclick="event.stopPropagation()" title="Opciones">⋮</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:.375rem;" class="eic-title">Botox facial <span class="rung-badge rung-magnet">↻ recurrente</span></div>
               <div class="hint" style="margin:0;">Estética · 45 min · cada 4-6 meses</div>
-              <div style="font-weight:600;">desde S/ 950</div>
-              <div style="display:flex;align-items:center;justify-content:space-between;"><div class="avatar-stack"><span class="avatar bg-agent-camila">AM</span></div></div>
-              <div class="svc-foot"><span class="switch-label" style="color:hsl(var(--foreground));"><span class="switch"><input type="checkbox" checked><span class="track"></span></span> Activo</span><span class="hint" style="margin:0;">15 leads / 30d</span></div>
+              <div class="eic-metrics"><span style="font-weight:600;">desde S/ 950</span><span>15 leads / 30d</span></div>
+              <div class="eic-foot">
+                <div class="avatar-stack"><span class="avatar bg-agent-camila">AM</span></div>
+                <span class="chip-origen estandar">📚 Estándar</span>
+                <span class="switch-label" style="color:hsl(var(--foreground));"><span class="switch"><input type="checkbox" checked><span class="track"></span></span> Activo</span>
+              </div>
             </article>
 
-            <article class="card svc-card" style="opacity:.9" onclick="location.href='servicio-workspace.html'">
-              <div style="display:flex;align-items:flex-start;justify-content:space-between;"><div class="svc-icon">📋</div></div>
-              <div style="font-weight:600;display:flex;align-items:center;gap:.375rem;">Plan mantenimiento anual <span class="rung-badge rung-magnet">↻ anual</span></div>
+            <article class="card eic" style="opacity:.92" onclick="location.href='servicio-workspace.html'">
+              <div class="eic-head">
+                <div class="eic-media">📋</div>
+                <button class="eic-kebab" onclick="event.stopPropagation()" title="Opciones">⋮</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:.375rem;" class="eic-title">Plan mantenimiento anual <span class="rung-badge rung-magnet">↻ anual</span></div>
               <div class="hint" style="margin:0;">Odontología · recurrente anual</div>
-              <div style="font-weight:600;">S/ 600 / año</div>
-              <div class="warn-inline">⚠ Sin doctores asignados — Adrián no podrá ofrecer un especialista.</div>
-              <div class="svc-foot"><span class="switch-label"><span class="switch"><input type="checkbox"><span class="track"></span></span> Activo (borrador)</span></div>
+              <div class="eic-metrics"><span style="font-weight:600;">S/ 600 / año</span></div>
+              <div class="warn-inline">⚠ Sin especialistas asignados — Adrián no podrá ofrecer un especialista.</div>
+              <div class="eic-foot">
+                <span></span>
+                <span class="chip-origen personalizado">✏️ Personalizado</span>
+                <span class="switch-label"><span class="switch"><input type="checkbox"><span class="track"></span></span> Activo (borrador)</span>
+              </div>
             </article>
 
-            <button class="card svc-card" style="border-style:dashed;align-items:center;justify-content:center;color:hsl(var(--muted-foreground));min-height:180px;" onclick="location.href='nuevo-servicio.html'">
+            <button class="card eic" style="border-style:dashed;align-items:center;justify-content:center;color:hsl(var(--muted-foreground));min-height:180px;border-top-color:hsl(var(--border));" onclick="location.href='nuevo-servicio.html'">
               <div style="font-size:1.75rem;">+</div><div>Nuevo servicio</div>
             </button>
           </div>
 
-          <!-- empty-state -->
+          <!-- empty-state (ref. biblioteca · RN-25) -->
           <div data-pane="empty" class="hidden" style="text-align:center;padding:2.5rem 0;">
             <div style="font-size:3rem;">🏥</div>
             <h2 style="font-weight:600;margin-top:.5rem;">Aún no tienes servicios</h2>
-            <p class="hint" style="max-width:30rem;margin:.25rem auto 0;">Empieza con una plantilla por especialidad (te arma la escalera completa) o crea uno desde cero. Lisa redacta las descripciones en la voz de tu marca.</p>
-            <div class="cards-grid" style="max-width:40rem;margin:1.5rem auto 0;text-align:left;">
-              <article class="card svc-card"><div class="svc-icon">🦷</div><div style="font-weight:600;">Plantilla Odontología</div><div class="hint" style="margin:0;">5 servicios en la escalera: evaluación gratis → limpieza → diseño de sonrisa → carillas → mantenimiento.</div><button class="btn btn-primary" style="margin-top:.5rem;">Adoptar plantilla</button></article>
-              <article class="card svc-card"><div class="svc-icon">💉</div><div style="font-weight:600;">Plantilla Estética</div><div class="hint" style="margin:0;">5 servicios: valoración → peeling → botox/fillers → paquete facial → mantenimiento trimestral.</div><button class="btn btn-primary" style="margin-top:.5rem;">Adoptar plantilla</button></article>
+            <p class="hint" style="max-width:30rem;margin:.25rem auto 0;">Elige un servicio de la biblioteca estándar (ya tiene ficha clínica completa: cómo se hace, riesgos, FAQ) o crea uno personalizado. Lisa redacta las descripciones en la voz de tu marca.</p>
+            <div class="eic-grid" style="max-width:40rem;margin:1.5rem auto 0;text-align:left;">
+              <article class="card eic" style="cursor:pointer;" onclick="location.href='nuevo-servicio.html'">
+                <div class="eic-head"><div class="eic-media">🦷</div></div>
+                <div class="eic-title">Servicios de odontología</div>
+                <div class="hint" style="margin:0;">De la biblioteca: Evaluación inicial · Limpieza dental · Diseño de sonrisa · Implante · Carillas — la escalera completa ya documentada.</div>
+                <button class="btn btn-primary" style="margin-top:.5rem;">Elegir de la biblioteca</button>
+              </article>
+              <article class="card eic" style="cursor:pointer;" onclick="location.href='nuevo-servicio.html'">
+                <div class="eic-head"><div class="eic-media">💉</div></div>
+                <div class="eic-title">Servicios de estética</div>
+                <div class="hint" style="margin:0;">De la biblioteca: Valoración estética · Peeling facial · Botox y rellenos · Paquete facial · Mantenimiento trimestral.</div>
+                <button class="btn btn-primary" style="margin-top:.5rem;">Elegir de la biblioteca</button>
+              </article>
             </div>
-            <button class="btn btn-ghost" style="margin-top:1rem;" onclick="location.href='nuevo-servicio.html'">Crear desde cero</button>
+            <button class="btn btn-ghost" style="margin-top:1rem;" onclick="location.href='nuevo-servicio.html'">Crear servicio personalizado</button>
           </div>
         </div>
       </div>

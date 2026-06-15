@@ -75,6 +75,17 @@ class VitaliaDoctorModel(Base):
     bio_links: Mapped[list[Any]] = mapped_column(JSONB, nullable=False, default=list)
     bio_public: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
 
+    # Structured public profile (D3-D) — supersedes bio_public (kept for compat)
+    public_profile: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+    """Structured 6-section public profile: sobre_mi, formacion[], experiencia[],
+    tratamientos[], certificaciones[], idiomas[]. Migration 041."""
+
+    bio_generated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    """Timestamp of last profile/bio generation (RN-D3D-4 material_new detection). Migration 041."""
+
+    public_slug: Mapped[str | None] = mapped_column(String(256), nullable=True)
+    """URL-safe slug for public doctor profile page. Unique per tenant+clinic. Migration 041."""
+
     # Landing visibility
     avatar_key: Mapped[str | None] = mapped_column(String(512), nullable=True)
     visible_en_landing: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)

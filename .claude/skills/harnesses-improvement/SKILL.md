@@ -14,7 +14,7 @@ user-invocable: true
 | Carril | Lee de | Acción |
 |---|---|---|
 | **L1 · harness** | `docs/process/harness-backlog.md` (board `/harness` del cockpit) | mostrar OPEN por estado/carril; Chris remedia en lote (apply-pipeline HLP §6) |
-| **L2 · producto/skills-arq** | `docs/learnings/` + `{brand}/docs/learnings/` + `docs/process/learnings.md` | revisar aprendizajes nuevos; promover a rule/skill si recurrente (≥2) |
+| **L2 · producto/skills-arq** | `docs/learnings/` + `{brand}/docs/learnings/` + `docs/process/learnings.md` (cockpit tab Learnings = la pantalla: estado `applied` en frontmatter) | **Triage con decisión forzada — hasta 3 `pending` por stop** (práctica retro: pocas acciones, cerradas). Cada uno muere en una de 4 salidas (jerarquía de efectividad): gate/hook > rule/skill > proposal core > `wont-apply` consciente. Marcar con los botones del cockpit (✓ aplicado · ⬆ promovido · ✗ no aplica). **Regla de tendencia:** 3+ pending con el mismo tag (🔥 en el cockpit) → UNA acción sistémica contra la causa, no parches |
 | **L3 · deuda técnica** | `docs/process/tech-debt.md` | priorizar; agendar fixes |
 | **L4 · capability-desfasada** | auto-detect: `scripts/cap_doctor.py` + caps pre-cement-date + survivors heredados del mutation gate | refrescar/retirar caps stale |
 
@@ -25,7 +25,7 @@ user-invocable: true
 2b. **Docs-graph (DOCS-SWEEP gate · 2026-06-10):** correr `make docs-graph` — reporta huérfanos nuevos bajo root `docs/` (reporte docs/process/DOCS-GRAPH.md — gitignored, lo genera el comando) + regenera `docs/process/HARNESS-DOCS.manifest`. Huérfano nuevo → mover a `legacy/` o citarlo desde su consumidor. Cuarentena borrable: `legacy/2026-06-10-docs-sweep/INVENTORY.md`.
 3. **Presentar** a Chris: OPEN por carril + severidad, candidatos a refuerzo, caps stale (L4), huérfanos docs-graph (2b).
 4. **Remediar en lote** con el **apply-pipeline (HLP §6)**: verify-first → editar disjunto → verificación del diff → `make machinery-check` 0 regresiones → Chris ratifica → commit por pathspec (Haiku).
-5. **Marcar** `applied`/`verified` en el hogar de cada ítem.
+5. **Marcar** `applied`/`verified` en el hogar de cada ítem (L2: el cockpit escribe `applied:` en el frontmatter del learning — la métrica del loop es que "esperando decisión" BAJE entre stops).
 
 ## Deep-sweep (barrido exhaustivo · invoca el workflow)
 

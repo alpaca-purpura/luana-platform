@@ -47,3 +47,28 @@ export function keysToCamel<T = unknown>(input: unknown): T {
   }
   return input as T;
 }
+
+/** Convierte una key `camelCase` a `snake_case`. */
+function camelKeyToSnake(key: string): string {
+  return key.replace(/([A-Z])/g, (c) => `_${c.toLowerCase()}`);
+}
+
+/**
+ * Inversa de keysToCamel — para REQUEST payloads: el BE Pydantic es snake_case
+ * sin alias camelCase, así que un body camelCase se IGNORA silencioso (campo
+ * extra) y "persiste nada" sin error. Origen: config-cuenta PATCH legalName →
+ * 200 pero legal_name null (2026-06-11).
+ */
+export function keysToSnake<T = unknown>(input: unknown): T {
+  if (Array.isArray(input)) {
+    return input.map((item) => keysToSnake(item)) as T;
+  }
+  if (isPlainObject(input)) {
+    const out: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(input)) {
+      out[camelKeyToSnake(key)] = keysToSnake(value);
+    }
+    return out as T;
+  }
+  return input as T;
+}

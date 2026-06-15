@@ -24,6 +24,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { EntitySubNavBar } from "@luana/ui-kit";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -264,6 +265,7 @@ export function NewLeadPage({ tenantId }: NewLeadPageProps) {
             {/* Actions */}
             <div className="flex items-center gap-3 pt-2">
               <Button type="submit" disabled={isPending} aria-busy={isPending}>
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isPending ? "Creando lead…" : "Crear lead"}
               </Button>
               <Button

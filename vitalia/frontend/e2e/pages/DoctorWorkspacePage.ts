@@ -31,6 +31,15 @@ export class DoctorWorkspacePage {
   readonly serviciosTab: Locator;
   readonly entityName: Locator;
 
+  // Entity switcher (D3-A — EntityPicker via entityIdentitySlot, canon §6.3)
+  // Trigger lives in the N3 bar; popover content portals to <body> → page-scoped.
+  readonly pickerTrigger: Locator;
+  readonly pickerContent: Locator;
+  readonly pickerSearch: Locator;
+  readonly pickerListbox: Locator;
+  readonly pickerEmpty: Locator;
+  readonly pickerFooter: Locator;
+
   // Perfil form
   readonly specialtyInput: Locator;
   readonly phoneInput: Locator;
@@ -67,6 +76,14 @@ export class DoctorWorkspacePage {
     this.entityName = this.panelRoot.locator(
       "[data-testid='entity-sub-nav-bar'] .truncate",
     );
+
+    // Picker (T-FE-switcher-wire) — trigger in N3 bar, content in portal
+    this.pickerTrigger = this.panelRoot.getByTestId("doctor-picker-trigger");
+    this.pickerContent = page.getByTestId("doctor-picker-content");
+    this.pickerSearch = page.getByTestId("doctor-picker-search");
+    this.pickerListbox = page.getByTestId("doctor-picker-listbox");
+    this.pickerEmpty = page.getByTestId("doctor-picker-empty");
+    this.pickerFooter = page.getByTestId("doctor-picker-footer");
 
     // Perfil — panel-scoped
     this.specialtyInput = this.panelRoot.getByLabel("Especialidad");
@@ -144,5 +161,31 @@ export class DoctorWorkspacePage {
   async generateBio() {
     await this.generateBioButton.click();
     await this.page.waitForSelector("[contenteditable]", { timeout: 10_000 });
+  }
+
+  // ── Entity switcher helpers (D3-A) ──────────────────────────────────────────
+
+  /** Open the doctor picker popover and wait for the first page to render. */
+  async openPicker() {
+    await this.pickerTrigger.click();
+    await this.pickerContent.waitFor({ state: "visible", timeout: 10_000 });
+  }
+
+  /** Type into the picker search (server-side debounced 200ms). */
+  async searchInPicker(q: string) {
+    await this.pickerSearch.fill(q);
+  }
+
+  /** Option locator by doctor id. */
+  pickerOption(doctorId: string): Locator {
+    return this.page.getByTestId(`doctor-picker-option-${doctorId}`);
+  }
+
+  /** Pick a doctor by id and wait for the leaf-preserving navigation. */
+  async pickDoctorById(doctorId: string, expectedLeaf: string) {
+    await this.pickerOption(doctorId).click();
+    await this.page.waitForURL(`**/lisa/staff/${doctorId}/${expectedLeaf}`, {
+      timeout: 15_000,
+    });
   }
 }

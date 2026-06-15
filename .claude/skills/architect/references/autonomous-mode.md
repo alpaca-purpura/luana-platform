@@ -38,12 +38,12 @@ autonomous_mode_caps:
 - ≤5 tickets en 06-tickets.yaml
 - Ningún ticket toca `core/luana-core-*/` (engine ban)
 - Ningún ticket toca `{other_brand}/...`
-- Ningún ticket es `production_code: true + AGENTIC` (Opus-only — Chris debería supervisar)
+- Ningún ticket es `production_code: true + AGENTIC` (flagship-only — Chris debería supervisar)
 - Validators tienen `must_pass: true` claros, no `pass_k` ambiguos
 
 ### Cuándo autonomous_mode debe ser false (HARD)
 
-- Cualquier ticket AGENTIC `production_code: true` (requiere Chris supervise Opus)
+- Cualquier ticket AGENTIC `production_code: true` (requiere Chris supervise el tier flagship)
 - Story toca engine (`/pm-luana` promotion gate obligatorio)
 - Story toca cross-brand (`/pm-luana` outcome)
 - Validators incluyen `pass_k` con thresholds < 0.66 (eval ruido riesgo)
@@ -59,10 +59,10 @@ Cada ticket en `06-tickets.yaml` MUST incluir bloque `assignment`:
   title: "BE endpoint create-appointment"
   surface: BE
   production_code: true
-  owner_eligibility: [opencode, sonnet, opus]
+  owner_eligibility: [opencode, workhorse, flagship]
   assignment:
     primary_agent: builder-backend       # ★ explícito — NO general-purpose
-    model_preference: sonnet              # default; opencode fallback ok
+    model_preference: workhorse           # default; opencode fallback ok (tiers → project.config.yaml::models)
     must_load_skills:                     # verbatim, builder spawn cita estos
       - backend-expert
       - .claude/rules/tenant-isolation.md
@@ -76,16 +76,16 @@ Cada ticket en `06-tickets.yaml` MUST incluir bloque `assignment`:
       - "core/luana-core-*/src/"
       - "{other_brand}/"
       - "{brand}/backend/src/modules/{brand}/{copilot,sales_agent}/"
-    rationale: "BE CRUD non-agentic, Sonnet sweet spot; opus_required:false"
+    rationale: "BE CRUD non-agentic, workhorse sweet spot; flagship_required:false"
 
 - id: T-2
   title: "AGENTIC tool wire create-appointment"
   surface: AGENTIC
   production_code: true
-  owner_eligibility: [opus]                # HARD R23
+  owner_eligibility: [flagship]            # HARD R23
   assignment:
     primary_agent: builder-agentic        # ★ explícito
-    model_preference: opus                  # HARD per R23
+    model_preference: flagship              # HARD per R23
     must_load_skills:
       - sales-agent-expert | copilot-expert  # según módulo
       - claude-api
@@ -96,16 +96,16 @@ Cada ticket en `06-tickets.yaml` MUST incluir bloque `assignment`:
     forbidden_to_touch:
       - "core/luana-core-copilot/src/"
       - "core/luana-core-sales-agent/src/"
-    rationale: "AGENTIC production code R23 → Opus obligatorio. NUNCA opencode/sonnet."
+    rationale: "AGENTIC production code R23 → tier flagship obligatorio. NUNCA opencode/workhorse."
 
 - id: T-3
   title: "FE form create-appointment"
   surface: FE
   production_code: true
-  owner_eligibility: [opencode, sonnet, opus]
+  owner_eligibility: [opencode, workhorse, flagship]
   assignment:
     primary_agent: builder-frontend
-    model_preference: sonnet
+    model_preference: workhorse
     must_load_skills:
       - frontend-expert
       - playwright-expert                   # SI test_construction_plan.playwright_required=true
@@ -117,7 +117,7 @@ Cada ticket en `06-tickets.yaml` MUST incluir bloque `assignment`:
     forbidden_to_touch:
       - "{brand}/frontend/src/components/ui/"      # Shadcn primitives
       - "{brand}/frontend/src/lib/api/fetchClient.ts"
-    rationale: "FE standard form Sonnet sweet spot"
+    rationale: "FE standard form workhorse sweet spot"
 ```
 
 ## Playwright visual scope discipline
@@ -173,9 +173,9 @@ Al cerrar ready package, architect genera `dispatch-plan.md` (1 sólo file ≤ 1
 
 | T-id | Title | Surface | Agent | Model | Est. cost | Est. time |
 |---|---|---|---|---|---|---|
-| T-1 | BE endpoint create-appointment | BE | builder-backend | sonnet | $0.30 | 25 min |
-| T-2 | AGENTIC tool wire | AGENTIC | builder-agentic | opus (R23) | $1.20 | 35 min |
-| T-3 | FE form + e2e | FE | builder-frontend | sonnet | $0.40 | 30 min |
+| T-1 | BE endpoint create-appointment | BE | builder-backend | workhorse | $0.30 | 25 min |
+| T-2 | AGENTIC tool wire | AGENTIC | builder-agentic | flagship (R23) | $1.20 | 35 min |
+| T-3 | FE form + e2e | FE | builder-frontend | workhorse | $0.40 | 30 min |
 | Total | — | — | — | — | **$1.90** | **~90 min** |
 
 ## DAG dependencies
@@ -232,5 +232,5 @@ echo 'autonomous_mode: true' >> {brand}/docs/product/stories/{id}/checkpoint.md
 - `.claude/skills/auditor/SKILL.md` — verificador post-hoc
 - `docs/specs/templates/06-tickets-template.yaml` — template a expandir con assignment block
 - `docs/specs/templates/04-validators-template.yaml` — template a expandir con playwright_visual_scope
-- `.claude/rules/auditor-self-fix-policy.md` — R23 (AGENTIC production_code → Opus obligatorio)
+- `.claude/rules/auditor-self-fix-policy.md` — R23 (AGENTIC production_code → tier flagship obligatorio)
 - `.claude/rules/anti-duplication-refining.md` — prior art scan (precede assignment)

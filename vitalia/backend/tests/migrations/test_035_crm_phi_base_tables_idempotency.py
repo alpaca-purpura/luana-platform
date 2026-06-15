@@ -89,18 +89,23 @@ def _strip_docstrings_and_comments(source: str) -> str:
 
 
 def _is_postgres_available() -> bool:
-    """Check if a local Postgres is reachable (for integration gate)."""
+    """True SOLO cuando DATABASE_URL (SSoT del compose — alembic/env.py la prioriza) responde.
+
+    Sin DATABASE_URL el test se SKIPea: el fallback localhost:5432 puede apuntar a
+    un Postgres incidental del host (≠ DB canónica :5435) → falso RED + downgrade
+    contra una DB ajena (hallazgo audit DELTA-BE 2026-06-12 — misma clase que
+    test_040/test_042). La verificación canónica vive en gate 10 / container dev.
+    """
+    database_url = os.environ.get("DATABASE_URL")
+    if not database_url:
+        return False
+    dsn = database_url.replace("postgresql+asyncpg://", "postgresql://").replace(
+        "postgresql+psycopg2://", "postgresql://"
+    )
     try:
         import psycopg2  # type: ignore[import]
 
-        conn = psycopg2.connect(
-            host=os.environ.get("POSTGRES_HOST", "localhost"),
-            port=int(os.environ.get("POSTGRES_PORT", "5432")),
-            user=os.environ.get("POSTGRES_USER", "postgres"),
-            password=os.environ.get("POSTGRES_PASSWORD", "password"),
-            dbname=os.environ.get("POSTGRES_DB", "vitalia_dev"),
-            connect_timeout=3,
-        )
+        conn = psycopg2.connect(dsn, connect_timeout=3)
         conn.close()
         return True
     except Exception:

@@ -3,12 +3,15 @@ story_id: vitalia-ds-showcase
 title: Design-system showcase fiel (best-of-best dentro del shell) — demostrador R-FID para ratificación Chris
 brand: vitalia
 type: ui-story            # mockup/showcase dentro del shell-organism
-state: refining
+state: done
 owner: /po-ux
 created: 2026-06-07
+completed: 2026-06-11
 architecture_pattern: ADR-vitalia-004   # citado por gate brand (shell-feature); showcase vive dentro del shell
 program: design-system-homologation     # cuelga de ADR-014 + proposal 2026-06-07 (platform)
 program_inventory: docs/architecture/luana-platform/design-system-inventory-best-of-best.md
+dod_live_verified: true
+dod_live_verified_skip_reason: "Showcase técnica pura — renderizado HTML derivado, no user-facing app flow. Ratificación Chris vía mockup visual en docs/architecture/luana-platform/design-system-inventory-best-of-best.md"
 
 # Propósito
 purpose: |

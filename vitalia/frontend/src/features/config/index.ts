@@ -1,18 +1,31 @@
-// cap: auth.sign-in-sign-up-pages
-// story-origin: vitalia-fase1-s10-TBD
+// cap: configuracion.cuenta
+// story-origin: vitalia-fase2-config-cuenta
 /**
  * config/index.ts — Feature public API (FSD-Lite boundary matrix).
- * F1-S10 vitalia-fase1-empty-states
  *
- * Exposes placeholder components created in T-2.
- * Special placeholders (T-3: ConexionesPlaceholder) added by that ticket.
+ * T-1 vitalia-fase2-config-cuenta:
+ *   - Exports AccountDataView, PreferencesView, ResponsibleView (real views).
+ *   - Removes CuentaPlaceholder (replaced by real views).
  *
  * downstream-regression-na: brand-local FE barrel; no cross-brand consumers
  */
 
-// ── Placeholder components (T-2 generic EmptyState wrappers) ──────────────────
-export { CuentaPlaceholder } from "./components/placeholders/CuentaPlaceholder";
+// ── Real Mi Cuenta views (T-1 vitalia-fase2-config-cuenta) ──────────────────
+export { AccountDataView } from "./components/cuenta/AccountDataView";
+export { PreferencesView } from "./components/cuenta/PreferencesView";
+export { ResponsibleView } from "./components/cuenta/ResponsibleView";
+
+// ── Types (consumed by pages + tests) ────────────────────────────────────────
+export type {
+  ClinicAccountDTO,
+  ClinicAccountPatchDTO,
+  SpecialtyCatalogDTO,
+  DpoReferenceDTO,
+} from "./types/cuenta.types";
+
+// ── Placeholder components (still active — conexiones + avanzado not yet shipped) ─
+// CuentaPlaceholder removed — replaced by AccountDataView + PreferencesView + ResponsibleView
 export { AvanzadoPlaceholder } from "./components/placeholders/AvanzadoPlaceholder";
 
-// ── Special placeholders (T-3) ─────────────────────────────────────────────────
+// ── Special placeholders ─────────────────────────────────────────────────────
 export { ConexionesPlaceholder } from "./components/placeholders/ConexionesPlaceholder";

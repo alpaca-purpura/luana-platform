@@ -15,7 +15,6 @@ severidad: 🔴 bloquea-pronto · 🟡 fricción · 🔵 mejora · estado: repor
 
 | ID | fecha | sev | deuda (problema → causa raíz → refuerzo) | estado | ref |
 |---|---|---|---|---|---|
-| — | — | — | (sin deuda L3 registrada todavía · dev/auditor appendean acá) | — | — |
 
 ## Referencias
 

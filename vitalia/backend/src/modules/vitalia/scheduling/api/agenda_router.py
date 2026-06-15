@@ -48,6 +48,7 @@ from src.modules.vitalia.scheduling.api.dtos.agenda_dtos import (
     CreateAppointmentRequestDTO,
     PatchAppointmentRequestDTO,
 )
+from src.modules.vitalia.scheduling.api.rbac import SCHEDULING_PHI_ROLES
 from src.modules.vitalia.scheduling.application.services.agenda_grid_service import (
     AgendaGridService,
 )
@@ -98,7 +99,10 @@ _PHI_URL_PARAM_PATTERNS: tuple[re.Pattern[str], ...] = (
 )
 
 #: PHI roles allowed to access scheduling PHI endpoints (hipaa-lite.md § RBAC).
-ALLOWED_PHI_ROLES: frozenset[str] = frozenset(["valeria_assistant", "doctor", "nurse", "admin_clinic"])
+#: Single source of truth lives in scheduling.api.rbac — re-exported here so every
+#: endpoint in this router (and the legacy `ALLOWED_PHI_ROLES` references) stays in
+#: sync with notify_router. Includes `owner` (clinic owner) per Chris ratification.
+ALLOWED_PHI_ROLES: frozenset[str] = SCHEDULING_PHI_ROLES
 
 
 # ---------------------------------------------------------------------------
@@ -107,10 +111,18 @@ ALLOWED_PHI_ROLES: frozenset[str] = frozenset(["valeria_assistant", "doctor", "n
 
 
 async def _get_db() -> AsyncSession:
-    """Async DB session dependency — delegates to brand-local src.db factory."""
-    from src.db import get_async_session  # noqa: PLC0415
+    """Async DB session dependency — COMMITTING unit-of-work.
 
-    async for session in get_async_session():
+    Uses ``get_async_session_committing`` (commits on clean return, rolls back on
+    error). These scheduling endpoints read PHI and therefore MUST persist a sync
+    audit-log row (hipaa-lite.md § Audit log: sync write pre-response). The plain
+    ``get_async_session`` never commits → the audit INSERT was flushed-then-rolled-back
+    at session close (HTTP 200 with no audit row). Surfaced by live verification in
+    vitalia-bugfix-agenda-actor-headers-422 T-2 (same class as the CRM PHI-audit fix).
+    """
+    from src.db import get_async_session_committing  # noqa: PLC0415
+
+    async for session in get_async_session_committing():
         yield session
 
 
@@ -161,6 +173,10 @@ async def _write_suspicious_request_audit(
         },
         from_ip=client_ip,
     )
+    # Commit the security audit BEFORE the caller raises HTTP 400: the committing
+    # session dependency rolls back on the raised HTTPException, which would otherwise
+    # drop this suspicious_request row (the audit MUST survive the rejection).
+    await db.commit()
 
 
 # ---------------------------------------------------------------------------

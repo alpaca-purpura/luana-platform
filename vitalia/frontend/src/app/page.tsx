@@ -1,10 +1,22 @@
 // cap: __shared__
 // story-origin: TBD
 /**
- * Root Landing — Server Component redirect.
+ * Root Landing — Server Component redirect (FALLBACK DEFENSIVO).
  * Post-merge fix (2026-05-27) — Clerk afterSignIn redirige a "/" por default,
  * y antes esta ruta devolvía 404. Esto rompía el flujo end-to-end manual:
  * usuario se loguea OK pero ve "This page could not be found".
+ *
+ * ★ vitalia-bugfix-root-login-redirect-softnav (2026-06-15): el HAPPY PATH del
+ * root "/" autenticado se mueve al EDGE (proxy.ts → 307 a /{tenant}/mateo/agenda)
+ * para eliminar el redirect() IN-RENDER de abajo, que soft-navegaba al route
+ * group (shell-organism) [layout dynamic({ssr:false})] y disparaba el
+ * "Rendered more hooks" de Next 16 (~40% flake → render colgado, requería
+ * refresh). Este Server Component QUEDA como fallback defensivo: corre solo
+ * cuando el edge NO pudo resolver el tenant (publicMetadata cold / tenant no-UUID
+ * / Clerk API caída) → maneja los edge-cases (sin sesión, sin tenants, fetch
+ * falla) con redirect() a sign-in, que es soft-nav inocua (sign-in NO está en el
+ * route group del shell). SSoT del happy-path: lib/shell-routes.ts +
+ * proxy.ts § Root-login hardening.
  *
  * Comportamiento:
  *   1. Si no hay sesión Clerk → redirect a /sign-in (defense-in-depth con proxy.ts).
