@@ -2,22 +2,22 @@
 brand: comunify
 story_id: comunify-shell-organism
 module: platform
-state: idea
+state: refining
 story_type: ui-story
 created: 2026-06-15
 last_updated: 2026-06-15
 parallel_safe: true
 owner: /pm-comunify
-next_handoff: /po-ux (UI shell — bloqueado por cast ratificado + ADR-comunify cast)
+next_handoff: /po-ux (UI shell mockup + spec)
 surface: [frontend]
 estimated_size: L
 cap_target: comunify/shell-organism
 cap_change_type: new
 verification_nature: funcional
 autonomous_mode: false
-blocked_on:
-  - comunify agent cast ratificado por Chris (nombres/colores/dominios) → ADR-comunify-NNN-agentes-cast
-artifacts: []
+cast_ratified: true   # ADR-comunify-001-agentes-cast (Chris 2026-06-15)
+artifacts:
+  - ADR-comunify-001-agentes-cast.md (cast cementado)
 ---
 
 # Comunify — Shell-organism migration (R-shell · MVP)
@@ -77,8 +77,15 @@ las tabs como shell/placeholder.
 - comunify necesita su propio skill `comunify-design-system` (nicolify/vitalia lo tienen; comunify no).
 - Tokens comunify: `comunify/docs/architecture/design-system.md` (SSoT visual).
 
+## Cast ratificado (ADR-comunify-001 · 2026-06-15)
+
+Sidebar: **Luana** (supervisora+orquestadora+onboarding). Ribbon: **Nina** (estratega) ·
+**Tomás** (atraer) · **Sofía** (vender) · **Bruno** (operar) · **Lucía** (retener) + tab **Plataforma**.
+Mapeo 1:1 a cadena de valor canónica (vitalia/nicolify). Detalle: `ADR-comunify-001-agentes-cast.md`.
+
 ## Next action
 
-Ratificar el **cast comunify** (Chris) → escribir `ADR-comunify-NNN-agentes-cast` + catálogo → recién
-ahí `/po-ux comunify comunify-shell-organism` (diseña el shell con Ribbon fiel). Hasta entonces:
-`state: idea`, blocked_on cast.
+`/po-ux comunify comunify-shell-organism` — diseña el shell-organism (mockup + spec): consume
+`@luana/ui-kit` (organism/shell), Ribbon del cast ratificado, sidebar Luana, nav 3 zonas, Config.
+Port re-temizado de vitalia/nicolify (NO reinventar). Pendiente paralelo: skill `comunify-design-system`
++ SHELL-DESIGN-CONTRACT comunify (los produce el flujo de la story). Avatares = placeholders SVG.
