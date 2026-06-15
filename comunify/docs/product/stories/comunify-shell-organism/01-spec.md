@@ -4,8 +4,9 @@ brand: comunify
 type: ui-story
 state: refining
 ronda: 1
-input_spec_signed: false
+input_spec_signed: true        # FIRMA 1 · Chris 2026-06-15 ("dale, esto es lo que quiero")
 mockup_final_signed: false
+open_questions_resolved: "Q1 placeholders SVG · Q2 Plataforma link-a-existente · Q3 saludo genérico (todas = recomendación, dale)"
 cap_target: comunify/shell-organism
 cap_change_type: new
 verification_nature: funcional

@@ -126,7 +126,15 @@ Supervisora = **Luana** (como nicolify).
 → **Chris: (a)** wizard intacto, fuera de scope (sigue como flujo pre-shell). Tab Plataforma = mínimo. Integración Luana↔onboarding = story futura.
 
 ### 2026-06-15 15:40 · 🤖 claude · `/po-ux` · 💡 PROPONE (RONDA 1 lista — FIRMA 1)
-Escrito `01-spec.md` RONDA 1 (funcional, SIN mockup): § Context/Dónde vive + § Mapa funcional (happy path + árbol bifurcaciones + RN-1..7 + AC-1..8) + § Pantallas (tabla campos) + § Dudas (Q1-Q3) + § Prior art applied. Refleja las 5 decisiones (reemplazo · Luana viva conversa+anuncia vía core copilot · landing Luana+Nina · single-user · onboarding intacto). **Esperando FIRMA 1 de Chris** ("esto es lo que quiero") → recién ahí nace el mockup.
+Escrito `01-spec.md` RONDA 1 (funcional, SIN mockup): § Context/Dónde vive + § Mapa funcional (happy path + árbol bifurcaciones + RN-1..7 + AC-1..8) + § Pantallas (tabla campos) + § Dudas (Q1-Q3) + § Prior art applied. Refleja las 5 decisiones. **Esperando FIRMA 1.**
+
+### 2026-06-15 15:48 · 👤 chris
+"dale, esto es lo que quiero" (= **FIRMA 1**). + Q1/Q2/Q3 = recomendaciones. + pidió: recomendar un "sitemap" (sub-tabs por agente) como se hizo en nicolify.
+
+### 2026-06-15 15:48 · 🤖 claude · `/po-ux` · ✓ APLICADO (FIRMA 1) + 💡 PROPONE (sitemap)
+- **FIRMA 1 registrada** (`input_spec_signed: true` en spec + checkpoint). Q1=placeholders SVG · Q2=Plataforma link-a-existente · Q3=saludo genérico.
+- **Sitemap recomendado** escrito en `navigation-tree.md` (formato nicolify): N1 Ribbon (Nina/Tomás/Sofía/Bruno/Lucía + Plataforma) + N2 sub-tabs por agente (✱ existe → port · △ net-new) + N3 candidatos. Nina(marca/voz/autoridad/ofertas/escalera/cohorts) · Tomás(contenido/pauta/audiencia) · Sofía(conversaciones/pipeline/recuperación) · Bruno(comunidad/moderación/cohorts-en-curso) · Lucía(suscripciones/clientes/fidelización) · Plataforma(conexiones/cuenta/plan/onboarding).
+- **Decisiones abiertas del sitemap (Chris ratifica):** voz+autoridad → Nina o Tomás · cohorts split (diseño Nina / delivery Bruno) sí-o-no · nombres pulibles. → esperando a Chris. Tras ratificar → mockup creativo → FIRMA 2.
 
 ---
 

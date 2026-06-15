@@ -16,8 +16,12 @@ cap_change_type: new
 verification_nature: funcional
 autonomous_mode: false
 cast_ratified: true   # ADR-comunify-001-agentes-cast (Chris 2026-06-15)
+input_spec_signed: true    # FIRMA 1 funcional (Chris 2026-06-15)
+mockup_final_signed: false # FIRMA 2 pendiente (post sitemap ratificado)
 artifacts:
   - ADR-comunify-001-agentes-cast.md (cast cementado)
+  - 01-spec.md (RONDA 1 funcional · FIRMA 1)
+  - navigation-tree.md (sitemap propuesto · pend. ratificación)
 ---
 
 # Comunify — Shell-organism migration (R-shell · MVP)
@@ -85,7 +89,7 @@ Mapeo 1:1 a cadena de valor canónica (vitalia/nicolify). Detalle: `ADR-comunify
 
 ## Next action
 
-`/po-ux comunify comunify-shell-organism` — diseña el shell-organism (mockup + spec): consume
-`@luana/ui-kit` (organism/shell), Ribbon del cast ratificado, sidebar Luana, nav 3 zonas, Config.
-Port re-temizado de vitalia/nicolify (NO reinventar). Pendiente paralelo: skill `comunify-design-system`
-+ SHELL-DESIGN-CONTRACT comunify (los produce el flujo de la story). Avatares = placeholders SVG.
+`/po-ux` en curso. FIRMA 1 ✓ (funcional). Pendiente: ratificar `navigation-tree.md` (sitemap) →
+**mockup creativo** (port re-temizado de @luana/ui-kit + tokens comunify + Ribbon del cast + sub-tabs
+del sitemap, todas "Próximamente" salvo Luana) → **FIRMA 2** (final) → refining→refined → `/architect`.
+Decisión de motor: Luana consume `core/luana-core-copilot /chat` (comunify-first, lift chat-store a @luana).
