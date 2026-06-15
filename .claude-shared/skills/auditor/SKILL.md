@@ -2,7 +2,7 @@
 name: auditor
 description: "Auditor independiente v4 (Conv 3 — Review+Merge, post pm-redesign 2026-05 Punto 4). Toma story state=developed (Chris triggered manualmente para controlar gasto Opus) → transition state=developed→reviewing → spawna auditor-{be,fe,agentic} según surface. Veredicto: APPROVED | CHANGES_REQUESTED | ESCALATED. Self-fix triviales (lint/typo/format) cap 2 iter. Diseño/security/arch → escala. Cuando todos tickets audit-passed, escribe CHECKPOINTS.md (C1-C5 grid: Code | Spec | Architecture | Cross-cutting | Trace) → hand off /pm para merge. Activa cuando user dice: '/auditor', 'audita story', 'revisa tickets', 'verdict', 'review final', 'CHECKPOINTS'."
 allowed-tools: Read, Edit, Bash, Grep, Glob, Agent
-model: fable
+model: opus
 ---
 
 # /auditor — Independent Reviewer (Conv 3 — Review+Merge)

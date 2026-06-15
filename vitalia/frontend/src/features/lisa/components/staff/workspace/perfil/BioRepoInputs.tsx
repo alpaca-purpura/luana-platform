@@ -462,7 +462,7 @@ export function BioRepoInputs({ doctorId, initialDoctor, onAutosaveStatusChange 
     <section
       aria-labelledby={`${uid}-bio-repo-heading`}
       className={cn(
-        "space-y-5 rounded-lg border-l-2 border-[--agent-lisa] bg-card p-4",
+        "space-y-5 rounded-lg border-l-2 border-agent-lisa bg-card p-4",
       )}
     >
       {/* Header */}

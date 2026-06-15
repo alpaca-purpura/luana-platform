@@ -66,6 +66,10 @@ class VitaliaAvailabilityBlockModel(Base):
     # One-off field
     specific_date: Mapped[date | None] = mapped_column(Date, nullable=True)
 
+    # Scoped-delete exclusions (Feature: occurrence-level delete)
+    excluded_dates: Mapped[list[str] | None] = mapped_column(PgJSON, nullable=True)
+    """List of ISO date strings ("YYYY-MM-DD") for individually excluded occurrences."""
+
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), onupdate=func.now(), nullable=True)

@@ -289,7 +289,7 @@ wip_caps:
 #    O un alias literal (fable|opus|sonnet|haiku) — "quiero que ESTE agente use X".
 models:
   tiers:
-    flagship: fable        # estratégico + agentic prod (R23) + refinamiento
+    flagship: opus         # estratégico + agentic prod (R23) + refinamiento (2026-06-14: fable deshabilitado → opus 4.8)
     coordinator: opus      # PMs + orquestación git (commit-push/handoff)
     workhorse: sonnet      # builders BE/FE no-agentic
     mechanical: haiku      # gate-runner / context / grep workers

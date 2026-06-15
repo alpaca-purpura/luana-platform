@@ -38,41 +38,6 @@ const BASE_URL = process.env["E2E_BASE_URL"] ?? "http://localhost:3002";
 
 const WEEKLY_2_BLOCK_ID = "blk-weekly-occurrences-2";
 
-/** Week 1: Mon 2026-06-15 */
-const WEEK1_MONDAY = "2026-06-15";
-/** Week 2: Mon 2026-06-22 */
-const WEEK2_MONDAY = "2026-06-22";
-/** Week 3: Mon 2026-06-29 — should be EMPTY */
-const WEEK3_MONDAY = "2026-06-29";
-
-const mockOccurrencesWeek1 = {
-  occurrences: [
-    {
-      blockId: WEEKLY_2_BLOCK_ID,
-      occurrenceDate: WEEK1_MONDAY,
-      startTime: "09:00",
-      endTime: "13:00",
-      kind: "recurrent",
-      freq: "weekly",
-      patternSummary: "Cada semana · Lunes 09:00–13:00 · 2 repeticiones",
-    },
-  ],
-};
-
-const mockOccurrencesWeek2 = {
-  occurrences: [
-    {
-      blockId: WEEKLY_2_BLOCK_ID,
-      occurrenceDate: WEEK2_MONDAY,
-      startTime: "09:00",
-      endTime: "13:00",
-      kind: "recurrent",
-      freq: "weekly",
-      patternSummary: "Cada semana · Lunes 09:00–13:00 · 2 repeticiones",
-    },
-  ],
-};
-
 const mockOccurrencesWeek3Empty = {
   occurrences: [], // Week 3 MUST be empty for a weekly×2 block
 };

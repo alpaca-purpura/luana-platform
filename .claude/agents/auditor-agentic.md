@@ -5,7 +5,7 @@ tools: Read, Edit, Bash, Grep, Glob, WebSearch, WebFetch
 maxTurns: 80
 skills: [copilot-expert, sales-agent-expert]
 color: purple
-model: fable
+model: opus
 memory: user
 ---
 

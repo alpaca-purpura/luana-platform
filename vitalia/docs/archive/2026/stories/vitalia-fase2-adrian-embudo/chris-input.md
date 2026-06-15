@@ -386,3 +386,11 @@ Tu demo encontró 3 bugs → reabrí, diagnostiqué y cerré TODO de raíz:
 - **Deuda HB-69 saldándose:** conftest hermético (16 env Settings sintéticos + KEK) + patch correcto `src.db._AsyncSessionLocal` + `asyncio.run` (py3.12) + fake_row con columnas funnel + DB `vitalia_test` (clone-schema, 55 tablas) + builder-backend rehabilitando los ~28 tests stub-era (en curso). **TD-1 nuevo** (L3): cadena alembic vitalia no self-contained desde DB cero.
 - **Cap `crm/adrian-embudo.yaml`:** change_log entry `type: fix` + `last_modified` actualizado.
 - **Te toca:** re-demo de los 3 puntos (spinner visible · canal aparece en el detalle del lead · /recuperar muestra empty-state) → tu `chris_verify.signoff` → merge (cap planned→live + archive).
+
+### 2026-06-11T21:00 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO (MERGE Fase F — story DONE)
+Dijiste "probé los 3 puntos, satisfecho, dale merge" → ejecutado:
+- `chris_verify.signoff: SATISFIED` + round demo-fix registrado (allowlist del scope ratificado).
+- `07-merge.md` (5 secciones: gherkin-matrix + e2e 13/13 + cap live + modules + how-to-verify).
+- Cap `crm/adrian-embudo`: **planned → live** + 15 scenarios verbatim del spec (8 `live` con test PASS · 7 `wip` honestos — T-E2E-1 deferred que ratificaste el 06-04).
+- checkpoint `state: done` · release corregido F3→F4 · story archivada a `vitalia/docs/archive/2026/stories/` (R2).
+- Follow-ups que quedan VISIBLES (no deuda muda): T-E2E-1 (7 scenarios wip + visual goldens) · HB-70 (PHI fidelizacion, story dedicada) · TD-1 (cadena alembic).

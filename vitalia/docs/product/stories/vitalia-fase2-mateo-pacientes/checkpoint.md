@@ -3,7 +3,7 @@ story_id: vitalia-fase2-mateo-pacientes
 type: ui-story
 agent_owner: mateo
 module: crm
-capability: crm.pacientes
+capability: mateo.pacientes
 state: idea
 architecture_pattern: ADR-vitalia-004
 created: 2026-06-11T00:00:00Z
@@ -15,7 +15,7 @@ dependencies:
 blocks_hard: []
 blocks_soft: []
 release: F2
-cap_target: crm.pacientes
+cap_target: mateo.pacientes
 parent_story: null
 ---
 

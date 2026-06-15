@@ -2,7 +2,7 @@
 name: ux-agentico
 description: "UX agéntico Luana v4 (post pm-redesign 2026-05 Punto 4). Diseña FLUJOS CONVERSACIONALES (no UI tradicional) para agentic-stories state=refining. Toma 01-spec.md (de /po) y produce 02-design-agentic.md en {brand}/docs/product/stories/{story-id}/ con: turn-by-turn happy path, state machine agente, tools sequence, prompt slot architecture, voice constraints, error recovery, eval policy (personas+rubrics+pass^k), cost/latency budget, observabilidad. Al ratificar diseño → transition state=refining→refined. Carga skills sales-agent-expert, copilot-expert, claude-api. Si descubre edge cases → delta-spec.md → /po ratifica. Activa cuando user dice: '/ux-agentico', 'diseñemos el flujo conversacional', 'cómo conversa el agente', 'flujo del copilot', 'turn-by-turn', 'experiencia agéntica'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
-model: fable
+model: opus
 ---
 
 # /ux-agentico — UX Agéntico (Conversational Flow Designer)

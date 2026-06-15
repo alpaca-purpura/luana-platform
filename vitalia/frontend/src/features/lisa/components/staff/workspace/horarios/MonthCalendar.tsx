@@ -29,6 +29,13 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAvailabilityOccurrences } from "../../../../api/staff";
 import type { AvailabilityOccurrence } from "../../../../types/staff.types";
+// bug7 r4: TZ-stable date math SSoT (no toISOString drift). Aliases keep the
+// month-view call sites unchanged while sharing ONE implementation.
+import {
+  parseLocalDate,
+  toLocalIsoDate as toIsoDate,
+  mondayOfWeek as getMondayOfWeek,
+} from "@/lib/format/calendarDates";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -37,24 +44,8 @@ const MAX_CHIPS_PER_DAY = 2;
 const DAY_HEADERS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
 // ── Date helpers (F6: NEVER toLocaleDateString — Intl.DateTimeFormat) ─────────
-
-/**
- * Parse a YYYY-MM-DD string to a local Date (no TZ shift).
- */
-function parseLocalDate(isoDate: string): Date {
-  const [y, m, d] = isoDate.split("-").map(Number);
-  return new Date(y!, m! - 1, d!);
-}
-
-/**
- * Format a Date to "YYYY-MM-DD" local string.
- */
-function toIsoDate(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
+// parseLocalDate / toIsoDate / getMondayOfWeek now come from the shared
+// calendarDates SSoT (imported above) — single TZ-stable implementation.
 
 /**
  * Add N months to a YYYY-MM-01 date string. Returns YYYY-MM-01.
@@ -63,19 +54,6 @@ function addMonths(yearMonth: string, delta: number): string {
   const [y, m] = yearMonth.split("-").map(Number);
   const date = new Date(y!, m! - 1 + delta, 1);
   return toIsoDate(date);
-}
-
-/**
- * Get the Monday ISO string of the week that contains the given date.
- * ISO weekday: Monday=1, Sunday=7. JS getDay(): Sunday=0, Monday=1, ..., Saturday=6.
- */
-function getMondayOfWeek(isoDate: string): string {
-  const date = parseLocalDate(isoDate);
-  const day = date.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
-  const diff = day === 0 ? -6 : 1 - day; // ISO: Monday = day 1
-  const monday = new Date(date);
-  monday.setDate(date.getDate() + diff);
-  return toIsoDate(monday);
 }
 
 /**

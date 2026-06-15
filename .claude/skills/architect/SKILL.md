@@ -3,7 +3,7 @@ name: architect
 description: "Architect orchestrator Luana v4 — lee 01-spec.md (+02-design-agentic.md si agentic) en stories state=refined, spawna architect-orchestrator full-stack y produce el READY PACKAGE (03-arch.md + 04-validators.yaml + 05-guidelines.md + 06-tickets.yaml), cierra refined→ready."
 when_to_use: "Activa cuando user dice: '/architect', 'diseñemos la arq', 'tickets', 'qué tickets salen', 'arquitectura técnica', 'cómo lo construimos técnicamente', 'cerrá el ready package', 'ready package', 'qué hay que buildear', 'dame los tickets', 'convertí el spec en tickets', story state=refined y el próximo paso es producir 03-arch+04-validators+05-guidelines+06-tickets."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
-model: fable
+model: opus
 ---
 
 # /architect — Architect Orchestrator (Conv 1 cierre — produce ready package)

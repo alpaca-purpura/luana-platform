@@ -983,33 +983,104 @@ async def patch_availability_block(
 async def delete_availability_block(
     doctor_id: UUID,
     block_id: UUID,
+    scope: str = Query(default="series", description="series | occurrence | this_and_future"),
+    occurrence_date: date | None = Query(
+        default=None,
+        alias="occurrence_date",
+        description="YYYY-MM-DD (required for scope=occurrence|this_and_future)",
+    ),
     tenant_id: UUID = Header(alias="X-Tenant-ID"),
     clinic_id: UUID = Header(alias="X-Clinic-ID"),
     user_id: UUID = Header(alias="X-User-ID"),
     db: AsyncSession = Depends(_get_db),
 ) -> DeleteBlockResponse:
-    """Retire future slots + soft-delete block.
+    """Retire future slots + soft-delete block (with optional scoped delete).
 
     CRITICAL INVARIANT (delete-block-preserves-confirmed-appointments):
-    Slots with has_confirmed_appointment=True are NEVER deleted.
-    The response includes the count of preserved slots.
+    Slots with has_confirmed_appointment=True are NEVER deleted in any scope.
 
-    SC-1d: delete block without appointments -> future slots retired, past untouched.
-    SC-3b: delete block with confirmed appt -> warning flow handled by FE;
-           this endpoint returns preserved_appointments=N so FE can show warning.
+    scope=series (DEFAULT, backward-compat):
+        Full soft-delete of block + retire all future free slots.
+        Returns {deleted: True, preserved_appointments: N, scope: 'series'}.
 
-    Audit: doctor.availability_block_deleted (sync write, HIPAA-lite).
+    scope=occurrence (requires occurrence_date):
+        Appends occurrence_date to block.excluded_dates; retires free slots on that
+        exact date; block remains active.
+        Returns {deleted: False, preserved_appointments: N, scope: 'occurrence'}.
+
+    scope=this_and_future (requires occurrence_date):
+        Truncates series: sets end_date = occurrence_date - 1 day; retires free slots
+        with slot_date >= occurrence_date; block remains active.
+        Returns {deleted: False, preserved_appointments: N, scope: 'this_and_future'}.
+
+    422 if scope requires occurrence_date and it is missing/invalid.
+    Audit: doctor.availability_block_deleted | occurrence_excluded | truncated (sync, HIPAA-lite).
     Headers typed as UUID — FastAPI validates and returns 422 for invalid values.
     """
+    valid_scopes = {"series", "occurrence", "this_and_future"}
+    if scope not in valid_scopes:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={
+                "error": "invalid_scope",
+                "message": f"El parámetro 'scope' debe ser uno de: {', '.join(sorted(valid_scopes))}.",
+            },
+        )
+
+    if scope in ("occurrence", "this_and_future") and occurrence_date is None:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={
+                "error": "missing_occurrence_date",
+                "message": "Se requiere el parámetro 'occurrence_date' (YYYY-MM-DD) para este tipo de eliminación.",
+            },
+        )
+
     svc = _build_block_service(db)
-    deleted, preserved = await svc.delete_block(
-        block_id=block_id,
-        tenant_id=tenant_id,
-        clinic_id=clinic_id,
-        user_id=user_id,
-    )
-    await db.commit()
-    return DeleteBlockResponse(deleted=deleted, preserved_appointments=preserved)
+
+    try:
+        if scope == "occurrence":
+            assert occurrence_date is not None  # guarded above
+            await svc.exclude_occurrence(
+                block_id=block_id,
+                tenant_id=tenant_id,
+                clinic_id=clinic_id,
+                user_id=user_id,
+                occurrence_date=occurrence_date,
+            )
+            preserved = await svc.count_future_confirmed(block_id=block_id, tenant_id=tenant_id, clinic_id=clinic_id)
+            await db.commit()
+            return DeleteBlockResponse(deleted=False, preserved_appointments=preserved, scope=scope)
+
+        elif scope == "this_and_future":
+            assert occurrence_date is not None  # guarded above
+            await svc.truncate_from(
+                block_id=block_id,
+                tenant_id=tenant_id,
+                clinic_id=clinic_id,
+                user_id=user_id,
+                occurrence_date=occurrence_date,
+            )
+            preserved = await svc.count_future_confirmed(block_id=block_id, tenant_id=tenant_id, clinic_id=clinic_id)
+            await db.commit()
+            return DeleteBlockResponse(deleted=False, preserved_appointments=preserved, scope=scope)
+
+        else:
+            # scope=series — default backward-compat behavior
+            deleted, preserved = await svc.delete_block(
+                block_id=block_id,
+                tenant_id=tenant_id,
+                clinic_id=clinic_id,
+                user_id=user_id,
+            )
+            await db.commit()
+            return DeleteBlockResponse(deleted=deleted, preserved_appointments=preserved, scope=scope)
+
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={"error": "invalid_operation", "message": str(exc)},
+        ) from exc
 
 
 # ── Bio-files sub-routes (T-BE-bio-docs, delta v3 D3-B) ─────────────────────

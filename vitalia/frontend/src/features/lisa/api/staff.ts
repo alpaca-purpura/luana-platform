@@ -114,8 +114,15 @@ export const staffKeys = {
   details: () => [...staffKeys.all, "detail"] as const,
   detail: (id: string) => [...staffKeys.details(), id] as const,
   blocks: (id: string) => [...staffKeys.detail(id), "blocks"] as const,
+  /**
+   * Prefix key for ALL occurrence windows of a doctor — partial matching target
+   * for mutation invalidation (bug7 r3 D-3a: el calendario PINTA de occurrences;
+   * invalidar solo `blocks` dejaba el calendario stale tras create/update/delete).
+   */
+  occurrencesAll: (id: string) =>
+    [...staffKeys.detail(id), "occurrences"] as const,
   occurrences: (id: string, from: string, to: string) =>
-    [...staffKeys.detail(id), "occurrences", from, to] as const,
+    [...staffKeys.occurrencesAll(id), from, to] as const,
   bioFiles: (id: string) => [...staffKeys.detail(id), "bio-files"] as const,
 };
 
@@ -635,7 +642,18 @@ export function useAvailabilityOccurrences(
       );
       return res.occurrences ?? [];
     },
-    enabled: isLoaded && !!isSignedIn && !!doctorId && !!fromIso && !!toIso,
+    // bug7 r3: el endpoint exige X-User-ID y X-Clinic-ID como UUID Header
+    // REQUERIDOS — disparar la query antes de que /iam/users/me resuelva
+    // mandaba X-User-ID:"" → 422 → la query quedaba en error y el calendario
+    // pintaba VACÍO para siempre (race de page-load).
+    enabled:
+      isLoaded &&
+      !!isSignedIn &&
+      !!doctorId &&
+      !!fromIso &&
+      !!toIso &&
+      !!clinicId &&
+      !!actorHeaders["X-User-ID"],
     staleTime: 30_000,
   });
 }
@@ -691,6 +709,11 @@ export function useCreateBlock(doctorId: string) {
       void queryClient.invalidateQueries({
         queryKey: staffKeys.blocks(doctorId),
       });
+      // bug7 r3 D-3a: occurrences es la fuente de PINTADO del calendario —
+      // sin esta invalidación el bloque guardado no aparece hasta un reload.
+      void queryClient.invalidateQueries({
+        queryKey: staffKeys.occurrencesAll(doctorId),
+      });
     },
   });
 }
@@ -698,6 +721,10 @@ export function useCreateBlock(doctorId: string) {
 // ── useUpdateBlock ─────────────────────────────────────────────────────────────
 
 export interface UpdateBlockPayload {
+  /** bug7 r3 D-3b: el PATCH BE discrimina recurrent|one_off por `kind` */
+  kind?: "recurrent" | "one_off";
+  /** bug7 r3 D-3b: fecha puntual al editar un bloque one_off */
+  specific_date?: string | null;
   freq?: "weekly" | "biweekly";
   end_condition_kind?: "end_date" | "occurrences" | "open_ended";
   end_date?: string | null;
@@ -747,6 +774,11 @@ export function useUpdateBlock(doctorId: string) {
       void queryClient.invalidateQueries({
         queryKey: staffKeys.blocks(doctorId),
       });
+      // bug7 r3 D-3a: occurrences es la fuente de PINTADO del calendario —
+      // sin esta invalidación el bloque guardado no aparece hasta un reload.
+      void queryClient.invalidateQueries({
+        queryKey: staffKeys.occurrencesAll(doctorId),
+      });
     },
   });
 }
@@ -754,14 +786,29 @@ export function useUpdateBlock(doctorId: string) {
 // ── useDeleteBlock ─────────────────────────────────────────────────────────────
 
 export interface DeleteBlockResponse {
+  /** Whether the block (or occurrence) was deleted */
+  deleted: boolean;
   /** Number of confirmed appointments preserved (SC-3b) */
   preservedAppointments: number;
+  /** Scope that was applied by the backend */
+  scope: string;
+}
+
+export interface DeleteBlockParams {
+  blockId: string;
+  /** Omit for full-series delete (back-compat default = "series") */
+  scope?: "series" | "occurrence" | "this_and_future";
+  /** Required when scope = "occurrence" | "this_and_future" — ISO date YYYY-MM-DD */
+  occurrenceDate?: string;
 }
 
 /**
  * useDeleteBlock — mutation: DELETE /api/v1/vitalia/clinics/doctors/{doctorId}/availability-blocks/{blockId}
- * Returns count of preserved confirmed appointments (SC-3b warning).
- * Future availability slots freed; past slots + confirmed appts preserved.
+ * Supports recurrent-series scoped deletes via query params (round-5 bug7).
+ * scope=series (default): deletes the whole series
+ * scope=occurrence: deletes only the specific occurrence identified by occurrence_date
+ * scope=this_and_future: deletes from occurrence_date onwards
+ * Returns deletion confirmation + preserved appointments count.
  * T-FE-3 vitalia-fase2-lisa-doctores
  */
 export function useDeleteBlock(doctorId: string) {
@@ -772,11 +819,15 @@ export function useDeleteBlock(doctorId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (blockId: string) => {
+    mutationFn: async ({ blockId, scope, occurrenceDate }: DeleteBlockParams) => {
       const token = await getToken();
       if (!token || !tenantId) throw new Error("Sin autenticación");
+      const params = new URLSearchParams();
+      if (scope) params.set("scope", scope);
+      if (occurrenceDate) params.set("occurrence_date", occurrenceDate);
+      const qs = params.toString() ? `?${params.toString()}` : "";
       return fetchClient<DeleteBlockResponse>(
-        `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}/availability-blocks/${blockId}`,
+        `${API_BASE}/api/v1/vitalia/clinics/doctors/${doctorId}/availability-blocks/${blockId}${qs}`,
         {
           method: "DELETE",
           token,
@@ -789,6 +840,11 @@ export function useDeleteBlock(doctorId: string) {
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: staffKeys.blocks(doctorId),
+      });
+      // bug7 r3 D-3a: occurrences es la fuente de PINTADO del calendario —
+      // sin esta invalidación el bloque guardado no aparece hasta un reload.
+      void queryClient.invalidateQueries({
+        queryKey: staffKeys.occurrencesAll(doctorId),
       });
     },
   });

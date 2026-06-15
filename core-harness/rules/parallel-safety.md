@@ -43,6 +43,8 @@ scripts/git/sync-from-main.sh --check   # sync KISS (solo reportar)
 
 Cierre (`"eso es todo"` / `/cierra-limpio`): `git status` → stage por nombre exacto → commit → push → reportar SHA → si efímero + done → `cleanup-session.sh`.
 
+**≥2 sesiones `claude` concurrentes** → `export LUANA_LANE=<único>` ANTES de lanzar claude (aísla el perfil del Chrome DevTools MCP; sin lane distinto → colisión `SingletonLock` → toda tool-call de Chrome falla). Detalle: detail § Chrome DevTools MCP / HB-73.
+
 ## Prohibido
 
 - `git pull` · `git fetch && merge` automático · `git push --force` / `--force-with-lease`

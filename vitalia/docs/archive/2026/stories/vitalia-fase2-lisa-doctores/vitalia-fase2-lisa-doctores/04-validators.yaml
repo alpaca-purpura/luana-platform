@@ -129,7 +129,11 @@ business_rules:
     scenarios: [SC-D3F-3]
   - rule_id: RN-D3F-2
     tag: "@rule-D3F-count-occurrences-semantics"
-    desc: "multi-día × occurrences → count cuenta OCURRENCIAS totales (no semanas) — semántica Google"
+    # ★ RECONCILE bug7 round-6 (Chris ratificó 2026-06-15): "N repeticiones" = N CICLOS
+    # COMPLETOS del patrón (cada repetición incluye TODOS los días). count = occurrences
+    # × len(days_of_week). Single-día N×1=N. Multi-día → cada semana completa. (Antes
+    # decía "N totales semántica Google" — INVERTIDO por decisión de producto.)
+    desc: "multi-día × occurrences → N ciclos completos = occurrences × len(days). Mar+Jue ×3 = 6 (3 Mar + 3 Jue)"
     scenarios: [SC-D3F-1]
   - rule_id: RN-D3F-3
     tag: "@rule-D3F-legacy-projects-identical"
@@ -495,7 +499,7 @@ categories:
       type: e2e
     # ── D3-F recurrencia Google ──
     - id: V-D3F-1
-      desc: "Custom L+J cada 2 semanas ×8 → BE proyecta 8 ocurrencias (semántica Google count) + calendario pinta 8"
+      desc: "Custom L+J cada 2 semanas ×8 repeticiones → BE proyecta 8 CICLOS = 16 ocurrencias (8 L + 8 J) + calendario pinta cada semana completa [RECONCILE round-6]"
       scenario: SC-D3F-1
       type: backend_integration + e2e
       rule: RN-D3F-2

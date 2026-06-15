@@ -76,6 +76,10 @@ class AvailabilityBlock:
     # One-off field
     specific_date: date | None = None
 
+    # Scoped-delete exclusions: ISO date strings ("YYYY-MM-DD") excluded occurrence by occurrence
+    excluded_dates: list[str] = field(default_factory=list)
+    """Dates individually excluded from projection (scope=occurrence delete). ISO format."""
+
     created_at: datetime = field(default_factory=_utc_now)
     updated_at: datetime = field(default_factory=_utc_now)
     deleted_at: datetime | None = None

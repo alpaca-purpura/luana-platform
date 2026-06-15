@@ -6,11 +6,11 @@ map_zone: agentes
 map_box: adrian
 module: crm                          # ★ corregido 2026-06-03 (era sales_pipeline — duplicaba crm shipped; Chris ratificó EXTEND crm)
 capability: crm/adrian-embudo
-state: developing                      # ★ 2026-06-11 reopened — demo found 3 bugs: (1) create button no loading state, (2) lead canal no persist, (3) /recuperar empty
+state: done                            # ★ 2026-06-11 MERGED (Fase F) — demo-fix loop cerrado (3 bugs root-fixed + re-verificado live 13/13) + chris_verify SATISFIED
 defer_audit: false
 defer_audit_reason: "[HISTÓRICO] 2026-06-10..06-11 deferido tras vitalia-shell-core-hardening (merge 3cb9d5a0, done 2026-06-11) + blocker inbox-gate. AMBOS RESUELTOS: shell-hardening mergeado · inbox merged a5682bda + archived → FE arch-fitness 187/187 verde. Defer levantado 2026-06-11."
 reconciled: true
-phase: DEMO_FIX_LOOP                  # ★ 2026-06-11T18:30 reopened: Chris demo encontró 3 UX bugs en happy-path
+phase: MERGED                         # ★ 2026-06-11T21:00 — demo-fix resuelto (59894c99 + 13/13 live) → Chris re-demo SATISFIED → merge F
 audit:
   verdict: APPROVED                    # técnico — CHECKPOINTS.md (C1 4/4 · C2 4/5 demo pendiente · C3 6/6 · C4 6/6)
   by: /auditor (Auditor Responsable v5)
@@ -27,9 +27,12 @@ chris_verify:
     signed_by: Chris
     date: 2026-06-11
     result: SATISFIED
-    notes: "Verificado live en localhost:3002"
+    notes: "Verificado live en localhost:3002 — re-demo post demo-fix loop: spinner crear-lead ✓ · canal aparece en detalle ✓ · /recuperar empty-state ✓ ('probé los 3 puntos, satisfecho, dale merge')"
     open_items: []
-  rounds: []
+  rounds:
+    - date: 2026-06-11
+      found: "Demo Chris encontró 3 UX bugs: (1) crear lead sin loading state, (2) canal no persistía (root: LeadRepository.create sin kwargs funnel — TypeError 500), (3) /recuperar vacío"
+      resolved: "(1) Loader2+disabled · (2) root-fix repo + passthrough service/funnel_service/router + regresión test_lead_repo_funnel_fields.py (59894c99) · (3) no-bug, empty-state correcto. Re-verificado: e2e 13/13 live + fila DB channel=whatsapp. Colateral: stack caído (store pnpm imagen FE + KEK compose) reparado (8ce72b0e)"
 
 build_status:                          # ★ 2026-06-03 — 6/8 tickets DONE (resumido tras coordinación Chris)
   completed:                           # implementación COMPLETA, gates GREEN, committeado + pushed
@@ -131,7 +134,7 @@ ratified_visual_by_chris: true        # ★ Chris vio + aprobó mockup embudo-v3
 ratified_visual_at: 2026-06-03
 design_spec_complete: true            # § Design specification D.0-D.16 (contrato visual fiel al mockup)
 phi_classification: non_phi           # Lead = marketing prospect (crm/domain/lead.py); hipaa-lite full-set NO aplica
-release: F3
+release: F4                          # ★ corregido al merge 2026-06-11 (F4.yaml lista la story; F3 era stale)
 cap_target: crm/adrian-embudo
 cap_change_type: fix
 parent_story: null

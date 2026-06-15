@@ -680,56 +680,58 @@ def _multi_day_block(
 
 # SC-D3F-1: Mon+Thu every 2 weeks × 8 total occurrences → exactly 8 dates
 @pytest.mark.asyncio
-async def test_sc_d3f_1_mon_thu_biweekly_occurrences_8_exactly_8_dates() -> None:
-    """SC-D3F-1: Mon+Thu every 2 weeks × count=8 → EXACTLY 8 occurrence dates.
+async def test_sc_d3f_1_mon_thu_biweekly_occurrences_8_complete_cycles() -> None:
+    """SC-D3F-1 (bug7 round-6): Mon+Thu every 2 weeks × 8 repeticiones → 8 CICLOS
+    completos = 16 ocurrencias (8 Mon + 8 Thu).
 
-    dateutil.rrule(count=8, byweekday=[MO,TH], interval=2) yields 8 total
-    dates (Google Calendar semantics: count = total cross-weekday occurrences).
-    Mutation guard: off-by-one interval (interval=1 gives 14 dates in same span).
+    'N repeticiones' = N ciclos del patrón (cada repetición incluye TODOS los días),
+    ratificado Chris 2026-06-15. Antes count=8 daba 8 totales (Mon,Thu,Mon,...) y
+    dejaba el último ciclo a medias. Mutation guard: count = N × len(days).
+    Se valida sobre project_block (materialización completa, sin cap de ventana).
     """
-    # Mon=0, Thu=3; anchor 2026-06-01 (Monday)
+    from src.modules.vitalia.clinics.application.availability_projection_service import (
+        AvailabilityProjectionService,
+    )
+
     block = _multi_day_block(
         days_of_week=[0, 3],  # Monday + Thursday
         interval=2,
         occurrences=8,
         end_condition_kind="occurrences",
     )
-    svc, _ = _service_with_blocks([block])
-
-    result = await _occurrences(svc, block, MONDAY, MONDAY + timedelta(days=62))
-
-    dates = [o.occurrence_date for o in result]
-    assert len(dates) == 8, f"Mon+Thu biweekly count=8 must yield exactly 8 occurrences, got {len(dates)}: {dates}"
-    # Guard: no duplicates
-    assert len(dates) == len(set(dates)), f"No duplicate dates allowed, got {dates}"
-    # Guard: only Mon (weekday=0) or Thu (weekday=3)
+    slots = AvailabilityProjectionService(slot_duration_minutes=30).project_block(block, reference_date=MONDAY)
+    dates = sorted({s.slot_date for s in slots})
+    assert len(dates) == 16, f"8 repeticiones × [Mon,Thu] = 16 ocurrencias, got {len(dates)}: {dates}"
     for d in dates:
         assert d.weekday() in (0, 3), f"Date {d} is not Mon or Thu (weekday={d.weekday()})"
+    assert len([d for d in dates if d.weekday() == 0]) == 8, "8 lunes (8 ciclos)"
+    assert len([d for d in dates if d.weekday() == 3]) == 8, "8 jueves (8 ciclos)"
 
 
-# SC-D3F-2: All 7 weekdays × 7 occurrences → 7 consecutive calendar dates
+# SC-D3F-2: All 7 weekdays × N repeticiones → N semanas completas
 @pytest.mark.asyncio
-async def test_sc_d3f_2_all_7_days_7_occurrences_consecutive_dates() -> None:
-    """SC-D3F-2: 7 weekdays × count=7 → 7 consecutive dates (Mon–Sun).
+async def test_sc_d3f_2_all_7_days_7_occurrences_complete_weeks() -> None:
+    """SC-D3F-2 (bug7 round-6): 7 weekdays × 7 repeticiones → 7 SEMANAS completas
+    = 49 ocurrencias (7 de cada día).
 
-    rrule with byweekday=[0,1,2,3,4,5,6] interval=1 count=7 starting from
-    a Monday yields exactly the 7 days of that same week.
-    Mutation guard: count-vs-weeks (wrong: 7 weeks × 7 days = 49; right: 7 total).
+    'N repeticiones' = N ciclos del patrón (Chris 2026-06-15). Antes count=7 daba
+    7 dias consecutivos (1 semana); ahora 7 repeticiones = 7 semanas completas.
     """
+    from src.modules.vitalia.clinics.application.availability_projection_service import (
+        AvailabilityProjectionService,
+    )
+
     block = _multi_day_block(
         days_of_week=[0, 1, 2, 3, 4, 5, 6],  # all weekdays
         interval=1,
         occurrences=7,
         end_condition_kind="occurrences",
     )
-    svc, _ = _service_with_blocks([block])
-
-    result = await _occurrences(svc, block, MONDAY, MONDAY + timedelta(days=13))
-
-    dates = [o.occurrence_date for o in result]
-    assert len(dates) == 7, f"All-7-days count=7 must yield exactly 7 dates, got {len(dates)}: {dates}"
-    expected = [MONDAY + timedelta(days=i) for i in range(7)]
-    assert dates == expected, f"Expected Mon–Sun of the anchor week, got {dates}"
+    slots = AvailabilityProjectionService(slot_duration_minutes=30).project_block(block, reference_date=MONDAY)
+    dates = sorted({s.slot_date for s in slots})
+    assert len(dates) == 49, f"7 repeticiones × 7 días = 49 ocurrencias, got {len(dates)}: {dates}"
+    for wd in range(7):
+        assert len([d for d in dates if d.weekday() == wd]) == 7, f"7 ocurrencias del weekday {wd}"
 
 
 # SC-D3F-4 ★ REGRESSION: legacy single-day blocks project identically pre/post migration

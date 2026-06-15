@@ -3,7 +3,7 @@ story_id: vitalia-fase2-camila-multiplicar
 type: ui-story
 agent_owner: camila
 module: campaigns
-capability: campaigns.multiplicar
+capability: camila.multiplicar
 state: idea
 architecture_pattern: ADR-vitalia-004
 created: 2026-06-11T00:00:00Z
@@ -15,7 +15,7 @@ dependencies:
 blocks_hard: []
 blocks_soft: []
 release: F2
-cap_target: campaigns.multiplicar
+cap_target: camila.multiplicar
 parent_story: null
 ---
 

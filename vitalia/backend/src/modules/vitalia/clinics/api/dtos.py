@@ -612,6 +612,8 @@ class DeleteBlockResponse(BaseModel):
 
     SC-1d / SC-3b: delete retires future free slots; confirms preserved count.
     CRITICAL: preserved_appointments indicates confirmed appointments NOT cancelled.
+
+    scope: echoed from the request query param (series | occurrence | this_and_future).
     """
 
     model_config = ConfigDict(from_attributes=True)
@@ -619,6 +621,8 @@ class DeleteBlockResponse(BaseModel):
     deleted: bool
     preserved_appointments: int
     """Count of future slots preserved because they have confirmed appointments."""
+    scope: str = "series"
+    """Delete scope echoed: 'series' | 'occurrence' | 'this_and_future'."""
 
 
 # ── Bio generation DTOs (T-BE-4) ─────────────────────────────────────────────

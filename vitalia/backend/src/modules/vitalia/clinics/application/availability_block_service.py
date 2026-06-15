@@ -17,7 +17,7 @@ Architecture:
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, time
+from datetime import date, datetime, time, timezone
 from uuid import UUID, uuid4
 
 import structlog
@@ -241,8 +241,16 @@ class AvailabilityBlockService:
             Persisted AvailabilityBlock entity.
 
         Raises:
-            ValueError: If domain validation fails (from AvailabilityBlock.__post_init__).
+            ValueError: If domain validation fails (from AvailabilityBlock.__post_init__)
+                        or if the block date is in the past.
         """
+        # Feature #2 — past block guard
+        today = datetime.now(tz=timezone.utc).date()
+        if kind == "one_off" and specific_date is not None and specific_date < today:
+            raise ValueError("No puedes crear bloques en fechas pasadas.")
+        if kind == "recurrent" and end_condition_kind == "end_date" and end_date is not None and end_date < today:
+            raise ValueError("La fecha de fin no puede estar en el pasado.")
+
         # 1. Build domain entity (validates invariants in __post_init__)
         # D3-F precedence: days_of_week (non-empty) wins over legacy day_of_week.
         block = AvailabilityBlock(
@@ -418,6 +426,157 @@ class AvailabilityBlockService:
             preserved_appointments=preserved_count,
         )
         return True, preserved_count
+
+    async def count_future_confirmed(
+        self,
+        *,
+        block_id: UUID,
+        tenant_id: UUID,
+        clinic_id: UUID,
+    ) -> int:
+        """Return count of future confirmed slots for the block (dual filter).
+
+        Delegates to repo — keeps router DDD-clean (no svc._repo access from API layer).
+        """
+        return await self._repo.count_future_confirmed(block_id, tenant_id=tenant_id, clinic_id=clinic_id)
+
+    async def exclude_occurrence(
+        self,
+        *,
+        block_id: UUID,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        user_id: UUID,
+        occurrence_date: date,
+    ) -> "AvailabilityBlock":
+        """Exclude a single occurrence from a recurrent block (scope=occurrence delete).
+
+        Steps:
+        1. Get block (dual filter — 404 if not found)
+        2. Append occurrence_date to block.excluded_dates (dedup)
+        3. Retire FREE slots on that exact date (preserve confirmed)
+        4. Persist updated excluded_dates (block stays active — deleted_at stays NULL)
+        5. Audit SYNC (doctor.availability_block_occurrence_excluded)
+
+        Confirmed slots (has_confirmed_appointment=True) are NEVER retired.
+
+        Returns:
+            Updated AvailabilityBlock entity.
+        """
+        block = await self._repo.get_block(block_id, tenant_id=tenant_id, clinic_id=clinic_id)
+        if block is None:
+            raise ValueError("Bloque de disponibilidad no encontrado.")
+
+        # Dedup append
+        existing = list(block.excluded_dates or [])
+        iso = occurrence_date.isoformat()
+        if iso not in existing:
+            existing.append(iso)
+        block.excluded_dates = existing
+
+        # Retire free slots on that date
+        await self._repo.retire_free_slots_on_date(
+            block_id,
+            slot_date=occurrence_date,
+            tenant_id=tenant_id,
+            clinic_id=clinic_id,
+        )
+
+        # Persist excluded_dates
+        saved = await self._repo.persist_excluded_dates(
+            block_id,
+            existing,
+            tenant_id=tenant_id,
+            clinic_id=clinic_id,
+        )
+
+        # Audit SYNC
+        await self._audit.write(
+            AuditLogEntry(
+                tenant_id=tenant_id,
+                clinic_id=clinic_id,
+                user_id=user_id,
+                action="doctor.availability_block_occurrence_excluded",
+                resource_type="availability_block",
+                resource_id=block_id,
+            )
+        )
+
+        logger.info(
+            "availability_block_occurrence_excluded",
+            block_id=str(block_id),
+            tenant_id=str(tenant_id),
+            occurrence_date=iso,
+        )
+        return saved
+
+    async def truncate_from(
+        self,
+        *,
+        block_id: UUID,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        user_id: UUID,
+        occurrence_date: date,
+    ) -> "AvailabilityBlock":
+        """Truncate a recurrent block series from occurrence_date onward (scope=this_and_future).
+
+        Steps:
+        1. Get block (dual filter — 404 if not found)
+        2. Truncate series: set end_condition_kind='end_date', end_date = occurrence_date - 1 day
+        3. Retire FREE slots where slot_date >= occurrence_date (preserve confirmed)
+        4. Audit SYNC (doctor.availability_block_truncated)
+
+        Confirmed slots (has_confirmed_appointment=True) are NEVER retired.
+        Block stays active — deleted_at stays NULL.
+
+        Returns:
+            Updated AvailabilityBlock entity.
+        """
+        from datetime import timedelta  # noqa: PLC0415
+
+        block = await self._repo.get_block(block_id, tenant_id=tenant_id, clinic_id=clinic_id)
+        if block is None:
+            raise ValueError("Bloque de disponibilidad no encontrado.")
+
+        new_end_date = occurrence_date - timedelta(days=1)
+
+        # Retire free slots from occurrence_date onward
+        await self._repo.retire_free_slots_from_date(
+            block_id,
+            from_date=occurrence_date,
+            tenant_id=tenant_id,
+            clinic_id=clinic_id,
+        )
+
+        # Truncate the series
+        saved = await self._repo.truncate_block(
+            block_id,
+            new_end_date=new_end_date,
+            tenant_id=tenant_id,
+            clinic_id=clinic_id,
+        )
+
+        # Audit SYNC
+        await self._audit.write(
+            AuditLogEntry(
+                tenant_id=tenant_id,
+                clinic_id=clinic_id,
+                user_id=user_id,
+                action="doctor.availability_block_truncated",
+                resource_type="availability_block",
+                resource_id=block_id,
+            )
+        )
+
+        logger.info(
+            "availability_block_truncated",
+            block_id=str(block_id),
+            tenant_id=str(tenant_id),
+            occurrence_date=occurrence_date.isoformat(),
+            new_end_date=new_end_date.isoformat(),
+        )
+        return saved
 
 
 # ── Domain ↔ Model helpers ────────────────────────────────────────────────────

@@ -75,6 +75,7 @@ Un **servicio = una Offer de Offer Studio** (engine, vía EP-2). Campos (offer e
 | **financiamiento en cuotas** (admite + N cuotas + MSI) | brand-level | el **saldo** en cuotas; ≈monto/mes calculado; lo consume Adrián/Propuestas |
 | **scope clínica** (opcional) | brand-level | a qué clínicas se ofrece (null = todas) |
 | **activo** (toggle único) | brand-level | Adrián lo conoce + vende. (★ toggle "landing" ELIMINADO de esta story — Chris #2 2026-06-06; la landing es otra historia) |
+| **vínculo a servicio estándar** (`canonical_service_ref`) | brand-level → biblioteca | ★ 2026-06-12 · null = personalizado. Estandariza nombres + reportes comparables + match de Adrián (§ Biblioteca de servicios estándar) |
 
 > **★ Cambio Chris 2026-06-06 (post-mockup):** los peldaños de la escalera son **FIJOS** (5 columnas canónicas). El peldaño de un servicio = su `value_level` (un solo dato). **NO** existe `pricing_override` ni `cta_copy` por slot, ni un workspace de peldaño — eso agregaba complejidad sin valor. Mover un servicio entre peldaños solo cambia su `value_level`.
 >
@@ -84,13 +85,13 @@ Un **servicio = una Offer de Offer Studio** (engine, vía EP-2). Campos (offer e
 
 > Objetivo: que **Adrián tenga TODO lo que necesita para ofrecer y cerrar el servicio**. Fundado en research de treatment-coordinators dentales/estéticos + manejo de objeciones + FAQ de pacientes high-ticket + KBs de agentes IA clínicos (fuentes en `00-research.md` / research log). Marca: **🔴 must-have** (el agente no vende bien sin esto) · 🟡 nice-to-have. El workspace usa **`EntitySubNavBar`** (patrón staff) — **5 leaves** (★ Chris 2026-06-07 #4: se quitó **Stats** — esto es configuración, no analítica), cada uno es una hoja con secciones (cards), sin Shadcn tabs.
 
-### Pestaña 1 · **Resumen** — "qué es y qué se lleva el paciente" (★ Chris #5: renombrada de "Detalle")
-- 🔴 nombre · 🔴 categoría/especialidad · 🔴 **peldaño** (`value_level`) — ★ Chris #8: el badge del peldaño vive **aquí** (en Identidad de Resumen), **no** en el header del workspace (ocupaba mucho espacio) · descripción corta (lenguaje paciente, **voz de marca**) · 🟡 descripción larga
-- 🔴 **qué incluye** (lista) · 🟡 qué NO incluye (exclusiones) · 🟡 variantes/niveles (básico/premium, materiales) · 🟡 garantía
-- 🔴 duración: sesión única **o** paquete (N sesiones + min c/u) · 🟡 tiempo total del tratamiento
-- 🔴 resultado esperado · 🔴 duración del resultado (vida útil) · 🟡 tiempo a ver resultados · 🟡 sesiones requeridas · 🟡 expectativas realistas (qué NO esperar)
-- 🟡 preparación previa · 🟡 cuidados posteriores · 🟡 tiempo de recuperación/downtime
-- flag **recurrente** (+ frecuencia) · **operación mini**: 🔴 duración de la cita · 🔴 tipo de cita inicial (valoración vs tratamiento directo)
+### Pestaña 1 · **Resumen** — "qué es y qué se lleva el paciente" (★ Chris #5 renombrada · ★ 2026-06-12 reagrupada + ficha de paciente completa — RATIFICADO)
+- **Identidad:** 🔴 nombre · ★ chip **"Servicio estándar: {canónico}" / "Personalizado"** (read-only + tooltip RN-23 · § Biblioteca) · 🔴 categoría/especialidad · 🔴 **peldaño** (`value_level`) — ★ Chris #8: el badge vive **aquí**, **no** en el header (ocupaba mucho espacio) · flag **recurrente** (+ frecuencia)
+- **Qué es:** 🔴 descripción corta (lenguaje paciente, **voz de marca**) · 🟡 descripción larga · 🔴 **qué incluye** (lista) · 🟡 qué NO incluye (exclusiones) · 🟡 variantes/niveles (básico/premium, materiales) · 🟡 garantía
+- **★ El procedimiento (NEW 2026-06-12 · paciente-facing):** 🔴 **cómo se hace** (pasos numerados, lenguaje paciente) · 🟡 **anestesia / manejo del dolor** · 🔴 duración: sesión única **o** paquete (N sesiones + min c/u) · 🟡 tiempo total del tratamiento · 🟡 preparación previa · 🟡 cuidados posteriores · 🟡 tiempo de recuperación/downtime
+- **Resultados:** 🔴 resultado esperado · 🔴 duración del resultado (vida útil) · 🟡 tiempo a ver resultados · 🟡 sesiones requeridas · 🟡 expectativas realistas (qué NO esperar)
+- **★ Riesgos (NEW 2026-06-12 · paciente-facing · capa curada):** 🔴 **riesgos y efectos secundarios** (lista) · 🟡 **señales de alarma post-tratamiento** ("si pasa X, contacta a la clínica"). Adrián los cita textual; interpretación clínica libre escala al doctor (RN-22/RN-26).
+- **Operación:** 🔴 duración de la cita · 🔴 tipo de cita inicial (valoración vs tratamiento directo)
 
 ### Pestaña 2 · **Para Adrián** (Argumentario) ⭐ — "el brief de venta del agente" (TAB NUEVO)
 > El research es contundente: ~95% del cierre vive aquí (candidatura + consecuencia de no tratarse + objeciones + match), no en la ficha técnica. Es el diferencial.
@@ -119,7 +120,7 @@ Un **servicio = una Offer de Offer Studio** (engine, vía EP-2). Campos (offer e
 
 > ★ Chris #4 (2026-06-07): la pestaña **Stats** se eliminó — esta superficie es **configuración** del catálogo, no analítica. Las métricas del servicio (leads · % cierre Adrián · sesiones/mes · revenue · LTV) viven donde corresponde el reporting, **no** en la ficha de configuración (futura story de analítica/Stats, si se decide).
 
-> **MVP del registro (24 campos 🔴 mínimos para que Adrián venda):** nombre · categoría · descripción corta · qué incluye · candidato ideal · contraindicaciones · preguntas de calificación · requiere evaluación · condiciones de escalada · beneficios emocionales · dolor de no tratarse · diferenciadores · FAQ · objeciones→respuestas · resultado esperado · duración del resultado · precio/rango · precio publicable · reserva (seña) · financiamiento (cuotas) · fotos antes/después · doctores habilitados · duración de cita · palabras clave/sinónimos. (El **anticipo para iniciar** es must-have **en los servicios que lo usan** — implantes/ortodoncia/cirugía.)
+> **MVP del registro (★ 2026-06-12: 24 → 26 campos 🔴 mínimos para que Adrián venda):** nombre · categoría · descripción corta · qué incluye · **cómo se hace** ★ · **riesgos y efectos secundarios** ★ · candidato ideal · contraindicaciones · preguntas de calificación · requiere evaluación · condiciones de escalada · beneficios emocionales · dolor de no tratarse · diferenciadores · FAQ · objeciones→respuestas · resultado esperado · duración del resultado · precio/rango · precio publicable · reserva (seña) · financiamiento (cuotas) · fotos antes/después · doctores habilitados · duración de cita · palabras clave/sinónimos. (El **anticipo para iniciar** es must-have **en los servicios que lo usan** — implantes/ortodoncia/cirugía.) Completar la ficha **NUNCA bloquea** "Activo" — indicador de completitud en el workspace ("ficha 22/26 · faltan: …") · decisión Chris 2026-06-12 #3.
 >
 > **Decisión de implementación (a confirmar /architect):** `FAQ` + `objeciones→respuestas` = listas de pares editables (alimentan limpio el KB del agente), NO texto libre. `contraindicaciones` + `condiciones_escalada` son campos de **seguridad** (HIPAA-lite), no solo venta.
 
@@ -129,10 +130,11 @@ Un **servicio = una Offer de Offer Studio** (engine, vía EP-2). Campos (offer e
 
 ### Happy path (camino dorado)
 
-1. La dueña entra a **Lisa → Servicios**. Catálogo vacío → **empty-state con seed presets por vertical** (dental / estética) adoptables con un clic; con datos → **vista Catálogo** (grid de tarjetas) con **buscador + filtros** (patrón staff).
-2. Crea un servicio (**+ Nuevo servicio**) → **entra al mismo workspace que un servicio existente, pero vacío** (NO un form/Sheet aparte · ★ Chris #1). Dos formas de llenarlo, intercambiables:
-   - **(a) Arranque por documento:** carga material del servicio (folleto · lista de precios · protocolo · ficha) → **"Procesar con Lisa"** → los campos se **autocompletan** (extracción) → la dueña **revisa y ajusta**. Reduce el tipeo. (Es extracción a campos editables, NO RAG runtime — ver § Recomendación #9.)
-   - **(b) A mano:** llena las pestañas. Lisa redacta la descripción en **voz de marca**; el peldaño se elige con el selector autoexplicativo. Campos: nombre · qué incluye · especialidad · **duración** · **precio fijo o rango** + moneda · **paquete/multi-sesión** · **doctores** (opcional) · **reserva/seña + anticipo + cuotas** · **peldaño** · flags **recurrente** / **activo**.
+1. La dueña entra a **Lisa → Servicios**. Catálogo vacío → **empty-state que invita a agregar desde la biblioteca estándar** (★ 2026-06-12: el seed ES la biblioteca — absorbe los "seed presets"); con datos → **vista Catálogo** (grid de tarjetas) con **buscador + filtros** (patrón staff).
+2. Crea un servicio (**+ Nuevo servicio**) → **★ paso picker de la biblioteca** (2026-06-12 · typeahead por nombre canónico **y sinónimos**, scoped al tipo de clínica del tenant):
+   - **(a) Plantilla encontrada** → "Usar esta plantilla" → workspace **PRE-LLENADO** ✨ (descripción, cómo se hace, riesgos, FAQ, sinónimos — todo editable, origen "biblioteca") → la dueña completa **lo suyo**: precio, duración real, especialistas, cobros. Tipeo mínimo.
+   - **(b) No está** → "Crear servicio personalizado" → **workspace vacío** (mismo que editar, NO Sheet · ★ Chris #1) → **arranque por documento** (folleto/precios/protocolo → **"Procesar con Lisa"** → campos autocompletados, editables) **o a mano** (Lisa redacta la descripción en **voz de marca**; peldaño con selector autoexplicativo).
+   - Todo servicio guarda `canonical_service_ref` (null si personalizado) → nombres estándar + reportes comparables + Adrián entiende el servicio aunque cambien el display-name.
 3. **Activa** el servicio (toggle único "Activo" → Adrián lo conoce + vende).
 4. Vista **Escalera de valor**: servicios distribuidos en los 5 peldaños con **labels médicos** (Gancho gratuito · Primera visita · Tratamiento principal · Premium · Plan/convenio). **Arrastra** una tarjeta a otro peldaño; ajusta `pricing_override` + `cta_copy` del peldaño en un drawer.
 5. **Workspace del servicio** (`[offer-id]`, patrón staff `EntitySubNavBar`): 5 leaves Resumen · **Para Adrián** · Especialistas · Plan de pago · Prueba social (contenido en § Workspace del servicio).
@@ -143,10 +145,12 @@ Un **servicio = una Offer de Offer Studio** (engine, vía EP-2). Campos (offer e
 ```
 Entrar a Lisa → Servicios
 ├─ catálogo vacío
-│   ├─ adopta seed preset vertical (dental/estética) ───────────────── [SC happy-seed]
-│   └─ crea servicio → workspace VACÍO (mismo que editar · #1)
-│       ├─ lo llena a mano ───────────────────────────────────────────  [SC happy-create]
-│       └─ carga documento → "Procesar con Lisa" → autocompleta campos ─ [SC happy-doc-autocomplete] ★
+│   ├─ agrega desde la biblioteca estándar (seed = biblioteca · 2026-06-12) ─ [SC happy-seed]
+│   └─ crea servicio → ★ picker biblioteca (typeahead nombre+sinónimos)
+│       ├─ plantilla encontrada → workspace PRE-LLENADO ✨ ───────────  [SC happy-plantilla] ★
+│       └─ no está → "Crear personalizado" → workspace VACÍO (· #1)
+│           ├─ lo llena a mano ───────────────────────────────────────  [SC happy-create]
+│           └─ carga documento → "Procesar con Lisa" → autocompleta ──  [SC happy-doc-autocomplete] ★
 └─ catálogo con datos
     ├─ vista Catálogo (grid)
     │   ├─ crear/editar servicio
@@ -187,7 +191,7 @@ Cross-cutting:
 - **RN-12** · Catálogo **por-tenant**, scope clínica **opcional** por servicio (null = todas). Tenant-isolation siempre.
 - **RN-13** · El catálogo **NO es PHI** (info comercial) → tenant-isolation raíz, sin dual-filter PHI.
 - **RN-14** · Spanish neutro LatAm en toda la UI.
-- **RN-16 (★ Chris #1)** · **Crear servicio = abrir el workspace vacío** (mismo componente que editar), NO un form/Sheet separado. El "+ Nuevo servicio" crea un **borrador** y aterriza en `[offer-id]`.
+- **RN-16 (★ Chris #1 · refinada 2026-06-12)** · **Crear servicio = EL MISMO workspace que editar** (mismo componente, misma estructura de grupos/leaves — las únicas diferencias: campos vacíos/pre-llenados, chip Borrador, completitud baja). NO un form/Sheet/popup separado. El "+ Nuevo servicio" navega a la hoja "Nuevo servicio" cuya **primera vista es el picker de la biblioteca INLINE** (contenido de la hoja, NO modal); el **borrador recién se crea al elegir** plantilla o "Crear personalizado" (sin borradores fantasma) y ahí aparece el workspace.
 - **RN-17 (★ Chris #1 + #9-B)** · **Documento → doble uso:** la dueña carga material (PDF/DOCX/imagen/enlace) y al procesarlo Lisa **(a) autocompleta los campos por extracción** (one-shot, editable, revisado) **y (b) lo indexa como conocimiento consultable por Adrián** (RAG, con el scope/safety de RN-22). Reusa la entidad engine `KnowledgeSource` (per-offer) + el extractor copilot. La dueña controla por fuente si "Adrián la consulta" (RAG on/off).
 - **RN-18 (★ Chris #2 · política UI)** · Todo campo **no obvio o pesado** lleva **tooltip** explicativo (subrayado punteado + ⓘ, detalle al hover — como en el cockpit). No aplica a campos triviales (nombre, etc.).
 - **RN-19 (★ Chris #3 · vertical)** · La **estructura** del catálogo es **idéntica** para clínica dental vs estética (un servicio es un servicio). La diferenciación es por **contenido/data**, derivado de la **especialidad del tenant** (ver § Diferenciación por vertical para el mecanismo). NO se forkea la UI por vertical.
@@ -196,6 +200,9 @@ Cross-cutting:
 - **RN-22 (★ Chris #9-B · RAG en scope · safety)** · El conocimiento que Adrián consulta por RAG se limita a **contenido comercial**; **NO** responde libre sobre lo clínico (contraindicaciones/diagnóstico/medicación → **escala al doctor**). El **precio** SIEMPRE sale del **campo estructurado**, nunca del documento (anti-staleness). Ingesta con **scrub PHI** (HIPAA-lite). Los campos curados (precio, contraindicaciones, candidatura) son la capa de alta precisión; el RAG es el complemento para preguntas libres de cola larga.
 - **RN-23 (★ Chris round 3 · política de edición)** · **Todo campo se edita en su vista** (autosave). Excepciones, ambas señalizadas: **(a) dato de otra superficie** → read-only aquí + **tooltip que dice dónde se edita** (ej. moneda → config · datos del especialista → Lisa → Especialistas · opciones de especialidad → tipo de clínica · voz → Lisa → Marca); **(b) calculado** → read-only + tooltip "se calcula solo". Sin tooltip de origen un campo read-only es un bug de UX. (Auditoría completa en § Auditoría de campos.)
 - **RN-24 (★ Chris round 3 · placeholders por tipo)** · Los **placeholders, ejemplos y sugerencias** de las vistas se **orientan al tipo de clínica** (dental → "Ej: Diseño de sonrisa" · estética → "Ej: Botox preventivo"; opciones de especialidad, ejemplos del rung-picker, redacción de Lisa). El tipo viene del atributo de clínica (Onboarding/Marca · story `vitalia-fase2-marca-especialidad-clinica`). NO cambia la estructura (RN-19), solo el contenido de ayuda.
+- **RN-25 (★ Chris 2026-06-12 · estandarización)** · Crear servicio arranca en el **picker de la biblioteca estándar** (typeahead nombre+sinónimos, scoped al tipo de clínica). Servicio desde plantilla guarda `canonical_service_ref`; personalizado permitido siempre (la biblioteca ayuda, no bloquea). La biblioteca = data del preset pack EP-2 (Offer Studio), read-only para tenants.
+- **RN-26 (★ Chris 2026-06-12 · ficha de paciente completa)** · El servicio publica info completa paciente-facing: **cómo se hace** · **riesgos y efectos secundarios** · preparación · cuidados · downtime · resultados. Pre-llenada desde la plantilla cuando existe; siempre editable. Riesgos = **capa curada**: Adrián los cita textual, no interpreta (extiende RN-22). Completar la ficha NUNCA bloquea "Activo" — indicador de completitud ("ficha 22/26 · faltan: …").
+- **RN-27 (★ Chris 2026-06-12 · personalizado → candidatura)** · Servicio personalizado queda **solo en la clínica**. Flag interno "candidato a biblioteca" para curaduría central periódica — NO entra automático a la biblioteca global (calidad > volumen).
 
 ### Criterios de aceptación (AC — feature-done)
 
@@ -204,7 +211,9 @@ Cross-cutting:
 - **AC-3** · Escalera: 5 peldaños FIJOS; servicios ubicados por su `value_level`; drag mueve de peldaño; **peldaño vacío muestra qué va ahí + ejemplos por vertical + "crear aquí"** (autoexplicativo). SIN workspace de peldaño ni override.
 - **AC-4** · Workspace de servicio = patrón **staff** (`EntitySubNavBar`, NO Shadcn tabs): **5 leaves** Resumen · **Para Adrián** · Especialistas · Plan de pago · Prueba social (★ sin Stats); back vuelve a Servicios. El badge del peldaño vive en **Resumen**, no en el header. Contenido por leaf = § Workspace del servicio.
 - **AC-4.bis** · Leaf **"Para Adrián"** entrega el argumentario must-have: candidatura + contraindicaciones + condiciones de escalada + FAQ (pares) + objeciones→respuestas (5) + diferenciadores + palabras clave/sinónimos.
-- **AC-9** · Crear servicio = **"+ Nuevo servicio" abre el workspace VACÍO** (mismo `EntitySubNavBar` que editar, NO un Sheet) con borrador autoguardado + **selector de peldaño autoexplicativo** + Lisa redacta la descripción en voz de marca.
+- **AC-9** · Crear servicio = **"+ Nuevo servicio" navega a la hoja cuya primera vista es el ★ picker de la biblioteca INLINE** (2026-06-12 · NO modal/popup — contenido de la hoja; en ese estado la franja muestra solo "‹ Servicios" + título, SIN leaves porque el workspace aún no existe): plantilla encontrada → **el borrador se crea** → workspace **PRE-LLENADO** ✨ con `canonical_service_ref`; no está → "Crear personalizado" → **el borrador se crea** → workspace VACÍO. El workspace de crear es **ESTRUCTURALMENTE IDÉNTICO** al de editar (mismos leaves + grupos · RN-16) + selector de peldaño autoexplicativo + Lisa redacta la descripción en voz de marca.
+- **AC-18 (★ 2026-06-12)** · **Picker de la biblioteca (vista inline):** typeahead busca por nombre canónico **y sinónimos** ("fundas" encuentra "Carillas"), scoped al tipo de clínica; resultado muestra nombre + categoría + peldaño sugerido; "Usar esta plantilla" pre-llena ✨ los campos de contenido (NO precio/duración/especialistas — esos son de la clínica); fallback "Crear personalizado" siempre visible; "↻ Volver a elegir de la biblioteca" disponible desde el workspace borrador.
+- **AC-19 (★ 2026-06-12)** · **Indicador de completitud** en el workspace ("ficha 22/26 · faltan: riesgos, cómo se hace") — informativo, NUNCA bloquea "Activo". Los 26 must-have del § MVP son el denominador.
 - **AC-11** · **Documento → autocompletar:** en el workspace (sobre todo vacío) la dueña carga un documento + **"Procesar con Lisa"** → los campos se **pre-llenan** y quedan **editables** (los revisa antes de guardar). El documento se usa para extracción, **no** se indexa a RAG runtime.
 - **AC-12** · **Tooltips** en los campos no obvios/pesados (peldaño, contraindicaciones, escalada, anticipo, reserva, palabras clave): subrayado punteado + detalle al hover.
 - **AC-13** · **Autoguardado** en todo el workspace (sin botón "Guardar"): editar un campo, vincular especialista, togglear activo → persisten solos (debounce) + indicador "💾 guardado". "Descartar borrador" elimina; "Activar" es toggle de estado.
@@ -215,19 +224,21 @@ Cross-cutting:
 - **AC-10** · Catálogo con **buscador + filtros** (nombre + especialidad + activo), patrón staff.
 - **AC-5** · Link servicio↔especialista: **Vincular especialista** abre un selector del **roster** (`lisa-doctores`, NO crea especialistas) con buscador + checkboxes; el link **autoguarda** al marcar (sin botón Guardar · RN-20) y es consultable (cimiento canal-inbound RN-17). Cada especialista vinculado tiene **"Ver detalle ↗"** que deep-linkea a su ficha en **Lisa → Especialistas** + **Desvincular** (no borra al especialista del roster).
 - **AC-6** · **KEYSTONE:** un servicio activo aparece en el conocimiento del agente (verificable live: `TenantKnowledgeBuilder` lo inyecta / Adrián lo cita).
-- **AC-7** · Seed presets dental/estética adoptables desde el empty-state.
+- **AC-7** · Empty-state invita a **agregar desde la biblioteca estándar** (★ 2026-06-12: el seed ES la biblioteca — dental + estética Tier 1, contenido generado por Lisa + curado).
 - **AC-8** · RBAC (admin/owner editan, resto read-only) + cross-tenant bloqueado + a11y (keyboard drag + axe).
 
 ---
 
-## § Wireframes (mockups · v2 dentro del shell · cambios Chris 2026-06-06)
+## § Wireframes (mockups · ★ v3 2026-06-12 · canon `@luana/ui-kit` + biblioteca · cambios Chris 2026-06-06/12)
 
-`mockups/` — **shell-organism completo verbatim** (TopBar + Ribbon Lisa + SubTabsBar + ValeriaSidebar 50/50, portado de lisa-marca v2.1 + `EntitySubNavBar` shipped). `_shared.css` = chrome canónico + clases servicios. Tokens HSL de `globals.css`, datos LatAm reales, Spanish neutro.
+`mockups/` — **shell-organism completo verbatim** (TopBar + Ribbon Lisa + SubTabsBar + ValeriaSidebar 50/50, portado de lisa-marca v2.1). ★ v3: el N3 se compone del **canon `design-system-canon.md`** — `EntityWorkspaceLayout` + `EntitySubNavBar` **full-bleed** (franja tercer-ribbon §2.2, NO card) + **`EntityPicker` ▾ switcher** (§2.4 · cambiar de servicio sin volver — RATIFICADO Chris 2026-06-12) + **`EntityInfoCard` Opción B** (§2.3) + `Select` canónico (§2.5) + **una sola `FloatingAutosaveIndicator`** (§2.6). `_shared.css` = chrome canónico + clases servicios. Tokens HSL de `globals.css`, datos LatAm reales, Spanish neutro.
 
-- `catalogo.html` — sub-tab Servicios → N3 SubSubTabsBar **[Catálogo · Escalera]** · grid de tarjetas (icono · peldaño badge · duración · precio fijo/rango · doctores o aviso "sin doctores" · chip de capacidad **💳 cuotas** · recurrente · **switch único Activo**) + empty-state con seed presets. ★ Chris #2: se quitaron los chips "seña X%" de las tarjetas (confundían) — la seña se crea y explica en la ficha → Plan de pago.
-- `escalera.html` — **5 peldaños FIJOS** (labels médicos sobre `OfferValueLevel`) **autoexplicativos**: cada peldaño dice qué va ahí; el **vacío muestra ejemplos por vertical + "crear aquí"**. Drag mueve de peldaño. SIN drawer de override.
-- `servicio-workspace.html` — `[offer-id]` con **`EntitySubNavBar` (patrón staff · NO tabs)**: back ‹ Servicios + entidad (sin badge de peldaño en el header, #8) + **5 leaves** Resumen / Para Adrián / Especialistas / Plan de pago / Prueba social (★ sin Stats) + strip KEYSTONE (activo → Adrián lo conoce). **Plan de pago** = los 3 cobros (reserva + anticipo + cuotas, #2/#3). **Especialistas** = vincular-desde-roster + "Ver detalle ↗" al doctor en Lisa (#6/#7).
-- `nuevo-servicio.html` — **crear = workspace VACÍO** (★ Chris #1 · ya NO es un Sheet): mismo shell + `EntitySubNavBar` (5 leaves) con campos en blanco + **card "Arranca rápido"** (cargar documento → "Procesar con Lisa" → autocompleta · extracción editable) + selector de peldaño autoexplicativo + Lisa redacta descripción. Otros leaves se completan al guardar.
+- `catalogo.html` — sub-tab Servicios → N3 SubSubTabsBar **[Catálogo · Escalera]** · ★ v3 grid de **`EntityInfoCard`** (acento Lisa arriba · media circular · título + especialidad · fila de métricas duración/precio/especialistas · footer chip Activo/Borrador + 🟡 chip origen Estándar/Personalizado · kebab ⋮) + filtros con `Select` canónico + empty-state que invita a **agregar desde la biblioteca**. ★ Chris #2: sin chips "seña X%" (la seña se explica en Plan de pago).
+- `escalera.html` — **5 peldaños FIJOS** (labels médicos sobre `OfferValueLevel`) **autoexplicativos**: cada peldaño dice qué va ahí; el **vacío muestra ejemplos de la biblioteca** (★ v3 · antes "por vertical") + "crear aquí". Drag mueve de peldaño. SIN drawer de override. **★ Layout (Chris 2026-06-12):** Gancho gratuito = **fila full-width arriba** · Primera visita + Tratamiento principal + Premium = **3 columnas al medio** · Plan/convenio = **fila full-width abajo** (reparte mejor + refleja el recorrido: entrada → núcleo de venta → permanencia).
+- `servicio-workspace.html` — `[offer-id]` con **`EntitySubNavBar` canon full-bleed**: root-pill **‹ Servicios** + **`EntityPicker` ▾** (saltar de servicio sin volver) + **5 leaves** Resumen / Para Adrián / Especialistas / Plan de pago / Prueba social + strip KEYSTONE (activo → Adrián lo conoce). ★ v3 Resumen reagrupado: Identidad (+ chip "Servicio estándar") · Qué es · **El procedimiento** (cómo se hace + anestesia + duración/sesiones + preparación/cuidados/downtime) · Resultados · **Riesgos** (riesgos + señales de alarma) · Operación. + **indicador de completitud** ("ficha 22/26") + **una** píldora autosave flotante. **Plan de pago** = los 3 cobros (#2/#3). **Especialistas** = vincular-desde-roster + "Ver detalle ↗" (#6/#7).
+- `nuevo-servicio.html` — ★ v3.1 (Chris 2026-06-12) **crear arranca en el picker de la biblioteca como VISTA INLINE de la hoja** (NO modal/popup): typeahead nombre+sinónimos → resultado con categoría + peldaño sugerido → "Usar esta plantilla" / "Crear personalizado". En el estado picker la franja muestra solo "‹ Servicios" + título (el workspace aún no existe); **al elegir se crea el borrador** y aparece el workspace — **ESTRUCTURALMENTE IDÉNTICO al de editar** (mismos 5 leaves + mismos 6 grupos de Resumen · RN-16): plantilla → PRE-LLENADO ✨ (chip estándar, ficha 9/26); personalizado → VACÍO (chip Personalizado, ficha 2/26). El panel "Fuentes & conocimiento" vacío absorbe el viejo "Arranca rápido" (documento → "Procesar con Lisa" → autocompleta). "↻ Volver a elegir" regresa al picker.
+
+> **★ Root de la franja (Chris 2026-06-12 · = construcción nueva de staff/ui-kit):** el "‹ Servicios" es **un leaf-peer más del tablist** (`EntitySubNavBar` de `@luana/ui-kit`: el root es la primera entrada con "‹" adelante, mismas clases/forma que los demás leaf-tabs, estado inactivo) — NO un pill con estilo propio. Aplicado en ambos workspaces (clase `entity-leaf-root` en mockups).
 
 > ★ Cambios de shell (FIRMA-2 + round 3): **#4 (RATIFICADO global por Chris)** los leaf-tabs del workspace (`.entity-leaf`) tienen **el mismo color y forma que los SubSubTabs** → se aplica **global** al `EntitySubNavBar` shipped (staff/doctores también) para consistencia en todo el shell. Nota a `/architect` + `SHELL-DESIGN-CONTRACT`. **#2** campos no obvios → **tooltip** (`.tip` · Shadcn `Tooltip` en código). **Round 3:** panel **"Fuentes & conocimiento"** persistente+colapsable (`<details>`/Shadcn) visible en crear+editar · **autosave** (sin botón Guardar · indicador 💾) · `Doctores`→**`Especialistas`** · tarjetas sin badge de peldaño.
 
@@ -238,13 +249,22 @@ cd vitalia/docs/product/stories/vitalia-fase2-lisa-servicios/mockups && python3 
 
 ## § Componentes (reuse > new · verificar en `vitalia-design-system`)
 
+> ★ v3 2026-06-12 — el N3 **compone del canon** (`design-system-canon.md` §2): las piezas Entity* + page-primitives vienen de **`@luana/ui-kit` 0.4.0** (shippeadas — verificado `core/@luana/ui-kit/src/index.ts`), NO de la réplica local vieja.
+
 | Componente | Path (verificar) | reuse/new |
 |---|---|---|
 | Shell chrome (TopBar · Ribbon · SubTabsBar · ValeriaSidebar) | `components/shared/shell-organism/` | reuse (shipped) |
 | **SubSubTabsBar** (Catálogo · Escalera, N3-static) | `components/shared/shell-organism/SubSubTabsBar.tsx` | reuse (shipped) |
-| **EntitySubNavBar** (workspace servicio, patrón staff · NO tabs) | `components/shared/shell-organism/EntitySubNavBar.tsx` | reuse (shipped · = lisa-doctores) |
-| Card · Badge · Switch · Select · Avatar | `components/ui/{card,badge,switch,select,avatar}.tsx` | reuse |
+| **★ `EntityWorkspaceLayout`** (N3 list/detail · canon §2.1) | `@luana/ui-kit` (`core/@luana/ui-kit/src/EntityWorkspaceLayout.tsx`) | reuse (ui-kit 0.4.0) |
+| **★ `EntitySubNavBar`** (franja full-bleed canon §2.2 · root-pill ‹ + picker + leaves) | `@luana/ui-kit` (reemplaza réplica local) | reuse (ui-kit 0.4.0) |
+| **★ `EntityPicker`** (switcher ▾ · buscador server-side + paginado · canon §2.4 · RATIFICADO 2026-06-12) | `@luana/ui-kit` | reuse (ui-kit 0.4.0 · = lisa-doctores) |
+| **★ `EntityInfoCard`** (cards del catálogo · Opción B canon §2.3 + Skeleton + Empty) | `@luana/ui-kit` | reuse (ui-kit 0.4.0) |
+| **★ `Group` / `GroupHeader` + `FloatingAutosaveIndicator`** (info agrupada + 1 píldora autosave · canon §2.6) | `@luana/ui-kit` | reuse (ui-kit 0.4.0) |
+| **★ Page-primitives** (`PageContainer` · `PageContentStack` · `Toolbar` · `FilterBar` · `EmptyState` · canon §2.7) | `@luana/ui-kit` (`layout/`, `archetypes/`) | reuse (ui-kit 0.4.0) |
+| Card · Badge · Switch · **`Select` canónico (§2.5 · NO `<select>` nativo)** · Avatar | `@luana/ui-kit` + `components/ui/` | reuse |
 | **Input + Search icon (buscador) + Select (filtros)** — patrón `StaffDirectoryHeader` | `components/ui/{input,select}.tsx` | reuse |
+| **★ `BibliotecaPicker`** (modal "+ Nuevo": typeahead nombre+sinónimos sobre la biblioteca + "Usar plantilla" / "Crear personalizado" · RN-25) | `features/lisa/components/servicios/` | NEW (justif: picker de plantillas de contenido, no existe equivalente — distinto de `EntityPicker` que cambia entidad existente) |
+| **★ `FichaCompletenessChip`** (indicador "ficha 22/26 · faltan: …" · AC-19) | `features/lisa/components/servicios/` | NEW (justif: derivado de los 26 must-have del § MVP) |
 | ~~Sheet (crear servicio)~~ — ★ #1: crear ya NO usa Sheet; reusa `ServiceWorkspace` en modo vacío | — | eliminado |
 | DnD (mover servicio de peldaño) | `@dnd-kit/core` (ya en `adrian-embudo`) | reuse |
 | `ServiciosDirectoryHeader` (título + buscador + filtros + Nuevo) · `ServiceCard` (★ sin badge de peldaño · #8) · `EscaleraView` (5 rungs fijos) · `RungColumn` (con guía de vacío) · `ServiceWorkspace` (crear + editar = mismo · #1) + leaves (`ResumenView` · **`ParaAdrianView`** · `EspecialistasView` · `PlanPagoView` · `PruebaSocialView`) · **`EspecialistaLinkPicker`** (selector del roster `lisa-doctores` · #6) · **`KnowledgeSourcesPanel`** (★ panel "Fuentes & conocimiento" persistente+colapsable · dropzone + "Procesar con Lisa" + lista de fuentes con estado extraído/indexado + toggle "Adrián consulta" · #1+#9B) · `SeedPresetCard` · `RungPicker` (peldaño autoexplicativo) · `FaqPairList` + `ObjecionPairList` | `features/lisa/components/servicios/` | NEW (feature-local) |
@@ -269,6 +289,8 @@ Batch 3: link doctor opcional pero recomendado · RBAC admin+owner editan / rest
 - **(autosave)** Patrón autoguardado del workspace (debounce on-change · sin botón Guardar · RN-20) reusando el patrón shipped de otras sub-tabs (ADR-vitalia-004 §5 autosave 600ms).
 - **(#3)** **Especialidad de la clínica** (tenant-level): confirmar si existe el campo en brand/onboarding; si no, su autoría es **cross-story onboarding/marca** (`/pm-vitalia`). Servicios lo **consume** read-only (presets + hints + opciones del dropdown per-servicio). Distinto del campo per-servicio `especialidad/categoría`, que sí vive aquí.
 - **(#2)** Átomo `FieldTooltip` (Shadcn `Tooltip`) + convención de cuáles campos lo llevan.
+- **(★ 2026-06-12 · biblioteca)** Modelo de la **biblioteca de servicios estándar**: tabla brand-level read-only (entrada canónica: nombre + sinónimos + categoría + peldaño sugerido + plantilla de contenido) como **data del preset pack EP-2** (`offer/extensions.py`) · `canonical_service_ref` en el offer vitalia · endpoint typeahead (nombre+sinónimos, scoped tipo de clínica) · flag interno "candidato a biblioteca" (RN-27) · seed dental + estética (contenido Lisa-generado + curado — proceso de curaduría a definir).
+- **(★ 2026-06-12 · completitud)** Cálculo del indicador "ficha N/26" (denominador = § MVP must-have; campos condicionales como anticipo cuentan solo donde aplican).
 
 ## § Auditoría de campos — editable / dónde se edita (★ Chris round 3 · "dale una auditoría")
 
@@ -377,5 +399,63 @@ Batch 3: link doctor opcional pero recomendado · RBAC admin+owner editan / rest
 
 **★ DECIDIDO (Chris round 3, 2026-06-07): A + B TODO EN ESTA STORY (junto, no se parte).** Mi recomendación de diferir queda **superada** — pero **conservo las guardas** no-negociables (RN-22): RAG solo comercial · precio siempre del campo (no del PDF) · clínico escala al doctor · scrub PHI en ingesta. El **cómo** (modelo dual documento→extrae+indexa) está en **§ Modelo de conocimiento**. La **dependencia de engine-lift** (`/pm-luana`: indexer Qdrant real hoy STUB + tool de retrieval del sales_agent hoy inexistente) es **parte del alcance** → `/architect` la dimensiona en el ready package.
 
+## § Biblioteca de servicios estándar + ficha completa de paciente (★ DELTA Chris 2026-06-12 · ✅ RATIFICADO 4/4 — INTEGRADO al cuerpo: § Modelo + § Workspace/Resumen + § Mapa funcional + RN-25/26/27 + AC-7/9/18/19 + § Componentes + § Pendientes. Esta sección queda como registro de la decisión.)
+
+> Pedido Chris (reanudación, 2026-06-12): (1) servicios **asociados al tipo de centro**; (2) NO una plantilla de UI por tipo, sino una **base de servicios disponibles** por tipo de clínica — la dueña elige de la lista y si no está, lo agrega — para **estandarizar nombres** (evitar "ponerle nombres de un servicio a otro"); (3) **toda la información disponible para el paciente**: cómo se hace, riesgos, etc. Research: Fresha/Booksy = menú 100% libre sin lista maestra (el caos de nombres es real, esto es diferencial) · RealSelf = estructura canónica de ficha de tratamiento paciente-facing (qué es / cómo funciona / candidatos / qué esperar / riesgos / recuperación / costo / resultados).
+
+### Concepto — Biblioteca de servicios estándar
+
+Una **biblioteca curada por-vertical** (keyed por el **tipo de clínica** del tenant — story `marca-especialidad-clinica`): entradas canónicas finitas (odontología ≈ 40-60 servicios reales, estética ≈ 30-50). Cada entrada = **plantilla de contenido**, NO una UI distinta (RN-19 intacta — misma estructura, distinto contenido):
+
+| Campo de la entrada canónica | Para qué |
+|---|---|
+| nombre canónico + **sinónimos** ("carillas" = "fundas" = "arreglarme los dientes") | estandarización + match RN-16 de Adrián pre-llenado |
+| categoría/especialidad + **peldaño sugerido** (`value_level`) | clasificación consistente |
+| descripción base (lenguaje paciente) | pre-fill editable |
+| **cómo se hace** (pasos) · anestesia/dolor · duración típica · nº sesiones típico | pre-fill ficha procedimiento |
+| **riesgos y efectos secundarios** base · preparación · cuidados posteriores · downtime típico | pre-fill seguridad/recuperación |
+| FAQ skeleton + objeciones típicas | pre-fill Para Adrián |
+
+**Dónde vive (anti-dup):** data de **Offer Studio preset pack EP-2** (mecanismo ya diseñado — `ExpertBusinessType`/presets del engine; CERO edit engine). Tabla brand-level vitalia read-only para tenants; `/architect` concreta. Nota: Chris la llamó "BS" — interpretado como **base de servicios**; técnicamente es dominio Offer Studio (no Brand Studio).
+
+### Flujo "+ Nuevo servicio" v3 (reemplaza el aterrizaje directo al workspace vacío)
+
+1. **+ Nuevo servicio** → **paso picker**: typeahead sobre la biblioteca del tipo de clínica (busca por nombre canónico **y sinónimos**). Resultado muestra: nombre + categoría + peldaño sugerido.
+2. **Lo encuentra** → "Usar esta plantilla" → workspace creado **PRE-LLENADO** (campos plantilla marcados ✨ con origen "biblioteca", todos editables) → la dueña completa **lo suyo**: precio, duración real, especialistas, cobros. Tipeo mínimo.
+3. **No lo encuentra** → "Crear servicio personalizado" → workspace vacío (flujo actual: doc-autocomplete RN-17 o a mano). El servicio queda `origen: personalizado`.
+4. Todo servicio guarda su **vínculo a la entrada canónica** (`canonical_service_ref`, null si personalizado) → estandarización real: reportes comparables + Adrián entiende el servicio aunque la dueña le cambie el display-name.
+5. El **empty-state "seed presets"** (Bif `happy-seed`) se **absorbe**: el seed ES la biblioteca ("agrega tus primeros servicios desde la biblioteca").
+
+### Campos NUEVOS por vista (delta sobre lo firmado — el resto NO cambia)
+
+**Workspace → Resumen** (reagrupado en cards):
+- Grupo Identidad: + chip **"Servicio estándar: {nombre canónico}"** read-only (tooltip RN-23: "estandariza el nombre — viene de la biblioteca") o "Personalizado".
+- **Grupo NUEVO "El procedimiento"** (paciente-facing): 🔴 **cómo se hace** (pasos numerados, lenguaje paciente) · 🟡 **anestesia / manejo del dolor** · (absorbe los ya-firmados: duración sesión 🔴 · nº sesiones 🔴 · preparación previa 🟡 · cuidados posteriores 🟡 · downtime 🟡).
+- **Grupo NUEVO "Riesgos"** (paciente-facing): 🔴 **riesgos y efectos secundarios** (lista) · 🟡 **señales de alarma post-tratamiento** ("si pasa X, contacta a la clínica").
+- Grupo Resultados: sin campos nuevos (ya firmados).
+
+**Workspace → Para Adrián:** sin campos nuevos; **sinónimos/palabras-clave llegan PRE-LLENADOS** desde la biblioteca (el match RN-16 arranca con base). Riesgos curados: Adrián **puede citarlos textual** (capa de alta precisión); interpretación clínica libre **escala al doctor** (extiende RN-22).
+
+**Catálogo (grid):** 🟡 chip origen "Estándar/Personalizado" en la card + 🟡 filtro origen. Resto igual.
+
+**Escalera:** sin cambios de campos; los **ejemplos de peldaño vacío** ahora salen de la biblioteca (antes: generados).
+
+**MVP must-have: 24 → 26 campos** (+ cómo se hace · + riesgos).
+
+### RN nuevas (post-aprobación se integran arriba)
+
+- **RN-25 (estandarización)** · Crear servicio arranca en el **picker de la biblioteca** (typeahead nombre+sinónimos). Servicio desde plantilla guarda `canonical_service_ref`. Personalizado permitido siempre (la biblioteca ayuda, no bloquea).
+- **RN-26 (ficha de paciente completa)** · El servicio publica info completa paciente-facing: cómo se hace · riesgos · preparación · cuidados · downtime · resultados. Pre-llenada desde la biblioteca cuando hay plantilla; siempre editable; los campos de seguridad (riesgos) son capa curada (Adrián cita textual, no interpreta — RN-22).
+- **RN-27 (personalizado → candidatura)** · Servicio personalizado queda **solo en la clínica** (MVP). Flag interno "candidato a biblioteca" para curaduría nuestra periódica — NO entra automático a la biblioteca global (calidad > volumen). *(decisión b abierta)*
+
+### Decisiones que Chris aprueba/ajusta (gate del mockup)
+
+1. **Flujo picker-primero** ("+ Nuevo" → biblioteca → plantilla o personalizado) — ¿OK?
+2. **Personalizado:** recomendación = solo-clínica + candidatura interna curada (NO auto-publicar a biblioteca global). ¿OK?
+3. **Completitud sin bloqueo:** activar un servicio NUNCA se bloquea por ficha incompleta; en su lugar **indicador de completitud** en el workspace ("ficha 22/26 · faltan: riesgos, cómo se hace"). ¿OK, o preferís bloquear "Activo" sin los 🔴?
+4. **Seed inicial:** biblioteca curada para **odontología + medicina estética** (Tier 1), contenido generado por Lisa + curado, como data del preset pack. Otras verticales después. ¿OK?
+
 ## Próximo paso
 **✍ FIRMA 1 (intención)** sobre este § Mapa funcional + § Modelo → luego mockups per-component (catálogo card · escalera canvas · workspace servicio · drawer peldaño) con fidelidad de shell (ADR-003) → **✍ FIRMA 2** → RONDA 2 (Gherkin + matriz de cobertura) → transition refining→refined.
+
+> ★ 2026-06-12: FIRMA 1 dada (2026-06-06) + switcher `EntityPicker` confirmado. Pendiente: aprobación del § DELTA biblioteca/ficha-paciente (arriba) → integrar al cuerpo → refresco de los 4 mockups (canon `@luana/ui-kit`: `EntityWorkspaceLayout` + `EntityPicker` + `EntityInfoCard` + picker biblioteca) → **✍ FIRMA 2** → RONDA 2.

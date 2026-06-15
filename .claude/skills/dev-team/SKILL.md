@@ -3,7 +3,7 @@ name: dev-team
 description: "Developer team router v4 (Conv 2 autonomous build) — lee ready package, itera ticket-por-ticket implement→validators→fix hasta GREEN, decide owner (R23, tier flagship obligatorio para agentic prod), TDD, mantiene impl-log, ready→developing→developed + auto-handoff /auditor."
 when_to_use: "Activa cuando user dice: '/dev-team', 'toma ticket T-N', 'implementa T-N', 'arranca build', 'autonomous build'."
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Agent
-model: fable
+model: opus
 ---
 <!-- voseo-allowed: doc interno / buzón conversacional, no user-facing -->
 

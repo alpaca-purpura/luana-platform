@@ -79,7 +79,7 @@ describe("SC-D3F-3 — formatRecurrenceSummary", () => {
     });
     expect(result).toContain("lunes");
     expect(result).toContain("jueves");
-    expect(result).toContain("8 veces");
+    expect(result).toContain("8 repeticiones");
     expect(result).toContain("cada 2 semanas");
   });
 
@@ -118,7 +118,7 @@ describe("SC-D3F-3 — formatRecurrenceSummary", () => {
     expect(result).toContain("hasta el 2026-12-31");
   });
 
-  it("occurrences=1 → singular '1 vez'", () => {
+  it("occurrences=1 → singular '1 repetición'", () => {
     const result = formatRecurrenceSummary({
       repeatPreset: "weekly",
       daysOfWeek: [2],
@@ -126,12 +126,12 @@ describe("SC-D3F-3 — formatRecurrenceSummary", () => {
       endConditionKind: "occurrences",
       occurrences: 1,
     });
-    expect(result).toContain("1 vez");
-    // NOT "1 veces"
-    expect(result).not.toContain("1 veces");
+    // bug7 round-6: "repeticiones" (ciclos del patrón), no "veces"
+    expect(result).toContain("1 repetición");
+    expect(result).not.toContain("1 repeticiones");
   });
 
-  it("occurrences=4 → plural '4 veces'", () => {
+  it("occurrences=4 → plural '4 repeticiones'", () => {
     const result = formatRecurrenceSummary({
       repeatPreset: "weekly",
       daysOfWeek: [4],
@@ -139,7 +139,7 @@ describe("SC-D3F-3 — formatRecurrenceSummary", () => {
       endConditionKind: "occurrences",
       occurrences: 4,
     });
-    expect(result).toContain("4 veces");
+    expect(result).toContain("4 repeticiones");
   });
 
   it("2-day summary uses 'los X y Y' format (W1: plural uses 'los', not 'el')", () => {

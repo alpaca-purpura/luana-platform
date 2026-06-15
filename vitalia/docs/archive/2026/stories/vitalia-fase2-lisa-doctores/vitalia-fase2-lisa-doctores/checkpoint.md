@@ -6,7 +6,7 @@ map_zone: agentes
 map_box: lisa
 module: clinics
 capability: lisa.doctores
-state: developed                       # ★ 2026-06-12 delta v3 COMPLETO 12+5 tickets · Step 4.5 41/41 · Step 4.6 GREEN · 2026-06-11 REANUDADA ratificado Chris (gate shell-core-hardening DONE 2026-06-11) + scope extension entity-switcher folded (ver scope_extension_2026_06_11)
+state: done                            # ★ 2026-06-15 /pm-vitalia merge (Fase F): 07-merge.md + cap ledger lisa-doctores (fix+extend bug7 rounds 4-6, cap-doctor 0) + archive R2. ⏸ squash wip/vitalia→main PENDIENTE OK Chris (integración + staging deploy MANUAL).
 prior_state_before_park: developing
 unparked_at: 2026-06-11T21:30:00-05:00
 parked_at: 2026-06-10T00:00:00-05:00   # histórico
@@ -24,7 +24,8 @@ defer_audit_resolution: >-
   + i18n, (6) visual goldens → project=visual (requiere ratify Chris), (7) live-verify
   real → cap lisa.doctores + auditor. Work order detallado en chris-input.md.
 architecture_pattern: ADR-vitalia-004
-last_modified: '2026-06-07T02:53:00Z'
+reconciled: true                       # ★ 2026-06-15 R (reconcile) /pm-vitalia: 01-spec/04-validators ⟵ realidad bug7 rounds 4-6 (día-de-semana TZ · delete-scope occurrence/this_and_future + migración 044 · no-crear-pasado · occurrences = N ciclos completos). Stale "N totales / count=occurrences" INVERTIDO a N ciclos. Reconcile addendum en 01-spec § "Reconcile bug7 (rounds 4-6)". Precondición del auditor cumplida.
+last_modified: '2026-06-15T00:00:00Z'
 ready_package_by: /architect (Opus 4.8)
 ready_package_at: '2026-05-31'
 autonomous_mode: true
@@ -75,7 +76,137 @@ dod_evidence:
     observed: "200 + og:title/description/image presentes + badge Colegiatura 12345 (PE) + Consultorio Sanaré LATAM + sin CTA/stats + slug inexistente y toggle-OFF → 'Perfil no disponible' idéntico (anti-enum) + sin overflow-x mobile"
     backend_log: "POST generate-profile 200 (LLM down → fallback extractivo, graceful) · PATCH 200 · GET público 200 · public_profile+bio_generated_at+public_slug persistidos (DB verificado)"
 verified_at: 2026-06-12
-phase: HANDOFF_TO_AUDITOR
+phase: DONE   # ★ 2026-06-15 mergeada a done en wip/vitalia (07-merge + cap + archive). Resta solo squash→main con OK Chris.
+chris_verify:
+  required: true            # demo_required true (delta incluye goldens/demo)
+  signoff:
+    by: Chris
+    date: 2026-06-15
+    result: SATISFIED
+    notes: >-
+      Chris verificó live en dev-app (rounds 1-6). Firma cubre el scope completo
+      verificado: bug7 round-4 (día-de-semana TZ, lunes pinta lunes) + round-5
+      (borrado recurrente con scope 'Solo este turno'/'Este y los siguientes' +
+      no-crear-en-pasado + multi-día) + round-6 ('N repeticiones' = N ciclos
+      completos del patrón). "Ya lo verifiqué, todo bien — firma SATISFIED".
+    open_items:
+      - "Bloques multi-día creados PRE round-6-fix (Chris: 1c1f3a80, 73fe89d4) no auto-corrigen — editar/recrear. NO bloquea."
+  rounds:
+    - date: 2026-06-12
+      finding: "Staff/horarios: no se puede guardar un bloque nuevo (uno solo ni repetido). Chris reporta 'el botón Guardar no existe, solo Cancelar'. dod_evidence previo (recurrent 201 vía orchestrator/Playwright, L68-70) NO reproduce el click real de Chris ⇒ verificación-real ≠ orchestrator-green. Ver regression_2026-06-12_bug7."
+      result: REJECTED
+      resolution: "→ /dev-team fix-loop repro-first TDD RED. Absorbe la idea-story guardar-bloque (folded por decisión Chris 2026-06-12 · WIP-cap clinics intacto). FIX round-1 commit f85c8ce2 (feedback toast success/error/onInvalid · server save ya estaba 201)."
+    - date: 2026-06-12
+      finding: "G round-2 REJECTED: (D-1) botón Guardar invisible claro+oscuro — ROOT CAUSE confirmado bg-[--agent-lisa] BloquePopover.tsx:1015 sintaxis Tailwind v3 muerta en v4.1 → sin background + text-black; (D-2) drag-create ROTO regresión (celdas no seleccionan, popup sale solo — sospecha DndContext delta v3 fdedd706 captura pointer events); (D-3) saves incorrectos en varios escenarios (matriz completa pendiente). Round-1 NO fue ejercido live por /dev-team (Chrome MCP locked + no usó Playwright headless fallback) — causa raíz del escape."
+      result: REJECTED
+      resolution: "→ round 3 en conversación NUEVA (contexto agotado). WORK-ORDER completo: WORK-ORDER-bug7-round3.md (matriz 15 casos Google-Calendar-clone + RED-first + live-verify #37 obligatorio por el propio dev-team con Playwright real-backend)."
+    - date: 2026-06-14
+      finding: "Round 3 ejecutado por /dev-team (Playwright real-backend, RED-first, live-verify ejercida por mí). 8 root causes fixeados (D-1/D-2/D-3 + 5 latentes, el más gordo el DOBLE OFFSET de pintado que NO estaba en el work-order + Toaster sonner nunca montado que hacía inoperante el fix del round-1). Matriz 15/15 GREEN real-backend. BE logs POST 201 incl. one_off (★ primero en logs) + PATCH 200 + DELETE 200 + 63 phi_audit. fix_commit 471dc97b. Detalle: regression_2026-06-12_bug7.round3 + T-FIX-bug7-round3-result.md."
+      result: REJECTED
+      resolution: "G round-3 PARCIAL (Chris live): one_off OK, pero recurrente seleccionado en LUNES se pinta en columna DOMINGO. → round 4: casuística completa contra DB."
+    - date: 2026-06-14
+      finding: "Round 4 ejecutado por /dev-team (inline, real-backend, ground truth INDEPENDIENTE = DB ISODOW + geometría DOM, NO espejo del cálculo de producción que fue el escape de round-3). Root cause FE TZ: getCurrentWeekMonday() hacía toISOString() tras setDate local → en la tarde Lima −05 devolvía MARTES → grilla corrida 1 columna → lunes real caía en col 6 (Dom). BE siempre correcto (DB slot_date ISODOW == days_of_week). Fix: SSoT TZ-estable lib/format/calendarDates.ts (mondayOfWeek desde componentes locales) + descartar (no clampear) ocurrencias fuera de [0,6] + dedupe week/month/popover/store al SSoT. RED capturado (lunes→col6) → 22/22 matriz GREEN real-backend. r3 16/16 sigue verde. vitest 509/509 + calendarDates 6/6. Live-verify mía: screenshots claro+oscuro (lunes pinta en Lun, semana 15-21 jun bien anclada). fix_commit 8d211f8f. Detalle: T-FIX-bug7-round4-result.md."
+      result: AWAIT_CHRIS_REVERIFY
+      resolution: "Chris re-verifica el kit round-4 (abajo) en dev-app, en horario tarde/noche (la condición que disparaba el bug). Si SATISFIED → firma chris_verify.signoff → /pm-vitalia reconcile (R) → /auditor (opus). NO handoff /auditor sin firma."
+    - date: 2026-06-15
+      finding: "G round-4 PARCIAL → scope-delta round-5 (Chris pidió 3 cosas verificando, ratificadas vía AskUserQuestion): #1 borrar bloque recurrente debe preguntar 'Solo este turno' / 'Este y los siguientes' (GCal). #2 no poder crear bloques en fechas/horas pasadas (grisar + bloquear). #3 bloque personalizado L+X+V solo pinta el lunes."
+      result: AWAIT_CHRIS_REVERIFY
+      resolution: "#3 = MISMO bug TZ de round-4 (ventana occurrences anclada en martes → solo el lunes caía dentro) → round-4 ya lo arregla; cerrado con regression test. #1+#2 construidos (builders Sonnet BE+FE paralelo, contrato del orquestador): #1 migración 044 excluded_dates + proyección salta excluidas + DELETE scope=occurrence|this_and_future + diálogo FE; #2 guardia BE 422 + celdas pasadas grisadas/no-interactivas. e2e integración real-backend 8/8 (DB excluded_dates/end_date/ISODOW + geometría). r4 22 + r3 regresión intacta. clinics 455 + vitest 525 + tsc/eslint 0. Live-verify mía (screenshots: diálogo scope + semana pasada grisada). commits FE e3c79f3a + BE fe8786d4 + e2e/docs pendiente. Detalle: T-FIX-bug7-round5-result.md. Chris re-verifica kit round-5 (abajo). Si SATISFIED → firma → reconcile (R) → /auditor."
+    - date: 2026-06-15
+      finding: "G round-5 → Chris (dev-app) reportó: bloque 'Mar y Jue, 3 veces' pinta la 1ra semana completa pero las siguientes solo Mar (semana 2 sin jueves). Inspección DB: el BE interpretaba occurrences=N como N turnos TOTALES (rrule count=N → Mar,Jue,Mar) → último ciclo a medias. El selector UI dice 'Después de N repeticiones' (ciclos) → contradicción."
+      result: AWAIT_CHRIS_REVERIFY
+      resolution: "Chris ratificó (AskUserQuestion): 'N repeticiones' = N CICLOS completos del patrón (cada repetición incluye todos los días). Fix inline: BE count = occurrences × len(days_of_week) (single-día N×1 sin cambio; multi-día cada semana completa) + FE resumen 'N veces'→'N repeticiones'. Verificado: repro Mar+Jue×3 → DB 6 (3 Mar + 3 Jue), 3 semanas completas. e2e #R6 + case18(16) + caso6(16) GREEN. BE clinics 457 (SC-D3F-1/2 reescritos + 2 unit nuevos) + vitest recurrence-summary 11/11 + tsc/eslint 0. Live-verify mía (screenshots semanas 1-3 con Mar+Jue completos). ⚠️ bloques pre-fix (1c1f3a80, 73fe89d4 de Chris) NO auto-corrigen → editar/recrear. commits BE+FE+e2e+docs <pending>. Detalle: T-FIX-bug7-round6-result.md. Chris re-verifica kit round-6. Si SATISFIED → firma → reconcile (R) → /auditor."
+regression_2026-06-12_bug7:
+  id: staff-save-block-no-guarda
+  severity: critical
+  surface: /lisa/staff/{id}/horarios — BloquePopover (crear bloque one_off + recurrent)
+  origin: "Chris-verify G self-test live 2026-06-12 (folded idea-story guardar-bloque)"
+  symptom: "No se puede guardar un bloque nuevo (uno solo o repetido). Chris: 'el botón Guardar no existe, solo Cancelar / no me permite guardar'."
+  code_finding: >-
+    El botón Guardar SÍ existe en markup: BloquePopover.tsx:1002 (data-testid=btn-save-block,
+    texto 'Crear bloque'/'Actualizar'/'Guardando…'), misma fila flex que Cancelar (:991).
+    disabled solo por isPending (:549 = isSubmitting || createBlock.isPending ||
+    updateBlock.isPending || deleteBlock.isPending). Submit gateado por Zod
+    availabilityBlockSchema vía RHF handleSubmit (:467) — silencioso si inválido.
+    ⇒ síntoma RUNTIME, no markup faltante.
+  hypotheses_to_repro:
+    - "(a) isPending pegado true → Guardar visible pero disabled ('Guardando…')"
+    - "(b) Zod availabilityBlockSchema (staff-schema.ts:197) bloquea submit en silencio → click no-op (sin error visible)"
+    - "(c) layout recorta la fila de acciones (:977-1016) → Chris no ve el botón"
+  fix_owner: /dev-team (TDD RED-first · repro live primero — pinpoint cuál de a/b/c)
+  status: FIXED_ROUND4_AWAIT_CHRIS   # round 4 (día-de-semana) fix aplicado + verificado contra DB + live por /dev-team — re-verify Chris pendiente
+  round4:
+    fix_commit: 8d211f8f
+    root_cause: "FE TZ: getCurrentWeekMonday() toISOString() tras setDate local → tarde Lima −05 devuelve día+1 (martes) → grilla corrida 1 col → lunes real en col 6 (Dom). Clamp Math.min(6,diff) enmascaraba. BE correcto."
+    fixes:
+      - "SSoT TZ-estable src/lib/format/calendarDates.ts (parseLocalDate/toLocalIsoDate/addLocalDays/mondayOfWeek/localWeekdayIndex — componentes locales, nunca toISOString)"
+      - "getCurrentWeekMonday → mondayOfWeek(new Date()) (fix raíz)"
+      - "occurrenceDayOfWeek raw diff + caller DESCARTA out-of-[0,6] (no clampea)"
+      - "dedupe addDays/getSpecificDate/default popover + MonthCalendar al SSoT (cero divergencia futura)"
+    method: "real-backend, ground truth INDEPENDIENTE = DB ISODOW + geometría DOM (NO espejo del cálculo de producción = escape de round-3). bug7-helpers.mondayOfCurrentWeek corregido (espejaba el bug)."
+    matrix_result: "22/22 casos GREEN real-backend (bug7-r4-dow.spec.ts + bug7-r4-helpers.ts). Cada caso: assert DB slot_date ISODOW == días + count == fin + FE pinta col == localWeekdayIndex(date). RED capturado: lunes 2026-06-15 en col 6 → GREEN col 0."
+    regression: "r3 16/16 GREEN (bug7-r3-{d1,d2,d3} + horarios-occurrences-d3c + staff-week-nav-oneoff). vitest lisa 509/509 + calendarDates 6/6. tsc/eslint 0."
+    live_verify: "Chrome MCP locked (browser profile en uso). Live con render REAL Chromium: DB ISODOW=[1] + screenshots claro+oscuro vistos por mí (lunes pinta Lun, semana 15-21 jun anclada en lunes real). /tmp/bug7-r4-{light,dark}.png. NO mockeado, condición Lima domingo noche."
+    cleanup: "bloques de prueba DELETE por caso; 2 huérfanos [5] (race /me 401) soft-deleted en DB. Final: solo 3 bloques manuales de Chris ([0,1,3],[1],[0]) intactos."
+    harness_followup: "apiDeleteBlock cleanup no asserta DELETE status → huérfanos silenciosos cuando /me 401ea (flag al auditor / HB)."
+    result_file: T-FIX-bug7-round4-result.md
+  round5:
+    scope_delta: "Ratificado Chris (AskUserQuestion 2026-06-14): #1 borrado recurrente con scope, #2 no-crear-pasado, #3 multi-día. 'Ambas ahora en esta story'."
+    be_commit: fe8786d4
+    fe_commit: e3c79f3a
+    items:
+      - "#1 borrado recurrente: migración 044 excluded_dates JSONB (down_rev 043) + proyección salta excluidas + DELETE ?scope=series|occurrence|this_and_future&occurrence_date + exclude_occurrence/truncate_from (audit sync, confirmados preservados) + diálogo FE 'Solo este turno'/'Este y los siguientes'"
+      - "#2 no-crear-pasado: BE one_off past → 422 + recurrent end_date past → 422; FE celdas pasadas data-past grisadas+no-interactivas + cabeceras opacity-50"
+      - "#3 multi-día L+X+V solo pintaba lunes = MISMO bug TZ round-4 (ventana occurrences anclada martes → solo lunes en rango). Round-4 lo arregla. Cerrado con regression test (multi-día pinta 3 días en una MISMA semana — cierra hueco sweep round-4)"
+    method: "builders Sonnet BE+FE en paralelo contra contrato del orquestador; orquestador (Opus) = contrato + verificación integración real-backend + DB + live-verify + anti-flake + cleanup + docs"
+    e2e_result: "bug7-r5-dow.spec.ts 8/8 GREEN real-backend (ground truth DB excluded_dates/end_date/ISODOW + geometría DOM). #2-BE-422 en pytest (anti-burbuja). Regresión r4 22 + r3 intacta. clinics 455 + vitest 525 + tsc/eslint 0."
+    live_verify: "Chrome MCP locked → render real Chromium screenshots vistos por mí: diálogo scope (Solo este turno mié 17 jun / Este y los siguientes / Cancelar) + semana pasada (8-14 jun) grisada. /tmp/bug7-r5-{delete-dialog,past-cells}.png"
+    preexisting_flag: "arch test pgcrypto: treatment_plans.notes TEXT (CRM, deuda PHI pre-existente, NO round-5). 1 failed/353 passed tests/architecture. flag al auditor."
+    result_file: T-FIX-bug7-round5-result.md
+  round6:
+    scope: "occurrences semantics — 'N repeticiones' = N ciclos completos (Chris ratificó AskUserQuestion 2026-06-15)"
+    root_cause: "AvailabilityProjectionService: occurrences → rrule count=N = N turnos TOTALES cross-día; multi-día dejaba el último ciclo a medias (Mar+Jue '3' = Mar,Jue,Mar). UI dice 'repeticiones' (ciclos) → mismatch."
+    fix: "BE count = occurrences × len(days_of_week) (single-día N×1 sin cambio · multi-día semanas completas) + FE resumen 'veces'→'repeticiones'"
+    method: inline (Carril-R analog · fix quirúrgico post-diagnóstico anclado en DB)
+    verification: "repro Mar+Jue×3 → DB 6 (3+3) 3 semanas completas. e2e #R6 + case18(16) + caso6(16). BE clinics 457 (SC-D3F-1/2 reescritos vía project_block + 2 unit) + recurrence-summary 11/11 + tsc/eslint 0. Live-verify screenshots semanas 1-3 Mar+Jue completos."
+    preexisting_data_flag: "bloques multi-día creados PRE-fix (Chris: 1c1f3a80 Mar+Jue×3=3, 73fe89d4 L+X+V×1=1) NO auto-corrigen — editar (re-proyecta) o recrear. single-día ya correcto."
+    result_file: T-FIX-bug7-round6-result.md
+  round3:
+    fix_commit: 471dc97b
+    root_causes_count: 8   # 3 reportados (D-1/D-2/D-3) + 5 latentes destapados
+    root_causes:
+      - "RC1 D-1 botón invisible: bg-[--agent-lisa]/border-[--agent-lisa] (Tailwind v3 muerto v4.1) → bg-agent-lisa/border-agent-lisa"
+      - "RC2 ★ DOBLE OFFSET pintado (no en work-order): CalendarBlock sumaba top sobre wrapper que ya lo seteaba → bloques corridos +Nh + hitboxes mal → 'sale popup solo'. Fix inset-y-0"
+      - "RC3 D-2 drag muere sobre bloques: mouseenter/up por-celda tragados por overlay pointer-events-auto → drag por coordenadas (window listeners + hourFromClientY vs rect columna) + select-none. GCal parity"
+      - "RC4 D-3a calendario stale: mutations invalidaban solo blocks, no occurrences (fuente pintado delta v3) → invalidateQueries(occurrencesAll)"
+      - "RC5 D-3b GET occurrences 422: query disparaba antes de resolver X-User-ID → enabled gate (clinicId + X-User-ID)"
+      - "RC6 editar one_off: no-op con toast.success mentiroso → PATCH real {kind,specific_date,times}"
+      - "RC7 editar cualquier bloque: BE manda HH:mm:ss, Zod exige HH:mm → fallo silencioso → hhmm() en buildDefaultValues"
+      - "RC8 ★ Toaster sonner NUNCA montado → todos los toast del app (lisa/adrian/mateo) eran no-ops live (el fix feedback round-1 f85c8ce2 era inoperante) → mount en layout.tsx"
+    matrix_result: "15/15 casos GREEN real-backend (bug7-r3-{d1,d2,d3}*.spec.ts + bug7-helpers.ts cero mocks del surface). Suite story 45/0/2-skip. vitest lisa 509/509. tsc/eslint 0"
+    live_verify: "BE logs POST 201 (incl. one_off ★ primero en logs) + PATCH 200 (recurrent+one_off) + DELETE 200 + 63 phi_audit created rows DB. Bloques de prueba limpiados"
+    result_file: T-FIX-bug7-round3-result.md
+    note_sistemica: "RC8 Toaster ausente es cross-feature (adrian/mateo también emiten toast a la nada hasta este fix) — flag al auditor"
+  root_cause_confirmed: >-
+    Hipótesis (b) confirmada — falla SILENCIOSA de FE, NO server. El server save SIEMPRE
+    funcionó: BE logs muestran POST /availability-blocks 201 (recurrent, slots materializados,
+    phi_audit escrito, 0 errores 4xx/5xx) + BE API tests 14/14 PASS (incl. one_off + create).
+    El bug era de feedback: BloquePopover.tsx onSubmit catch (525-527) solo console.error (sin
+    toast), sin toast.success, y handleSubmit(onValid) sin onInvalid → click "Crear bloque" daba
+    CERO resultado visible → Chris lo leyó como "no me deja guardar / el botón no existe".
+    (Sin POST one_off jamás en logs ⇒ ese path probablemente Zod-fail silencioso pre-fix.)
+  fix_commit: f85c8ce2
+  fix_detail: >-
+    BloquePopover.tsx (mirror NuevoIntegranteModal): toast.error("No pudimos guardar el bloque.
+    Intenta de nuevo.") en catch (popover queda abierto) + toast.success("Bloque guardado") en
+    éxito + onInvalid handler toast.error("Revisa los campos del bloque") elimina el no-op Zod.
+    Test nuevo bloque-popover-save.test.tsx 3/3 + suite horarios 31/31 · tsc/eslint 0.
+  pending_live: >-
+    Exercise UI real (drag-create → "No se repite" one_off + "weekly" recurrent → ver toast.success
+    + bloque aparece) NO ejercido por /dev-team: Chrome DevTools MCP bloqueado (browser ya corriendo
+    en la sesión live de Chris). → G round-2: Chris re-verifica en dev-app (es el reporter + el gate
+    funcional). Evidencia server+unit ya verde.
+  absorbed_story: guardar-bloque  # idea-story plegada (untracked scaffold removido)
 prework_reverify_2026_06_12:
   # ★ parked_reason exigía re-verify FULL surface vs chrome nuevo post-hardening
   done: true
@@ -130,7 +261,7 @@ reuse_map_summary: >-
   [doctor-id] · NEW personal-branding bio + horarios + KPIs · doctors-as-faces
   preview
 spawned_at: 2026-05-22T00:00:00.000Z
-next_action: "★ RESUME 2026-06-11 (orden ratificado Chris): (1) /po-ux mini-round delta entity-switcher (spec § + mockup patch N3 dropdown-open, firma Chris — ADR-003) → (2) /architect delta: switcher arch (EXTEND EntitySubNavBar core prop opcional + proposal /pm-luana) + BACKFILL 04-validators a schema v5/D-X4 (verification_nature/technical_gates/demo_required/business_rules/regression_guard — audit 2026-06-11) + reconcile ubicación EntitySubNavBar (hoy core/@luana/ui-kit) + ticket T-FE switcher → (3) /dev-team resume: re-verify FULL surface /lisa/staff contra chrome nuevo (parked_reason flaggea drift post-hardening; regression modal marcada FIXED pero re-verificar live) + build switcher + honest-RED secundarios + demo-script + dod_evidence → (4) G (Chris self-test + ratificar goldens V-VIS-1..4) → R reconcile → /auditor → merge."
+next_action: "★ 2026-06-12 bug7 ROUND 3 (conversación nueva): /dev-team vitalia vitalia-fase2-lisa-doctores ejecuta WORK-ORDER-bug7-round3.md COMPLETO (D-1 botón invisible Tailwind-v4 + D-2 drag-create roto + D-3 matriz 15 casos clon Google Calendar · Playwright real-backend · live-verify #37 por el propio dev-team) → pausa G round-3 kit Chris. LUEGO continuar orden previo: (1) /po-ux mini-round delta entity-switcher (spec § + mockup patch N3 dropdown-open, firma Chris — ADR-003) → (2) /architect delta: switcher arch (EXTEND EntitySubNavBar core prop opcional + proposal /pm-luana) + BACKFILL 04-validators a schema v5/D-X4 (verification_nature/technical_gates/demo_required/business_rules/regression_guard — audit 2026-06-11) + reconcile ubicación EntitySubNavBar (hoy core/@luana/ui-kit) + ticket T-FE switcher → (3) /dev-team resume: re-verify FULL surface /lisa/staff contra chrome nuevo (parked_reason flaggea drift post-hardening; regression modal marcada FIXED pero re-verificar live) + build switcher + honest-RED secundarios + demo-script + dod_evidence → (4) G (Chris self-test + ratificar goldens V-VIS-1..4) → R reconcile → /auditor → merge."
 regression_2026-06-06:
   id: nuevo-integrante-modal-infinite-loop
   severity: critical

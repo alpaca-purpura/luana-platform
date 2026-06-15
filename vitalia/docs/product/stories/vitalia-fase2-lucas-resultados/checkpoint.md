@@ -3,7 +3,7 @@ story_id: vitalia-fase2-lucas-resultados
 type: ui-story
 agent_owner: lucas
 module: crm
-capability: crm.resultados
+capability: lucas.resultados
 state: idea
 architecture_pattern: ADR-vitalia-004
 created: 2026-06-11T00:00:00Z
@@ -15,7 +15,7 @@ dependencies:
 blocks_hard: []
 blocks_soft: []
 release: F2
-cap_target: crm.resultados
+cap_target: lucas.resultados
 parent_story: null
 ---
 

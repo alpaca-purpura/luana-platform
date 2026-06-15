@@ -51,6 +51,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { addLocalDays, toLocalIsoDate } from "@/lib/format/calendarDates";
+import { toast } from "sonner";
 import {
   useCreateBlock,
   useUpdateBlock,
@@ -96,6 +98,12 @@ export interface BloquePopoverProps {
   isExisting?: boolean;
   /** ISO date string of the Monday of the currently viewed week (for one_off specific_date) */
   calendarWeek?: string;
+  /**
+   * ISO date YYYY-MM-DD of the clicked occurrence.
+   * Required for recurrent-block scoped deletes (round-5 bug7 follow-up #1).
+   * Passed from AvailabilityCalendar when the user clicks a painted occurrence.
+   */
+  occurrenceDate?: string;
 }
 
 // ── Day chips constants ────────────────────────────────────────────────────────
@@ -155,7 +163,11 @@ export function formatRecurrenceSummary(params: {
   } else if (endConditionKind === "end_date") {
     endSuffix = endDate ? `hasta el ${endDate}` : "hasta una fecha";
   } else if (endConditionKind === "occurrences") {
-    endSuffix = occurrences ? `${occurrences} ${occurrences === 1 ? "vez" : "veces"}` : "N veces";
+    // bug7 round-6: "N repeticiones" = N ciclos completos del patrón (cada uno con
+    // todos los días). El wording "repeticiones" coincide con el selector "Termina".
+    endSuffix = occurrences
+      ? `${occurrences} ${occurrences === 1 ? "repetición" : "repeticiones"}`
+      : "N repeticiones";
   }
 
   const sortedDays = [...daysOfWeek].sort((a, b) => a - b);
@@ -224,14 +236,23 @@ function daysAndIntervalToPreset(
 }
 
 // ── Date helpers ──────────────────────────────────────────────────────────────
+// bug7 r4: getSpecificDate delegates to the TZ-stable SSoT (calendarDates) so a
+// one_off's specific_date never drifts a day under a negative UTC offset.
 
 function getSpecificDate(mondayIso: string, dayOfWeek: number): string {
-  const d = new Date(mondayIso + "T00:00:00");
-  d.setDate(d.getDate() + dayOfWeek);
-  return d.toISOString().split("T")[0] ?? mondayIso;
+  return addLocalDays(mondayIso, dayOfWeek);
 }
 
 // ── Default form values ───────────────────────────────────────────────────────
+
+/**
+ * bug7 r3 (caso 9): el BE serializa times como "HH:mm:ss" — el Zod schema
+ * exige "HH:mm" estricto. Sin normalizar, EDITAR cualquier bloque existente
+ * fallaba validación en silencio (onInvalid) y el PATCH nunca salía.
+ */
+function hhmm(t: string): string {
+  return t.length >= 5 ? t.slice(0, 5) : t;
+}
 
 function buildDefaultValues(
   block: AvailabilityBlock | null,
@@ -259,8 +280,8 @@ function buildDefaultValues(
         repeatPreset,
         daysOfWeek,
         interval,
-        startTime: rb.startTime,
-        endTime: rb.endTime,
+        startTime: hhmm(rb.startTime),
+        endTime: hhmm(rb.endTime),
         endConditionKind: rb.endConditionKind,
         endDate: rb.endDate ?? null,
         occurrences: rb.occurrences ?? null,
@@ -269,8 +290,8 @@ function buildDefaultValues(
     return {
       kind: "one_off",
       specificDate: block.specificDate,
-      startTime: block.startTime,
-      endTime: block.endTime,
+      startTime: hhmm(block.startTime),
+      endTime: hhmm(block.endTime),
     };
   }
 
@@ -354,10 +375,12 @@ export function BloquePopover({
   onClose,
   anchor,
   isExisting = false,
-  calendarWeek = new Date().toISOString().split("T")[0] ?? "",
+  calendarWeek = toLocalIsoDate(new Date()),
+  occurrenceDate,
 }: BloquePopoverProps) {
   const popoverRef = useRef<HTMLDivElement>(null);
   const [showDeleteWarning, setShowDeleteWarning] = useState(false);
+  const [showRecurrentDeleteDialog, setShowRecurrentDeleteDialog] = useState(false);
   const [preservedCount, setPreservedCount] = useState(0);
 
   const createBlock = useCreateBlock(doctorId);
@@ -464,87 +487,169 @@ export function BloquePopover({
 
   // ── Submit handler ─────────────────────────────────────────────────────────
 
-  const onSubmit = handleSubmit(async (values) => {
-    try {
-      if (values.kind === "one_off") {
-        // One-off block
-        if (isExisting && block) {
-          // No-op: one_off edits not supported in this ticket scope
-        } else {
-          const oneOffPayload: CreateBlockPayloadD3F = {
-            kind: "one_off",
-            start_time: values.startTime,
-            end_time: values.endTime,
-            specific_date: values.specificDate,
-          };
-          await createBlock.mutateAsync(oneOffPayload);
-        }
-      } else {
-        // Recurrent block — D3-F payload: days_of_week[] + interval
-        if (isExisting && block && block.kind === "recurrent") {
-          const updatePayload: UpdateBlockPayloadD3F = {
-            days_of_week: values.daysOfWeek,
-            interval: values.interval,
-            end_condition_kind: values.endConditionKind,
-            end_date: values.endDate,
-            occurrences: values.occurrences,
-            start_time: values.startTime,
-            end_time: values.endTime,
-          };
-          await updateBlock.mutateAsync({
-            blockId: block.id,
-            payload: updatePayload,
-          });
-        } else {
-          // "No se repite" preset: create as one_off for the specific date
-          if (values.repeatPreset === "none") {
-            const specificDate = getSpecificDate(calendarWeek, anchorDay);
-            const nonePayload: CreateBlockPayloadD3F = {
+  const onSubmit = handleSubmit(
+    async (values) => {
+      try {
+        if (values.kind === "one_off") {
+          // One-off block
+          if (isExisting && block) {
+            // bug7 r3 D-3b: editar un one_off DEBE patchear (antes era un no-op
+            // silencioso con toast de éxito mentiroso). El BE soporta PATCH
+            // one_off (kind + specific_date + times).
+            const oneOffUpdate: UpdateBlockPayloadD3F = {
               kind: "one_off",
               start_time: values.startTime,
               end_time: values.endTime,
-              specific_date: specificDate,
+              specific_date: values.specificDate,
             };
-            await createBlock.mutateAsync(nonePayload);
+            await updateBlock.mutateAsync({
+              blockId: block.id,
+              payload: oneOffUpdate,
+            });
           } else {
-            const recurrentPayload: CreateBlockPayloadD3F = {
-              kind: "recurrent",
-              days_of_week: values.daysOfWeek,
-              interval: values.interval,
+            const oneOffPayload: CreateBlockPayloadD3F = {
+              kind: "one_off",
               start_time: values.startTime,
               end_time: values.endTime,
-              end_condition_kind: values.endConditionKind,
-              end_date: values.endDate ?? null,
-              occurrences: values.occurrences ?? null,
+              specific_date: values.specificDate,
             };
-            await createBlock.mutateAsync(recurrentPayload);
+            await createBlock.mutateAsync(oneOffPayload);
+          }
+        } else {
+          // Recurrent block — D3-F payload: days_of_week[] + interval
+          if (isExisting && block && block.kind === "recurrent") {
+            const updatePayload: UpdateBlockPayloadD3F = {
+              days_of_week: values.daysOfWeek,
+              interval: values.interval,
+              end_condition_kind: values.endConditionKind,
+              end_date: values.endDate,
+              occurrences: values.occurrences,
+              start_time: values.startTime,
+              end_time: values.endTime,
+            };
+            await updateBlock.mutateAsync({
+              blockId: block.id,
+              payload: updatePayload,
+            });
+          } else {
+            // "No se repite" preset: create as one_off for the specific date
+            if (values.repeatPreset === "none") {
+              const specificDate = getSpecificDate(calendarWeek, anchorDay);
+              const nonePayload: CreateBlockPayloadD3F = {
+                kind: "one_off",
+                start_time: values.startTime,
+                end_time: values.endTime,
+                specific_date: specificDate,
+              };
+              await createBlock.mutateAsync(nonePayload);
+            } else {
+              const recurrentPayload: CreateBlockPayloadD3F = {
+                kind: "recurrent",
+                days_of_week: values.daysOfWeek,
+                interval: values.interval,
+                start_time: values.startTime,
+                end_time: values.endTime,
+                end_condition_kind: values.endConditionKind,
+                end_date: values.endDate ?? null,
+                occurrences: values.occurrences ?? null,
+              };
+              await createBlock.mutateAsync(recurrentPayload);
+            }
           }
         }
+        toast.success("Bloque guardado");
+        onClose();
+      } catch (err) {
+        console.error("Error saving block:", err);
+        toast.error("No pudimos guardar el bloque. Intenta de nuevo.");
+        // Popover stays open on error — do NOT call onClose() here
       }
-      onClose();
-    } catch (err) {
-      console.error("Error saving block:", err);
-    }
-  });
+    },
+    // onInvalid: Zod validation failure — prevents silent no-op on invalid form
+    () => {
+      toast.error("Revisa los campos del bloque");
+    },
+  );
 
   // ── Delete handler ─────────────────────────────────────────────────────────
 
   const handleDeleteClick = () => {
-    setShowDeleteWarning(true);
+    if (!block) return;
+    if (block.kind === "recurrent") {
+      setShowRecurrentDeleteDialog(true);
+    } else {
+      setShowDeleteWarning(true);
+    }
   };
 
+  // one_off: simple confirm → delete the whole block (no scope needed)
   const handleDeleteConfirm = async () => {
     if (!block) return;
     try {
-      const result = await deleteBlock.mutateAsync(block.id);
+      const result = await deleteBlock.mutateAsync({ blockId: block.id });
       setPreservedCount(result?.preservedAppointments ?? 0);
       setShowDeleteWarning(false);
+      toast.success("Bloque eliminado");
       onClose();
     } catch (err) {
       console.error("Error deleting block:", err);
       setShowDeleteWarning(false);
+      toast.error("No pudimos eliminar el bloque. Intenta de nuevo.");
     }
   };
+
+  // recurrent: scope-specific delete handlers
+  const handleDeleteOccurrence = async () => {
+    if (!block) return;
+    try {
+      await deleteBlock.mutateAsync({
+        blockId: block.id,
+        scope: "occurrence",
+        occurrenceDate: occurrenceDate,
+      });
+      setShowRecurrentDeleteDialog(false);
+      toast.success("Turno eliminado");
+      onClose();
+    } catch (err) {
+      console.error("Error deleting occurrence:", err);
+      setShowRecurrentDeleteDialog(false);
+      toast.error("No pudimos eliminar el turno. Intenta de nuevo.");
+    }
+  };
+
+  const handleDeleteThisAndFuture = async () => {
+    if (!block) return;
+    try {
+      await deleteBlock.mutateAsync({
+        blockId: block.id,
+        scope: "this_and_future",
+        occurrenceDate: occurrenceDate,
+      });
+      setShowRecurrentDeleteDialog(false);
+      toast.success("Turnos eliminados");
+      onClose();
+    } catch (err) {
+      console.error("Error deleting this and future:", err);
+      setShowRecurrentDeleteDialog(false);
+      toast.error("No pudimos eliminar los turnos. Intenta de nuevo.");
+    }
+  };
+
+  // Format occurrence date for display (es-419, e.g. "lun 22 jun")
+  const formattedOccurrenceDate = occurrenceDate
+    ? (() => {
+        try {
+          const d = new Date(`${occurrenceDate}T12:00:00`);
+          return new Intl.DateTimeFormat("es-419", {
+            weekday: "short",
+            day: "numeric",
+            month: "short",
+          }).format(d);
+        } catch {
+          return occurrenceDate;
+        }
+      })()
+    : null;
 
   const isPending =
     isSubmitting ||
@@ -1002,7 +1107,7 @@ export function BloquePopover({
               <Button
                 type="submit"
                 size="sm"
-                className="h-7 text-xs bg-[--agent-lisa] hover:bg-[--agent-lisa]/90 text-black"
+                className="h-7 text-xs bg-agent-lisa hover:bg-agent-lisa/90 text-black"
                 disabled={isPending}
                 data-testid="btn-save-block"
               >
@@ -1017,7 +1122,7 @@ export function BloquePopover({
         </form>
       </div>
 
-      {/* SC-3b: Delete warning dialog */}
+      {/* SC-3b: Delete warning dialog — one_off blocks */}
       <Dialog
         open={showDeleteWarning}
         onOpenChange={(open) => !open && setShowDeleteWarning(false)}
@@ -1054,12 +1159,65 @@ export function BloquePopover({
               Cancelar
             </Button>
             <Button
+              data-testid="btn-delete-confirm"
               variant="destructive"
               size="sm"
               onClick={handleDeleteConfirm}
               disabled={deleteBlock.isPending}
             >
               {deleteBlock.isPending ? "Eliminando..." : "Sí, eliminar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* SC-3b round-5: Recurrent delete scope dialog */}
+      <Dialog
+        open={showRecurrentDeleteDialog}
+        onOpenChange={(open) => !open && setShowRecurrentDeleteDialog(false)}
+      >
+        <DialogContent data-testid="dialog-delete-scope">
+          <DialogHeader>
+            <DialogTitle>¿Eliminar este bloque repetido?</DialogTitle>
+          </DialogHeader>
+          <div className="text-sm text-muted-foreground">
+            <p>
+              Elige cuántos turnos deseas eliminar
+              {formattedOccurrenceDate ? ` a partir del ${formattedOccurrenceDate}` : ""}.
+            </p>
+          </div>
+          <DialogFooter className="flex-col gap-2 sm:flex-col">
+            <Button
+              data-testid="btn-delete-occurrence"
+              variant="destructive"
+              size="sm"
+              onClick={handleDeleteOccurrence}
+              disabled={deleteBlock.isPending}
+              className="w-full justify-start"
+            >
+              {formattedOccurrenceDate
+                ? `Solo este turno (${formattedOccurrenceDate})`
+                : "Solo este turno"}
+            </Button>
+            <Button
+              data-testid="btn-delete-this-and-future"
+              variant="destructive"
+              size="sm"
+              onClick={handleDeleteThisAndFuture}
+              disabled={deleteBlock.isPending}
+              className="w-full justify-start"
+            >
+              Este y los siguientes
+            </Button>
+            <Button
+              data-testid="btn-delete-scope-cancel"
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowRecurrentDeleteDialog(false)}
+              disabled={deleteBlock.isPending}
+              className="w-full"
+            >
+              Cancelar
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -3,7 +3,7 @@ name: auditor
 description: "Auditor independiente v4 (Conv 3 Review+Merge) — toma story developed, spawna auditor-{be,fe,agentic}, Phase D gherkin matrix, veredicto APPROVED|CHANGES_REQUESTED|ESCALATED, self-fix v4.2 (3 carriles), escribe CHECKPOINTS.md + auto-handoff /pm-{brand} merge."
 when_to_use: "Activa cuando user dice: '/auditor', 'audita story', 'revisa tickets', 'verdict', 'review final', 'CHECKPOINTS', 'story developed lista para audit', 'chequeá los tickets', 'revisá el código', 'hacé el review'."
 allowed-tools: Read, Edit, Bash, Grep, Glob, Agent
-model: fable
+model: opus
 ---
 
 # /auditor — Independent Reviewer (Conv 3 — Review+Merge)

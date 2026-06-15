@@ -4,7 +4,7 @@ created_at: 2026-05-27T18:25:23-05:00
 last_modified: 2026-05-27T18:25:23-05:00
 notes_count: 0
 refs_count: 0
-conversation_count: 1
+conversation_count: 4
 ---
 
 <!-- voseo-allowed: proceso conversacional interno Claude↔Chris — no es string user-facing; `chris-input-protocol.md` R30 requiere output verbatim por skill incluyendo voz del turno previo -->
@@ -920,3 +920,183 @@ Paleta directorio: lisa-green ×6→**×14**, lisa-soft 0→**×10**. Gates: esl
 - **La integración destapó y fixeó 8 capas latentes** (la suite verde de tickets NO las veía — solo el live): URL proxy fantasma (avatar roto desde mayo) · FK engine products (hotfix core + proposal) · tabla assets jamás creada (migración 043) · multiple-heads + ids>32 alembic · DTOs sin camel (bio_files/perfil) · profileState nunca poblado · página SSR shape/env/path imaginados ×3 · NullPool conftest (curó L3 histórico test_doctor_cross_tenant). **8ª-9ª instancia patrón contrato-imaginado → HB-42 contract-test FE↔BE = prioridad 1 del CIL.**
 - **Pendiente menor (no bloquea, anotado p/ auditor):** flujo notas→sobre_mi del extractivo sin evidencia live mía (autosave notas verificado en mayo + unit del fallback verde); LLM real del generate apagado en dev (LiteLLM down) → fallback extractivo probado.
 - **Para tu mañana (followups del signoff pre-autorizado):** self-test con demo-script.md (actualizado, 14 pasos) + ratificar goldens. → /auditor (Fable 5) ahora.
+
+### 2026-06-12 · 🤖 claude · `/pm-vitalia` · ⚠️ G-FAILURE + fold guardar-bloque
+**Chris en su self-test (G) reportó: en staff no se puede guardar un bloque nuevo (uno solo ni repetido) — 'el botón Guardar no existe, solo Cancelar'. Folded la idea-story `guardar-bloque` aquí (decisión Chris).**
+- **Contradicción detectada:** el `dod_evidence` de delta v3 (L68-70) asegura un recurrent guardado **201 vía orchestrator/Playwright**, pero el click real de Chris falla ⇒ verificación-real ≠ orchestrator-green. La G existe justo para cazar esto.
+- **Code finding:** el botón Guardar SÍ existe (`BloquePopover.tsx:1002`, `btn-save-block`); disabled solo por `isPending` (:549); submit gateado por Zod `availabilityBlockSchema` vía RHF (:467) → silencioso si inválido. Síntoma **runtime**, no markup. Hipótesis a/b/c en `regression_2026-06-12_bug7`.
+- **Acciones:** reabierto `phase: HANDOFF_TO_AUDITOR → AWAIT_CHRIS_VERIFY`; `chris_verify.signoff: null` (round REJECTED); regression bug7 OPEN; scaffold untracked `guardar-bloque/` absorbido. NO va a /auditor con guardar roto.
+- **Próximo:** `/dev-team` fix-loop repro-first TDD RED → pinpoint a/b/c → fix → live-verify write real (crear bloque one_off + recurrent + leer logs POST 201 + efecto DB) → re-Chris-verify. Builders en **Sonnet** (mandato `model_mandate_2026_06_12`).
+
+### 2026-06-12 · 🤖 claude · `builder-frontend` · ✓ APLICADO — bug7 BloquePopover save feedback
+**TDD RED→GREEN completo. 3 tests escritos primero (fallaron), fix aplicado, 3 tests verdes. Suite horarios 31/31 PASS. tsc 0 errores. eslint 0 errores. Commit `f85c8ce2` pusheado a `wip/vitalia`.**
+- **Root causes tapados:** (a) `catch` solo hacía `console.error` sin `toast.error` → sin feedback visible; (b) `handleSubmit(onValid)` sin `onInvalid` → Zod validation fail era no-op silencioso; (c) success path sin `toast.success`.
+- **Fix:** `import { toast } from "sonner"` (patrón `NuevoIntegranteModal`) + `toast.success("Bloque guardado")` antes de `onClose()` + `toast.error("No pudimos guardar el bloque. Intenta de nuevo.")` en catch (onClose NO se llama en error — popover permanece abierto) + segundo arg `onInvalid` en `handleSubmit` → `toast.error("Revisa los campos del bloque")`.
+- **Archivos tocados:** `BloquePopover.tsx` (50 líneas modificadas) + `__tests__/bloque-popover-save.test.tsx` (nuevo, 281 líneas).
+- **No detecté señal server-side 422:** el catch ya cubre cualquier rechazo HTTP incluyendo 422 con `toast.error`. Sin contrato FE↔BE cross-check en esta ruta (HB-42 pendiente).
+- **Próximo:** live-verify write real (crear bloque one_off + recurrent en dev-app) + re-Chris-verify G round 2.
+
+### 2026-06-12 · 🤖 claude · `/dev-team` · ✓ APLICADO — verificación server + diagnóstico cerrado
+**El server NUNCA estaba roto — el bug era 100% feedback de FE. Confirmado con evidencia real (no test verde mockeado).**
+- **BE logs (cliente real, dev-app):** `POST /availability-blocks` → **201 Created** repetido (recurrent, slots materializados 20/78/130, `phi_audit_log_written`), **0 errores 4xx/5xx**. El save funciona.
+- **BE API tests:** `test_availability_blocks_api.py` 14/14 PASS (incl. one_off + create) → contrato server de **ambos** kinds sano.
+- **Dato clave:** en los logs **jamás aparece un POST `one_off`** → ese path (selección "No se repite") muy probablemente fallaba en Zod silenciosamente pre-fix (handleSubmit sin onInvalid) → cero request → "no guarda". Coincide con tu reporte.
+- **Conclusión:** clickear "Crear bloque" daba CERO resultado visible (sin toast success, error tragado, Zod no-op) → lo leíste como "el botón no existe / no me deja guardar". El fix `f85c8ce2` hace visible los 3 desenlaces.
+- **No pude ejercer la UI real yo mismo:** Chrome DevTools MCP bloqueado (browser ya corriendo en tu sesión live). → te toca el **G round-2** (sos el reporter + el gate funcional).
+- **Re-verify para vos (2 pasos, dev-app ya abierta):** Lisa → un doctor → Horarios → arrastrá para crear un bloque → (1) dejá "No se repite" → "Crear bloque": debe aparecer toast verde **"Bloque guardado"** + el bloque en el calendario; (2) repetí eligiendo "Cada semana": ídem. Si ves los toasts y los bloques aparecen → firmás `chris_verify.signoff`. Si algo sigue mal → me decís el toast/console que ves.
+
+### 2026-06-12 · 👤 Chris · G round-2 REJECTED + 🤖 claude `/pm-vitalia` · ✓ APLICADO — work-order round 3
+**Chris:** "no has probado tú mismo ni en claro ni oscuro — no se ve bien el botón de guardar; se malogró la creación arrastrando el mouse (no se seleccionan, sale el popup); al dar guardar no guardan correctamente en los distintos escenarios. Dame el prompt para que en una conversación nueva generes todos los casos de uso y pruebes todo con Playwright como clon de Google Calendar."
+- **❌ REFUTADO mi cierre round-1:** correcto el reclamo — no ejercí la UI yo mismo (Chrome MCP locked y NO usé el fallback Playwright headless). Ese fue el escape.
+- **D-1 confirmado ya:** `BloquePopover.tsx:1015` `bg-[--agent-lisa]` = sintaxis Tailwind v3 muerta en v4.1 → botón SIN fondo + `text-black` (invisible en dark). Fix trivial: token class `bg-agent-lisa` (DayChip :339 lo usa bien). Esto explica también el reporte ORIGINAL.
+- **D-2 (drag roto):** sospecha DndContext del delta v3 (`fdedd706`) capturando pointer events del drag-to-create. Repro RED-first en round 3.
+- **D-3:** matriz completa de 15 casos (one_off/daily/weekly/biweekly/custom/end-conditions/edit/delete/validación/error/toasts/mes/themes) definida en el work-order.
+- **Artefacto:** `WORK-ORDER-bug7-round3.md` (self-contained: infra, creds, IDs, specs, flujo RED→GREEN→live-verify #37, anti-patterns). checkpoint: round-2 REJECTED registrado, bug7 `REOPENED_ROUND3`.
+
+### 2026-06-14 · 🤖 claude · `/dev-team` · ✓ APLICADO — bug7 round 3 fixeado + ejercido live por mí (clon Google Calendar)
+**Esta vez SÍ lo ejercí yo mismo: Playwright real-backend (cero mocks del surface), RED primero, fix, GREEN, leí los logs del BE. 8 root causes (los 3 tuyos + 5 latentes). Commit `471dc97b` pusheado.**
+- **D-1 botón invisible** (claro+oscuro): `bg-[--agent-lisa]`/`border-[--agent-lisa]` = sintaxis Tailwind v3 muerta en v4.1 → sin fondo. Fix token class `bg-agent-lisa`/`border-agent-lisa`. Verificado con computed-style en ambos themes + screenshots.
+- **★ DOBLE OFFSET de pintado** (no estaba en el work-order, era el peor): cada bloque se pintaba +N horas más abajo de donde iba (CalendarBlock sumaba `top` sobre el wrapper que ya lo posicionaba). Las hitboxes quedaban corridas → al arrastrar o clickear, el click aterrizaba en un bloque invisible desplazado → **"sale el popup (de editar) solo"**. Fix: `inset-y-0`. Esta era la causa real de tu D-2.
+- **D-2 drag-create**: además, el arrastre moría cuando pasaba sobre un bloque existente (el overlay tragaba los eventos). Reescrito a drag por coordenadas (clon GCal: arrastrás y atraviesa bloques, soltás en cualquier lado, arrastre inverso normaliza, click simple = 1 hora).
+- **D-3 saves** (la matriz destapó 4 causas): el calendario no refrescaba tras guardar (invalidaba la query equivocada) · el calendario salía **vacío** en frío (la query de pintado pegaba antes de tener el user-id → 422) · **editar un bloque era un no-op con un toast de éxito mentiroso** · editar fallaba en silencio (el BE manda `HH:mm:ss`, el validador exigía `HH:mm`).
+- **★ Toaster nunca montado**: el `<Toaster/>` de sonner **no estaba en ningún layout** → TODOS los toasts del app (los tuyos de Lisa, y también Adrián/Mateo) no renderizaban nada. **Por eso el fix de feedback del round-1 fue inoperante live** — clickeabas y no veías nada. Montado en `layout.tsx`. (Esto es cross-feature, lo flagueo al auditor.)
+- **Matriz 15/15 GREEN** real-backend + suite de la historia 45/0 + vitest 509/509. **Live-verify mía:** logs del BE muestran `POST 201` incluido el **primer `one_off` que jamás había aparecido en logs**, `PATCH 200` (recurrente y puntual), `DELETE 200`, y 63 filas de auditoría PHI. Bloques de prueba limpiados (quedan solo los 3 tuyos del round-2, ahora en su posición correcta).
+- **Aparte:** cambié el seam de modelos `flagship: fable → opus 4.8` (fable deshabilitado) — `make models-sync` + CHECK 31 verde, pusheado. El auditor de esta historia correrá en opus.
+
+**⏸ PAUSA G round-3 — kit de 2 minutos para vos (dev-app, Lisa → un doctor → Horarios):**
+1. **Crear arrastrando**: arrastrá de 9 a 12 en una columna vacía → debe pintarse el rango en vivo → soltás → abre "Nuevo bloque" con 09:00–12:00 → "Crear bloque" → toast verde **"Bloque guardado"** + el bloque aparece donde lo pusiste.
+2. **No se repite vs recurrente**: repetí eligiendo "No se repite" (queda solo esa fecha) y otra vez "Cada semana" (aparece esta semana y la siguiente con ‹/›).
+3. **Botón visible**: cambiá a tema oscuro (🌙 arriba) y confirmá que el botón "Crear bloque" se ve (verde, no fantasma).
+4. **Editar/eliminar**: clickeá un bloque existente → cambiá la hora → "Actualizar" (se actualiza); o "Eliminar" (desaparece).
+
+Si todo bien → firmás `chris_verify.signoff` (SATISFIED) y sigo a reconcile (R) + auditor. Si algo falla → me decís qué caso y qué viste. **NO mando al auditor sin tu firma.**
+
+### 2026-06-14 · 👤 Chris · G round-3 PARCIAL — bug día-de-semana (lunes pinta domingo) + pedido casuística completa contra DB
+**Chris (live dev-app):** "el bloque SIN repetición guarda bien. Pero el repetitivo: selecciono lunes y se marca el DOMINGO a la hora que indiqué. Quiero que listes TODA la casuística de creación de bloques (incluyendo por días seleccionados) y para cada una pruebes contrastando con la BASE DE DATOS que todo funciona."
+
+**🤖 claude · investigación previa (para arrancar round 4 con root cause, NO a ciegas):**
+- **El BACKEND está CORRECTO — probado contra DB.** Bloque `694bba4e` con `days_of_week=[0]` (lunes en convención FE 0=Mon) → `vitalia_availability_slots.slot_date = 2026-06-15` que es **lunes real** (`EXTRACT(ISODOW)=1`), `start_ts 08:00:00+00`. La convención 0=Lun es consistente: FE chips/columnas (`DAY_LABELS`/`DAY_CHIP_LABELS` 0=Lun) + `byweekday` de dateutil.rrule (0=Mon) + `_next_weekday_from` (`.weekday()` 0=Mon). **NO tocar la proyección BE — está bien.**
+- **Sospechoso EXACTO del bug (FE paint):** `occurrenceDayOfWeek(occurrenceDate, mondayIso)` en `AvailabilityCalendar.tsx` termina en `Math.max(0, Math.min(6, diff))`. Si la primera ocurrencia del bloque recurrente cae en el lunes de la semana **SIGUIENTE** (diff=7 días, porque el rrule ancla la serie en `block.created_at.date()` y no en la semana visible), el clamp `Math.min(6,7)=6` = **columna domingo**. Resultado: un bloque de lunes-de-otra-semana se pinta en la columna domingo de la semana actual, a la hora correcta = tu síntoma exacto.
+  - Fix candidato: la ventana de `availability-occurrences` (from/to) debe alinear a la semana visible Y el FE debe **descartar** (no clampear) ocurrencias fuera de `[calendarWeek, calendarWeek+6]`. Verificar también `getCurrentWeekMonday()` y el anchor `created_at` para la PRIMERA semana (parity biweekly + first-occurrence).
+- **Round 3 lo enmascaró:** los specs Playwright de la matriz mockeaban occurrences con datos alineados a la semana, o el anchor caía en la semana visible → nunca ejercieron diff=7. La live-verify con Chrome MCP (no solo Playwright) lo habría cazado. Round 4 DEBE ejercer en navegador real + contrastar DB.
+
+**CASUÍSTICA COMPLETA exigida (cada caso = test real-backend + assert DB `slot_date`/`ISODOW` == días seleccionados + count == condición fin + FE pinta en la columna correcta, sin clamp):**
+
+| # | Tipo | days_of_week (0=Lun) | interval | fin | Assert DB clave | Assert FE clave |
+|---|------|---------------------|----------|-----|-----------------|-----------------|
+| 1 | one_off | — (specific_date) | — | — | 1 slot, ISODOW == día clickeado | pinta esa fecha, solo esa semana |
+| 2 | weekly lunes | [0] | 1 | open_ended | slots ISODOW=1 (lun) | columna 0 (Lun), NO domingo |
+| 3 | weekly martes | [1] | 1 | open_ended | ISODOW=2 | columna 1 |
+| 4 | weekly miércoles | [2] | 1 | open_ended | ISODOW=3 | columna 2 |
+| 5 | weekly jueves | [3] | 1 | open_ended | ISODOW=4 | columna 3 |
+| 6 | weekly viernes | [4] | 1 | open_ended | ISODOW=5 | columna 4 |
+| 7 | weekly sábado | [5] | 1 | open_ended | ISODOW=6 | columna 5 |
+| 8 | weekly DOMINGO real | [6] | 1 | open_ended | ISODOW=7 (dom) | columna 6 (Dom) — domingo REAL, distinguir del bug |
+| 9 | biweekly lunes | [0] | 2 | open_ended | ISODOW=1, salta 1 semana | col 0, semana+1 vacía, semana+2 pinta |
+| 10 | biweekly domingo | [6] | 2 | open_ended | ISODOW=7, parity | col 6 correcto |
+| 11 | daily (todos) | [0..6] | 1 | open_ended | 7 ISODOW distintos por semana | 7 columnas L-D pintadas |
+| 12 | custom L+J | [0,3] | 1 | open_ended | ISODOW ∈ {1,4} | columnas 0 y 3 |
+| 13 | custom L+J biweekly | [0,3] | 2 | open_ended | ISODOW ∈ {1,4}, parity | col 0,3 con salto de semana |
+| 14 | custom fin-de-semana | [4,5,6] | 1 | open_ended | ISODOW ∈ {5,6,7} | columnas 4,5,6 (incl. Dom real) |
+| 15 | custom días hábiles | [0,1,2,3,4] | 1 | open_ended | ISODOW ∈ {1..5} | columnas 0-4, NADA en 5/6 |
+| 16 | weekly + end_date | [0] | 1 | end_date (inclusivo) | último slot == end_date si es lunes | último lunes pinta, semana+1 no |
+| 17 | weekly + occurrences=2 | [0] | 1 | occurrences=2 | EXACTO 2 slot_date (2 lunes) | 2 semanas pintan, 3ra vacía |
+| 18 | custom + occurrences=8 | [0,3] | 2 | occurrences=8 | EXACTO 8 slots TOTAL cross-day | proyección corta a 8 |
+| 19 | anchor≠selección | drag lunes, chip miércoles → [2] | 1 | open_ended | ISODOW=3 (mié, NO lun) | columna 2, no la columna del drag |
+| 20 | editar recurrente días | [0]→[2] (PATCH) | 1 | open_ended | slots re-proyectados a ISODOW=3 | re-pinta columna 2, borra columna 0 |
+| 21 | editar interval | [0] 1→2 (PATCH) | 2 | open_ended | parity nueva | semana+1 deja de pintar |
+| 22 | editar one_off fecha | specific_date nueva | — | — | slot movido | pinta fecha nueva |
+
+Cleanup DELETE real al final de cada caso. Theme claro + oscuro en al menos los casos 2 y 8.
+
+### 2026-06-14 · 🤖 claude · `/dev-team` · ✓ APLICADO — bug7 round 4 FIXEADO (lunes ya pinta en lunes) + casuística 22/22 contra DB
+
+**Era un bug de zona horaria en el FE. El backend siempre estuvo bien.** Lo reproduje yo mismo (real-backend, contra la BASE DE DATOS), lo arreglé, y lo verifiqué en navegador (claro+oscuro). 22/22 casos verdes.
+
+- **Root cause exacto:** `getCurrentWeekMonday()` calculaba el lunes con `setDate` local y después `toISOString()`. En Lima (−05) **por la tarde/noche**, esa conversión a UTC salta al día siguiente → la semana quedaba anclada en **martes**, no lunes → toda la grilla corrida una columna → el bloque del lunes real caía en la columna **"Dom"** a la hora correcta = tu síntoma exacto. (Por eso el `one_off` "andaba": vos clickeás una celda y el bloque vuelve a esa misma celda — todo corrido pero consistente, sin etiqueta de día que delate; el recurrente sí tiene chip "lunes" → el desfase se ve.)
+- **Por qué round-3 no lo cazó:** el helper de los tests (`mondayOfCurrentWeek`) **copiaba el mismo bug** que producción → el test "estaba de acuerdo" con el código roto → verde. Esta vez la verdad la pone la **base de datos** (ISODOW del `slot_date`) + **dónde pinta el DOM** (geometría), nunca el cálculo de fechas de producción.
+- **Fix:** un único SSoT de fechas TZ-estable (`src/lib/format/calendarDates.ts`, arma todo desde componentes locales, jamás `toISOString`) usado por la semana, el mes, el popover y el store; + el calendario **descarta** (no clampea) ocurrencias fuera de la semana visible. RED capturado (lunes 2026-06-15 pintado en col 6) → GREEN (col 0).
+- **Casuística 22/22 GREEN real-backend** (`bug7-r4-dow.spec.ts`): para cada caso assert (a) DB `slot_date` ISODOW == días seleccionados, (b) count == condición de fin (one_off=1, occurrences=N exacto), (c) FE pinta en la columna == día real (sin clamp; distinguiendo **domingo REAL** [caso 8] del bug). Incluye edición de días/intervalo/fecha + anchor≠selección por UI real (drag lunes, chip miércoles → guarda miércoles).
+- **Regresión intacta:** round-3 16/16 sigue verde · vitest 509/509 + 6/6 nuevos · tsc/eslint 0.
+- **Live-verify mía:** Chrome MCP estaba bloqueado (tu navegador usa el profile), así que lo verifiqué con render real (Chromium) + **miré los screenshots claro y oscuro**: la semana abre en `15 jun – 21 jun` (Lun 15…Dom 21, lunes real en la columna Lun) y los bloques de lunes pintan en **Lun**, no en Dom. DB ISODOW=[1] confirmado.
+- **Cleanup:** borré todos los bloques de prueba; quedan solo tus 3 bloques manuales del round-3, ahora en su columna correcta.
+
+**⏸ PAUSA G round-4 — kit de 1 minuto para vos (dev-app, de tarde/noche que es cuando fallaba · Lisa → un doctor → Horarios):**
+1. **Lunes pinta lunes**: creá un bloque "Cada semana" eligiendo **lunes** → debe aparecer en la columna **Lun** (no Dom), a la hora que pusiste. Mirá la cabecera: la semana debe abrir en lunes (ej. "Lun 15 · Mar 16 · … · Dom 21").
+2. **Domingo real ≠ bug**: creá uno eligiendo **domingo** → debe ir a la columna **Dom** (distinto del bug; domingo verdadero sí va a Dom).
+3. **Varios días**: probá "Personalizado" L+J → aparecen en **Lun y Jue**, nada en Dom.
+4. **Claro/oscuro**: cambiá el tema (🌙) y confirmá que se ve igual de correcto.
+
+Si todo bien → firmás `chris_verify.signoff` (SATISFIED) y sigo a reconcile (R) + auditor (opus). Si algo falla → decime qué día elegiste y en qué columna apareció. **NO mando al auditor sin tu firma.** Detalle: `T-FIX-bug7-round4-result.md`.
+
+### 2026-06-15 · 🤖 claude · `/dev-team` · ✓ APLICADO — round 5: borrado recurrente con scope + no-crear-pasado + multi-día (era el mismo bug TZ)
+
+Tus 3 pedidos durante la verificación. **#3 ya estaba arreglado por round-4** (mismo bug de zona horaria); **#1 y #2** los construí (builders Sonnet BE+FE en paralelo) y los verifiqué yo contra el backend real + la base de datos.
+
+- **#1 — borrar bloque repetido pregunta** (elegiste "Solo este turno" / "Este y los siguientes", GCal): al borrar un recurrente aparece el diálogo "¿Eliminar este bloque repetido?" con esas 2 opciones (+ Cancelar), mostrando la fecha (ej. "Solo este turno (mié 17 jun)"). "Solo este turno" excluye SOLO esa fecha (el resto de la serie sigue); "Este y los siguientes" corta la serie desde esa fecha (lo anterior queda); **las citas confirmadas nunca se borran**. one_off borra directo (sin diálogo). Requirió migración BE (`excluded_dates`).
+- **#2 — no crear en el pasado**: las celdas de fechas/horas pasadas quedan **grisadas y no clickeables** (no abren el popover); el backend además rechaza (422) crear un bloque puntual en fecha pasada. Los bloques existentes en el pasado siguen viéndose.
+- **#3 — personalizado L+X+V solo mostraba el lunes**: era el **mismo bug de zona horaria de round-4**. Pre-fix la ventana del calendario quedaba anclada en martes, así que de un bloque L+X+V solo el lunes caía dentro de la semana visible → solo el lunes se pintaba (el resumen sí leía los 3). Round-4 ya lo arregla; lo cerré con un test que verifica que los 3 días pinten en la **misma** semana (DB ISODOW [1,3,5], los 3 pintan).
+
+**Verificación (real-backend + DB, no mocks):** e2e round-5 **8/8** (excluir-fecha: la fecha sale de `excluded_dates` y deja de pintarse, resto intacto; truncar: `end_date` = corte−1, no quedan slots ≥ corte; diálogo UI dispara el DELETE real con scope; celda pasada no abre popover, futura sí; multi-día 3 días juntos). Regresión r4 (22) + r3 intacta. clinics 455 + vitest 525 + tsc/eslint 0. **Live-verify mía** (Chrome MCP seguía tomado por tu navegador → render real + screenshots que miré): el diálogo de scope y la semana pasada grisada se ven bien. Bloques de prueba limpiados — quedan solo tus 3 bloques manuales.
+
+**Pre-existente (no es de este cambio, lo paso al auditor):** un arch test marca `treatment_plans.notes` como TEXT en vez de BYTEA (deuda de cifrado PHI en el módulo CRM, de otra historia).
+
+**⏸ PAUSA G round-5 — kit (Lisa → un doctor → Horarios):**
+1. **Borrar recurrente**: clic en un bloque que se repite → "Eliminar" → aparece el diálogo. Probá "Solo este turno" (desaparece solo esa fecha, las otras semanas siguen) y en otro bloque "Este y los siguientes" (desaparece desde esa fecha en adelante, lo anterior queda).
+2. **Pasado bloqueado**: andá a una semana/horas ya pasadas → las celdas están grisadas y no te dejan crear; intentá crear en una hora ya pasada de hoy → no abre.
+3. **Multi-día**: creá "Personalizado" con Lunes + Miércoles + Viernes → tienen que aparecer los **3** días en la semana (no solo el lunes).
+4. **Día-de-semana (round-4)**: re-confirmá que lunes pinta en lunes (el fix anterior).
+
+Si todo bien → firmás `chris_verify.signoff` (SATISFIED) y sigo a reconcile (R) + `/auditor` (opus). Si algo falla → decime cuál. **NO mando al auditor sin tu firma.** Detalle: `T-FIX-bug7-round5-result.md`.
+
+### 2026-06-15 · 🤖 claude · `/dev-team` · ✓ APLICADO — round 6: "N repeticiones" = N ciclos completos (Mar+Jue ×3 ahora son 3 semanas completas)
+
+Revisé la data como pediste. **Tenías razón** y lo arreglé.
+
+- **Qué pasaba (DB real):** tu bloque "Mar y Jue, 3 veces" guardó **Mar 16 · Jue 18 · Mar 23** = 3 turnos totales. El BE leía "3" como **3 turnos individuales** (estándar iCal: rrule `count=3` → Mar,Jue,Mar) → la 2da semana quedaba sin jueves. Pero el selector dice "Después de N **repeticiones**" → contradicción.
+- **Lo que ratificaste:** "N repeticiones" = **N semanas completas del patrón** (cada repetición incluye TODOS los días elegidos).
+- **Fix:** el BE ahora proyecta `N × (cantidad de días)`. Mar+Jue ×3 = **6 turnos** (3 Mar + 3 Jue), cada semana completa. Un solo día no cambia (3 lunes siguen siendo 3). Además el resumen ahora dice "3 **repeticiones**" (antes "3 veces").
+- **Verificado contra la DB:** recreé tu caso → `dates = Mar16, Jue18, Mar23, Jue25, Mar30, Jul02` (6 turnos, 3 martes + 3 jueves). e2e #R6 + L+J×8=16 + suite BE 457 + tests resumen 11/11, tsc/eslint 0. **Live-verify mía** (screenshots): semanas 1, 2 y 3 cada una con **Mar + Jue** completos (2-5pm).
+
+**⚠️ Importante — tus bloques viejos NO se arreglan solos:** los que creaste ANTES de este fix (en ese doctor: el Mar+Jue×3 y un L+X+V×1) quedaron con los turnos viejos, porque se materializaron al crearlos. Para que tomen la nueva regla: **editalos** (al editar se re-proyectan) o borralos y re-creálos. Los de un solo día ya están bien.
+
+**⏸ PAUSA G round-6 — kit (Lisa → un doctor → Horarios):**
+1. **Crear nuevo** "Personalizado" con **Mar + Jue**, "Después de **3 repeticiones**" → tienen que aparecer los **2 días en 3 semanas seguidas** (6 turnos), ninguna semana a medias.
+2. Probá también **L+X+V, 2 repeticiones** → 2 semanas completas (6 turnos).
+3. Un solo día (ej. Lunes, 3 repeticiones) → 3 lunes (sin cambio).
+4. (Opcional) editá tu bloque viejo Mar+Jue → debería re-proyectarse a semanas completas.
+
+Si todo bien → firmás `chris_verify.signoff` (SATISFIED) y sigo a reconcile (R) + `/auditor` (opus). **NO mando al auditor sin tu firma.** Detalle: `T-FIX-bug7-round6-result.md`.
+
+### 2026-06-15 · 👤 Chris → 🤖 claude · G FIRMADO · ✓ APLICADO
+**Chris:** "Ya lo verifiqué, todo bien — firma SATISFIED".
+`chris_verify.signoff = SATISFIED` (Chris, 2026-06-15) — cubre el scope verificado live rounds 1-6: round-4 (día-de-semana), round-5 (borrado recurrente con scope + no-crear-pasado + multi-día), round-6 ("N repeticiones" = N ciclos completos). G CERRADO. Único open_item (no bloquea): bloques multi-día pre-round-6-fix no auto-corrigen (editar/recrear).
+→ Pasa a **R (reconcile)** `/pm-vitalia` (spec/arch/validators/cap ⟵ realidad de los deltas + `reconciled: true`) → **`/auditor`** (opus) Conv 3.
+
+### 2026-06-15 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO — R (reconcile) hecho → /auditor
+Fase R del story-closure-gate. Reconcilié docs ⟵ realidad de los deltas bug7 rounds 4-6 (precondición del auditor):
+- **04-validators:** `RN-D3F-2` (count-occurrences) INVERTIDA: de "N totales semántica Google" → "N ciclos completos = occurrences × len(días)". `V-D3C-8` L+J×8: 8 ocurrencias → 16. `verification_nature: ambas` ya estaba.
+- **01-spec:** corregidos los 2 puntos stale (quincenal "NO contar semanas" → ciclos completos; nota rrule count) + **nuevo § "Reconcile bug7 (rounds 4-6)"** = SSoT de comportamiento ratificado (RN-D3F-4 día-de-semana TZ · RN-D3G-1 delete-scope occurrence/this_and_future + migración 044 · RN-D3G-2 no-crear-pasado · RN-D3F-2 occurrences=ciclos) con punteros a `T-FIX-bug7-round{4,5,6}-result.md` + validadores.
+- **checkpoint:** `reconciled: true` · `phase: HANDOFF_TO_AUDITOR`.
+- Open_item NO bloqueante registrado: bloques multi-día pre-round6 no auto-corrigen.
+→ AUTO-HANDOFF **`/auditor`** (opus) Conv 3. El auditor lee docs reconciliados + `chris_verify.signoff` SATISFIED + `chris_verify.rounds` (allowlist scope ratificado).
+
+### 2026-06-15 · 🤖 claude · `/auditor` (opus) · ✓ APLICADO — APPROVED (bug7 rounds 4-6) → /pm-vitalia merge
+Conv 3 sobre los deltas bug7 (delta-v3 base ya auditado antes). 2 sub-auditores OPUS en paralelo:
+- **auditor-backend → APPROVED:** migración 044 idempotente · dual filter tenant+clinic en los 4 métodos repo · audit SYNC · confirmados nunca borrados · response_model + 422 neutro · occurrences=ciclos (ratificado, no bug) · past-guard · scope limpio. clinics 457 + arch 353 (única falla = pre-existente CRM pgcrypto, fuera de scope).
+- **auditor-frontend → APPROVED:** cero toISOString para fecha-calendario (root fix calendarDates SSoT) · occurrenceDayOfWeek descarta no clampea · diálogo delete-scope + one_off sin diálogo · useDeleteBlock scope+occurrence_date + invalida occurrencesAll · celdas pasadas data-past · MonthCalendar deduped · "repeticiones". tsc/eslint 0 · vitest 525.
+- **Phase D:** 06-audit/gherkin-matrix.md — sin MISSING, sin FAIL (verificación REAL DB+geometría).
+- **CHECKPOINTS.md APPROVED** C1 4/4 · C2 5/5 · C3 6/6 · C4 6/6. **0 findings bloqueantes.** 4 WARN no-bloqueantes → CIL (repo-mock tests · test guard-strength · docstring stale orgId · pre-existente pgcrypto CRM).
+- **Live-verify #37:** chris_verify.signoff SATISFIED + real-backend e2e (cero mocks) + screenshots render real. ⚠️ Chrome MCP tool locked por tu sesión paralela HB-73 (documentado).
+state developed→reviewing · phase HANDOFF_TO_PM_MERGE.
+→ AUTO-HANDOFF **`/pm-vitalia`** merge: 07-merge.md (5 secciones) + cap ledger lisa.doctores (fix+extend: delete-scope/past/cycles) + archive → state done.
+
+### 2026-06-15 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO — MERGE Fase F → done (en wip/vitalia · squash a main PENDIENTE tu OK)
+Auditor APPROVED + todas las precondiciones (signoff SATISFIED · reconciled · dod_evidence · gherkin sin MISSING · cap-doctor 0). Cerré la story a **done** en wip/vitalia:
+- **07-merge.md** (5 secciones: gherkin-matrix · Playwright run · caps · modules · how-to-verify).
+- **Cap ledger** `clinics/lisa-doctores.yaml` (ya `live` desde delta v3): change_log += entry bug7 rounds 4-6 (fix+extend) · 4 scenarios nuevos (día-de-semana TZ · borrar-recurrente-scope · no-crear-pasado · occurrences-ciclos) · business_rules += RN-D3F-4/RN-D3G-1/RN-D3G-2 · RN-D3F-2 reescrita (N ciclos) · scenario recurrencia corregido (16 ocurrencias). **`make cap-doctor BRAND=vitalia` → ✅ SANO 0 deriva.**
+- **Archive (R2):** `git mv` story → `vitalia/docs/archive/2026/stories/vitalia-fase2-lisa-doctores/` en el mismo commit.
+- **state reviewing→done** · phase DONE.
+- WARN ruteados al CIL (no bloquean): repo-mock tests (L3) · test guard-strength (L3) · docstring orgId (quick-win) · pre-existente pgcrypto CRM (L4). Learnings promotable candidate anotados.
+
+⏸ **Squash `wip/vitalia → main` PENDIENTE tu OK** (integración + staging deploy MANUAL per git-safety). Decime "squashea a main" cuando quieras integrar. Todo el trabajo bug7 está en wip/vitalia (commits 8d211f8f→a2c243cb).

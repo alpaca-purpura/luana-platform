@@ -337,6 +337,197 @@ class AvailabilityBlockRepository(CompoundScopeRepositoryBase[VitaliaAvailabilit
         result = await self._session.execute(stmt)
         return int(result.scalar() or 0)
 
+    async def persist_excluded_dates(
+        self,
+        block_id: UUID,
+        excluded_dates: list[str],
+        *,
+        tenant_id: UUID,
+        clinic_id: UUID,
+    ) -> AvailabilityBlock:
+        """Persist updated excluded_dates on an active block (scope=occurrence delete).
+
+        Does NOT soft-delete the block — only updates excluded_dates column.
+        Returns the updated block entity.
+        """
+        self.validate_dual_filter(tenant_id=tenant_id, clinic_id=clinic_id)
+
+        stmt = (
+            update(VitaliaAvailabilityBlockModel)
+            .where(
+                VitaliaAvailabilityBlockModel.id == block_id,
+                VitaliaAvailabilityBlockModel.tenant_id == tenant_id,
+                VitaliaAvailabilityBlockModel.clinic_id == clinic_id,
+                VitaliaAvailabilityBlockModel.deleted_at.is_(None),
+            )
+            .values(excluded_dates=excluded_dates or None, updated_at=_utc_now())
+        )
+        await self._session.execute(stmt)
+        await self._session.flush()
+
+        updated = await self.get_block(block_id, tenant_id=tenant_id, clinic_id=clinic_id)
+        assert updated is not None, "Block disappeared after persist_excluded_dates"
+
+        logger.info(
+            "availability_block_excluded_dates_persisted",
+            block_id=str(block_id),
+            excluded_count=len(excluded_dates),
+        )
+        return updated
+
+    async def retire_free_slots_on_date(
+        self,
+        block_id: UUID,
+        *,
+        slot_date: date,
+        tenant_id: UUID,
+        clinic_id: UUID,
+    ) -> int:
+        """Soft-delete FREE slots for block on a specific date (scope=occurrence).
+
+        Slots with has_confirmed_appointment=True are NEVER touched.
+        Returns count of slots retired.
+        """
+        self.validate_dual_filter(tenant_id=tenant_id, clinic_id=clinic_id)
+
+        from sqlalchemy import func  # noqa: PLC0415
+
+        # Count before retiring
+        count_stmt = (
+            select(func.count())
+            .select_from(VitaliaAvailabilitySlotModel)
+            .where(
+                VitaliaAvailabilitySlotModel.block_id == block_id,
+                VitaliaAvailabilitySlotModel.tenant_id == tenant_id,
+                VitaliaAvailabilitySlotModel.clinic_id == clinic_id,
+                VitaliaAvailabilitySlotModel.slot_date == slot_date,
+                VitaliaAvailabilitySlotModel.has_confirmed_appointment.is_(False),
+                VitaliaAvailabilitySlotModel.deleted_at.is_(None),
+            )
+        )
+        count_result = await self._session.execute(count_stmt)
+        retire_count = int(count_result.scalar() or 0)
+
+        retire_stmt = (
+            update(VitaliaAvailabilitySlotModel)
+            .where(
+                VitaliaAvailabilitySlotModel.block_id == block_id,
+                VitaliaAvailabilitySlotModel.tenant_id == tenant_id,
+                VitaliaAvailabilitySlotModel.clinic_id == clinic_id,
+                VitaliaAvailabilitySlotModel.slot_date == slot_date,
+                VitaliaAvailabilitySlotModel.has_confirmed_appointment.is_(False),
+                VitaliaAvailabilitySlotModel.deleted_at.is_(None),
+            )
+            .values(deleted_at=_utc_now())
+        )
+        await self._session.execute(retire_stmt)
+        await self._session.flush()
+
+        logger.info(
+            "availability_slots_retired_on_date",
+            block_id=str(block_id),
+            slot_date=slot_date.isoformat(),
+            retired_count=retire_count,
+        )
+        return retire_count
+
+    async def truncate_block(
+        self,
+        block_id: UUID,
+        *,
+        new_end_date: date,
+        tenant_id: UUID,
+        clinic_id: UUID,
+    ) -> AvailabilityBlock:
+        """Set end_condition_kind='end_date' and end_date=new_end_date (scope=this_and_future).
+
+        Block stays active (deleted_at stays NULL).
+        Returns the updated block entity.
+        """
+        self.validate_dual_filter(tenant_id=tenant_id, clinic_id=clinic_id)
+
+        stmt = (
+            update(VitaliaAvailabilityBlockModel)
+            .where(
+                VitaliaAvailabilityBlockModel.id == block_id,
+                VitaliaAvailabilityBlockModel.tenant_id == tenant_id,
+                VitaliaAvailabilityBlockModel.clinic_id == clinic_id,
+                VitaliaAvailabilityBlockModel.deleted_at.is_(None),
+            )
+            .values(
+                end_condition_kind="end_date",
+                end_date=new_end_date,
+                updated_at=_utc_now(),
+            )
+        )
+        await self._session.execute(stmt)
+        await self._session.flush()
+
+        updated = await self.get_block(block_id, tenant_id=tenant_id, clinic_id=clinic_id)
+        assert updated is not None, "Block disappeared after truncate_block"
+
+        logger.info(
+            "availability_block_truncated",
+            block_id=str(block_id),
+            new_end_date=new_end_date.isoformat(),
+        )
+        return updated
+
+    async def retire_free_slots_from_date(
+        self,
+        block_id: UUID,
+        *,
+        from_date: date,
+        tenant_id: UUID,
+        clinic_id: UUID,
+    ) -> int:
+        """Soft-delete FREE slots for block where slot_date >= from_date (scope=this_and_future).
+
+        Slots with has_confirmed_appointment=True are NEVER touched.
+        Returns count of slots retired.
+        """
+        self.validate_dual_filter(tenant_id=tenant_id, clinic_id=clinic_id)
+
+        from sqlalchemy import func  # noqa: PLC0415
+
+        count_stmt = (
+            select(func.count())
+            .select_from(VitaliaAvailabilitySlotModel)
+            .where(
+                VitaliaAvailabilitySlotModel.block_id == block_id,
+                VitaliaAvailabilitySlotModel.tenant_id == tenant_id,
+                VitaliaAvailabilitySlotModel.clinic_id == clinic_id,
+                VitaliaAvailabilitySlotModel.slot_date >= from_date,
+                VitaliaAvailabilitySlotModel.has_confirmed_appointment.is_(False),
+                VitaliaAvailabilitySlotModel.deleted_at.is_(None),
+            )
+        )
+        count_result = await self._session.execute(count_stmt)
+        retire_count = int(count_result.scalar() or 0)
+
+        retire_stmt = (
+            update(VitaliaAvailabilitySlotModel)
+            .where(
+                VitaliaAvailabilitySlotModel.block_id == block_id,
+                VitaliaAvailabilitySlotModel.tenant_id == tenant_id,
+                VitaliaAvailabilitySlotModel.clinic_id == clinic_id,
+                VitaliaAvailabilitySlotModel.slot_date >= from_date,
+                VitaliaAvailabilitySlotModel.has_confirmed_appointment.is_(False),
+                VitaliaAvailabilitySlotModel.deleted_at.is_(None),
+            )
+            .values(deleted_at=_utc_now())
+        )
+        await self._session.execute(retire_stmt)
+        await self._session.flush()
+
+        logger.info(
+            "availability_slots_retired_from_date",
+            block_id=str(block_id),
+            from_date=from_date.isoformat(),
+            retired_count=retire_count,
+        )
+        return retire_count
+
 
 # ── Domain ↔ Model mappers ────────────────────────────────────────────────────
 
@@ -364,6 +555,7 @@ def _model_to_block(model: VitaliaAvailabilityBlockModel) -> AvailabilityBlock:
         end_date=model.end_date,
         occurrences=model.occurrences,
         specific_date=model.specific_date,
+        excluded_dates=list(model.excluded_dates) if model.excluded_dates else [],
         created_at=model.created_at,
         updated_at=model.updated_at or model.created_at,
         deleted_at=model.deleted_at,
@@ -391,4 +583,5 @@ def _block_to_model(block: AvailabilityBlock) -> VitaliaAvailabilityBlockModel:
         end_date=block.end_date,
         occurrences=block.occurrences,
         specific_date=block.specific_date,
+        excluded_dates=block.excluded_dates or None,
     )

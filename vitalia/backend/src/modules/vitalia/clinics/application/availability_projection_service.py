@@ -46,6 +46,16 @@ _DEFAULT_SLOT_DURATION_MINUTES = 30
 _OPEN_ENDED_HORIZON_DAYS = 90
 
 
+def _is_excluded(occurrence_date: date, block: "AvailabilityBlock") -> bool:  # noqa: F821
+    """Return True if occurrence_date is in block.excluded_dates.
+
+    Single source for exclusion check — used by both project_block and
+    occurrence_dates_in_range so the logic is never duplicated.
+    """
+    excluded = getattr(block, "excluded_dates", None) or []
+    return occurrence_date.isoformat() in excluded
+
+
 # ── Value object returned by projection ──────────────────────────────────────
 
 
@@ -159,7 +169,7 @@ class AvailabilityProjectionService:
         """
         if block.kind == "one_off":
             assert block.specific_date is not None, "one_off block must have specific_date"
-            if range_start <= block.specific_date <= range_end:
+            if range_start <= block.specific_date <= range_end and not _is_excluded(block.specific_date, block):
                 return [block.specific_date]
             return []
 
@@ -174,7 +184,7 @@ class AvailabilityProjectionService:
             series_anchor=anchor,
             open_ended_until=today + timedelta(days=_OPEN_ENDED_HORIZON_DAYS),
         )
-        return [d for d in dates if range_start <= d <= range_end]
+        return [d for d in dates if range_start <= d <= range_end and not _is_excluded(d, block)]
 
     def classify_future_slots_for_deletion(
         self,
@@ -229,6 +239,10 @@ class AvailabilityProjectionService:
         if block.specific_date < reference_date:
             return []
 
+        # Skip if specific_date is individually excluded
+        if _is_excluded(block.specific_date, block):
+            return []
+
         return self._slots_for_date(block.specific_date, block=block)
 
     def _project_recurrent(
@@ -260,7 +274,8 @@ class AvailabilityProjectionService:
         )
 
         # Filter occurrences < reference_date (can happen with count-based)
-        occurrence_dates = [d for d in occurrence_dates if d >= reference_date]
+        # Also filter individually excluded occurrences
+        occurrence_dates = [d for d in occurrence_dates if d >= reference_date and not _is_excluded(d, block)]
 
         slots: list[ProjectedSlot] = []
         for occ_date in occurrence_dates:
@@ -290,13 +305,13 @@ class AvailabilityProjectionService:
           - interval=2 → WEEKLY interval=2 (biweekly)
           - interval=N → WEEKLY interval=N (custom)
 
-        byweekday: block.days_of_week (list[int], 0=Mon..6=Sun). dateutil.rrule
-        with multiple byweekday values generates count = TOTAL cross-weekday
-        occurrences (Google Calendar semantics — rrule native, RN-D3F-2).
+        byweekday: block.days_of_week (list[int], 0=Mon..6=Sun).
 
         Maps end_condition_kind:
           - end_date   → until=datetime(end_date 23:59:59, UTC) — inclusive (SC-D3C-3)
-          - occurrences → count=occurrences (TOTAL across all byweekday days)
+          - occurrences → count = occurrences × len(days_of_week): N COMPLETE cycles
+            of the pattern (each repetition includes ALL selected weekdays — Chris
+            ratified 2026-06-15). Single-day → N. Multi-day → N weeks complete.
           - open_ended → until=open_ended_until 23:59:59 UTC
 
         Args:
@@ -335,7 +350,13 @@ class AvailabilityProjectionService:
 
         elif block.end_condition_kind == "occurrences":
             assert block.occurrences and block.occurrences >= 1, "occurrences must be >= 1"
-            rrule_kwargs["count"] = block.occurrences
+            # bug7 round-6 (Chris ratified 2026-06-15): "Después de N repeticiones" =
+            # N COMPLETE cycles of the weekly pattern — each repetition includes ALL
+            # selected weekdays. rrule count is per-individual-occurrence, so
+            # N cycles = N × len(days_of_week). Single-day → N×1 = N (unchanged);
+            # multi-day → every week complete (no half-week tail). Previously count=N
+            # gave N TOTAL occurrences → Mar+Jue ×"3" left week 2 with only Mar.
+            rrule_kwargs["count"] = block.occurrences * len(days_of_week)
 
         elif block.end_condition_kind == "open_ended":
             rrule_kwargs["until"] = datetime.combine(open_ended_until, time(23, 59, 59), tzinfo=timezone.utc)

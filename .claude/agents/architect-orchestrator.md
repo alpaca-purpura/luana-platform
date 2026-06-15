@@ -5,7 +5,7 @@ tools: Read, Bash, Grep, Glob, WebSearch, WebFetch
 maxTurns: 80
 skills: [backend-expert, frontend-expert, copilot-expert, sales-agent-expert, brand-expert, offer-expert, offer-type-preset-expert, metrics-expert]
 color: blue
-model: fable
+model: opus
 memory: user
 ---
 

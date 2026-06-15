@@ -5,7 +5,7 @@ tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch, WebFetch
 maxTurns: 150
 skills: [copilot-expert, sales-agent-expert]
 color: purple
-model: fable
+model: opus
 ---
 <!-- voseo-allowed: doc interno de maquinaria (no user-facing) -->
 

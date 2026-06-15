@@ -5,7 +5,7 @@ tools: Read, Bash, Grep, Glob, WebSearch, WebFetch
 maxTurns: 80
 skills: [copilot-expert, sales-agent-expert, tessl__langgraph, tessl__graceful-degradation]
 color: purple
-model: fable
+model: opus
 ---
 
 ## Return format (anti-telephone-game)

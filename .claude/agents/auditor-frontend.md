@@ -5,7 +5,7 @@ tools: Read, Edit, Bash, Grep, Glob
 maxTurns: 80
 skills: [frontend-expert, brand-expert, offer-expert, offer-type-preset-expert, copilot-expert, sales-agent-expert, metrics-expert, chrome-devtools-verify]
 color: red
-model: fable
+model: opus
 memory: user
 ---
 

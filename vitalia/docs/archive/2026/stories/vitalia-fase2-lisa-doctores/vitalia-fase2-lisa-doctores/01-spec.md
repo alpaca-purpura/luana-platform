@@ -498,8 +498,10 @@ Esta story depende de 2 patrones nuevos que exceden su scope (tocan shell-organi
 **Sospecha Chris:** el calendario no respeta el número de repeticiones. Código: la lógica `occurrences` SÍ existe (`availability_projection_service.py` — weekly/biweekly × end_date/occurrences/open_ended) → bug sutil probable. Cero cambio visual (el calendario gusta).
 
 **Mandato (repro-first + batería exhaustiva — verificación REAL write+efecto, nunca GET 200):**
-1. semanal × occurrences=N → EXACTAMENTE N instancias en calendario + DB (cazar off-by-one 1ra semana)
-2. quincenal × occurrences=N → N instancias espaciadas 14d (NO contar semanas: 3 ocurrencias quincenales = 6 semanas de span)
+1. semanal (1 día) × occurrences=N → EXACTAMENTE N instancias (single-día: N ciclos × 1 día = N · sin cambio)
+2. quincenal (1 día) × occurrences=N → N instancias espaciadas 14d
+   <!-- ★ RECONCILE round-6 (Chris 2026-06-15): "N repeticiones" = N CICLOS COMPLETOS. Multi-día → count = N × len(días): Mar+Jue ×3 = 6 (3 Mar + 3 Jue), cada semana completa. (Antes este punto decía "N totales, NO contar semanas" — INVERTIDO por decisión de producto.) -->
+2b. **multi-día × occurrences=N → N semanas COMPLETAS** (cada repetición incluye todos los días): Mar+Jue ×3 = 6 turnos
 3. end_date → última instancia INCLUYE el día final (TZ tenant)
 4. open_ended → ventana de proyección correcta (ni corta antes ni proyecta infinito)
 5. edición de bloque recurrente post-creación → conteo NO se reinicia ni duplica instancias
@@ -561,7 +563,7 @@ Si el repro confirma bug → regression test RED que lo reproduce PRIMERO, fix d
 #### D3-C.1 · REPRO CONCRETO (Chris live 2026-06-11) + root cause anclado — supersede "bug sutil"
 
 - **Repro Chris (dev-app):** bloque recurrente con **2 repeticiones** de un día → el calendario lo **repite indefinidamente**.
-- **Root cause CONFIRMADO por inspección** (`trace_evidence`): `AvailabilityCalendar.tsx::recurrentBlockVisibleInWeek` (líneas ~93-115) solo evalúa `end_date`; para `end_condition_kind=occurrences` retorna `true` SIEMPRE → pinta el bloque en TODAS las semanas. El BE proyecta BIEN (`availability_projection_service.py` → `rrule(count=occurrences)`). **Es render FE, no BD.**
+- **Root cause CONFIRMADO por inspección** (`trace_evidence`): `AvailabilityCalendar.tsx::recurrentBlockVisibleInWeek` (líneas ~93-115) solo evalúa `end_date`; para `end_condition_kind=occurrences` retorna `true` SIEMPRE → pinta el bloque en TODAS las semanas. El BE proyecta BIEN (`availability_projection_service.py`). **Es render FE, no BD.** <!-- ★ RECONCILE round-6: el count del rrule pasó a `occurrences × len(days_of_week)` = N ciclos completos (ratificado Chris 2026-06-15). -->**
 - **Drift de arquitectura:** el FE duplica lógica de expansión local por semana en vez de consumir la proyección BE (SSoT) — misma clase del patrón contrato-imaginado (4ª vez en esta story). **Dirección del fix (architect concreta):** ambas vistas (semana + mes) consumen ocurrencias proyectadas del BE; muere la expansión client-side.
 - TDD: regression test RED primero — weekly×occurrences=2 → FE pinta EXACTAMENTE 2 semanas + BE proyecta 2 fechas.
 
@@ -676,3 +678,20 @@ Si el repro confirma bug → regression test RED que lo reproduce PRIMERO, fix d
 **✅ construido + verificado live (writes reales + logs + efecto):** D3-A completo (SC-D3A-1..4 — e2e 6/6 + live switcher preserva hoja) · D3-B upload/lista/borrar/descargar (SC-D3B-1..5 — POST 201 live + fila + estados; nota: la cadena destapó 3 capas latentes: URL proxy fantasma + FK engine + tabla assets ausente) · D3-C fix + batería (SC-D3C-1..8 — BE 26 tests + live weekly×2 = semanas 0,1,1,0) · D3-E vista mes (SC-D3E-1..4 — 23 vitest + 4 e2e) · D3-F editor+domain (SC-D3F-1..5 — resumen humano exacto live, POST 201 daysOfWeek/interval, migración 042 compat).
 **✅ construido, verificación live FINAL en curso:** D3-D página pública (SC-D3D-1..15 — endpoints + ruta /d + og + anti-enum verificados; profileState detail wiring = último parche en vuelo).
 **⬜ pendiente:** ninguno del delta. (KPIs tab + Servicios reales = ya diferidos pre-delta a stories propias, sin cambio.)
+
+---
+
+## ★ Reconcile bug7 (rounds 4-6) — ratificado Chris 2026-06-15 (Fase R)
+
+> Deltas verificados live por Chris (G `chris_verify.signoff: SATISFIED`) + ejercidos real-backend por dev-team. Esta sección es el SSoT de comportamiento ratificado para el `/auditor` (allowlist de scope — `chris_verify.rounds` en checkpoint). Detalle por round: `T-FIX-bug7-round{4,5,6}-result.md`.
+
+### Round-4 — día-de-semana (TZ)
+- **RN-D3F-4 (paint TZ):** el bloque se pinta en la columna del **día real** seleccionado. `lunes → columna Lun` (nunca Dom). Root cause: `getCurrentWeekMonday()` derivaba la fecha vía `toISOString()` tras `setDate` local → bajo offset UTC negativo (Lima −05) de tarde/noche la semana se anclaba en martes → grilla corrida. Fix: SSoT TZ-estable `src/lib/format/calendarDates.ts` (componentes locales, nunca `toISOString`) + el calendario **descarta** (no clampea) ocurrencias fuera de `[0,6]`. Validador: `bug7-r4-dow.spec.ts` (22 casos, ground truth = DB ISODOW + geometría DOM).
+
+### Round-5 — borrado recurrente con scope + no-crear-pasado
+- **RN-D3G-1 (delete scope):** al borrar un bloque **recurrente** la UI ofrece **"Solo este turno"** (`scope=occurrence` → excluye esa fecha de la serie vía `excluded_dates`; resto intacto) y **"Este y los siguientes"** (`scope=this_and_future` → trunca la serie: `end_date = fecha − 1 día`; slots ≥ fecha retirados). `one_off` borra directo (sin diálogo). Citas **confirmadas nunca se borran** en ningún scope. Migración **044** `excluded_dates JSONB`. Endpoint `DELETE …/availability-blocks/{id}?scope=&occurrence_date=` (default `series` = back-compat). Validador: `bug7-r5-dow.spec.ts #1a/#1b/#1c`.
+- **RN-D3G-2 (no crear en el pasado):** celdas de fecha/hora pasadas **deshabilitadas** (grisadas, `data-past`, no abren popover). BE rechaza (`422`) crear `one_off` con `specific_date` pasada (+ recurrente con `end_date` pasada). Bloques existentes en el pasado siguen visibles. Validador: `bug7-r5-dow.spec.ts #2-FE` + pytest `test_availability_block_scoped_delete.py` (BE 422).
+
+### Round-6 — "N repeticiones" = N ciclos completos
+- **RN-D3F-2 (REVISADA · ver § validators):** "Después de N repeticiones" = **N ciclos COMPLETOS** del patrón (cada repetición incluye TODOS los días). `count = occurrences × len(days_of_week)`. Single-día: N×1 = N (sin cambio). Multi-día: cada semana completa (Mar+Jue ×3 = 6 turnos: 3 Mar + 3 Jue). Resumen FE dice "N repeticiones" (antes "N veces"). Validadores: `bug7-r5-dow.spec.ts #R6` + `bug7-r4-dow.spec.ts case 18` (L+J×8=16) + BE `test_availability_projection.py` + SC-D3F-1/2.
+- **Dato pre-fix (open_item, NO bloquea):** bloques multi-día creados ANTES del round-6-fix mantienen su proyección vieja (el count se materializó al crear) → editar (re-proyecta) o recrear.

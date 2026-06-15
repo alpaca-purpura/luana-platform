@@ -3,7 +3,7 @@ story_id: vitalia-fase2-lisa-landing-public
 type: ui-story
 agent_owner: null
 module: landing
-capability: landing.public
+capability: lisa.landing_public
 state: idea
 architecture_pattern: ADR-vitalia-004
 created: 2026-06-11T00:00:00Z
@@ -15,7 +15,7 @@ dependencies:
 blocks_hard: []
 blocks_soft: []
 release: F2
-cap_target: landing.public
+cap_target: lisa.landing_public
 parent_story: null
 ---
 
