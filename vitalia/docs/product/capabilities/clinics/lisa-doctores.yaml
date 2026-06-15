@@ -167,6 +167,16 @@ change_log:
       SATISFIED + auditor APPROVED. Commits 8d211f8f/e3c79f3a/fe8786d4/3c75252b/2ba3852d.
     scenarios_added: [dia-de-semana-tz-paint, borrar-recurrente-scope, no-crear-en-pasado, occurrences-ciclos-completos]
     status: shipped
+  - story_id: vitalia-bugfix-horarios-toolbar-sticky
+    date: 2026-06-15
+    type: fix
+    summary: >-
+      Toolbar de Horarios queda fijo al scrollear (fix CORE @luana/ui-kit 0.4.1: AppPanelSlot
+      content-area +flex flex-col → EntityWorkspaceLayout clampa + scroll interno). Solo layout,
+      sin cambio de comportamiento. chris_verify SATISFIED + verificado live (Chrome MCP + Playwright 3/3).
+    scenarios_added: []
+    merge_sha: null
+    status: done
 
 # Scenarios (Gherkin del 01-spec.md · verbatim) — delta v3 verificado REAL (live writes + e2e real-backend)
 scenarios:

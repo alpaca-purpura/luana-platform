@@ -538,8 +538,14 @@ export function AvailabilityCalendar({ doctorId, mondayIso: mondayIsoProp }: Ava
         </div>
 
         {/* ── Grid ──────────────────────────────────────────────────────────── */}
+        {/* bug-horarios-toolbar-sticky: min-h-0 lets this flex-1 item shrink
+            below its content height so `overflow-auto` actually engages. Without
+            it, the default `min-height: auto` keeps the grid at its full content
+            height (24h = 24×48px = 1152px), the scroll never clamps here, and the
+            overflow bubbles up — dragging the header (flex-shrink-0) + the page
+            toolbar with it. The day-header row stays fixed via `sticky top-0`. */}
         <div
-          className="flex-1 overflow-auto"
+          className="flex-1 min-h-0 overflow-auto"
           role="grid"
           aria-label="Calendario de disponibilidad"
         >

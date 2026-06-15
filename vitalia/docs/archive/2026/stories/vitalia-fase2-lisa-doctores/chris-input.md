@@ -932,3 +932,6 @@ Paleta directorio: lisa-green ×6→**×14**, lisa-soft 0→**×10**. Gates: esl
 ### 2026-06-12 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO — **MERGE → DONE** 🎉
 **Story cerrada `done` (corrida autónoma completa intake→done, mandato tuyo).** Cap `lisa.doctores` → **live** (F.3 extend: 6 scenarios verified_real + business_rules + cap-doctor 0 deriva) · 07-merge.md 5 secciones · archive R2 mismo commit · learning promotable `2026-06-12-contrato-imaginado-10-instancias` (HB-42 prio 1).
 **Para tu mañana:** (1) self-test con `demo-script.md` — 14 pasos, incluye TU bug de repeticiones fixeado y la página pública Doctoralia; (2) ratificar goldens V-VIS-1..4. Hallazgos → bugfix follow-up (no reabre). Squash a main = integración aparte cuando digas.
+
+### 2026-06-15 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO — squash a main ejecutado
+Chris: "squashea a main". Squash full-hub `wip/vitalia → main` (commit `dbb65d50`, pusheado `fdedd706..dbb65d50`). Antes: corregí 4 cap_target malformados de idea-stories (camila.multiplicar/lisa.landing_public/lucas.resultados/mateo.pacientes) → system-map ✅ PASS (no skip). Overrides ratificados: STORY_CLOSURE_GATE_SKIP + MULTI_SESSION_ACK (inherentes a un squash full-hub). main = staging · **deploy a prod sigue MANUAL** (release/* gated). bug7 story DONE + en main.

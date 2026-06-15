@@ -44,6 +44,16 @@ vi.mock("@/hooks/useClinicId", () => ({
   useClinicId: () => "clinic-1",
 }));
 
+// Actor headers (vitalia-bugfix-agenda-actor-headers-422): useAgendaGrid now resolves
+// X-User-ID/X-User-Role via useActorHeaders → mock it so the component test does not
+// drive a real /me resolution (which would pull in useUser/useTenantId).
+vi.mock("@/hooks/useActorHeaders", () => ({
+  useActorHeaders: () => ({
+    "X-User-ID": "db-user-uuid",
+    "X-User-Role": "doctor",
+  }),
+}));
+
 vi.mock("next/navigation", () => ({
   useRouter: vi.fn(() => ({ replace: vi.fn() })),
   usePathname: vi.fn(() => "/tenant-1/valeria/agenda"),

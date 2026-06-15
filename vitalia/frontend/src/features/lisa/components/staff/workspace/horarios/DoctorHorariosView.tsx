@@ -61,7 +61,15 @@ export function DoctorHorariosView({ doctorId }: DoctorHorariosViewProps) {
   return (
     <div
       data-testid="horarios-view"
-      className="flex flex-col h-full min-h-0"
+      // bug-horarios-toolbar-sticky: overflow-hidden makes THIS leaf the scroll
+      // boundary. The parent EntityWorkspaceLayout content slot is
+      // `flex-1 min-h-0 overflow-auto` (core @luana/ui-kit, N3 canon — not ours
+      // to touch). Without overflow-hidden here, the calendar grid grows tall
+      // (24h = 24×48px) past the slot's box, the SLOT scrolls, and the toolbar
+      // franjas (heading + calendar header) ride along. Clamping this root forces
+      // the inner grid's own `flex-1 overflow-auto` to absorb the scroll, so the
+      // two flex-shrink-0 toolbars + day-header stay fixed (parity with N2/N3).
+      className="flex flex-col h-full min-h-0 overflow-hidden"
       aria-label="Gestión de disponibilidad del doctor"
     >
       {/* ── Section heading + toggle ────────────────────────────────────── */}

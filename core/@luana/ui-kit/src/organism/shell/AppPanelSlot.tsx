@@ -132,9 +132,14 @@ export function AppPanelSlot({
         onNavigate={onNavigate}
       />
 
-      {/* Content area — flex-1 overflow-y-auto: ÚNICO contenedor scrolleable de la hoja.
-          AppPanelSlot + shell quedan overflow-hidden (marco fijo). */}
-      <div className="flex-1 min-h-0 overflow-y-auto">
+      {/* Content area — flex-col + flex-1 + overflow-y-auto: marco de scroll de la hoja.
+          AppPanelSlot + shell quedan overflow-hidden (marco fijo).
+          `flex flex-col` (no solo block) para que las hojas que se montan con `flex-1`
+          (EntityWorkspaceLayout: N3 fijo + scroll interno propio) CLAMPEN a la altura del
+          panel y scrolleen internamente, en vez de crecer a su contenido y arrastrar sus
+          toolbars (bug vitalia-bugfix-horarios-toolbar-sticky · verificado live 2026-06-15).
+          Páginas normales (hoja = un bloque alto) siguen scrolleando vía overflow-y-auto. */}
+      <div className="flex flex-col flex-1 min-h-0 overflow-y-auto">
         {children !== undefined ? (
           children
         ) : (

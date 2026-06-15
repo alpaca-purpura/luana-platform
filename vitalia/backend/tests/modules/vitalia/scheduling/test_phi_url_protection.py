@@ -74,6 +74,10 @@ def _build_test_app(*, audit_mock: MagicMock | None = None) -> FastAPI:
         session = MagicMock()
         session.__aenter__ = AsyncMock(return_value=session)
         session.__aexit__ = AsyncMock(return_value=False)
+        # commit() is awaited on the suspicious_request path (audit must survive the
+        # HTTP 400 under the committing session dependency) — make it awaitable.
+        session.commit = AsyncMock(return_value=None)
+        session.rollback = AsyncMock(return_value=None)
         yield session
 
     from src.modules.vitalia.scheduling.api import agenda_router as ar_module

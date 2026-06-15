@@ -72,6 +72,61 @@ export function bareTenantLandingRedirect(pathname: string): string | null {
   return match ? `/${match[1]}/${DEFAULT_LANDING_SUBPATH}` : null;
 }
 
+/**
+ * TENANT_UUID — a single tenant-UUID segment (no leading slash). Used to
+ * validate the tenant resolved from Clerk publicMetadata BEFORE building a
+ * root-landing redirect. Mirrors BARE_TENANT_PATH's UUID shape so the edge
+ * never 307s to a non-UUID (e.g. a Clerk Org id `org_xxx`) that would 500 the
+ * shell layout. See MEMORY.md::no-clerk-organizations.
+ */
+const TENANT_UUID = /^[0-9a-f-]{36}$/i;
+
+/**
+ * isAuthedRootPath — true iff `pathname` is the EXACT site root (`/`).
+ *
+ * Scoped HARD on purpose: the root edge-redirect (root-login-redirect-softnav)
+ * must fire ONLY for `/` so we never resolve the tenant (a Clerk Backend API
+ * call) on every request. Any path with a segment (`/sign-in`, `/{uuid}/...`,
+ * `/marketing`) returns false and falls through to the normal flow.
+ */
+export function isAuthedRootPath(pathname: string): boolean {
+  return pathname === "/";
+}
+
+/**
+ * rootLandingRedirect — builds the edge-redirect target for an authenticated
+ * user hitting the site root (`/`): `/{tenantId}/${DEFAULT_LANDING_SUBPATH}`.
+ *
+ * Bug fix (vitalia-bugfix-root-login-redirect-softnav): Clerk afterSignIn sends
+ * the user client-side to `/`, where the Server Component `app/page.tsx` did an
+ * in-render `redirect()` INTO the `(shell-organism)` route group whose layout is
+ * `dynamic({ssr:false})`. That soft-navigation triggers Next 16's
+ * "Rendered more hooks than during the previous render" (~40% flake → hung
+ * render until a manual refresh). Doing the redirect at the EDGE (HTTP 307)
+ * before `app/page.tsx` renders eliminates the soft-nav: the browser loads the
+ * destination with a fresh request → the Router mounts cleanly. Same pattern as
+ * `bareTenantLandingRedirect` / `shellInRenderRedirectTarget`. See proxy.ts +
+ * learning 2026-06-03-next16-softnav-redirect-rendered-more-hooks.
+ *
+ * Returns `null` when no tenant is resolved OR the resolved tenant is not a UUID
+ * — in that case the proxy lets `app/page.tsx` run its full fallback
+ * (fetchUserTenants → no_tenants_assigned / network-error handling). We never
+ * 307 to a non-UUID (would 500 the shell layout). `app/page.tsx` stays as the
+ * defensive fallback for the cold-publicMetadata / non-UUID edge.
+ *
+ * @param tenantId - tenant UUID resolved from Clerk `publicMetadata.tenant_id`
+ *                   (server-side, via clerkClient) — `null`/`undefined`/`""`
+ *                   when not yet provisioned or unresolvable at the edge.
+ */
+export function rootLandingRedirect(
+  tenantId: string | null | undefined,
+): string | null {
+  if (!tenantId || !TENANT_UUID.test(tenantId)) {
+    return null;
+  }
+  return `/${tenantId}/${DEFAULT_LANDING_SUBPATH}`;
+}
+
 // ── Edge redirects para los redirect() in-render del shell (T-V2 lift 2026-06-11) ──
 //
 // El censo del lift (platform-lift-shell-chrome-ui-kit T-V2) encontró que el

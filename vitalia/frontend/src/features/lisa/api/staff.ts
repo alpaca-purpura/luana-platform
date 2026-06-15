@@ -33,8 +33,7 @@ import type {
 import { useTenantId } from "@/hooks/useTenantId";
 import { fetchClient } from "@/lib/api/fetchClient";
 import { useClinicId } from "@/hooks/useClinicId";
-import { ME_QUERY_KEY } from "@/hooks/useCurrentUser";
-import { useTenantStore } from "@/stores/tenant-store";
+import { useActorHeaders } from "@/hooks/useActorHeaders";
 import type {
   DoctorListItem,
   DoctorDetail,
@@ -54,55 +53,21 @@ import type { DoctorCreateFormValues } from "../types/staff-schema";
 const API_BASE = "";
 
 /**
- * useStaffActorHeaders — headers for the BE RBAC + audit guard on staff mutations:
- *   - X-User-Role → require_brand_owner_access (staff mutations allow {owner, admin_clinic})
- *   - X-User-ID   → audit actor; the doctors endpoints type it as UUID (users.id)
+ * useStaffActorHeaders — thin wrapper over the shared `useActorHeaders` hook.
  *
- * ★ Bug #4 (Chris decision 2026-06-06, option B — targeted, no shared-hook change):
+ * ★ Lifted 2026-06-15 (vitalia-bugfix-agenda-actor-headers-422): the X-User-ID (DB UUID)
+ *   + X-User-Role (per-tenant) resolution moved verbatim to `@/hooks/useActorHeaders` so
+ *   features/mateo (agenda) can consume it WITHOUT a forbidden cross-feature import
+ *   (FSD-Lite). Behaviour unchanged for the staff consumers below — this re-exports the
+ *   shared hook under the original name to avoid touching the call sites.
  *
- * 1) ROLE = PER-TENANT role from the tenant store (active clinic's role), NOT the GLOBAL
- *    role from `GET /me`. A user can be `doctor` globally (users.role) yet `owner` of a
- *    specific clinic (user_tenants.role); tenant-scoped RBAC needs the per-tenant role.
- *    The global role sent "doctor" → 403. `/me/tenants` (→ useTenants → tenant-store)
- *    carries the per-tenant role.
- *
- * 2) X-User-ID = the DB user UUID (users.id), NOT the Clerk id. The doctors endpoints
- *    declare `user_id: UUID = Header("X-User-ID")` and use it as the audit actor, so a
- *    Clerk id (`user_…`) 422s ("Input should be a valid UUID"). `GET /me` returns the DB
- *    id (meData.id); useCurrentUser exposes the Clerk id instead, so we read the DB id
- *    from the /me query cache here (same ME_QUERY_KEY → react-query dedupes, no extra call).
- *
- * Both are resolved HERE, scoped to staff mutations, WITHOUT touching the shared
- * useCurrentUser / hasPhiAccess gating. The systemic useCurrentUser per-tenant fix is
- * tracked in a separate carril.
+ * Origin (Bug #4, Chris decision 2026-06-06, option B):
+ *   - X-User-Role = PER-TENANT role (active clinic) from the tenant store, NOT the GLOBAL
+ *     `/me` role (a user can be `doctor` globally yet `owner` of a clinic → 403 otherwise).
+ *   - X-User-ID = DB user UUID (users.id), NOT the Clerk id (`user_…` → 422 UUID).
  */
 export function useStaffActorHeaders(): Record<string, string> {
-  const { getToken, isLoaded, isSignedIn } = useAuth();
-  const tenantId = useTenantId();
-  const tenantRole = useTenantStore(
-    (s) =>
-      s.availableTenants.find((t) => t.id === tenantId)?.role ??
-      s.activeTenant?.role ??
-      null,
-  );
-  // Reuse the /me query cache (same key as useCurrentUser) to read the DB user UUID.
-  const meQuery = useQuery<{ id: string }>({
-    queryKey: [...ME_QUERY_KEY, tenantId],
-    queryFn: async () => {
-      const token = await getToken();
-      if (!token || !tenantId) throw new Error("Sin autenticación");
-      return fetchClient<{ id: string }>("/api/v1/iam/users/me", {
-        token,
-        tenantId,
-      });
-    },
-    enabled: isLoaded && isSignedIn === true && Boolean(tenantId),
-    staleTime: 5 * 60 * 1000,
-  });
-  return {
-    "X-User-ID": meQuery.data?.id ?? "",
-    "X-User-Role": tenantRole ?? "owner",
-  };
+  return useActorHeaders();
 }
 
 // ── Query key factory ──────────────────────────────────────────────────────────

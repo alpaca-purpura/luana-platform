@@ -11,11 +11,20 @@
  * Pattern: Server Component calls getInitialAgendaState() → passes result
  * as placeholderData to ValeriaAgendaView → React Query hydrates client cache.
  *
+ * ★ Actor headers (vitalia-bugfix-agenda-actor-headers-422, 2026-06-15):
+ *   /scheduling/agenda/grid REQUIRES the HIPAA-lite dual filter + audit actor
+ *   (X-Tenant-ID + X-Clinic-ID + X-User-ID) and gates RBAC on X-User-Role. SSR sending
+ *   only X-Tenant-ID → 422 → emptyGrid every render (masking the bug). X-Clinic-ID comes
+ *   from session.sessionClaims["clinic_id"] (resolved in page.tsx); X-User-ID (DB UUID) +
+ *   X-User-Role (per-tenant) resolve server-side via GET /api/v1/iam/users/me (the handler
+ *   resolves both from the X-Tenant-ID header — dependencies.py § per-tenant role). Still
+ *   graceful: missing actor context → emptyGrid (no throw, no layout shift).
+ *
  * downstream-regression-na: brand-local server-side fetch; no cross-brand consumers
  * spec_anchor: 03-arch.md § 6.3 + 06-tickets.yaml T-12 (A1)
  */
 
-import { auth } from "@clerk/nextjs/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
 import type { AgendaGridResponseDTO } from "../types/agenda-schema";
 import type { AgendaView } from "../types/agenda.types";
 
@@ -51,6 +60,70 @@ function emptyGrid(
   };
 }
 
+// ── Server-side actor context resolution ────────────────────────────────────────
+
+/** Engine GET /api/v1/iam/users/me response shape (DB UUID id + per-tenant role). */
+interface MeResponse {
+  id: string;
+  role: string;
+}
+
+/**
+ * Resolves the X-User-ID (DB UUID) + X-User-Role (per-tenant) headers server-side
+ * by calling GET /api/v1/iam/users/me with the Clerk token + X-Tenant-ID (the handler
+ * resolves both from the tenant context — same source as the client useActorHeaders).
+ *
+ * Graceful: returns {} on any failure → caller falls back to emptyGrid (no throw).
+ */
+async function resolveActorHeaders(
+  token: string,
+  tenantId: string,
+): Promise<Record<string, string>> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/v1/iam/users/me`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        "X-Tenant-ID": tenantId,
+      },
+      next: { revalidate: 0 },
+    });
+    if (!res.ok) return {};
+    const me = (await res.json()) as MeResponse;
+    const headers: Record<string, string> = {};
+    if (me.id) headers["X-User-ID"] = me.id;
+    if (me.role) headers["X-User-Role"] = me.role;
+    return headers;
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Resolves X-Clinic-ID server-side from the Clerk user's publicMetadata.clinicId —
+ * the SAME canonical source as the client useClinicId(). Read via the Clerk backend
+ * API (clerkClient) because the dev JWT template does NOT inject custom claims, so
+ * session.sessionClaims has no clinic_id / public_metadata (the page-claim path was the
+ * bug). `userId` comes from auth(); a caller-provided clinicId (e.g. a claim) wins if set.
+ *
+ * Graceful: returns null on any failure → caller falls back to emptyGrid.
+ */
+async function resolveClinicId(
+  userId: string | null,
+  override?: string | null,
+): Promise<string | null> {
+  if (override) return override;
+  if (!userId) return null;
+  try {
+    const client = await clerkClient();
+    const user = await client.users.getUser(userId);
+    const clinicId = (user.publicMetadata as Record<string, unknown>)["clinicId"];
+    return typeof clinicId === "string" && clinicId.length > 0 ? clinicId : null;
+  } catch {
+    return null;
+  }
+}
+
 // ── getInitialAgendaState ──────────────────────────────────────────────────────
 
 export interface GetInitialAgendaStateOptions {
@@ -58,6 +131,8 @@ export interface GetInitialAgendaStateOptions {
   view: string;
   date: string;
   presetFilter: string | null;
+  /** X-Clinic-ID — from session.sessionClaims["clinic_id"], resolved in page.tsx. */
+  clinicId?: string | null;
 }
 
 /**
@@ -74,17 +149,27 @@ export async function getInitialAgendaState({
   view,
   date,
   presetFilter,
+  clinicId,
 }: GetInitialAgendaStateOptions): Promise<AgendaGridResponseDTO> {
   const normalizedView: AgendaView = isAgendaView(view) ? view : "semana";
 
   try {
-    const { getToken } = await auth();
+    const { getToken, userId } = await auth();
     const token = await getToken();
 
     if (!token) {
       // Middleware should handle redirect — this is defensive fallback
       return emptyGrid(tenantId, normalizedView, date);
     }
+
+    // Resolve the full HIPAA-lite actor context server-side. The grid endpoint REQUIRES
+    // X-Clinic-ID + X-User-ID (+ RBAC X-User-Role); sending only X-Tenant-ID → 422 → empty
+    // grid (the bug this fixes). X-User-ID/Role come from /me; X-Clinic-ID from the Clerk
+    // user's publicMetadata.clinicId (the page-passed `clinicId` overrides if present).
+    const [actorHeaders, resolvedClinicId] = await Promise.all([
+      resolveActorHeaders(token, tenantId),
+      resolveClinicId(userId, clinicId),
+    ]);
 
     const params = new URLSearchParams({ view: normalizedView, date });
     if (presetFilter) params.set("preset_filter", presetFilter);
@@ -96,6 +181,8 @@ export async function getInitialAgendaState({
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
           "X-Tenant-ID": tenantId,
+          ...(resolvedClinicId ? { "X-Clinic-ID": resolvedClinicId } : {}),
+          ...actorHeaders,
         },
         // Server-side fetch: no need for AbortController — Next.js handles timeouts
         next: { revalidate: 0 }, // Always fresh on server render

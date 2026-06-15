@@ -17,6 +17,8 @@
 import { useAuth } from "@clerk/nextjs";
 import { useMutation } from "@tanstack/react-query";
 import { vitaliaFetch } from "@/lib/fetch-client";
+import { useClinicId } from "@/hooks/useClinicId";
+import { useActorHeaders } from "@/hooks/useActorHeaders";
 import type { NotifyRequestDTO } from "../types/agenda-schema";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -38,16 +40,24 @@ export interface SendNotificationResponse {
  */
 export function useSendNotificationMutation(tenantId: string) {
   const { getToken } = useAuth();
+  const clinicId = useClinicId();
+  const actorHeaders = useActorHeaders();
 
   return useMutation<SendNotificationResponse, Error, NotifyRequestDTO>({
     mutationFn: async (payload) => {
       const token = await getToken();
       if (!token) throw new Error("Not authenticated");
 
+      // notify/reminder requires the HIPAA-lite dual filter + audit actor
+      // (X-Clinic-ID + X-User-ID + X-User-Role) — only X-Tenant-ID → 422.
       return vitaliaFetch<SendNotificationResponse>("/api/v1/notify/reminder", {
         method: "POST",
         token,
         tenantId,
+        headers: {
+          ...actorHeaders,
+          ...(clinicId ? { "X-Clinic-ID": clinicId } : {}),
+        },
         body: JSON.stringify(payload),
       });
     },

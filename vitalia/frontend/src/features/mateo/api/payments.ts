@@ -18,6 +18,8 @@
 import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { vitaliaFetch } from "@/lib/fetch-client";
+import { useClinicId } from "@/hooks/useClinicId";
+import { useActorHeaders } from "@/hooks/useActorHeaders";
 import type { ChargeResponseDTO } from "../types/agenda-schema";
 import { agendaKeys } from "./agenda";
 
@@ -49,6 +51,8 @@ export interface ChargeMutationVariables {
  */
 export function useChargeMutation(tenantId: string) {
   const { getToken } = useAuth();
+  const clinicId = useClinicId();
+  const actorHeaders = useActorHeaders();
   const queryClient = useQueryClient();
 
   return useMutation<ChargeResponseDTO, Error, ChargeMutationVariables>({
@@ -71,11 +75,15 @@ export function useChargeMutation(tenantId: string) {
         emit_fiscal_doc: emitFiscalDoc ?? null,
       };
 
+      // payments/charge requires the HIPAA-lite dual filter + audit actor
+      // (X-Clinic-ID + X-User-ID + X-User-Role) alongside the idempotency key.
       return vitaliaFetch<ChargeResponseDTO>("/api/v1/payments/charge", {
         method: "POST",
         token,
         tenantId,
         headers: {
+          ...actorHeaders,
+          ...(clinicId ? { "X-Clinic-ID": clinicId } : {}),
           "X-Idempotency-Key": idempotencyKey,
         },
         body: JSON.stringify(payload),
