@@ -142,6 +142,12 @@ Quiere: un lugar donde el creator ponga sus influencers de referencia → recome
 ### 2026-06-15 16:00 · 🤖 claude · `/po-ux` · ✓ APLICADO (ubicación) + 💡 PROPONE
 **Ubicación: Tomás (Atraer) → sub-tab nueva `referentes`** (referentes + recomendados + tendencias Apify → ideas → afina contenido; alimenta `contenido`). 3 dimensiones: UI en Tomás · integración Apify en Plataforma›conexiones + `core/luana-core-connections` · motor de recomendación backend. **Prior-art:** skill `content-hunter` (caza de referencias virales + swipe files + STEPPS) = esta sub-tab es su hogar UI. **NO es shell MVP** → story futura `comunify-tomas-referentes`; en MVP = "Próximamente". Agregado a `navigation-tree.md` (Tomás.referentes + Apify en conexiones). Proceso fino = en esa story.
 
+### 2026-06-15 16:20 · 👤 chris
+Antes de confirmar el sitemap: dale una última revisión vos mismo (juntar / falta / sobra), buscá en internet lo último en estos temas, y dame una alternativa final de sitemap.
+
+### 2026-06-15 16:20 · 🤖 claude · `/po-ux` · 💡 PROPONE (sitemap v2 research-informed)
+**Research (WebSearch 2026):** creator economy → interactivo (cohorts/comunidad) > curso estático (Skool/Maven ganan) · agentes IA por etapa (research/contenido/campañas/analytics) + research-agent escanea tendencias diario · funnel retención = post-compra+loyalty+LTV+email ciclo. **Autocrítica + v2 en `navigation-tree.md`:** Nina 6→3 (voz+autoridad→N3 marca; escalera→N3 ofertas) · Bruno `cohorts-en-curso`→`eventos` (delivery) · Tomás `audiencia` incluye email/nurture · Plataforma 4→3 (plan→N3 cuenta) · **analytics + email = transversales, NO tabs** (Luana digest + per-agent KPIs; email donde se usa). Resuelve las 3 decisiones abiertas: voz+autoridad=Nina · cohorts no-split (diseño Nina / delivery Bruno-eventos) · nombres pulidos. **Esperando que Chris elija: v2 / mezcla / ajustes** → luego mockup → FIRMA 2.
+
 ---
 
 ### 2026-06-15 15:18 · 🤖 claude · `/pm-comunify` · ✓ APLICADO
