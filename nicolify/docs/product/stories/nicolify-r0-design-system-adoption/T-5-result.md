@@ -4,7 +4,7 @@ story_id: nicolify-r0-design-system-adoption
 brand: nicolify
 builder: builder-frontend (workhorse · claude-sonnet-4-6)
 completed_at: 2026-06-15
-commit_sha: PENDING_COMMIT
+commit_sha: 52dd47d3
 ---
 
 # T-5 Result — Visual Goldens + a11y-subnav + Demo Script
@@ -109,8 +109,4 @@ on first `npx playwright test` run against the live stack.
 
 ## Commit SHA
 
-`PENDING_COMMIT` — staged for commit after this result is written.
-Expected commit message:
-```
-test(nicolify): T-5 visual goldens + a11y-subnav e2e + demo-script (ds-adoption)
-```
+`52dd47d3` — pushed to `wip/nicolify` (2026-06-16).
