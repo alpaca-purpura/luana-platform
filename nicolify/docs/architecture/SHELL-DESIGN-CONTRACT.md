@@ -137,6 +137,7 @@ Cada agente con tab: `--agent-{slug}` + `--agent-{slug}-soft`. Default chat = `l
 - **★ Mockup-base reusable (ADR-nicolify-003 · cement 2026-06-15)**: todo mockup nicolify **linkea `_shared.css`** (SSoT: `nicolify-r0-design-system-adoption/mockups/_shared.css` — tokens espejo de `globals.css` + átomos + moléculas + layout-primitives + shell wrapper) y porta el wrapper **verbatim**; solo cambia `.panel-content`. Cero estilo inline de layout, cero arbitrary → "lo que veo = lo que programo". Rule: `nicolify/.claude/rules/shell-mockup-per-component.md`.
 - **Shell-feature pattern (9 secciones)**: toda sub-tab cita `architecture_pattern: ADR-nicolify-001`.
 - **SSR-safe persisted store**: factory `createSsrSafePersistedStore` + `useStoreHydration` (skeleton store-free).
+- **RN-6 · AC-6 (ds-adoption 2026-06-15):** todo mockup nicolify **compone del mismo canon y tokens** que el código React (`design-system-canon.md` + `@luana/design-tokens` + `@luana/ui-kit`). El `_shared.css` es espejo exacto de `globals.css`. Visual golden `maxDiffPixelRatio:0.001` verifica la convergencia mockup↔producción. Cero arbitrary-values en mockups ni en código.
 
 ## 8. Testing
 

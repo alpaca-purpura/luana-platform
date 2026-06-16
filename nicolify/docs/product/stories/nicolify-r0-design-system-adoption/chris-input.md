@@ -158,3 +158,14 @@ Patrón cross-brand (vitalia+nicolify) → candidate lift `/pm-luana`. Próximo:
 - **FLAGS:** IcpCard not switched to EntityInfoCard (Link nav vs EntityInfoCard onClick — follow-up); SubTabContent IcpMasterWithNavBar overflow wrapper kept (no matching primitive).
 - **Commit:** `4baa816e` · Net diff: +105 / -203 (-98 lines).
 - Ver T-3-result.md para diff summary + validator output.
+
+### 2026-06-16 — T-5 /dev-team build (visual goldens + a11y-subnav + demo-script)
+
+**/dev-team → ✓ APLICADO (T-5 · gates GREEN · live-verify PENDING G gate):**
+- **abel-icp-fidelity.spec.ts NEW:** 5 goldens (A tokens-swatch · B GATED `kit-radius-control-lift` · C1 abel-icp-master · C2 abel-icp-detail con conditional accent · D states). `maxDiffPixelRatio:0.001`. Baseline captura en primer run playwright vs live stack.
+- **a11y-subnav.spec.ts NEW:** SC-5 completo — axe wcag2aa + role=tablist + roving tabindex (←→/Home/End/wrap) + directory-mode aria-disabled. 9 tests.
+- **SHELL-DESIGN-CONTRACT.md §7 MODIFIED:** línea explícita RN-6/AC-6 ("todo mockup compone del mismo canon y tokens que el código React").
+- **demo-script.md NEW:** guía G gate — setup + happy path (master→detail→autosave write) + edge cases + log check. Spanish neutro. Signoff va en checkpoint::chris_verify.signoff.
+- **Gates:** tsc 0 errors · eslint e2e excluido · vitest arch 176/176 GREEN.
+- **Live-verify:** PENDING (dev stack no corrió durante build). Goldens se capturan en primer `playwright test` contra el stack vivo. Signoff en G gate.
+- Ver T-5-result.md para detalle completo.
