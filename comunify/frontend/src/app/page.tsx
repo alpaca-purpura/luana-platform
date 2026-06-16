@@ -1,20 +1,21 @@
-import type { Metadata } from "next";
+/**
+ * Root page — T-shell (2026-06-15).
+ *
+ * Clerk proxy (proxy.ts) redirects authenticated users from / to /sign-in
+ * (unauthenticated) or the tenant deep-link (authenticated via /:tenantId redirect).
+ * This page is a fallback for edge cases where proxy hasn't fired.
+ *
+ * No metadata export with "use client" — pure Server Component.
+ * Previous static landing retired: T-shell replaces (dashboard) with shell-organism.
+ */
 
-export const metadata: Metadata = {
-  title: "Comunify — Plataforma para creadores de Latinoamérica",
-  description:
-    "Gestiona cohortes, comunidad y suscripciones. Automatiza ventas con IA.",
-};
+import { redirect } from "next/navigation";
 
+/**
+ * Root fallback — Clerk proxy handles auth redirect.
+ * This redirect covers edge cases (pre-rendered page, no proxy match).
+ */
 export default function HomePage() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-8">
-      <h1 className="text-4xl font-bold text-comunify-text">
-        Comunify
-      </h1>
-      <p className="mt-4 text-lg text-comunify-text-muted">
-        Plataforma para creadores, coaches y educadores de Latinoamérica.
-      </p>
-    </main>
-  );
+  // Proxy handles auth redirect; this covers any gap.
+  redirect("/sign-in");
 }
