@@ -1,0 +1,66 @@
+---
+capability_id: nicolify.design-system.nicolify-ui-homologation
+module: design-system
+tech_module: design-system
+slug: nicolify-ui-homologation
+status: planned                       # planned | beta | live | deprecated | sunset (subí a live SOLO con ≥1 scenario + e2e GREEN)
+license: brand-local
+
+# Dimensiones v3 (4 campos · ADR-vitalia-005)
+agent_owner: plataforma-tecnica          # caja Infraestructura→plataforma-tecnica (infra cap, no agente — = patrón shell-nicolify)
+functional_area: plataforma-tecnica.design-system    # <caja>.<area-kebab> — box existe en SYSTEM-MAP (sufijo libre)
+user_visible: false                   # atributo de calidad (consistencia UI cross-hoja) — NO feature de negocio (zona infraestructura)
+nature: feature                       # feature | scaffold | extension-point
+
+user_facing_name: "Homologación del design system Nicolify (adopción @luana/ui-kit + design-tokens + lock no-arbitrary)"
+user_facing_description: >
+  # TODO: 2-5 líneas Spanish neutro · qué hace desde la óptica del usuario · sin jerga.
+
+# DEV_PREVIEW (paths null hasta que exista el código · NO inventar → G4 limpio)
+dev_preview:
+  route: null                         # TODO "/TODO-agent/nicolify-ui-homologation" cuando exista
+  how_to_navigate: null               # TODO pasos verbatim para llegar en dev
+  main_component: null                # TODO path real cuando se construya
+  api_endpoints: []                   # TODO
+  e2e_test: null                      # TODO path spec
+  fixtures_required: []
+  storybook_url: null
+  loom_demo: null
+
+# Ledger
+created_in_story: nicolify-r0-design-system-adoption
+created_date: 2026-06-15
+last_modified: 2026-06-15
+parent_cap: null
+derives_capabilities: []
+superseded_by: null
+
+change_log:
+  - story_id: nicolify-r0-design-system-adoption
+    date: 2026-06-15
+    type: new
+    summary: "# TODO: implementación inicial · qué hace en 1-2 líneas"
+    scenarios_added: []               # TODO: ≥1 al merge si user_visible:true
+    merge_sha: null
+    status: in-progress
+
+# v3.2 (llenar al merge · REQUIRED si user_visible:true)
+access:
+  entry_points: []                    # TODO
+  forbidden_roles: []
+  authentication: required
+
+scenarios: []                         # TODO: ≥1 scenario (id/name/actor/given/when/then) al merge
+
+business_rules: []                    # TODO
+
+related_capabilities:
+  depends_on: []
+  enables: []
+  similar: []
+  obsoletes: []
+---
+
+# Homologación del design system Nicolify (adopción @luana/ui-kit + design-tokens + lock no-arbitrary)
+
+# TODO: resumen markdown · arquitectura interna · decisiones cardinales · referencias.

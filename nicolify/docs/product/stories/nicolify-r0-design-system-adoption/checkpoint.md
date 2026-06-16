@@ -10,7 +10,7 @@ map_area: design-system
 module: design-system                # bucket code:design-system · toca nicolify/frontend/src broad + globals.css
 architecture_pattern: ADR-014-design-system-homologation   # doctrina platform que implementa (5 capas + enforcement mecánico) + HARD cumplir SHELL-DESIGN-CONTRACT.md
 cap_target: design-system/nicolify-ui-homologation
-cap_change_type: fix
+cap_change_type: new                 # NUEVA cap (no existía design-system/nicolify-ui-homologation) — 03-arch crea el YAML schema v2. (revert de un flip erróneo del commit worker 3bbbabea: "adopción cero-creación de COMPONENTES" ≠ "no cap nueva"; el cap protocol mira la cap, no los componentes)
 route: null                          # cross-cutting — no es una hoja con ruta única
 demo_required: true                  # visual: las hojas deben render idéntico/mejor, cero regresión
 last_modified: 2026-06-16
