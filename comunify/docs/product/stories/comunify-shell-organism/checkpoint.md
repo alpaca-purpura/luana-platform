@@ -166,11 +166,24 @@ solo le falta un endpoint copilot booteable detrás.
 
 ### Live-verify del shell + T-shell fix 2026-06-16
 Ejercí el shell en vivo (dev-app, Chrome MCP, `hola@alpacapurpura.lat`). El build de T-shell salió **121 tests
-verdes pero roto en vivo** (DoD #37). **4 fixes aplicados + commiteados** (login-loop · boot-crash heap · ruta N3
-404 · "more hooks" redirect in-render). El chrome **carga + navega** ahora. **Quedan 4 defectos → ciclo
-`builder-frontend` sobre T-shell** (avatares gigantes Tailwind-v4-scan · sidebar Luana no renderiza · `useTenantId`
-usa Clerk org [no-clerk-organizations] · chat 404 = engine B). Detalle builder-actionable + root-cause + pistas:
-**`T-shell-livefix.md`**. Infra dev: 4 usuarios Clerk de prueba + túnel comunify levantado (runtime, no-commit).
+verdes pero roto en vivo** (DoD #37). **4 fixes previos** (login-loop · boot-crash heap · ruta N3 404 · "more hooks"
+redirect in-render). Detalle builder-actionable + root-cause: **`T-shell-livefix.md`**.
+
+**T-shell fix 2/2 (2026-06-16) — A/B/C RESUELTOS + live-verified DoD #37:**
+- **A · avatares gigantes** → FIXED. Root: `@source` glob → **bare-dir** (forma vitalia) + limpiar `.next` del contenedor
+  FE + restart (cache-trap: chunk dev nombre estable, el browser servía CSS viejo; hard-reload no alcanza). Live:
+  avatares **28px** en fresh load, `size7InCss:true`.
+- **B · sidebar Luana no renderiza** → RESUELTO por el fix de A (misma causa raíz: clases de layout del kit no
+  generadas → dual-pane colapsaba). Live: `luana-sidebar` monta **382px** con chat-header/messages/composer.
+- **C · `useTenantId` usa Clerk org** → FIXED. Reescrito al patrón vitalia (`user.publicMetadata.tenant_id`, sin
+  `useOrganization`) + test (5 casos). tsc/eslint/vitest verde. Live: hook resuelve sin `org_xxx` ni crash. **Data
+  path real sigue gateado por seed de tenant comunify en iam** (pendiente conocido, no regresión).
+- **D · chat 404** = engine fix B (proposal accepted) — NO T-shell; T-agentic v2 lo re-cablea cuando aterrice.
+
+Cosméticos nuevos (fuera A/B/C, follow-up, no bloquean): LogoMark aspect-ratio warning · `agents/plataforma/avatar.svg`
+500 (placeholder faltante, fallback "P" OK) · favicon 500. Infra dev: 4 usuarios Clerk + túnel comunify (runtime, no-commit).
+
+**Story sigue `blocked`** hasta que aterrice engine B → T-agentic v2 → seed tenant iam → T-e2e → auditor → merge.
 
 ---
 

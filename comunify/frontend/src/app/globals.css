@@ -4,8 +4,11 @@
  * sizing, shell layout, etc.) are included in the generated CSS. In v4 the `content[]`
  * array in tailwind.config.ts is IGNORED — only `@source` works. Without this the kit
  * renders UNSTYLED (e.g. giant un-sized avatars). Same fix vitalia/nicolify applied.
- * Path is relative to this file: comunify/frontend/src/app/ → 4 up = repo root. */
-@source "../../../../core/@luana/ui-kit/src/**/*.{ts,tsx}";
+ * Path is relative to this file: comunify/frontend/src/app/ → 4 up = repo root.
+ * Bare-dir form (not glob): matches vitalia verbatim (the form proven to land kit
+ * utilities in the CLIENT stylesheet under Turbopack). The explicit glob form put the
+ * classes in a server-only chunk. */
+@source "../../../../core/@luana/ui-kit/src";
 
 @theme {
   /* Color utilities — Tailwind v4 generates .bg-comunify-X / .text-comunify-X / .border-comunify-X */
