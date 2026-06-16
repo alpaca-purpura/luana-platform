@@ -26,20 +26,20 @@
  * validators_gate: RN-3 (propone/ratifica) + ProposalBanner shown on draft
  */
 
-import { useCallback, type ReactNode } from "react";
+import { FormPageSkeleton, ErrorState } from "@luana/ui-kit";
 import { useParams, useRouter } from "next/navigation";
+import { useCallback, type ReactNode } from "react";
 import { toast } from "sonner";
 
 import { ProposalBanner } from "@/components/shared/ProposalBanner";
-import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-import { useIcp } from "../../hooks/use-icps";
 import { useBuyers } from "../../hooks/use-buyers";
 import { useMarkReadyIcp, useDeleteIcp } from "../../hooks/use-icp-mutations";
+import { useIcp } from "../../hooks/use-icps";
 
-import { IcpDatosForm } from "./IcpDatosForm";
 import { BuyerLeafForm } from "./BuyerLeafForm";
+import { IcpDatosForm } from "./IcpDatosForm";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -95,8 +95,12 @@ export function IcpWorkspaceView({ icpId, leaf, className }: IcpWorkspaceViewPro
   // ── Loading state ─────────────────────────────────────────────────────────
   if (icpLoading) {
     return (
-      <div className={cn("flex flex-col flex-1 overflow-hidden", className)}>
-        <WorkspaceSkeleton />
+      <div
+        className={cn("flex flex-col flex-1 overflow-hidden p-6", className)}
+        aria-busy="true"
+        aria-label="Cargando datos del ICP"
+      >
+        <FormPageSkeleton sections={4} />
       </div>
     );
   }
@@ -104,13 +108,8 @@ export function IcpWorkspaceView({ icpId, leaf, className }: IcpWorkspaceViewPro
   // ── Error / not found state ───────────────────────────────────────────────
   if (!icp) {
     return (
-      <div className={cn("flex flex-col flex-1 overflow-auto p-6", className)}>
-        <div
-          role="alert"
-          className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
-        >
-          No se encontró el perfil de cliente ideal. Puede que haya sido eliminado.
-        </div>
+      <div className={cn("flex flex-col flex-1 overflow-auto", className)}>
+        <ErrorState message="No se encontró el perfil de cliente ideal. Puede que haya sido eliminado." />
       </div>
     );
   }
@@ -128,12 +127,7 @@ export function IcpWorkspaceView({ icpId, leaf, className }: IcpWorkspaceViewPro
     if (!matchedBuyer && buyers.length > 0) {
       // Buyer not found in list — could be a stale URL; show error
       leafContent = (
-        <div
-          role="alert"
-          className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive m-6"
-        >
-          No se encontró este buyer. Puede que haya sido eliminado.
-        </div>
+        <ErrorState message="No se encontró este buyer. Puede que haya sido eliminado." />
       );
     } else {
       leafContent = <BuyerLeafForm buyerId={leaf} icpId={icpId} />;
@@ -162,25 +156,6 @@ export function IcpWorkspaceView({ icpId, leaf, className }: IcpWorkspaceViewPro
 
       {/* Leaf content */}
       <div className="flex-1 min-h-0 overflow-auto">{leafContent}</div>
-    </div>
-  );
-}
-
-// ── Workspace skeleton ─────────────────────────────────────────────────────────
-
-function WorkspaceSkeleton() {
-  return (
-    <div className="flex flex-col gap-4 p-6" aria-busy="true" aria-label="Cargando datos del ICP">
-      {/* Banner skeleton */}
-      <Skeleton className="h-10 w-full rounded-lg" />
-      {/* Group skeletons */}
-      {[0, 1, 2].map((i) => (
-        <div key={i} className="rounded-xl border border-border/40 p-4 flex flex-col gap-3">
-          <Skeleton className="h-4 w-32" />
-          <Skeleton className="h-8 w-full" />
-          <Skeleton className="h-8 w-3/4" />
-        </div>
-      ))}
     </div>
   );
 }

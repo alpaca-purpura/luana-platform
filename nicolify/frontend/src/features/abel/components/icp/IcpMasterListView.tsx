@@ -32,18 +32,19 @@
  * validators_gate: RN-2 (draft-first) + SC-empty + SC-large
  */
 
-import { useCallback, useState } from "react";
-
+import { PageContainer, PageHeader, ListPageSkeleton, ErrorState } from "@luana/ui-kit";
 import { useRouter, useParams } from "next/navigation";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
 import { DraftFirstStarter } from "@/components/shared/DraftFirstStarter";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-import { useIcps } from "../../hooks/use-icps";
 import { useCreateIcp } from "../../hooks/use-icp-mutations";
+import { useIcps } from "../../hooks/use-icps";
 import { useAbelUiStore } from "../../store/abel-ui-store";
+
 import { IcpCard } from "./IcpCard";
 import { IcpIntakeOverlay } from "./IcpIntakeOverlay";
 
@@ -114,14 +115,14 @@ export function IcpMasterListView() {
     return (
       <>
         <IcpIntakeOverlay />
-        <div
-          className="flex-1 overflow-auto p-6"
+        <PageContainer
+          className="flex-1 overflow-auto"
           aria-busy="true"
           aria-label="Cargando perfiles de cliente ideal"
           data-testid="icp-master-loading"
         >
-          <IcpGridSkeleton />
-        </div>
+          <ListPageSkeleton rows={6} />
+        </PageContainer>
       </>
     );
   }
@@ -132,27 +133,12 @@ export function IcpMasterListView() {
     return (
       <>
         <IcpIntakeOverlay />
-        <div
-          className="flex-1 overflow-auto p-6 flex flex-col items-center justify-center gap-4"
-          data-testid="icp-master-error"
-          role="alert"
-        >
-          <div className="text-4xl" aria-hidden="true">
-            ⚠️
-          </div>
-          <p className="text-sm text-muted-foreground text-center max-w-xs">
-            No se pudieron cargar los perfiles de cliente. Verifica tu conexión e intenta de nuevo.
-          </p>
-          <button
-            onClick={() => void refetch()}
-            className={cn(
-              "text-sm text-agent-abel hover:underline",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm",
-            )}
-          >
-            Reintentar
-          </button>
-        </div>
+        <PageContainer className="flex-1 overflow-auto" data-testid="icp-master-error" role="alert">
+          <ErrorState
+            message="No se pudieron cargar los perfiles de cliente. Revisa tu conexión."
+            onRetry={() => void refetch()}
+          />
+        </PageContainer>
       </>
     );
   }
@@ -163,13 +149,13 @@ export function IcpMasterListView() {
     return (
       <>
         <IcpIntakeOverlay />
-        <div className="flex-1 overflow-auto" data-testid="icp-master-empty">
+        <PageContainer className="flex-1 overflow-auto" data-testid="icp-master-empty">
           <DraftFirstStarter
             onGenerateDraft={handleGenerateDraft}
             onStartBlank={handleStartBlank}
             agentName="Abel"
           />
-        </div>
+        </PageContainer>
       </>
     );
   }
@@ -179,36 +165,28 @@ export function IcpMasterListView() {
   return (
     <>
       <IcpIntakeOverlay />
-      <div
-        className="flex-1 overflow-auto p-6"
+      <PageContainer
+        className="flex-1 overflow-auto"
         data-testid="icp-master-list"
         aria-label={`${icps.length} perfiles de cliente ideal`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-base font-semibold text-foreground">Perfiles de cliente ideal</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {icps.length === 1 ? "1 perfil" : `${icps.length} perfiles`}
-            </p>
-          </div>
-
-          {/* Add new ICP button — triggers draft-first generate (same as DraftFirstStarter) */}
-          <button
-            onClick={handleGenerateDraft}
-            className={cn(
-              "inline-flex items-center gap-1.5 text-sm font-medium",
-              "px-3 py-1.5 rounded-md",
-              "bg-agent-abel text-white hover:bg-agent-abel/90",
-              "transition-colors",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-            )}
-            data-testid="icp-master-add-btn"
-          >
-            <span aria-hidden="true">✨</span>
-            Nuevo ICP
-          </button>
-        </div>
+        <PageHeader
+          title="Perfiles de cliente ideal"
+          subtitle={icps.length === 1 ? "1 perfil" : `${icps.length} perfiles`}
+          actions={
+            <Button
+              onClick={handleGenerateDraft}
+              className="bg-agent-abel text-white hover:bg-agent-abel/90"
+              data-testid="icp-master-add-btn"
+              size="sm"
+            >
+              <span aria-hidden="true">✨</span>
+              Nuevo ICP
+            </Button>
+          }
+          className="mb-6"
+        />
 
         {/* ICP grid — CSS grid, SC-large: 200 ICPs scroll natively */}
         <ul
@@ -222,33 +200,7 @@ export function IcpMasterListView() {
             </li>
           ))}
         </ul>
-      </div>
+      </PageContainer>
     </>
-  );
-}
-
-// ── Skeleton ──────────────────────────────────────────────────────────────────
-
-/** IcpGridSkeleton — placeholder while ICPs load (3 cards) */
-function IcpGridSkeleton() {
-  return (
-    <div
-      className={cn("grid gap-3", "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4")}
-      aria-hidden="true"
-    >
-      {[0, 1, 2].map((i) => (
-        <div key={i} className="flex flex-col gap-3 p-4 rounded-xl border border-border/40">
-          <div className="flex items-start justify-between">
-            <Skeleton className="w-9 h-9 rounded-lg" />
-            <Skeleton className="h-5 w-16 rounded-full" />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-3 w-2/3" />
-          </div>
-          <Skeleton className="h-3 w-16 mt-auto" />
-        </div>
-      ))}
-    </div>
   );
 }

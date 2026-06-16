@@ -28,7 +28,7 @@ import { useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { AutosaveBadge } from "@luana/ui-kit";
+import { FloatingAutosaveIndicator, Group, GroupHeader } from "@luana/ui-kit";
 import { WhatForChip } from "@/components/shared/WhatForChip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,9 +71,9 @@ function Textarea({
   );
 }
 
-// ── Group header ──────────────────────────────────────────────────────────────
+// ── BuyerGroupHeader — wraps kit GroupHeader with local WhatForChip in trailing ──
 
-function GroupHeader({
+function BuyerGroupHeader({
   title,
   consumers,
 }: {
@@ -81,17 +81,11 @@ function GroupHeader({
   consumers: React.ComponentProps<typeof WhatForChip>["consumers"];
 }) {
   return (
-    <div className="flex items-center gap-2 mb-3">
-      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-      <WhatForChip consumers={consumers} fieldLabel={title} />
-    </div>
+    <GroupHeader
+      title={title}
+      trailing={<WhatForChip consumers={consumers} fieldLabel={title} />}
+    />
   );
-}
-
-// ── Group container ────────────────────────────────────────────────────────────
-
-function Group({ children }: { children: React.ReactNode }) {
-  return <div className="rounded-xl border border-border/60 bg-card p-4 mb-3">{children}</div>;
 }
 
 // ── FieldRow ──────────────────────────────────────────────────────────────────
@@ -362,15 +356,9 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
       data-testid="buyer-leaf-form"
       aria-label={`Perfil de buyer: ${buyer.name}`}
     >
-      {/* ── Form header: autosave status ─────────────────────────────────────── */}
-      <div className="flex items-center justify-between mb-4">
-        <p className="text-xs text-muted-foreground">Los cambios se guardan automáticamente.</p>
-        <AutosaveBadge status={autosaveStatus} />
-      </div>
-
       {/* ── Grupo 1: Identidad ───────────────────────────────────────────────── */}
-      <Group>
-        <GroupHeader title="Identidad del buyer" consumers={["christian", "norvil"]} />
+      <Group className="mb-3">
+        <BuyerGroupHeader title="Identidad del buyer" consumers={["christian", "norvil"]} />
 
         {/* Buyer header + set-primary (RN-6) */}
         <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
@@ -384,7 +372,7 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
             <div>
               <p className="text-sm font-semibold">{buyer.name}</p>
               {buyer.isPrimary && (
-                <span className="text-[10px] font-medium text-agent-abel bg-agent-abel/10 px-1.5 py-0.5 rounded-full">
+                <span className="text-xs font-medium text-agent-abel bg-agent-abel/10 px-1.5 py-0.5 rounded-full">
                   Principal
                 </span>
               )}
@@ -452,8 +440,8 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
       </Group>
 
       {/* ── Grupo 2: Datos demográficos ─────────────────────────────────────── */}
-      <Group>
-        <GroupHeader title="Datos demográficos" consumers={["christian"]} />
+      <Group className="mb-3">
+        <BuyerGroupHeader title="Datos demográficos" consumers={["christian"]} />
         <div className="flex flex-col gap-3">
           {(
             [
@@ -498,8 +486,8 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
       </Group>
 
       {/* ── Grupo 3: Psicografía ────────────────────────────────────────────── */}
-      <Group>
-        <GroupHeader title="Psicografía" consumers={["abel", "christian"]} />
+      <Group className="mb-3">
+        <BuyerGroupHeader title="Psicografía" consumers={["abel", "christian"]} />
         <div className="flex flex-col gap-3">
           {(
             [
@@ -538,8 +526,8 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
       </Group>
 
       {/* ── Grupo 4: Dolores ─────────────────────────────────────────────────── */}
-      <Group>
-        <GroupHeader title="Dolores" consumers={["christian", "abel"]} />
+      <Group className="mb-3">
+        <BuyerGroupHeader title="Dolores" consumers={["christian", "abel"]} />
         <ListDictField
           label="Dolor"
           value={watchedPainPoints}
@@ -551,8 +539,8 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
       </Group>
 
       {/* ── Grupo 5: Deseos ──────────────────────────────────────────────────── */}
-      <Group>
-        <GroupHeader title="Deseos" consumers={["abel", "christian"]} />
+      <Group className="mb-3">
+        <BuyerGroupHeader title="Deseos" consumers={["abel", "christian"]} />
         <ListDictField
           label="Deseo"
           value={watchedDesires}
@@ -564,8 +552,8 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
       </Group>
 
       {/* ── Grupo 6: Objeciones ──────────────────────────────────────────────── */}
-      <Group>
-        <GroupHeader title="Objeciones" consumers={["christian"]} />
+      <Group className="mb-3">
+        <BuyerGroupHeader title="Objeciones" consumers={["christian"]} />
         <ListDictField
           label="Objeción"
           value={watchedObjections}
@@ -577,8 +565,8 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
       </Group>
 
       {/* ── Grupo 7: Canales preferidos ─────────────────────────────────────── */}
-      <Group>
-        <GroupHeader title="Canales preferidos" consumers={["christian", "brenda"]} />
+      <Group className="mb-3">
+        <BuyerGroupHeader title="Canales preferidos" consumers={["christian", "brenda"]} />
         <ListDictField
           label="Canal"
           value={watchedChannels}
@@ -590,8 +578,8 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
       </Group>
 
       {/* ── Grupo 8: Viaje del comprador ─────────────────────────────────────── */}
-      <Group>
-        <GroupHeader title="Viaje del comprador" consumers={["christian", "abel"]} />
+      <Group className="mb-3">
+        <BuyerGroupHeader title="Viaje del comprador" consumers={["christian", "abel"]} />
         <div className="flex flex-col gap-3">
           {(
             [
@@ -628,6 +616,9 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
           ))}
         </div>
       </Group>
+
+      {/* ── Autosave indicator — canon §2.6: UNA por página, sticky bottom-center ── */}
+      <FloatingAutosaveIndicator status={autosaveStatus} />
     </form>
   );
 }

@@ -31,7 +31,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { AutosaveBadge } from "@luana/ui-kit";
+import { FloatingAutosaveIndicator, Group, GroupHeader } from "@luana/ui-kit";
 import { WhatForChip } from "@/components/shared/WhatForChip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -118,47 +118,34 @@ function FieldRow({
   );
 }
 
-// ── Group header helper ────────────────────────────────────────────────────────
+// ── IcpGroupHeader helper — wraps kit GroupHeader + local WhatForChip in trailing ──
+// Renders missing-fields alert with original data-testid for regression-test compat.
 
-interface GroupHeaderProps {
+interface IcpGroupHeaderProps {
   title: string;
   consumers: React.ComponentProps<typeof WhatForChip>["consumers"];
   missingInGroup?: string[];
 }
 
-function GroupHeader({ title, consumers, missingInGroup }: GroupHeaderProps) {
+function IcpGroupHeader({ title, consumers, missingInGroup }: IcpGroupHeaderProps) {
+  const hasMissing = (missingInGroup?.length ?? 0) > 0;
   return (
-    <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-      <div className="flex items-center gap-2">
-        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-        <WhatForChip consumers={consumers} fieldLabel={title} />
-      </div>
-      {missingInGroup && missingInGroup.length > 0 && (
+    <>
+      <GroupHeader
+        title={title}
+        trailing={<WhatForChip consumers={consumers} fieldLabel={title} />}
+      />
+      {hasMissing && (
         <p
           role="alert"
           aria-live="polite"
-          className="text-xs text-destructive font-medium"
+          className="text-xs text-destructive font-medium -mt-2 mb-2"
           data-testid={`group-missing-${title.toLowerCase().replace(/\s+/g, "-")}`}
         >
-          Falta: {missingInGroup.join(", ")}
+          Falta: {(missingInGroup ?? []).join(", ")}
         </p>
       )}
-    </div>
-  );
-}
-
-// ── Group container ────────────────────────────────────────────────────────────
-
-function Group({ children, hasMissing }: { children: React.ReactNode; hasMissing?: boolean }) {
-  return (
-    <div
-      className={cn(
-        "rounded-xl border bg-card p-4 mb-3 transition-colors",
-        hasMissing ? "border-destructive/40" : "border-border/60",
-      )}
-    >
-      {children}
-    </div>
+    </>
   );
 }
 
@@ -334,15 +321,9 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
       data-testid="icp-datos-form"
       aria-label="Datos del perfil de cliente ideal"
     >
-      {/* ── Form header: autosave status ─────────────────────────────────────── */}
-      <div className="flex items-center justify-between mb-4">
-        <p className="text-xs text-muted-foreground">Los cambios se guardan automáticamente.</p>
-        <AutosaveBadge status={autosaveStatus} />
-      </div>
-
       {/* ── Grupo 1: Identidad ───────────────────────────────────────────────── */}
-      <Group hasMissing={missingForIdentidad.length > 0}>
-        <GroupHeader
+      <Group hasError={missingForIdentidad.length > 0} className="mb-3">
+        <IcpGroupHeader
           title="Identidad"
           consumers={["abel", "christian"]}
           missingInGroup={missingForIdentidad}
@@ -425,8 +406,8 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
       </Group>
 
       {/* ── Grupo 2: Firmográficos ───────────────────────────────────────────── */}
-      <Group hasMissing={missingForFirmograficos.length > 0}>
-        <GroupHeader
+      <Group hasError={missingForFirmograficos.length > 0} className="mb-3">
+        <IcpGroupHeader
           title="Firmográficos"
           consumers={["brenda", "norvil"]}
           missingInGroup={missingForFirmograficos}
@@ -464,7 +445,7 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
                 data-testid="icp-field-avg-ticket-currency"
                 className="text-sm uppercase"
               />
-              <p className="text-[10px] text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 Código ISO 4217 (ej. MXN, COP, USD, PEN)
               </p>
             </FieldRow>
@@ -486,8 +467,8 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
       </Group>
 
       {/* ── Grupo 3: Dolor & ángulo ───────────────────────────────────────────── */}
-      <Group hasMissing={missingForDolor.length > 0}>
-        <GroupHeader
+      <Group hasError={missingForDolor.length > 0} className="mb-3">
+        <IcpGroupHeader
           title="Dolor & ángulo"
           consumers={["christian", "abel"]}
           missingInGroup={missingForDolor}
@@ -523,8 +504,8 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
       </Group>
 
       {/* ── Grupo 4: Señales ─────────────────────────────────────────────────── */}
-      <Group hasMissing={missingForSenales.length > 0}>
-        <GroupHeader
+      <Group hasError={missingForSenales.length > 0} className="mb-3">
+        <IcpGroupHeader
           title="Señales de compra"
           consumers={["brenda", "christian"]}
           missingInGroup={missingForSenales}
@@ -580,8 +561,8 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
       </Group>
 
       {/* ── Grupo 5: Anti-patrón ─────────────────────────────────────────────── */}
-      <Group hasMissing={missingForAntipatron.length > 0}>
-        <GroupHeader
+      <Group hasError={missingForAntipatron.length > 0} className="mb-3">
+        <IcpGroupHeader
           title="Anti-patrón"
           consumers={["abel"]}
           missingInGroup={missingForAntipatron}
@@ -646,6 +627,9 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
           </Button>
         </div>
       </div>
+
+      {/* ── Autosave indicator — canon §2.6: UNA por página, sticky bottom-center ── */}
+      <FloatingAutosaveIndicator status={autosaveStatus} />
     </form>
   );
 }
