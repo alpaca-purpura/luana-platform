@@ -251,3 +251,14 @@ Corrí el build autónomo end-to-end (ratificaste "hasta el done"). **5/6 ticket
 - **(C · no recomendada)** proveerle a comunify la env legacy (acopla al "Visionarias Brain", brittle).
 
 El resto del shell (FE: tokens+wrapper+routing+chat-store) está construido y verde — solo le falta un endpoint copilot booteable detrás. Post-desbloqueo faltan: tenant comunify seedeado + LiteLLM gateway + T-e2e + auditor + merge. **No declaré done falso.**
+
+### 2026-06-16 · 🤖 claude · `/pm-luana` · ✓ APLICADO (decisión B · proposal de engine)
+Chris eligió **B** (engine fix vía /pm-luana — router copilot brand-mountable). Abrí la promotion proposal
+**`docs/promotion-protocol/proposals/2026-06-16-copilot-chat-brand-mountable.md`** (state: `accepted`, dirección
+B ratificada por Chris). Resumen: el `/chat` del motor debe poder montarse con la config multibrand del brand
+sin arrastrar el `Settings` legacy ("Visionarias Brain") a import-time — 2 approaches a evaluar en /architect
+(Settings lazy `@lru_cache get_settings()` vs chat-router factory con DI). Blast radius: toca
+`core/luana-core-platform.Settings` (lo consume TODO) → R3 downstream en los 4 brands + el app standalone del
+engine. semver minor (additive). El **approach concreto + semver** se ratifican tras la design de /architect,
+ANTES de commitear código a core (worktree core efímero). `comunify-shell-organism` queda `blocked` hasta que
+el engine fix aterrice → luego T-agentic **v2** (re-mount limpio, quita el guard) + T-e2e + DoD #37 + auditor + merge.
