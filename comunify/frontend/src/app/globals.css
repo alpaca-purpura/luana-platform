@@ -86,6 +86,21 @@
   --comunify-surface: 0 0% 100%;
   --comunify-border: 214 32% 91%;
 
+  /* Shell surface tokens (light mode) — consumed by ShellLayoutClient, Ribbon, ChatPanel */
+  --bg: 240 20% 99%;
+  --panel: 0 0% 100%;
+  --line: 240 14% 92%;
+  --muted: 240 10% 46%;
+  --ink: 240 24% 14%;
+
+  /* Agent ring tokens — per-agent color for RibbonTab / avatar border / StatusDot */
+  --agent-luana: 264 92% 58%;
+  --agent-nina: 252 100% 62%;
+  --agent-tomas: 217 95% 58%;
+  --agent-sofia: 152 80% 43%;
+  --agent-bruno: 38 92% 50%;
+  --agent-lucia: 220 84% 45%;
+
   /* Shape */
   --radius: 0.75rem;
   --radius-lg: 1.25rem;
@@ -98,4 +113,20 @@
     #2d7ff9 70%,
     #1e5eff 100%
   );
+}
+
+/* Dark mode: toggled via .dark class on <html> (next-themes ThemeProvider) */
+.dark {
+  --bg: 240 18% 8%;
+  --panel: 240 16% 12%;
+  --line: 240 12% 22%;
+  --muted: 240 8% 62%;
+  --ink: 240 20% 96%;
+}
+
+/* Border cement rule: all borders adapt to theme via --line token */
+*,
+*::before,
+*::after {
+  border-color: hsl(var(--line));
 }
