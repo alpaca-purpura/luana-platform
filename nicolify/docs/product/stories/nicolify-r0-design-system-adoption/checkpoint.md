@@ -2,7 +2,7 @@
 story_id: nicolify-r0-design-system-adoption
 brand: nicolify
 type: ui-story                       # adopción visual cross-cutting — todas las hojas re-expresadas vía primitivas compartidas (esencia homologada · valores de marca propios)
-state: ready                         # idea → refining → refined → ready → developing → developed → reviewing → done · ready 2026-06-16 (/architect cerró ready package: 03-arch + 03-arch-fe + 04-validators + 05-guidelines + 06-tickets + dispatch-plan)
+state: developing                    # idea → refining → refined → ready → developing → developed → reviewing → done · developing 2026-06-15 (/dev-team build-claim code:design-system lane=E)
 release: R0                          # Fundación — homologar ANTES de crecer (ADR-014 HARD: "empezar homologado")
 map_zone: infraestructura            # paradigma 3 zonas — atributo de calidad (consistencia UI cross-hoja) · derivada de SYSTEM-MAP::zones (a confirmar /architect)
 map_box: plataforma-tecnica
@@ -14,7 +14,7 @@ cap_change_type: new                 # NUEVA cap (no existía design-system/nico
 route: null                          # cross-cutting — no es una hoja con ruta única
 demo_required: true                  # visual: las hojas deben render idéntico/mejor, cero regresión
 last_modified: 2026-06-16
-phase: READY_PACKAGE_CLOSED          # /architect cerró ready package FE-only (2026-06-16)
+phase: BUILD_T1_T2                   # /dev-team build (DAG T-1‖T-2 → T-3 → T-4 → T-5) · autonomous_mode: false → pausa en G al cerrar developed
 input_spec_signed: true             # ✍ FIRMA 1 (RONDA 1 funcional) — Chris 2026-06-15
 mockup_final_signed: true           # ✍ FIRMA 2 (mockup ds-base.html) — Chris 2026-06-15 · colores verificados vs nicolify.com live
 ratified_by_chris: true

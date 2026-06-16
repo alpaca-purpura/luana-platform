@@ -28,7 +28,7 @@ import { useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { AutosaveBadge } from "@/components/shared/AutosaveBadge";
+import { AutosaveBadge } from "@luana/ui-kit";
 import { WhatForChip } from "@/components/shared/WhatForChip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -365,7 +365,7 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
       {/* ── Form header: autosave status ─────────────────────────────────────── */}
       <div className="flex items-center justify-between mb-4">
         <p className="text-xs text-muted-foreground">Los cambios se guardan automáticamente.</p>
-        <AutosaveBadge status={autosaveStatus} data-testid="buyer-autosave-badge" />
+        <AutosaveBadge status={autosaveStatus} />
       </div>
 
       {/* ── Grupo 1: Identidad ───────────────────────────────────────────────── */}

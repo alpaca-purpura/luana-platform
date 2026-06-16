@@ -115,6 +115,15 @@ Patrón cross-brand (vitalia+nicolify) → candidate lift `/pm-luana`. Próximo:
 - **Gates:** V1-arch 39/39 GREEN · V2-tsc 0 errors · ESLint 0 errors.
 - Ver T-1-result.md para diff summary + validator output.
 
+### 2026-06-15 (sesión nueva) — T-2 /dev-team build (kill 4 mirrors)
+
+**/dev-team → ✓ APLICADO (T-2 GREEN · 518 tests PASS · 0 tsc errors · 0 eslint errors):**
+- **6 mirror files DELETED** via `git rm` (-1483 lines): `AutosaveBadge.tsx` + `EmptyState.tsx` + `EntitySubNavBar.tsx` + `EntitySubNavBar.test.tsx` + `EntityWorkspaceLayout.tsx` + `EntityWorkspaceLayout.test.tsx`.
+- **4 consumer files MODIFIED:** `SubTabContent.tsx` + `IcpEntityLayoutClient.tsx` + `IcpDatosForm.tsx` + `BuyerLeafForm.tsx` — imports repointed to `@luana/ui-kit`. `agentSlug` prop dropped (kit uses semantic `accent` token). `data-testid` props removed (kit uses `data-state` attribute). `EmptyState` → `ShellEmptyState` alias.
+- **2 arch-tests NEW (TDD RED→GREEN):** `test-no-kit-mirror.test.ts` (V5, 5 tests) + `test-no-cross-brand-import.test.ts` (V6, 2 tests). Both empty ratchet allowlists.
+- **Gates:** V2-tsc 0 errors · V5/V6 arch tests PASS · V11-vitest 518/518 · ESLint 0 errors, 53 warnings (all pre-existing) · arch fitness 160/160 PASS.
+- Ver T-2-result.md para diff summary + validator output.
+
 ### 2026-06-15 (sesión nueva) — /architect cierra ready package + RN-7 decision
 **Hallazgo bloqueante de RN-7 (verificado, no asumido):** los controls del kit (`Button/Input/Select/Textarea`) **hardcodean `rounded-md`** — `--radius-control` no existe en ningún lado. Hacerlos pill brand-overridable = **cambio cross-brand de engine** (toca `@luana/ui-kit` + `design-tokens` + vitalia debe definir `--radius-control: var(--radius)` para no cambiar) → `/pm-luana` promotion gate. Prohibido meterlo en una story de marca.
 
