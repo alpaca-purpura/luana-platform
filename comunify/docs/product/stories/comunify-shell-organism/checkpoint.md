@@ -2,8 +2,8 @@
 brand: comunify
 story_id: comunify-shell-organism
 module: platform
-state: ready
-phase: READY_PACKAGE_CLOSED
+state: developing
+phase: BUILD_T0
 story_type: ui-mixed          # FE shell + AGENTIC copilot mount + HYGIENE(config)
 created: 2026-06-15
 last_updated: 2026-06-16
@@ -16,7 +16,7 @@ cap_target: comunify/shell-organism
 cap_change_type: new
 verification_nature: funcional
 demo_required: true
-autonomous_mode: false        # architect propone false (story funcional + write live + demo G); Chris ratifica si quiere autonomous
+autonomous_mode: true         # Chris ratificó run autónomo end-to-end ("arrancá /dev-team hasta el done", 2026-06-16) → G chris-verify exento; auditor live-verify + dod_evidence sustituye el demo G
 cast_ratified: true   # ADR-comunify-001-agentes-cast (Chris 2026-06-15)
 input_spec_signed: true    # FIRMA 1 funcional (Chris 2026-06-15)
 mockup_final_signed: true  # FIRMA 2 final (Chris 2026-06-15 "firmo todo")
