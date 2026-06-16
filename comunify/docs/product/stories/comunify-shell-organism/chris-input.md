@@ -234,3 +234,20 @@ Config; port re-temizado de vitalia/nicolify). Pendientes paralelos del flujo: s
 - **dev-app:** binding tenant comunify 🟡 (Clerk-level ok, tenant seed pendiente) — si falta para el write live SC-chat-ok, se firma en G (gate manual).
 
 ✅ **N/A confirmado:** `concurrent_users` + `large_dataset` (single-user brand + MVP sin list paginada) — honrado en 04-validators (no inventados).
+
+### 2026-06-16 · 🤖 claude · `/dev-team` · ⚠️ DUDA (build autónomo BLOQUEADO en live-verify) + ❌ REFUTADO (thin-mount)
+Corrí el build autónomo end-to-end (ratificaste "hasta el done"). **5/6 tickets GREEN + commiteados**, **bloqueado en la live-verify de T-agentic** (DoD #37 hizo su trabajo).
+
+- ✅ T-0 `69852b1d` · ✅ T-tokens `144c05d8` · ✅ T-chat-store `ef3279e8` (18/18) · ✅ T-shell `1ab5a11a` (121/121).
+- ⚠️ T-agentic `3b6670ba` (4 tests verdes nativos) **pero rompe el boot del BE live**.
+
+❌ **REFUTADO el supuesto del architect** ("vitalia monta el copilot del engine → compatibilidad probada"): **ningún brand thin-montea `luana_core_copilot.api.chat`**; vitalia escribe sus PROPIAS rutas copilot. Importar el `/chat` del engine arrastra el **Settings monolítico legacy** (`luana_core_platform` "Visionarias Brain": `POSTGRES_*`/`WHATSAPP_*`/`TRAEFIK_NETWORK`/`QDRANT_URL`) que comunify (config multibrand `DATABASE_URL`) no provee → `pydantic ValidationError` en boot → BE caído. Los 312 tests nativos no lo cazaron (la live-verify del DoD #37 sí — verde ≠ booteable).
+
+**Un-brick aplicado:** guardé el mount en `main.py` (try/except + warning) → BE bootea (health 200), `/copilot/chat` = 404. arch 144 passed, ruff clean. Stack comunify usable.
+
+⚠️ **DUDA — necesito tu decisión (detalle + opciones A/B/C en `checkpoint.md § Blocker`):**
+- **(A · recomendada)** re-architect T-agentic al patrón vitalia (comunify escribe su ruta copilot usando el `CopilotOrchestrator` del engine con config de marca) → `/architect` reabre la story.
+- **(B)** engine fix vía `/pm-luana` (router brand-mountable, config lazy) — desbloquea a todos los brands, más grande.
+- **(C · no recomendada)** proveerle a comunify la env legacy (acopla al "Visionarias Brain", brittle).
+
+El resto del shell (FE: tokens+wrapper+routing+chat-store) está construido y verde — solo le falta un endpoint copilot booteable detrás. Post-desbloqueo faltan: tenant comunify seedeado + LiteLLM gateway + T-e2e + auditor + merge. **No declaré done falso.**

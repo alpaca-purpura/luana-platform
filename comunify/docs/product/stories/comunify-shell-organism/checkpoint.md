@@ -2,8 +2,8 @@
 brand: comunify
 story_id: comunify-shell-organism
 module: platform
-state: developing
-phase: BUILD_T0
+state: blocked
+phase: BLOCKED_T_AGENTIC_LIVE_VERIFY
 story_type: ui-mixed          # FE shell + AGENTIC copilot mount + HYGIENE(config)
 created: 2026-06-15
 last_updated: 2026-06-16
@@ -97,7 +97,64 @@ Sidebar: **Luana** (supervisora+orquestadora+onboarding). Ribbon: **Nina** (estr
 **Tomás** (atraer) · **Sofía** (vender) · **Bruno** (operar) · **Lucía** (retener) + tab **Plataforma**.
 Mapeo 1:1 a cadena de valor canónica (vitalia/nicolify). Detalle: `ADR-comunify-001-agentes-cast.md`.
 
-## Next action
+## Next action — ⛔ BLOQUEADA (decisión de Chris)
+
+**Build autónomo corrió T-0→T-shell GREEN; se BLOQUEÓ en la live-verify de T-agentic (DoD #37).**
+
+| Ticket | Estado | Commit |
+|---|---|---|
+| T-0 hygiene | ✅ done | `69852b1d` |
+| T-tokens | ✅ done | `144c05d8` |
+| T-agentic (BE mount) | ⚠️ committed PERO **rompe boot live** | `3b6670ba` (+ guard) |
+| T-chat-store SSE | ✅ done | `ef3279e8` |
+| T-shell wrapper | ✅ done | `1ab5a11a` |
+| T-e2e + live-verify | ⛔ no arrancó (bloqueado) | — |
+
+### ⛔ Blocker (arquitectura · root cause anclado en logs)
+
+El thin-mount del engine `/chat` (`from luana_core_copilot.api.chat import router`) **rompe el boot del BE comunify**:
+importar `chat.py` arrastra `luana_core_platform.core.rate_limit` → instancia eager el **Settings monolítico legacy**
+(`luana_core_platform.core.config.Settings` "Visionarias Brain": `POSTGRES_HOST/PORT/USER/PASSWORD/DB`,
+`WHATSAPP_*`, `TRAEFIK_NETWORK`, `DOMAIN_NAME`, `API_SECRET_KEY`, `QDRANT_URL`). comunify está configurado al
+estilo **multibrand** (`DATABASE_URL`, `QDRANT_HOST/PORT`, `LITELLM_*`) y NO provee esas vars → `pydantic
+ValidationError` en boot → `ModuleNotFoundError`/crash → BE caído (health 000).
+
+**Por qué los tests verdes no lo cazaron:** native pytest (root `.venv` + conftest env) pasó 312 BE; el
+contenedor docker (venv en volumen `comunify_backend_venv`, sin la dep + sin la env legacy) crasheó. Es el
+valor exacto del DoD #37 (verde ≠ booteable live).
+
+**El supuesto del architect fue erróneo:** "vitalia YA monta el router copilot del engine → compatibilidad
+probada" — **falso**. NINGÚN brand thin-montea `luana_core_copilot.api.chat`. **vitalia escribe sus PROPIAS
+rutas copilot** (`src/modules/vitalia/copilot/api/routes/wizard_onboarding_routes.py`) usando el orquestador
+del engine con la config del brand. Ese es el patrón establecido. El engine `/chat` router no es
+brand-mountable como está (acopla el legacy "Visionarias Brain" config).
+
+**Mitigación aplicada (un-brick):** el mount en `comunify/backend/src/main.py` quedó **guardado**
+(try/except + warning structlog) → BE bootea de nuevo (health 200), endpoint `/copilot/chat` = 404 (no
+montado). Stack comunify usable. arch suite 144 passed, ruff clean.
+
+### Decisión que necesito de Chris (opciones)
+
+- **(A) Re-architect T-agentic al patrón vitalia** (recomendado): comunify escribe su propia ruta
+  `copilot/api` (FastAPI route) que usa `CopilotOrchestrator` del engine con la config multibrand de comunify,
+  sin arrastrar el Settings legacy. Re-abre la story (T-agentic v2), corrige el ready package. Es el patrón
+  probado; cae en `/architect` (Carril C' — feature/arquitectura, no fix mecánico).
+- **(B) Engine fix vía `/pm-luana`** (durable, más grande): el engine expone un chat-router brand-mountable
+  (config lazy / factory que toma la config del brand). Promotion proposal. Desbloquea a TODOS los brands.
+- **(C) Proveer la env legacy a comunify** (NO recomendado): acoplar comunify al config "Visionarias Brain"
+  (`POSTGRES_*`+`WHATSAPP_*`+`TRAEFIK`+`QDRANT_URL` dummies). Brittle + va contra el modelo multibrand;
+  además el runtime necesitaría Qdrant+LLM+tenant seedeado para que el chat realmente fluya.
+
+**Recomendación: (A)** para esta story (rápido, patrón probado) + abrir (B) como proposal `/pm-luana` aparte
+(deuda del engine). El resto del shell (FE: tokens+wrapper+routing+chat-store) está construido y verde —
+solo le falta un endpoint copilot booteable detrás.
+
+**Otros pendientes para el done (post-desbloqueo):** tenant comunify seedeado + LiteLLM gateway corriendo
+(para el write real SC-chat-ok) + T-e2e (15 SC) + auditor + merge.
+
+---
+
+### Histórico (ready package · /architect)
 
 READY PACKAGE CERRADO ✓ (2026-06-16 · `/architect`) · `refined → ready` ✓.
 Paquete: `03-arch.md` (+ `03-arch-{fe,agentic}.md`) + `04-validators.yaml` + `05-guidelines.md` + `06-tickets.yaml` + `dispatch-plan.md`.
