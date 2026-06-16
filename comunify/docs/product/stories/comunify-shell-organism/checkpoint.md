@@ -152,6 +152,18 @@ solo le falta un endpoint copilot booteable detrás.
 **Otros pendientes para el done (post-desbloqueo):** tenant comunify seedeado + LiteLLM gateway corriendo
 (para el write real SC-chat-ok) + T-e2e (15 SC) + auditor + merge.
 
+### Trabajo paralelo 2026-06-16 (mientras el motor se arregla en vitalia)
+- **FE dev image rebuildeada** (`comunify_frontend_dev`). Gotcha cazado: comunify nunca consumía `@luana/*`, así
+  que su imagen FE horneaba `node_modules` SIN las deps que T-0 agregó (`@luana/ui-kit`/`design-tokens`/`zustand`/
+  `next-themes`) → FE `:3003` daba **500 module-not-found** (espejo FE del bug BE de hoy). Fix: `docker compose
+  build comunify_frontend_dev` + `up -d -V`. **Regla:** al cambiar deps del FE de comunify, **rebuild de la imagen**
+  (las deps se hornean en build-time; el bind-mount solo trae el código). Memoria: `dev-infra-triple`.
+- **Live-verify parcial OK** (sin Chrome MCP, evitando colisión con sesión vitalia): FE compila + sirve · `/` →
+  307 → `/sign-in` (SC-auth vivo) · ruta tenant `/{t}/nina/marca` → 307 (edge-redirect protege antes de render) ·
+  FE log `✓ Ready`, cero module errors. El build de T-shell es sólido a nivel framework.
+- **Techo:** render autenticado del shell necesita login Clerk + tenant comunify seedeado (🟡 gap independiente) →
+  pendiente para T-e2e/DoD #37.
+
 ---
 
 ### Histórico (ready package · /architect)
