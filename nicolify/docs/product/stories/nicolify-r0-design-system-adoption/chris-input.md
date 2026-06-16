@@ -136,6 +136,17 @@ Patrón cross-brand (vitalia+nicolify) → candidate lift `/pm-luana`. Próximo:
 - **3 open questions resueltas** (sin bloquear): COLOR_NAMES = contrato de nombres semánticos compartidos + per-agent brand-owned ✓ · accent-slot EntitySubNavBar = conditional lift `kit-accent-slot-lift` (gateado en golden, solo si tokens semánticos no matchean) ✓ · AutosaveBadge→FloatingAutosaveIndicator = mínimo HARD matar mirror + consumir kit badge; N→1-por-página solo si no toca lógica de form ✓.
 - **💡 PROPONE next:** `/dev-team nicolify nicolify-r0-design-system-adoption` (ready→developing) EN PARALELO con `/pm-luana` aceptando el kit-lift RN-7.
 
+### 2026-06-15 (sesión nueva) — T-4 /dev-team build (no-arbitrary lock ON at zero allowlist)
+
+**/dev-team → ✓ APLICADO (T-4 GREEN · 16/16 arch tests PASS · 0 tsc errors · 0 eslint errors):**
+- **Baseline:** 2 locked-axis violations (`text-[10px]` × 2 in `AgentAvatar.tsx` + `WhatForChip.tsx`). 4 sizing-axis arbitraries found but exempt (RN-1).
+- **Migration:** Bif-2 path for both — no 10px token in brand scale (smallest = `--text-caption: 12px`). Resolved via `// ds-lock-allow: <razón>` escape (shrink-only ratchet). Zero bare arbitraries remain.
+- **eslint.config.mjs modified:** `import luanaDs from "@luana/eslint-config"` added + DS lock block (`@luana/ds/no-arbitrary-value: error` over `src/**`, OFF in `components/ui/**` + `__tests__/**`). Zero DS_LOCK_BASELINE array.
+- **test-ds-tokens-lock.test.ts NEW:** 16 tests (SC-1 locked×4+multi · SC-2 sizing-exempt×4 · tokenized-exempt×4 · SC-4 ds-lock-allow×3). All GREEN.
+- **Anti-default-flip workflow COMPLETE:** ESLint OFF (0 errors) → migrate → ESLint ON (0 no-arbitrary-value violations).
+- **Commit:** `45052deb` · /pm-luana FLAG: add `text-2xs`/`micro` tier at 10px to `@luana/design-tokens` to remove 2 ds-lock-allow escapes.
+- Ver T-4-result.md para baseline count + migrated count + eslint off/on output + gate results.
+
 ### 2026-06-15 (sesión nueva) — T-3 /dev-team build (re-express abel/icp + shell via kit primitives)
 
 **/dev-team → ✓ APLICADO (T-3 GREEN · 241 tests PASS · 0 tsc errors · 0 eslint errors):**

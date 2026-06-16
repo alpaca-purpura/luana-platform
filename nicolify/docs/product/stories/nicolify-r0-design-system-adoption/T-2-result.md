@@ -109,4 +109,4 @@ None. Per 03-arch.md §6.2:
 
 ## Commit SHA
 
-(populated after commit below)
+facdd25b
