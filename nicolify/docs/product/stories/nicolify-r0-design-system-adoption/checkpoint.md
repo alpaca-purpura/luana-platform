@@ -48,7 +48,7 @@ chris_verify:
       core_concern: "Kit shippea dark: variants sin css/@custom-variant ni cláusula de dark-wiring en SHELL-DESIGN-CONTRACT → proposal /pm-luana (dark-contract del kit + arch-test consumer)."
       resolution: fixed-pending-chris-reverify   # /dev-team fix-round aplicado + live-verified 2026-06-16. Chris re-ejerce el toggle en G + firma.
       fix:
-        commits: [fc0a45bd]
+        commits: [b09bc9dc]
         changes:
           - "globals.css: @custom-variant dark (&:where(.dark, .dark *, [data-theme=\"dark\"], [data-theme=\"dark\"] *)) — idiom v4-puro, homologa el EFECTO no el mecanismo de vitalia (@config)"
           - "globals.css: @source widened organism/shell → core/@luana/ui-kit/src completo (= vitalia)"
