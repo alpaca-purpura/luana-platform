@@ -25,6 +25,10 @@
   /* Shape */
   --radius: 0.75rem;
   --radius-lg: 1.25rem;
+  /* RN-7: control-atom radius — brand-overridable via @luana/ui-kit rounded-control.
+   * Set to var(--radius) so Button/Input/Select/Textarea stay at current md value.
+   * Nicolify overrides this to 9999px (pill) on its own branch. */
+  --radius-control: var(--radius);
 
   /* Gradient (valor literal con HEX — SSoT canónico, allowlisted en arch fitness) */
   --comunify-gradient: linear-gradient(135deg, #7B2FF7 0%, #6A3CFF 35%, #2D7FF9 70%, #1E5EFF 100%);

@@ -131,6 +131,10 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
         bubble: "var(--radius-bubble)",
         pill: "var(--radius-pill)",
+        /* ── Control atom radius (RN-7 lift) ────────────────────────────── */
+        /* Brand-overridable via --radius-control in globals.css. Falls back  */
+        /* to var(--radius) so brands that omit the token render unchanged.  */
+        control: "var(--radius-control, var(--radius))",
       },
     },
   },

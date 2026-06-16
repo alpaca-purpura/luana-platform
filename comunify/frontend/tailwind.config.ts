@@ -49,6 +49,9 @@ const config: Config = {
       borderRadius: {
         DEFAULT: "var(--radius)",
         lg: "var(--radius-lg)",
+        /* RN-7: control-atom radius — brand-overridable via @luana/ui-kit rounded-control.
+         * Falls back to var(--radius) for brands that omit the token. */
+        control: "var(--radius-control, var(--radius))",
       },
     },
   },
