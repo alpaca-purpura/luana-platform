@@ -135,3 +135,15 @@ Patrón cross-brand (vitalia+nicolify) → candidate lift `/pm-luana`. Próximo:
 - **RN-7 fenced:** `external_dependencies` (owner `/pm-luana`) + `engine_off_limits` (NINGÚN ticket edita `core/@luana`). Golden control-radius/pill + demo #37 `blocked_on: kit-radius-control-lift`. **Proposal drafted:** `docs/promotion-protocol/proposals/2026-06-15-ui-kit-radius-control-token.md` (state: proposed — necesita tu GO + `/pm-luana` accept; vitalia/comunify quedan en `md` sin cambio visual).
 - **3 open questions resueltas** (sin bloquear): COLOR_NAMES = contrato de nombres semánticos compartidos + per-agent brand-owned ✓ · accent-slot EntitySubNavBar = conditional lift `kit-accent-slot-lift` (gateado en golden, solo si tokens semánticos no matchean) ✓ · AutosaveBadge→FloatingAutosaveIndicator = mínimo HARD matar mirror + consumir kit badge; N→1-por-página solo si no toca lógica de form ✓.
 - **💡 PROPONE next:** `/dev-team nicolify nicolify-r0-design-system-adoption` (ready→developing) EN PARALELO con `/pm-luana` aceptando el kit-lift RN-7.
+
+### 2026-06-15 (sesión nueva) — T-3 /dev-team build (re-express abel/icp + shell via kit primitives)
+
+**/dev-team → ✓ APLICADO (T-3 GREEN · 241 tests PASS · 0 tsc errors · 0 eslint errors):**
+- **IcpMasterListView.tsx:** `PageContainer` / `PageHeader` / `ListPageSkeleton` / `ErrorState` from kit. Inline `IcpGridSkeleton` removed. Raw `<button>` → Shadcn `Button`.
+- **IcpWorkspaceView.tsx:** `FormPageSkeleton` / `ErrorState` from kit. Inline `WorkspaceSkeleton` removed.
+- **IcpDatosForm.tsx:** Kit `Group` + `GroupHeader` replace inline versions. `IcpGroupHeader` helper (React Fragment pattern) preserves `data-testid="group-missing-*"` for regression-test compat. `FloatingAutosaveIndicator` replaces `AutosaveBadge` header. `text-[10px]` → `text-xs`.
+- **BuyerLeafForm.tsx:** Same Group/GroupHeader/FloatingAutosaveIndicator migration. `text-[10px]` → `text-xs`.
+- **ShellLayoutWire + SubTabContent:** assessed — no change needed (already kit-based / overflow-control only).
+- **FLAGS:** IcpCard not switched to EntityInfoCard (Link nav vs EntityInfoCard onClick — follow-up); SubTabContent IcpMasterWithNavBar overflow wrapper kept (no matching primitive).
+- **Commit:** `4baa816e` · Net diff: +105 / -203 (-98 lines).
+- Ver T-3-result.md para diff summary + validator output.
