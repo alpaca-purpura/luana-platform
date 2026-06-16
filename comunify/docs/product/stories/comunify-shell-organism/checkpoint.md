@@ -2,19 +2,21 @@
 brand: comunify
 story_id: comunify-shell-organism
 module: platform
-state: refining
-story_type: ui-story
+state: ready
+phase: READY_PACKAGE_CLOSED
+story_type: ui-mixed          # FE shell + AGENTIC copilot mount + HYGIENE(config)
 created: 2026-06-15
-last_updated: 2026-06-15
+last_updated: 2026-06-16
 parallel_safe: true
-owner: /pm-comunify
-next_handoff: /po-ux (UI shell mockup + spec)
-surface: [frontend]
+owner: /architect
+next_handoff: /dev-team comunify T-0 (hygiene) → T-agentic (flagship) → T-tokens/T-shell/T-chat-store → T-e2e
+surface: [frontend, agentic, hygiene]
 estimated_size: L
 cap_target: comunify/shell-organism
 cap_change_type: new
 verification_nature: funcional
-autonomous_mode: false
+demo_required: true
+autonomous_mode: false        # architect propone false (story funcional + write live + demo G); Chris ratifica si quiere autonomous
 cast_ratified: true   # ADR-comunify-001-agentes-cast (Chris 2026-06-15)
 input_spec_signed: true    # FIRMA 1 funcional (Chris 2026-06-15)
 mockup_final_signed: true  # FIRMA 2 final (Chris 2026-06-15 "firmo todo")
@@ -24,6 +26,12 @@ artifacts:
   - navigation-tree.md (sitemap v2 ratificado)
   - mockups/shell.html (mockup FINAL firmado · localhost:8893)
   - design-inventory.md (tokens/átomos/moléculas/organismos · goldens dev-team)
+  - 03-arch.md (consolidado FE+AGENTIC+HYGIENE · § Prior art audit · § Integration design CONN · Resolución 5 puntos)
+  - 03-arch-fe.md · 03-arch-agentic.md (per-surface slices)
+  - 04-validators.yaml (5 cat · scenario_coverage 15 SC · playwright_visual_scope · dev_app_verified)
+  - 05-guidelines.md (must_load_skills · patterns req/prohibidos · files-in-scope)
+  - 06-tickets.yaml (T-0..T-e2e · 6 tickets · assignment R23 flagship agentic · DAG)
+  - dispatch-plan.md (autonomous_mode:false · matrix · DAG · visual scope · live-verify)
 ---
 
 # Comunify — Shell-organism migration (R-shell · MVP)
@@ -89,22 +97,43 @@ Sidebar: **Luana** (supervisora+orquestadora+onboarding). Ribbon: **Nina** (estr
 **Tomás** (atraer) · **Sofía** (vender) · **Bruno** (operar) · **Lucía** (retener) + tab **Plataforma**.
 Mapeo 1:1 a cadena de valor canónica (vitalia/nicolify). Detalle: `ADR-comunify-001-agentes-cast.md`.
 
-## Next action (CONVERSACIÓN NUEVA)
+## Next action
 
-FIRMA 1 ✓ + FIRMA 2 ✓ (Chris firmó todo 2026-06-15). Refinamiento de diseño COMPLETO.
-Pendiente en la próxima conversación (`/po-ux` cierra + handoff `/architect`):
+READY PACKAGE CERRADO ✓ (2026-06-16 · `/architect`) · `refined → ready` ✓.
+Paquete: `03-arch.md` (+ `03-arch-{fe,agentic}.md`) + `04-validators.yaml` + `05-guidelines.md` + `06-tickets.yaml` + `dispatch-plan.md`.
 
-1. **Generar RONDA 2** en `01-spec.md`: § Gherkin (4 base + sub-categorías) + § Matriz de cobertura +
-   § Estados visuales + § Componentes (del `design-inventory.md`) + § Microcopy — a partir del § Mapa
-   funcional firmado + el mockup FINAL.
-2. **Transition `refining → refined`** (gate /po-ux Step 5).
-3. **Handoff `/architect comunify comunify-shell-organism`** → ready package:
-   - T-0 higiene (lockfiles align-vitalia + next-env + deps `@luana/*` + `pnpm install` verde)
-   - montar `core/luana-core-copilot /chat` en `/api/v1/comunify/copilot` + `chat-store` real (lift candidate `@luana`)
-   - `--radius` pill token (design-system update) + verificar `@luana/ui-kit` honra radio de marca
-   - routing `app/[tenantId]/(shell-organism)/` + `shell-routes.ts` (nav-tree v2)
-   - logos reales → `comunify/frontend/public/brand/` (ya copiados)
-   - avatares agentes = placeholders SVG (Chris da finales después)
+**6 tickets (DAG):** T-0 hygiene (blocks FE) → T-agentic (BE mount · **flagship R23 HARD**) ∥ T-tokens → T-shell ∥ T-chat-store → T-e2e (DoD #37).
+
+**Decisiones clave del architect:**
+- **Mount copilot:** thin `include_router` del engine `/chat` en `/api/v1/comunify/copilot` + deps `luana-core-{copilot,iam,platform}`. CONSUME, cero engine build. comunify es el 1er brand en cablear el sidebar→engine. RN-3 por construcción (copilot comunify sin `tools/` de dominio).
+- **Radius pill (TOKEN-DRIVEN):** controles `rounded-full` (clase literal, ya en el kit) + cards/burbujas `--radius-lg`; `--radius` se mantiene 0.75rem. **Cero `/pm-luana` kit-fix por radius** (el kit ya pinta los controles pill por clase). Si en build un control lee `--radius` y se ve cuadrado → flag `/pm-luana` (no se parchea per-componente).
+- **chat-store SSE real** = único net-new sustantivo · ⚠️ **LIFT CANDIDATE → @luana** (proposal `/pm-luana` POST-prueba; NO en esta story).
+- **Routing:** edge-redirect (`proxy.ts`, no `redirect()` in-render) + `useTenantId` (iam, no Clerk org) + SSR-safe kit store. `(dashboard)` retirado del routing; `onboarding` intacto.
+
+**Open questions (no bloquean):** OQ-1 Tailwind content debe incluir path del kit (footgun visual) · OQ-2 ADR shell comunify diferido (esta = origen) · OQ-3 skill comunify-design-system no existe (follow-up) · OQ-5 chat-store lift post-merge.
+
+⚠️ **N/A confirmado:** `concurrent_users` + `large_dataset` (single-user + sin list paginada MVP) — honrado en 04-validators.
+
+---
+
+### Histórico
+
+RONDA 2 GENERADA ✓ (2026-06-15) · `refining → refined` ✓ (gate /po-ux Step 5 PASS).
+`01-spec.md` ahora tiene: § Gherkin (4 base + race/network/empty/a11y/i18n) + § Matriz de cobertura
+(0 huecos / 0 huérfanos) + § Estados visuales + § Componentes (reuse>new) + § Microcopy (goldens mockup)
++ Responsive + Accessibility + Telemetría.
+
+⚠️ **N/A propuesto (ratificar si querés que sean SC reales):** `concurrent_users` (single-user brand + sin
+list/detail filtrable; multi-tenant cubierto por SC-adversarial-tenant) · `large_dataset` (MVP sin list
+paginada). Si Chris no objeta → quedan N/A.
+
+**Pendiente: handoff `/architect comunify comunify-shell-organism`** → ready package:
+- T-0 higiene (lockfiles align-vitalia + next-env + deps `@luana/*` + `pnpm install` verde)
+- montar `core/luana-core-copilot /chat` en `/api/v1/comunify/copilot` + `chat-store` real (lift candidate `@luana`)
+- `--radius` pill token (design-system update) + verificar `@luana/ui-kit` honra radio de marca vía token
+- routing `app/[tenantId]/(shell-organism)/` + `shell-routes.ts` (nav-tree v2)
+- logos reales → `comunify/frontend/public/brand/` (ya copiados)
+- avatares agentes = placeholders SVG (Chris da finales después)
 
 Decisión motor: Luana consume `core/luana-core-copilot /chat` (comunify-first, lift chat-store).
-Goldens dev-team: `design-inventory.md` + `mockups/shell.html` + tokens comunify.
+Goldens dev-team: `design-inventory.md` + `mockups/shell.html` + tokens comunify + 01-spec § Mapa funcional/RONDA 2.

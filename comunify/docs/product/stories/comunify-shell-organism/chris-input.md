@@ -196,3 +196,41 @@ Story `comunify-shell-organism` pasó **idea → refining** (`cast_ratified: tru
 (diseña el shell: consume `@luana/ui-kit` organism/shell, Ribbon del cast, sidebar Luana, nav 3 zonas,
 Config; port re-temizado de vitalia/nicolify). Pendientes paralelos del flujo: skill
 `comunify-design-system` + SHELL-DESIGN-CONTRACT comunify.
+
+---
+
+### 2026-06-15 (conversación nueva) · 🤖 claude · `/po-ux` · ✓ APLICADO (RONDA 2 generada + refining→refined)
+**Generada la RONDA 2** en `01-spec.md` a partir del § Mapa funcional firmado (FIRMA 1) + el mockup FINAL (FIRMA 2):
+- **§ Gherkin** — 4 base (happy `SC-happy`/`SC-chat-ok` · negative `SC-chat-error` · edge `SC-luana-states`/`SC-chat-delegate` · adversarial `SC-adversarial-tenant`) + sub-categorías mandatory: race (`SC-chat-double-send`) · network (`SC-chat-network`) · empty (`SC-tab-placeholder`/`SC-luana-history-empty`) · a11y (`SC-a11y`) · i18n (`SC-i18n`) + `SC-auth`/`SC-plataforma-min`/`SC-dashboard-unreachable`. Cada SC con `playwright_required` + graders + verificación REAL (el write del DoD = fila en `copilot_trace_event` en `SC-chat-ok`).
+- **§ Matriz de cobertura** — cada `Bif-N`/`RN-1..7`/`AC-1..8` → ≥1 SC. **Huecos: ninguno · SC huérfanos: ninguno.**
+- **§ Estados visuales** (Luana full/rail/history/streaming/error/network/empty · Ribbon · panel placeholder), **§ Componentes** (reuse del kit > new; `chat-store` = único net-new sustantivo + lift candidate), **§ Microcopy** (goldens del mockup, neutro), Responsive, Accessibility, Telemetría.
+- **Gate /po-ux Step 5 PASS** → transition **`refining → refined`** (checkpoint + spec frontmatter `state: refined`, `ronda: 2`, `ratified_by_chris: true`).
+
+⚠️ **DUDA (N/A propuesto):** `concurrent_users` (comunify = single-user brand RN-1 + MVP sin list/detail filtrable; el eje multi-tenant lo cubre `SC-adversarial-tenant`) y `large_dataset` (MVP sin list paginada) los marqué **no aplicables**. Si querés que sean SC reales, decímelo; si no, quedan N/A.
+
+💡 **PROPONE:** encadeno `/architect comunify comunify-shell-organism` (ready package: 03-arch + 04-validators + 05-guidelines + 06-tickets, con T-0 higiene + mount copilot + radius-pill token + routing + lift-candidate chat-store).
+
+---
+
+### 2026-06-16 · 🤖 claude · `/architect` · ✓ APLICADO (ready package cerrado · refined→ready)
+
+**READY PACKAGE completo** — `03-arch.md` (+ `03-arch-fe.md` · `03-arch-agentic.md`) + `04-validators.yaml` + `05-guidelines.md` + `06-tickets.yaml` + `dispatch-plan.md`. Story `refined → ready`, `phase: READY_PACKAGE_CLOSED`. Next handoff: `/dev-team comunify T-0`.
+
+**6 tickets (DAG):** T-0 hygiene (config, blocks FE) → **T-agentic** (BE mount · **flagship R23 HARD**, builder-agentic) ∥ T-tokens → T-shell ∥ T-chat-store → T-e2e (DoD #37). Surface→builder→auditor declarado: AGENTIC = builder-agentic/auditor-agentic (flagship) · FE = builder-frontend/auditor-frontend.
+
+**Cómo resolví los 5 puntos:**
+1. **T-0 hygiene** — borrar lockfiles redundantes (root `pnpm-lock.yaml` SSoT) + trackear `next-env.d.ts` + declarar `@luana/*` deps; gate = `pnpm install` verde (no blind-delete).
+2. **Consume kit, cero mirror** — `@luana/ui-kit@0.4.1` (verificado: 35 archivos + `index.ts`). Gate Cat 12 en validators (grep: cero organismos del kit copiados en comunify; cero import de nicolify).
+3. **Mount copilot** — thin `include_router` del engine `/chat` en `/api/v1/comunify/copilot` + deps `luana-core-{copilot,iam,platform}`. **comunify es el 1er brand en cablear el sidebar→engine** (vitalia solo monta el wizard, no `/chat`). RN-3 (Luana no ejecuta) sale **gratis por construcción**: el `copilot/` de comunify NO tiene `tools/` de dominio. El chat-store SSE real FE es el único net-new sustantivo. DoD #37 write = SC-chat-ok (mensaje → SSE → fila `copilot_trace_event` scoped al tenant).
+
+💡 **DECISIÓN RADIUS-TOKEN que necesito que mires (Chris):** resolví el pill **token-driven sin tocar el kit**. El kit `@luana/ui-kit` ya pinta los **controles del shell** como pill por **clase literal `rounded-full`** (verificado en tu `mockups/shell.html`: TopBar buttons, composer, ribbon tabs, chips); las burbujas/cards usan `rounded-2xl`/`rounded-lg`. O sea: el pill NO depende de `--radius`. Por eso comunify **mantiene `--radius: 0.75rem`** (cards/inputs genéricos) + `--radius-lg: 1.25rem` (cards/burbujas) y **NO hay `/pm-luana` kit-fix por radius**. Solo si en build aparece un control del shell que lee `--radius` (no `rounded-full`) y se ve cuadrado → eso sería un divergence flag = `/pm-luana` kit-token-fix proposal (NO se parchea per-componente en comunify; rompería el token-driven). **Mi recomendación: dale, así está bien (cero cambio de kit).**
+
+💡 **LIFT CANDIDATE — chat-store (Chris):** el `chat-store.ts` SSE real que construye comunify es el primer chat-store funcional del portfolio (nicolify/vitalia tienen MOCKS con `setTimeout`). Lo construyo **brand-local en comunify** y lo dejo **marcado como lift candidate → `@luana`**. El lift NO se ejecuta en esta story — es una **`/pm-luana` promotion proposal POST-prueba** (cuando comunify lo valide live, vitalia/nicolify reemplazan sus mocks por este). ¿OK que quede así (no lift ahora)?
+
+**Open questions (no bloquean):**
+- **OQ-1 (footgun visual):** el `tailwind.config.ts` de comunify DEBE incluir el path del kit en su `content`/`@source` scan o el shell pierde estilos silenciosamente (memoria `tailwind-jit-scan-breaks-on-lift`; nicolify ya lo resolvió). Cableado como gate en T-tokens (visual e2e, no tsc).
+- **OQ-2:** ADR de arquitectura shell comunify diferido — esta story es el **origen** del patrón (como `nicolify-r0-shell-organism`), no se aplica el gate a sí misma. El ADR se crea al portar la 1ª área real (R-shell+1).
+- **OQ-3:** skill `comunify-design-system` NO existe (nicolify/vitalia lo tienen) → follow-up `/pm-comunify`. Mientras, los goldens = `design-system.md` + `design-inventory.md` + `mockup`.
+- **dev-app:** binding tenant comunify 🟡 (Clerk-level ok, tenant seed pendiente) — si falta para el write live SC-chat-ok, se firma en G (gate manual).
+
+✅ **N/A confirmado:** `concurrent_users` + `large_dataset` (single-user brand + MVP sin list paginada) — honrado en 04-validators (no inventados).
