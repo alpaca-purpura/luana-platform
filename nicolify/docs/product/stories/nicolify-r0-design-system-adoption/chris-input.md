@@ -249,3 +249,11 @@ Patrón cross-brand (vitalia+nicolify) → candidate lift `/pm-luana`. Próximo:
 - **Propuesta (3 piezas):** (1) cláusula `§ Dark-mode wiring` en design-system-canon + SHELL-DESIGN-CONTRACT · (2) arch-test consumer replicable (= los +3 de nicolify, generalizados) · (3) a evaluar: kit ship-ea snippet canónico importable.
 - **Recomendación /pm-luana: APPROVED** (gap del engine con evidencia + arregla bug real comunify + bajo riesgo minor/opt-in). NO incluye el fix de nicolify (ya hecho). El fix de comunify entra en el lift.
 - **💡 PROPONE:** cuando ratifiques (`accepted`) → `/dev-team` ejecuta el lift en worktree core efímero (M13: NO desde worktree de marca). ⚠️ comunify dark roto HOY — si querés, en sesión aparte `/pm-comunify` puede priorizarlo standalone sin esperar el lift.
+
+### 2026-06-16 — /pm-luana ratifica el proposal → accepted (lift handoff)
+**Chris → "ratifico el proposal del dark-contract".**
+
+**/pm-luana → ✓ APLICADO:** `2026-06-16-ui-kit-dark-contract.md` state `proposed → accepted` (ratified_by: chris). Commit `fb9bdeeb`.
+- **Lift NO corre desde acá (hub nicolify):** toca `core/@luana/ui-kit` + `comunify/frontend` + `docs/` canon → fuera del scope nicolify (M13). Requiere worktree core efímero, creado desde el PRINCIPAL (`~/Proyectos/luana-platform`) — `new-session.sh` rechaza correr desde un worktree de marca.
+- **💡 PROPONE (next):** desde `~/Proyectos/luana-platform`: `scripts/git/new-session.sh core lift dark-contract` → abre `~/Proyectos/luana-core-dark-contract` (wip/core-dark-contract) → sesión nueva ahí → `/dev-team platform` ejecuta el lift (cláusula canon + arch-test consumer replicable + fix comunify dark + eval snippet kit + bump + downstream regression vitalia/comunify/lupulo). Patrón = radius-control RN-7.
+- Esta story (nicolify ds-adoption) NO depende del lift — sigue esperando tu signoff del dark toggle en G.
