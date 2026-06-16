@@ -23,6 +23,15 @@ brands_affected: [nicolify, vitalia, comunify, lupulo]   # todas consumen los co
 
 # Lift: `--radius-control` token brand-overridable en los controls de @luana/ui-kit
 
+## ✅ Build status (2026-06-15) — LIFT BUILT, pendiente merge a main
+
+- **Worktree:** `wip/core-radius-control` (4 commits, pushed): `0ca11f0f` (lift) · `9574e31c` (fix md-exact — ver abajo) · `9081d1de` (docs) · `125696b4` (bump 0.5.0 + CHANGELOG).
+- **Version:** `@luana/ui-kit` 0.4.1 → **0.5.0** (minor).
+- **Regression cross-brand VERDE (md-exact, cero cambio visual):** vitalia control=`calc(var(--radius)-2px)` 8px (=old md) · comunify=`0.375rem` 6px (=old md) · lupulo=`var(--radius)` 6px (=its md). tsc 0 err ×brands + arch vitalia 187/187 + comunify 3/3 + ui-kit 270/270 + design-tokens 12/12.
+- **★ Regression caught + fixed:** la 1ª pasada mapeó `--radius-control: var(--radius)` (10px) → +2px en vitalia/comunify (habría roto sus goldens 0.001). Corregido a md-exact en `9574e31c`. (El wording de esta proposal decía `var(--radius)` — era impreciso; el INTENT era "stay md".)
+- **Mecanismo:** brand `tailwind.config.ts::borderRadius.control: "var(--radius-control, <su-md>)"` + `--radius-control` en globals.css. Kit atoms usan `rounded-control`. Doble fallback → marca que omite el token = md.
+- **PENDIENTE (gated):** (1) merge `wip/core-radius-control` → main (ci-parity + squash, manual/Chris) · (2) esta proposal → `migrated` post-merge · (3) nicolify bumpea dep a 0.5.0 → controls pill → destraba golden `atoms.png` + demo #37 (Abel) full-fidelity.
+
 ## Problema
 
 Los átomos de control del kit (`Button`/`Input`/`Select`/`Textarea`) **hardcodean `rounded-md`**. Nicolify ratificó (FIRMA 2, 2026-06-15) un lenguaje visual de **controles fully-rounded (pill)**, coherente con tabs/chips/composer. Hoy es imposible sin (a) hardcodear pill en el kit (rompe vitalia/comunify) o (b) un mirror local (viola anti-duplication). Las **superficies** (card/group/panel) NO cambian — solo los controles.

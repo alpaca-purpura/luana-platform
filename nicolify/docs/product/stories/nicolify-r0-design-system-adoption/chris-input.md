@@ -190,3 +190,12 @@ Patrón cross-brand (vitalia+nicolify) → candidate lift `/pm-luana`. Próximo:
 - **Caveats honestos:** (a) PILL controls NO verificado — gated en kit-lift RN-7 (controles rounden rounded-md, esperado); (b) visual goldens NO capturados (FE dev-server memory-restart loop inestable → drops de socket transitorios = dev-infra footgun, NO bug de adopción; candidato harness-issue); (c) screenshot empty-state guardado en la carpeta de la story.
 - Creé 1 ICP de prueba en el tenant dev (`82aa34d1` "ICP Live-Verify DS-Adoption") — dato de dev, queda.
 - **Próximo:** Chris ejerce demo-script.md + firma `chris_verify.signoff`; el kit-lift RN-7 lo arranco ahora (Track 2). Demo #37 (Abel) full-fidelity cuando el kit-lift aterrice.
+
+### 2026-06-15 — /pm-luana ejecutó el kit-lift RN-7 (Track 2) — BUILT + regression-green
+**Chris → "corré la live-verify y arrancá el kit-lift".**
+
+**/pm-luana → ✓ APLICADO:** kit-lift `--radius-control` construido en worktree core efímero `wip/core-radius-control` (4 commits pushed: `0ca11f0f` lift · `9574e31c` fix · `9081d1de` docs · `125696b4` bump). `@luana/ui-kit` 0.4.1 → **0.5.0**.
+- **Mecanismo:** kit atoms (Button/Input/Select/Textarea) `rounded-md` → `rounded-control` + `RADIUS_NAMES` += control; cada marca mapea `borderRadius.control: var(--radius-control, <su-md>)` + globals `--radius-control`.
+- **★ Regression cazada + corregida (auditor-downstream):** 1ª pasada mapeó vitalia/comunify a `var(--radius)` (10px) = **+2px** vs su `rounded-md` real (8px/6px) → habría roto sus goldens 0.001. Corregido a **md-exact** (vitalia 8px · comunify 6px · lupulo 6px = sus md previos) → **cero cambio visual**. Verde: tsc ×brands + arch vitalia 187/187 + comunify 3/3 + ui-kit 270/270 + design-tokens 12/12.
+- **PENDIENTE gated:** merge `wip/core-radius-control` → main (ci-parity, manual/Chris) → proposal `migrated` → nicolify bumpea dep 0.5.0 → controls pill → destraba golden `atoms.png` (T-5) + demo #37 full-fidelity (Abel).
+- **💡 PROPONE:** mergear el lift a main (ci-parity) cuando quieras; en paralelo podés correr el demo-script.md de G (la estructura ya está live-verified; el pill llega con el bump).
