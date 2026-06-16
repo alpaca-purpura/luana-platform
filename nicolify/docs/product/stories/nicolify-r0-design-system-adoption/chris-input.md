@@ -178,3 +178,15 @@ Patrón cross-brand (vitalia+nicolify) → candidate lift `/pm-luana`. Próximo:
 - **Convergencia en G / demo #37 (Abel):** (1) live-verify dod_evidence · (2) kit-lift RN-7 aterriza (`/pm-luana`, proposal accepted → controls pill + golden `atoms.png`) · (3) tu `chris_verify.signoff` sobre el FE homologado. Build-claim `code:design-system` liberado.
 - **2 FLAGS a `/pm-luana`** (además del kit-lift RN-7 ya accepted): (a) agregar tier 10px (`text-2xs`) a `@luana/design-tokens` → elimina los 2 `ds-lock-allow` de T-4; (b) `kit-accent-slot-lift` condicional (EntitySubNavBar accentToken) si el golden de accent no matchea agent-abel con tokens semánticos.
 - **💡 PROPONE:** levantar dev-app nicolify + correr live-verify (yo o vos) + `/pm-luana` ejecuta el kit-lift en worktree core (paralelo). Ambos aterrizan → demo #37 → developed → G → R (reconcile /pm-nicolify) → /auditor.
+
+### 2026-06-15 — /dev-team corrió la live-verify (Chrome DevTools MCP) → developed/G
+**Chris → "corré la live-verify y arrancá el kit-lift".**
+
+**/dev-team → ✓ APLICADO (live-verify REAL, no GET 200):** stack dev nicolify levantado (BE :8001 + FE :3001), login Clerk (owner.demo@nicolify.com), ejercido `/alpaca-purpura/abel/icp` en vivo con Chrome DevTools MCP:
+- **2 writes reales:** CREATE (`POST /abel/icp 201` · `icp_created icp_id=82aa34d1 tenant_id=7f464ab7`) + AUTOSAVE (`PATCH /abel/icp/82aa34d1 200` + GET refetch 200 = persistencia). Logs BE leídos, tenant-scoped, sin traceback.
+- **Render homologado confirmado:** Ribbon 5 agentes + Luana sidebar orquestador + kit `EmptyState` ('Define tu cliente ideal') + detalle `EntityWorkspaceLayout` + `EntitySubNavBar` N3 (ICPs ‹ · Datos del ICP · + buyer) + `Group` sections + autosave — todo de `@luana/ui-kit`.
+- **Console:** 1 error pre-existente (`/agents/config/avatar.svg 500` = avatar placeholder de config, shell cap E4, NO adopción); 0 errores de adopción.
+- `state: developed` · `phase: AWAIT_CHRIS_VERIFY` (G) · `dod_live_verified: true` + `dod_evidence` (3 acciones).
+- **Caveats honestos:** (a) PILL controls NO verificado — gated en kit-lift RN-7 (controles rounden rounded-md, esperado); (b) visual goldens NO capturados (FE dev-server memory-restart loop inestable → drops de socket transitorios = dev-infra footgun, NO bug de adopción; candidato harness-issue); (c) screenshot empty-state guardado en la carpeta de la story.
+- Creé 1 ICP de prueba en el tenant dev (`82aa34d1` "ICP Live-Verify DS-Adoption") — dato de dev, queda.
+- **Próximo:** Chris ejerce demo-script.md + firma `chris_verify.signoff`; el kit-lift RN-7 lo arranco ahora (Track 2). Demo #37 (Abel) full-fidelity cuando el kit-lift aterrice.

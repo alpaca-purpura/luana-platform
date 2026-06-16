@@ -2,7 +2,7 @@
 story_id: nicolify-r0-design-system-adoption
 brand: nicolify
 type: ui-story                       # adopción visual cross-cutting — todas las hojas re-expresadas vía primitivas compartidas (esencia homologada · valores de marca propios)
-state: developing                    # idea → refining → refined → ready → developing → developed → reviewing → done · developing 2026-06-15 (/dev-team build-claim code:design-system lane=E)
+state: developed                     # idea → refining → refined → ready → developing → developed → reviewing → done · developed 2026-06-15 (/dev-team: 5/5 tickets + live-verify estructural OK)
 release: R0                          # Fundación — homologar ANTES de crecer (ADR-014 HARD: "empezar homologado")
 map_zone: infraestructura            # paradigma 3 zonas — atributo de calidad (consistencia UI cross-hoja) · derivada de SYSTEM-MAP::zones (a confirmar /architect)
 map_box: plataforma-tecnica
@@ -14,8 +14,30 @@ cap_change_type: new                 # NUEVA cap (no existía design-system/nico
 route: null                          # cross-cutting — no es una hoja con ruta única
 demo_required: true                  # visual: las hojas deben render idéntico/mejor, cero regresión
 last_modified: 2026-06-16
-phase: AWAIT_LIVE_VERIFY              # /dev-team: T-1..T-5 BUILT + pushed + green. NO developed todavía — Step 4.6 gate BLOQUEA sin dod_live_verified (live-verify = boundary G, necesita dev-app + Chris)
-dod_live_verified: false             # pendiente: ejercer abel/icp live en dev-app nicolify + write real + leer logs → dod_evidence (boundary G · Critical Rule #37)
+phase: AWAIT_CHRIS_VERIFY             # G · /dev-team cerró developed; live-verify estructural OK. Pausa-y-ofrece: Chris ejerce + firma chris_verify.signoff (pill demo #37 completa post kit-lift)
+dod_live_verified: true              # estructural — ejercido live en dev-app nicolify (Chrome DevTools MCP) 2026-06-15
+dod_env: "docker dev stack (BE :8001 + FE :3001) · Chrome DevTools MCP · tenant alpaca-purpura (7f464ab7) · owner.demo@nicolify.com"
+dod_evidence:
+  - action: "Login Clerk (owner.demo@nicolify.com) → /alpaca-purpura/abel/icp → master render"
+    observed: "shell homologado: Ribbon 5 agentes (Abel/Brenda/Christian/Sara·Próximamente/Norvil/Configurar) + Luana sidebar orquestador + kit EmptyState ('Define tu cliente ideal' + CTAs) + kit ListPageSkeleton de carga"
+    backend_log: "GET /api/v1/abel/icp 200 OK ×2 · sin traceback"
+  - action: "Click 'Empezar en blanco' (CREATE write)"
+    observed: "navegó a /abel/icp/82aa34d1-.../datos = EntityWorkspaceLayout + EntitySubNavBar N3 (ICPs ‹ · Nuevo ICP · Datos del ICP · + buyer) + Group sections (Identidad/Firmográficos/Dolor/Señales/Anti-patrón) con tooltips + autosave indicator — todo compuesto de @luana/ui-kit"
+    backend_log: "icp_created icp_id=82aa34d1 tenant_id=7f464ab7 · POST /api/v1/abel/icp 201 Created"
+  - action: "Editar 'Nombre del ICP' → 'ICP Live-Verify DS-Adoption 2026-06-15' (AUTOSAVE write)"
+    observed: "autosave disparó; refetch del detalle tras guardar"
+    backend_log: "PATCH /api/v1/abel/icp/82aa34d1 200 OK · GET .../82aa34d1 200 (persistencia confirmada)"
+  - console: "1 error pre-existente (GET /agents/config/avatar.svg 500 = avatar placeholder de config, NO regresión de adopción — shell cap E4 'avatar fallback'); 0 errores de adopción, sin burbuja de hidratación, /abel/icp todo 200/201"
+verified_at: 2026-06-15
+dod_caveats:
+  - "PILL controls (RN-7) NO verificado — kit hardcodea rounded-md hasta el kit-lift /pm-luana (gated). Controles renderizan rounded-md (esperado). Golden atoms.png + demo #37 full-fidelity completan post kit-lift."
+  - "Visual goldens NO capturados live (FE dev-server memory-restart loop inestable + requiere run Playwright estable). Fidelidad estructural confirmada por snapshot a11y + screenshot empty-state. Captura de baselines = follow-up con stack estable."
+  - "FE dev-server (webpack, memory threshold) reinicia en loop → drops de socket transitorios (ERR_SOCKET_NOT_CONNECTED) durante compiles. Dev-infra footgun, NO bug de adopción (BE 200/201/PATCH-200 confirman). Candidato harness-issue (dev-stack memory)."
+chris_verify:
+  required: true
+  signoff: null                      # Chris ejerce el kit live (demo-script.md) + firma SATISFIED|SATISFIED_WITH_FOLLOWUPS|REJECTED
+  rounds: []
+reconciled: false                    # /pm-nicolify pone true en R (tras signoff) antes del /auditor
 build_status:                        # /dev-team 2026-06-15 — 5/5 tickets pushed, green native
   T-1: { commit: cb8de344, status: tests-passing, note: "globals↔design-tokens + --radius-control + arch-test (39/39)" }
   T-2: { commit: facdd25b, status: tests-passing, note: "4 mirrors killed → @luana/ui-kit (518/518 + arch 160/160)" }
@@ -40,7 +62,7 @@ mockup_decisions:
   control_radius: "fully-rounded (pill) vía token --radius-control brand-overridable (RN-7) — flag /architect: kit Input/Button/Select debe exponerlo"
 mockup_base_set: true               # _shared.css + ADR-nicolify-003 + rule shell-mockup-per-component.md (mirror vitalia)
 last_artifact: 06-tickets.yaml
-next_action: "BUILD code-complete (T-1..T-5 pushed, green). Pendiente para cerrar developed (Step 4.6 gate): LIVE-VERIFY en dev-app nicolify (make dev-app-nicolify → ejercer abel/icp master+detalle + autosave write + leer logs → dod_evidence). Eso + el kit-lift RN-7 (/pm-luana, proposal accepted) + la firma de Chris convergen en el boundary G / demo #37 (Abel). Cuando dod_live_verified: true → developed → G (Chris-verify) → R (reconcile /pm-nicolify) → /auditor."
+next_action: "EN G (AWAIT_CHRIS_VERIFY). Build code-complete + live-verify estructural OK (dod_evidence: POST 201 + PATCH 200 + logs + render homologado). Falta: (1) Chris ejerce demo-script.md live + firma chris_verify.signoff · (2) kit-lift RN-7 aterriza (/pm-luana worktree core) → controles pill → golden atoms.png + demo #37 full-fidelity. Tras signoff → R (reconcile /pm-nicolify, reconciled: true) → /auditor → merge. El demo #37 (Abel convergence) completa cuando el kit-lift aterrice."
 ready_package:                       # /architect 2026-06-16 — paquete completo FE-only
   - 03-arch.md                       # consolidado FE (= 03-arch-fe; cero BE/agentic)
   - 03-arch-fe.md                    # quick-ref builder-frontend
