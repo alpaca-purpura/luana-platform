@@ -199,3 +199,44 @@ Patrón cross-brand (vitalia+nicolify) → candidate lift `/pm-luana`. Próximo:
 - **★ Regression cazada + corregida (auditor-downstream):** 1ª pasada mapeó vitalia/comunify a `var(--radius)` (10px) = **+2px** vs su `rounded-md` real (8px/6px) → habría roto sus goldens 0.001. Corregido a **md-exact** (vitalia 8px · comunify 6px · lupulo 6px = sus md previos) → **cero cambio visual**. Verde: tsc ×brands + arch vitalia 187/187 + comunify 3/3 + ui-kit 270/270 + design-tokens 12/12.
 - **PENDIENTE gated:** merge `wip/core-radius-control` → main (ci-parity, manual/Chris) → proposal `migrated` → nicolify bumpea dep 0.5.0 → controls pill → destraba golden `atoms.png` (T-5) + demo #37 full-fidelity (Abel).
 - **💡 PROPONE:** mergear el lift a main (ci-parity) cuando quieras; en paralelo podés correr el demo-script.md de G (la estructura ya está live-verified; el pill llega con el bump).
+
+### 2026-06-16 — /pm-nicolify + /pm-luana · G finding: dark mode roto post-adopción + revisión completitud
+**Chris → "tras traer del core el organism shell NO funciona el modo oscuro. Verificá: (1) todos los tokens/átomos/moléculas acordados+mockeados implementados; (2) si los mockups existen como HTML para /po-ux; (3) si existen sus versiones React (shadcn/next) para /dev-team."**
+
+**/pm-nicolify (lente /pm-luana) → ⚠️ DUDA confirmada como BUG REAL de G + ✓ APLICADO (diagnóstico, sin tocar código):**
+
+**1 · Dark mode roto — ROOT CAUSE (2 regresiones nicolify vs precedente vitalia, ambas en `nicolify/frontend`):**
+- **BUG-A (el switch):** nicolify NO tiene `tailwind.config.ts` ni `@config` ni `@custom-variant dark` en `globals.css`. → en Tailwind v4 los `dark:` variants caen al default `@media (prefers-color-scheme: dark)` e **ignoran el toggle** `data-theme="dark"` que pone `next-themes` (providers.tsx `attribute="data-theme"`). Los estilos por CSS-var (`.dark, [data-theme="dark"]` → `--background`…) SÍ conmutan; los componentes del kit con `dark:` literal (AutosaveBadge, alert, chart, FloatingAutosaveIndicator) + propios (badge/dropdown/input/alert/LogoMark) NO → dark a medias = "no funciona".
+- **BUG-B (el scan):** `@source` de nicolify apunta SOLO a `core/@luana/ui-kit/src/organism/shell`. Los molecules adoptados (EntityWorkspaceLayout, EntitySubNavBar, Group, AutosaveBadge) viven en `src/` raíz → fuera del scan → sus clases (sobre todo `dark:`) no se generan por JIT.
+- **Por qué pasó:** antes de adoptar el kit, el shell propio usaba clases semánticas por CSS-var (conmutan solas) → dark "andaba". La adopción trajo molecules con `dark:` variant → expuso que el mecanismo nunca se cableó. La live-verify estructural NO ejerció el toggle dark + los goldens quedaron gated → el verde no lo cazó (caso clásico [[verification-real-not-200]]).
+- **Precedente (vitalia, dark OK):** `tailwind.config.ts` con `darkMode: ["class", '[data-theme="dark"]']` + `@config "../../tailwind.config.ts"` + `@source ".../ui-kit/src"` (todo el kit). El port a nicolify dropeó las 3 cosas.
+- **Fix brand (≈3 cambios, espejo vitalia):** (a) widen `@source` a `core/@luana/ui-kit/src`; (b) cablear el dark variant — opción v4-pura `@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *))` (1 línea, sin archivo) **o** espejo vitalia (`tailwind.config.ts` + `@config`); (c) re-live-verify ejerciendo el **toggle dark** (lo que faltó). En scope de esta story (homologación = honrar tokens compartidos también en dark).
+- **Concern CORE (/pm-luana):** `@luana/ui-kit` shippea `dark:` variants pero NO css, NO `@custom-variant`, y el SHELL-DESIGN-CONTRACT no tiene cláusula de cableado dark → cada consumer lo re-deriva y nicolify lo perdió en silencio. → proposal: contrato de dark-wiring en el kit + arch-test que asserte el variant en consumers. Es exactamente el "review con /pm-luana".
+
+**2 · Tokens/átomos/moléculas acordados+mockeados → IMPLEMENTADOS (con 1 caveat gated):**
+- **Tokens:** `globals.css` tiene el set semántico completo light **y** dark (background/foreground/card/popover/primary/secondary/muted/accent/destructive/border/input/ring) + 7 agent colors + soft variants (light+dark) + spacing + radius (sm/md/lg/bubble/pill) + typo tiers + fuentes (League Spartan + Bree Serif). El mockup `_shared.css` tiene su bloque `.dark{}` (l.41). **Los VALORES dark existen; lo roto es el WIRING del variant (BUG-A), no los tokens.**
+- **Átomos/moléculas:** consumidos de `@luana/ui-kit` (adopción pura, cero creación). 5/5 tickets verdes (518/518 + arch 176/176), 4 mirrors locales borrados → repoint al kit.
+- **Caveat gated:** PILL controls (`--radius-control` RN-7) ya BUILT en `@luana/ui-kit 0.5.0` (wip/core-radius-control) pero **pendiente merge a main + dep-bump** → en nicolify aún renderiza `rounded-md` (esperado).
+
+**3 · Mockups HTML para /po-ux → SÍ.** `nicolify/docs/product/stories/nicolify-r0-design-system-adoption/mockups/ds-base.html` + `_shared.css` + `assets/agents/*.svg`. En la carpeta de la story (la lee /po-ux en refining). `mockup_final_signed: true`, `mockup_base_set: true` (+ ADR-nicolify-003 + rule shell-mockup-per-component.md, espejo vitalia).
+
+**4 · Versiones React (shadcn/next) para /dev-team → SÍ.** `@luana/ui-kit` ES la implementación shadcn/React, consumida `workspace:*`. dev-team la consume directo; el mapping mockup→react es la adopción misma.
+
+**Acción PM:** este es un finding legítimo de G → la story NO avanza a R/auditor hasta fix dark + re-verify del toggle. `chris_verify.signoff` queda `null` (no firmable con dark roto). Recomiendo: /dev-team aplica el fix brand (BUG-A+B) en esta story (fix-round) + re-live-verify con toggle dark; en paralelo /pm-luana abre el proposal de dark-contract del kit. NO es story nueva.
+
+### 2026-06-16 — /dev-team FIX-ROUND (G round-1: dark mode) → live-verified
+**Chris → "sí, encadená /dev-team".**
+
+**/dev-team → ✓ APLICADO (fix BUG-A+B + live-verify del toggle dark, lo que faltó la 1ra vez):**
+- **BUG-A (switch):** `globals.css` += `@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *))`. Idiom v4-puro (1 línea, sin tailwind.config). Decisión: homologar el EFECTO (dark: responde al toggle), no el mecanismo de vitalia (`@config`+config-file) — menos superficie, mismo resultado.
+- **BUG-B (scan):** `globals.css` `@source` widened `organism/shell` → `core/@luana/ui-kit/src` completo (= vitalia). Los molecules del kit fuera de organism/shell ya generan sus clases dark:.
+- **TDD/regression:** `test-ds-single-token-source.test.ts` += 3 tests (custom-variant apunta a [data-theme="dark"] + cubre .dark + @source escanea ui-kit/src completo). Asserta presencia de exactamente lo que se agregó (RED sin el fix).
+- **Gates:** tsc 0 · arch suite **179/179** (+3) · eslint 0.
+- **Live-verify REAL (Chrome DevTools MCP, /christian/pipeline, sesión autenticada):**
+  - `dark:hidden` (logo light/dark swap): display `block`(light)→`none`(dark), **conmuta=true** → el `dark:` variant ahora honra el toggle (antes: solo prefers-color-scheme).
+  - body bg conmuta `white` ↔ `rgb(18,18,28)` (deep-indigo).
+  - compiled CSS vivo: **`media_prefers` dark rules = 0** (los dark: ya NO compilan bajo `@media prefers-color-scheme`).
+  - Render: shell completo (Ribbon 5 agentes + Luana sidebar + EmptyState + kit molecules) dark correcto. Screenshots `dark-fix-light.png` + `dark-fix-dark.png`.
+  - Console: solo warns CSS-preload (ruido Next dev) + 1 WebSocket-HMR reset (dev-server memory-loop conocido, NO bug). 0 errores de dark.
+- **Estado:** sigue `developed / AWAIT_CHRIS_VERIFY` (G). `chris_verify.rounds[0].resolution: fixed-pending-chris-reverify`. Tu signoff sigue null — re-ejercés el toggle en G + firmás.
+- **💡 PROPONE:** (1) re-ejercé el toggle dark en G + firmá `chris_verify.signoff`; (2) el concern CORE (dark-contract del kit: `@custom-variant`/css + arch-test consumer en `@luana/ui-kit` + SHELL-DESIGN-CONTRACT) va a **/pm-luana** como proposal aparte, NO en esta story.

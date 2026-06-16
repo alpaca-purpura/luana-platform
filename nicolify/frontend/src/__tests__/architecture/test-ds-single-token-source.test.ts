@@ -108,3 +108,28 @@ describe("DS single-token-source — radius-control + radius-pill", () => {
     expect(css).toMatch(/--radius-control\s*:\s*var\(--radius-pill\)/);
   });
 });
+
+describe("DS dark-mode wiring (ds-adoption G round-1 regression)", () => {
+  // BUG-A: next-themes sets <html data-theme="dark">; Tailwind v4 dark: defaults to
+  // prefers-color-scheme and ignores it. The @custom-variant re-points dark: to the
+  // data-theme/.dark selector so kit + own dark: variants honor the toggle.
+  it("@custom-variant dark targets [data-theme=dark] (not just prefers-color-scheme)", () => {
+    expect(
+      css,
+      "@custom-variant dark missing — dark: variants won't honor the theme toggle",
+    ).toMatch(/@custom-variant\s+dark\s*\([^)]*\[data-theme="dark"\][^)]*\)/);
+  });
+
+  it("@custom-variant dark also covers the .dark class", () => {
+    expect(css).toMatch(/@custom-variant\s+dark\s*\([^)]*\.dark[^)]*\)/);
+  });
+
+  // BUG-B: consumed kit molecules (EntityWorkspaceLayout/EntitySubNavBar/Group/AutosaveBadge)
+  // live in ui-kit/src root, outside organism/shell. @source must scan the whole src or
+  // their classes (dark:/arbitrary) get purged silently.
+  it("@source scans the whole @luana/ui-kit/src (not only organism/shell)", () => {
+    expect(css, "@source too narrow — kit molecules outside organism/shell get purged").toMatch(
+      /@source\s+"[^"]*@luana\/ui-kit\/src"\s*;/,
+    );
+  });
+});

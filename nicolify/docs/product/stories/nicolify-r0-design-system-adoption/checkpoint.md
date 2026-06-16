@@ -28,15 +28,34 @@ dod_evidence:
     observed: "autosave disparó; refetch del detalle tras guardar"
     backend_log: "PATCH /api/v1/abel/icp/82aa34d1 200 OK · GET .../82aa34d1 200 (persistencia confirmada)"
   - console: "1 error pre-existente (GET /agents/config/avatar.svg 500 = avatar placeholder de config, NO regresión de adopción — shell cap E4 'avatar fallback'); 0 errores de adopción, sin burbuja de hidratación, /abel/icp todo 200/201"
-verified_at: 2026-06-15
+  - action: "Toggle dark/light en /christian/pipeline (DARK MODE — G round-1 fix, Chrome DevTools MCP, 2026-06-16)"
+    observed: "body bg conmuta white(rgb255,255,255)↔deep-indigo(rgb18,18,28); dark:hidden (logo swap) display block→none conmuta=true (dark: variant honra el toggle data-theme); todo el shell (Ribbon + Luana sidebar + EmptyState + kit molecules) renderiza dark correcto. Screenshots dark-fix-{light,dark}.png"
+    backend_log: "compiled CSS vivo: media_prefers dark rules=0 (dark: ya NO usa @media prefers-color-scheme); console solo warns CSS-preload + 1 WebSocket-HMR reset (dev-infra footgun), 0 errores de dark"
+verified_at: 2026-06-16
 dod_caveats:
   - "PILL controls (RN-7) NO verificado — kit hardcodea rounded-md hasta el kit-lift /pm-luana (gated). Controles renderizan rounded-md (esperado). Golden atoms.png + demo #37 full-fidelity completan post kit-lift."
   - "Visual goldens NO capturados live (FE dev-server memory-restart loop inestable + requiere run Playwright estable). Fidelidad estructural confirmada por snapshot a11y + screenshot empty-state. Captura de baselines = follow-up con stack estable."
   - "FE dev-server (webpack, memory threshold) reinicia en loop → drops de socket transitorios (ERR_SOCKET_NOT_CONNECTED) durante compiles. Dev-infra footgun, NO bug de adopción (BE 200/201/PATCH-200 confirman). Candidato harness-issue (dev-stack memory)."
 chris_verify:
   required: true
-  signoff: null                      # Chris ejerce el kit live (demo-script.md) + firma SATISFIED|SATISFIED_WITH_FOLLOWUPS|REJECTED
-  rounds: []
+  signoff: null                      # BLOQUEADO round-1 — dark mode roto. No firmable hasta fix + re-verify del toggle dark.
+  rounds:
+    - date: 2026-06-16
+      by: Chris
+      finding: "Dark mode NO funciona tras adoptar el organism shell del kit."
+      root_cause: "BUG-A (switch): falta cableado del dark variant (sin tailwind.config/@config/@custom-variant) → en Tailwind v4 los dark: variants usan @media prefers-color-scheme e ignoran el toggle data-theme=dark de next-themes; estilos por CSS-var sí conmutan, dark: literal del kit (AutosaveBadge/alert/chart/FloatingAutosaveIndicator) + propios (badge/dropdown/input/alert/LogoMark) NO. BUG-B (scan): @source solo escanea organism/shell; los molecules consumidos (EntityWorkspaceLayout/EntitySubNavBar/Group/AutosaveBadge) viven en src/ raíz → clases dark: no se generan por JIT. Precedente vitalia tiene tailwind.config darkMode + @config + @source ui-kit/src completo; el port a nicolify dropeó las 3."
+      scope: "EN SCOPE de la story (homologación = honrar tokens compartidos en dark). Fix brand ≈3 cambios espejo vitalia + re-live-verify ejerciendo el toggle dark (lo que faltó en la live-verify estructural)."
+      core_concern: "Kit shippea dark: variants sin css/@custom-variant ni cláusula de dark-wiring en SHELL-DESIGN-CONTRACT → proposal /pm-luana (dark-contract del kit + arch-test consumer)."
+      resolution: fixed-pending-chris-reverify   # /dev-team fix-round aplicado + live-verified 2026-06-16. Chris re-ejerce el toggle en G + firma.
+      fix:
+        commits: [fc0a45bd]
+        changes:
+          - "globals.css: @custom-variant dark (&:where(.dark, .dark *, [data-theme=\"dark\"], [data-theme=\"dark\"] *)) — idiom v4-puro, homologa el EFECTO no el mecanismo de vitalia (@config)"
+          - "globals.css: @source widened organism/shell → core/@luana/ui-kit/src completo (= vitalia)"
+          - "test-ds-single-token-source.test.ts: +3 regression tests (custom-variant data-theme + .dark + @source whole-src)"
+        live_verify: "Chrome DevTools MCP en /christian/pipeline (sesión autenticada). dark:hidden (logo swap) display block(light)→none(dark) conmuta=true; body bg white↔rgb(18,18,28); compiled CSS media_prefers=0 (dark: ya NO usa media query). Screenshots dark-fix-{light,dark}.png. Console: solo warns CSS-preload + 1 WebSocket-HMR reset (dev-infra footgun conocido), 0 errores de dark."
+        gates: "tsc 0 · arch suite 179/179 (+3) · eslint 0"
+      core_followup: "PENDIENTE /pm-luana — proposal dark-contract del kit (NO en esta story)."
 reconciled: false                    # /pm-nicolify pone true en R (tras signoff) antes del /auditor
 build_status:                        # /dev-team 2026-06-15 — 5/5 tickets pushed, green native
   T-1: { commit: cb8de344, status: tests-passing, note: "globals↔design-tokens + --radius-control + arch-test (39/39)" }
