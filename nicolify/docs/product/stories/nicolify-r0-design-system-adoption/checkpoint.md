@@ -14,7 +14,20 @@ cap_change_type: new                 # NUEVA cap (no existía design-system/nico
 route: null                          # cross-cutting — no es una hoja con ruta única
 demo_required: true                  # visual: las hojas deben render idéntico/mejor, cero regresión
 last_modified: 2026-06-16
-phase: BUILD_T1_T2                   # /dev-team build (DAG T-1‖T-2 → T-3 → T-4 → T-5) · autonomous_mode: false → pausa en G al cerrar developed
+phase: AWAIT_LIVE_VERIFY              # /dev-team: T-1..T-5 BUILT + pushed + green. NO developed todavía — Step 4.6 gate BLOQUEA sin dod_live_verified (live-verify = boundary G, necesita dev-app + Chris)
+dod_live_verified: false             # pendiente: ejercer abel/icp live en dev-app nicolify + write real + leer logs → dod_evidence (boundary G · Critical Rule #37)
+build_status:                        # /dev-team 2026-06-15 — 5/5 tickets pushed, green native
+  T-1: { commit: cb8de344, status: tests-passing, note: "globals↔design-tokens + --radius-control + arch-test (39/39)" }
+  T-2: { commit: facdd25b, status: tests-passing, note: "4 mirrors killed → @luana/ui-kit (518/518 + arch 160/160)" }
+  T-3: { commit: 4baa816e, status: tests-passing, note: "abel/icp + shell re-expresado vía primitivas/archetypes (241/241)" }
+  T-4: { commit: 45052deb, status: tests-passing, note: "no-arbitrary lock ON @ zero baseline; 2 text-[10px] vía ds-lock-allow (Bif-2) + FLAG /pm-luana 10px tier (16/16)" }
+  T-5: { commit: 52dd47d3, status: tests-passing, note: "goldens (pill/accent gated kit-lift) + a11y-subnav + demo-script + SHELL-DESIGN-CONTRACT §7 (arch 176/176); live-verify PENDING G" }
+blocked_on:
+  - kit-radius-control-lift          # /pm-luana (proposal accepted 2026-06-15) — pill controls + golden atoms.png + demo #37 full fidelity
+next_step_at_G:                      # boundary G (Chris-verify) — converge 3 cosas:
+  - "Live-verify dod_evidence (ejercer abel/icp + autosave write en dev-app + logs)"
+  - "Kit-lift RN-7 aterriza (/pm-luana core worktree) → controls pill → golden atoms.png + accent"
+  - "Chris ejerce demo #37 (Abel convergence) sobre el FE homologado + firma chris_verify.signoff"
 input_spec_signed: true             # ✍ FIRMA 1 (RONDA 1 funcional) — Chris 2026-06-15
 mockup_final_signed: true           # ✍ FIRMA 2 (mockup ds-base.html) — Chris 2026-06-15 · colores verificados vs nicolify.com live
 ratified_by_chris: true
@@ -27,7 +40,7 @@ mockup_decisions:
   control_radius: "fully-rounded (pill) vía token --radius-control brand-overridable (RN-7) — flag /architect: kit Input/Button/Select debe exponerlo"
 mockup_base_set: true               # _shared.css + ADR-nicolify-003 + rule shell-mockup-per-component.md (mirror vitalia)
 last_artifact: 06-tickets.yaml
-next_action: "/dev-team nicolify nicolify-r0-design-system-adoption (ready→developing). DAG: T-1‖T-2 → T-3 → T-4 → T-5 · todos builder-frontend (workhorse) + auditor-frontend (flagship) · FE-only. EN PARALELO: /pm-luana arranca el kit-lift RN-7 (kit Button/Input/Select/Textarea consumen --radius-control; opcional accentToken en EntitySubNavBar) — DEPENDENCIA EXTERNA: gatea 1-2 goldens + el demo gate #37 (Abel convergence) que corre cuando AMBOS aterrizan. NUNCA editar core/@luana en esta story de marca."
+next_action: "BUILD code-complete (T-1..T-5 pushed, green). Pendiente para cerrar developed (Step 4.6 gate): LIVE-VERIFY en dev-app nicolify (make dev-app-nicolify → ejercer abel/icp master+detalle + autosave write + leer logs → dod_evidence). Eso + el kit-lift RN-7 (/pm-luana, proposal accepted) + la firma de Chris convergen en el boundary G / demo #37 (Abel). Cuando dod_live_verified: true → developed → G (Chris-verify) → R (reconcile /pm-nicolify) → /auditor."
 ready_package:                       # /architect 2026-06-16 — paquete completo FE-only
   - 03-arch.md                       # consolidado FE (= 03-arch-fe; cero BE/agentic)
   - 03-arch-fe.md                    # quick-ref builder-frontend

@@ -169,3 +169,12 @@ Patrón cross-brand (vitalia+nicolify) → candidate lift `/pm-luana`. Próximo:
 - **Gates:** tsc 0 errors · eslint e2e excluido · vitest arch 176/176 GREEN.
 - **Live-verify:** PENDING (dev stack no corrió durante build). Goldens se capturan en primer `playwright test` contra el stack vivo. Signoff en G gate.
 - Ver T-5-result.md para detalle completo.
+
+### 2026-06-15 — /dev-team cierre de build (orquestador) · pausa en boundary live-verify/G
+**Chris → "commiteá el package y arrancá ambos".**
+
+**/dev-team → ✓ APLICADO:** build autónoma completa — 5/5 tickets pushed + green (T-1 `cb8de344` · T-2 `facdd25b` · T-3 `4baa816e` · T-4 `45052deb` · T-5 `52dd47d3`). Tokens alineados a `@luana/design-tokens`, 4 mirrors muertos → kit, abel/icp + shell re-expresados vía primitivas/archetypes, lock no-arbitrary ON @ cero baseline, goldens+a11y+demo-script.
+- **NO cerré `developed`:** Step 4.6 gate (Critical Rule #37) BLOQUEA sin `dod_live_verified` + `dod_evidence`. La live-verify (ejercer abel/icp en dev-app + write + logs) es el boundary **G** — necesita el dev-app corriendo y es tu paso de verify. NO se fabricó evidencia (doctrina verification-real).
+- **Convergencia en G / demo #37 (Abel):** (1) live-verify dod_evidence · (2) kit-lift RN-7 aterriza (`/pm-luana`, proposal accepted → controls pill + golden `atoms.png`) · (3) tu `chris_verify.signoff` sobre el FE homologado. Build-claim `code:design-system` liberado.
+- **2 FLAGS a `/pm-luana`** (además del kit-lift RN-7 ya accepted): (a) agregar tier 10px (`text-2xs`) a `@luana/design-tokens` → elimina los 2 `ds-lock-allow` de T-4; (b) `kit-accent-slot-lift` condicional (EntitySubNavBar accentToken) si el golden de accent no matchea agent-abel con tokens semánticos.
+- **💡 PROPONE:** levantar dev-app nicolify + correr live-verify (yo o vos) + `/pm-luana` ejecuta el kit-lift en worktree core (paralelo). Ambos aterrizan → demo #37 → developed → G → R (reconcile /pm-nicolify) → /auditor.
