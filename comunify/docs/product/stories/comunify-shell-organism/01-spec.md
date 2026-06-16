@@ -5,7 +5,7 @@ type: ui-story
 state: refining
 ronda: 1
 input_spec_signed: true        # FIRMA 1 · Chris 2026-06-15 ("dale, esto es lo que quiero")
-mockup_final_signed: false
+mockup_final_signed: true      # FIRMA 2 · Chris 2026-06-15 ("firmo todo")
 open_questions_resolved: "Q1 placeholders SVG · Q2 Plataforma link-a-existente · Q3 saludo genérico (todas = recomendación, dale)"
 cap_target: comunify/shell-organism
 cap_change_type: new

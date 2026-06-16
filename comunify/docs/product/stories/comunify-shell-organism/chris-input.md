@@ -175,6 +175,15 @@ Coherencia total: si la base es Fully Rounded (pill), que TODO sea pill — text
 **Aplicado al mockup:** todos los **controles** → full-pill (botones, icon-buttons→círculos, Ribbon tabs, sub-tabs, composer, send, CTA, logo→círculo). Cards + burbujas de chat conservan su radio (pill en card se ve mal). Ribbon activo: subrayado → ring (mejor en pill). Audit: 18 full-pill / 3 rounded-2xl (solo burbujas).
 ⚠️ **Implicación de design-system (a cementar en build/architect):** cambiar `--radius` de comunify a pill para controles + **verificar que `@luana/ui-kit` honre el token de radio de la marca** (si no, comunify divergiría del kit compartido → riesgo anti-duplication). El architect lo resuelve en 03-arch (token-driven, no override per-componente). **Esperando FIRMA 2.**
 
+### 2026-06-15 17:30 · 👤 chris
+"firmo todo" (= **FIRMA 2**, la final). + ajustes mínimos: header Luana misma altura que Ribbon · línea blanca en dark se ve mal · subtabs con fondo de shell (no hoja) · logos reales (claro/oscuro/icono/ico, paths en Descargas). + Continuar en conversación NUEVA. + No olvidar dar todos los tokens/átomos/moléculas que se guardarán en código (mockups + goldens dev-team).
+
+### 2026-06-15 17:30 · 🤖 claude · `/po-ux` · ✓ APLICADO (FIRMA 2 + cierre)
+- **Ajustes mínimos:** header Luana h-16 (alinea Ribbon) · bordes vía token (fix dark) · subtabs bg panel (shell) · **logos reales Comunify** (isotipo TopBar + favicon; full claro/oscuro → `comunify/frontend/public/brand/` + `mockups/assets/`).
+- **FIRMA 2 registrada** (`mockup_final_signed: true` en spec + checkpoint). Refinamiento de diseño COMPLETO.
+- **`design-inventory.md` escrito** (lo que Chris pidió): tokens comunify (color/radius-pill/fonts/gradient/logos) + átomos/moléculas/organismos a CONSUMIR de `@luana/ui-kit` + lo único net-new comunify + **goldens dev-team** (mockup final + tokens + cast + sitemap + @luana kit + decisiones funcionales).
+- **Cierre a conversación NUEVA.** Pendiente allí: generar RONDA 2 (Gherkin+matriz+estados+microcopy) → `refining→refined` → `/architect` ready package. Detalle en `checkpoint.md § Next action`.
+
 ---
 
 ### 2026-06-15 15:18 · 🤖 claude · `/pm-comunify` · ✓ APLICADO

@@ -17,11 +17,13 @@ verification_nature: funcional
 autonomous_mode: false
 cast_ratified: true   # ADR-comunify-001-agentes-cast (Chris 2026-06-15)
 input_spec_signed: true    # FIRMA 1 funcional (Chris 2026-06-15)
-mockup_final_signed: false # FIRMA 2 pendiente (post sitemap ratificado)
+mockup_final_signed: true  # FIRMA 2 final (Chris 2026-06-15 "firmo todo")
 artifacts:
   - ADR-comunify-001-agentes-cast.md (cast cementado)
-  - 01-spec.md (RONDA 1 funcional · FIRMA 1)
-  - navigation-tree.md (sitemap propuesto · pend. ratificación)
+  - 01-spec.md (RONDA 1 funcional · FIRMA 1 + FIRMA 2)
+  - navigation-tree.md (sitemap v2 ratificado)
+  - mockups/shell.html (mockup FINAL firmado · localhost:8893)
+  - design-inventory.md (tokens/átomos/moléculas/organismos · goldens dev-team)
 ---
 
 # Comunify — Shell-organism migration (R-shell · MVP)
@@ -87,9 +89,22 @@ Sidebar: **Luana** (supervisora+orquestadora+onboarding). Ribbon: **Nina** (estr
 **Tomás** (atraer) · **Sofía** (vender) · **Bruno** (operar) · **Lucía** (retener) + tab **Plataforma**.
 Mapeo 1:1 a cadena de valor canónica (vitalia/nicolify). Detalle: `ADR-comunify-001-agentes-cast.md`.
 
-## Next action
+## Next action (CONVERSACIÓN NUEVA)
 
-`/po-ux` en curso. FIRMA 1 ✓ (funcional). Pendiente: ratificar `navigation-tree.md` (sitemap) →
-**mockup creativo** (port re-temizado de @luana/ui-kit + tokens comunify + Ribbon del cast + sub-tabs
-del sitemap, todas "Próximamente" salvo Luana) → **FIRMA 2** (final) → refining→refined → `/architect`.
-Decisión de motor: Luana consume `core/luana-core-copilot /chat` (comunify-first, lift chat-store a @luana).
+FIRMA 1 ✓ + FIRMA 2 ✓ (Chris firmó todo 2026-06-15). Refinamiento de diseño COMPLETO.
+Pendiente en la próxima conversación (`/po-ux` cierra + handoff `/architect`):
+
+1. **Generar RONDA 2** en `01-spec.md`: § Gherkin (4 base + sub-categorías) + § Matriz de cobertura +
+   § Estados visuales + § Componentes (del `design-inventory.md`) + § Microcopy — a partir del § Mapa
+   funcional firmado + el mockup FINAL.
+2. **Transition `refining → refined`** (gate /po-ux Step 5).
+3. **Handoff `/architect comunify comunify-shell-organism`** → ready package:
+   - T-0 higiene (lockfiles align-vitalia + next-env + deps `@luana/*` + `pnpm install` verde)
+   - montar `core/luana-core-copilot /chat` en `/api/v1/comunify/copilot` + `chat-store` real (lift candidate `@luana`)
+   - `--radius` pill token (design-system update) + verificar `@luana/ui-kit` honra radio de marca
+   - routing `app/[tenantId]/(shell-organism)/` + `shell-routes.ts` (nav-tree v2)
+   - logos reales → `comunify/frontend/public/brand/` (ya copiados)
+   - avatares agentes = placeholders SVG (Chris da finales después)
+
+Decisión motor: Luana consume `core/luana-core-copilot /chat` (comunify-first, lift chat-store).
+Goldens dev-team: `design-inventory.md` + `mockups/shell.html` + tokens comunify.
