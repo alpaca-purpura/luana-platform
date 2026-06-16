@@ -4,7 +4,7 @@ created_at: 2026-06-15T15:18:48-05:00
 last_modified: 2026-06-15T15:18:48-05:00
 notes_count: 0
 refs_count: 3
-conversation_count: 1
+conversation_count: 3
 ---
 
 # chris-input.md · nicolify-r0-design-system-adoption
@@ -97,3 +97,23 @@ Patrón cross-brand (vitalia+nicolify) → candidate lift `/pm-luana`. Próximo:
 **Chris → "todo bien, dame el prompt para continuar en una nueva conversación (saturamos contexto)".**
 
 **/po-ux → ✓ APLICADO:** mockup **re-ratificado** (FIRMA 2 final). Labels Operar/Retener confirmados. Thumbnails = placeholders existentes (Chris entrega finales). Bases de mockup seteadas (`_shared.css` + ADR-nicolify-003 + rule). Story `refined` lista para `/architect`. Generado `HANDOFF-next-session.md` + prompt de continuación. **Pendiente operativo:** commitear lo uncommitted (pathspec) al arrancar la próxima sesión.
+
+### 2026-06-15 (sesión nueva) — Chris retoma → commit + /architect
+**Chris → "retomamos. Commit por pathspec lo uncommitted, después /architect nicolify nicolify-r0-design-system-adoption con las notas (Bif-5 a · RN-7 --radius-control · matar mirrors · lock no-arbitrary en cero)."**
+
+**/pm-nicolify → ✓ APLICADO:**
+- **Commit ya estaba hecho:** `c4a770da` contiene exacto los 17 archivos del § Pendiente operativo (rules README/shell-mockup + ADR-nicolify-003 + SHELL-DESIGN-CONTRACT + R0.yaml + story dir + mockups + _shared.css + 6 avatares SVG). El HANDOFF se commiteó junto. Tree limpio → no-op. (`tools/luana-cockpit` untracked = tooling cross-cutting, fuera de scope, no se toca.)
+- **Step 0 closure gate:** Abel (`reviewing`, gate #37, `code:abel`) ≠ bucket `code:design-system` → WIP cap OK. Bif-5(a) ratificado: Abel converge en esta story → `/architect` destraba el demo único, no abandona Abel.
+- **Handoff `/architect`** con las 4 notas (Bif-5 a convergencia Abel · RN-7 `--radius-control` brand-overridable en kit Input/Button/Select · matar mirrors locales EntityWorkspaceLayout/EntitySubNavBar/EmptyState/AutosaveBadge · lock eslint no-arbitrary migrando 27 + encender en cero, anti-default-flip). Verification `ambas`.
+
+### 2026-06-15 (sesión nueva) — /architect cierra ready package + RN-7 decision
+**Hallazgo bloqueante de RN-7 (verificado, no asumido):** los controls del kit (`Button/Input/Select/Textarea`) **hardcodean `rounded-md`** — `--radius-control` no existe en ningún lado. Hacerlos pill brand-overridable = **cambio cross-brand de engine** (toca `@luana/ui-kit` + `design-tokens` + vitalia debe definir `--radius-control: var(--radius)` para no cambiar) → `/pm-luana` promotion gate. Prohibido meterlo en una story de marca.
+
+**Chris → decidió (a) "Decouple + paralelo"** (AskUserQuestion): cierro ready ya con el paquete brand-scoped; RN-7 = dependencia externa via `/pm-luana`; demo gate #37 corre cuando ambos aterrizan.
+
+**/architect → ✓ APLICADO:**
+- **Ready package cerrado** (`refined → ready`, `phase: READY_PACKAGE_CLOSED`) — 5 artifacts (`03-arch` + `03-arch-fe` + `04-validators` + `05-guidelines` + `06-tickets` + `dispatch-plan`). FE-only, 5 tickets `builder-frontend`/workhorse, DAG T-1‖T-2 → T-3 → T-4 → T-5. SC-1..6 todos mapeados.
+- **Scope:** matar 4 mirrors (Entity*, EmptyState, AutosaveBadge) → consumir kit · alinear `globals.css` a `@luana/design-tokens` (Q1: mirror @theme + arch-test anti-drift, sin codegen) · re-expresar Abel/icp + shell vía primitivas/archetypes (Bif-5 a: Abel converge acá, 1 demo gate #37) · migrar 28 arbitrary + encender lock no-arbitrary en cero (anti-default-flip) · `--radius-control:9999px` brand-scoped en nicolify globals.
+- **RN-7 fenced:** `external_dependencies` (owner `/pm-luana`) + `engine_off_limits` (NINGÚN ticket edita `core/@luana`). Golden control-radius/pill + demo #37 `blocked_on: kit-radius-control-lift`. **Proposal drafted:** `docs/promotion-protocol/proposals/2026-06-15-ui-kit-radius-control-token.md` (state: proposed — necesita tu GO + `/pm-luana` accept; vitalia/comunify quedan en `md` sin cambio visual).
+- **3 open questions resueltas** (sin bloquear): COLOR_NAMES = contrato de nombres semánticos compartidos + per-agent brand-owned ✓ · accent-slot EntitySubNavBar = conditional lift `kit-accent-slot-lift` (gateado en golden, solo si tokens semánticos no matchean) ✓ · AutosaveBadge→FloatingAutosaveIndicator = mínimo HARD matar mirror + consumir kit badge; N→1-por-página solo si no toca lógica de form ✓.
+- **💡 PROPONE next:** `/dev-team nicolify nicolify-r0-design-system-adoption` (ready→developing) EN PARALELO con `/pm-luana` aceptando el kit-lift RN-7.
