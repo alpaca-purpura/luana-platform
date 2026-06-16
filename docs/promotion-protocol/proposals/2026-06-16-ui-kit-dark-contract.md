@@ -1,10 +1,10 @@
 ---
 proposal_id: 2026-06-16-ui-kit-dark-contract
-state: proposed                # proposed | under_review | accepted | rejected | migrated
+state: accepted                # ★ Chris GO 2026-06-16 — /pm-luana ejecuta el lift en worktree core efímero (M13: NO desde worktree de marca)
 opened_date: 2026-06-16
 opened_by: /pm-luana
-ratified_by: null
-ratified_date: null
+ratified_by: chris
+ratified_date: 2026-06-16
 
 # Origen
 origin_story: nicolify/docs/product/stories/nicolify-r0-design-system-adoption   # G round-1 dark-mode fix (commit b09bc9dc)
@@ -77,11 +77,12 @@ Todas las brands consumen componentes del kit con `dark:` variants. El contrato 
 
 **Scope NO incluye:** el fix de nicolify (ya hecho, `b09bc9dc`). Esta proposal es el contrato del kit + el gate replicable + el fix de comunify.
 
-**Ratificación Chris:** _(pending — pasa a `accepted` con Chris GO, luego `/dev-team` ejecuta el lift en worktree core efímero, NO desde worktree de marca · M13)_
+**Ratificación Chris:** ✅ APPROVED 2026-06-16 ("ratifico el proposal del dark-contract"). state → `accepted`. Lift ejecuta en worktree core efímero (M13).
 
 ## 7. Bitácora
 
 - 2026-06-16: opened by /pm-luana. Origen: nicolify ds-adoption G round-1 (dark fix `b09bc9dc`). Scan cross-brand confirma sistémico (comunify roto, 3 mecanismos divergentes, kit sin contrato).
+- 2026-06-16: Chris ratifica APPROVED → state proposed → accepted. Lift pendiente en worktree core efímero.
 
 ## 8. Cross-references
 
