@@ -21,36 +21,34 @@
  * downstream-regression-na: brand-local route; no cross-brand consumers.
  */
 
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 import { SubTabContent } from "@/components/shared/shell-organism/SubTabContent";
-import {
-  getSubSubTabs,
-  isValidAgent,
-  isValidSubtab,
-} from "@/lib/routing/shell-routes";
+import { isValidAgent, isValidSubtab } from "@/lib/routing/shell-routes";
 
 interface PageProps {
   params: Promise<{ tenantId: string; agent: string; subtab: string }>;
 }
 
 /**
- * N2 sub-tab route. Validates [agent]+[subtab] against the SSoT whitelist.
- * If the sub-tab HAS N3 leaves, redirects to the first leaf.
- * Otherwise renders the N2 empty-state dispatcher.
+ * N2 sub-tab route. Validates [agent]+[subtab] against the SSoT whitelist,
+ * then renders the N2 content dispatcher (R0 = EmptyState placeholder).
+ *
+ * NOTE (T-shell-fix 2026-06-16): the previous version did an IN-RENDER
+ * `redirect()` to the first N3 leaf when the sub-tab had N3 leaves. That fired
+ * the Next 16 soft-nav "Rendered more hooks than during the previous render"
+ * crash (learning 2026-06-03-next16-softnav-redirect-rendered-more-hooks) →
+ * the page failed to load (500). Removed: the N2 page renders directly; N3
+ * leaves are reachable via their own route ([subsubtab]/page.tsx) + SubSubTabsBar.
+ * If "auto-land on first N3 leaf" is wanted later, do it at the EDGE (proxy.ts),
+ * never via redirect() in-render (same fix vitalia applied platform-wide).
  */
 export default async function SubtabPage({ params }: PageProps) {
-  const { tenantId, agent, subtab } = await params;
+  const { agent, subtab } = await params;
 
   // Whitelist validation (A4): any invalid segment → 404 contextual (shell chrome intact).
   if (!isValidAgent(agent) || !isValidSubtab(agent, subtab)) {
     notFound();
-  }
-
-  // If this sub-tab has N3 leaves, land on the first one
-  const leaves = getSubSubTabs(agent, subtab);
-  if (leaves && leaves.length > 0) {
-    redirect(`/${tenantId}/${agent}/${subtab}/${leaves[0].id}`);
   }
 
   return <SubTabContent agent={agent} subtab={subtab} />;

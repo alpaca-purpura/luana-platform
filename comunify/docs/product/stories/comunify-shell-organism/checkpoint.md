@@ -164,6 +164,14 @@ solo le falta un endpoint copilot booteable detrás.
 - **Techo:** render autenticado del shell necesita login Clerk + tenant comunify seedeado (🟡 gap independiente) →
   pendiente para T-e2e/DoD #37.
 
+### Live-verify del shell + T-shell fix 2026-06-16
+Ejercí el shell en vivo (dev-app, Chrome MCP, `hola@alpacapurpura.lat`). El build de T-shell salió **121 tests
+verdes pero roto en vivo** (DoD #37). **4 fixes aplicados + commiteados** (login-loop · boot-crash heap · ruta N3
+404 · "more hooks" redirect in-render). El chrome **carga + navega** ahora. **Quedan 4 defectos → ciclo
+`builder-frontend` sobre T-shell** (avatares gigantes Tailwind-v4-scan · sidebar Luana no renderiza · `useTenantId`
+usa Clerk org [no-clerk-organizations] · chat 404 = engine B). Detalle builder-actionable + root-cause + pistas:
+**`T-shell-livefix.md`**. Infra dev: 4 usuarios Clerk de prueba + túnel comunify levantado (runtime, no-commit).
+
 ---
 
 ### Histórico (ready package · /architect)

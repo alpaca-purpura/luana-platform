@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* Tailwind v4 JIT: scan @luana/ui-kit so the kit's static class usages (avatar/ribbon
+ * sizing, shell layout, etc.) are included in the generated CSS. In v4 the `content[]`
+ * array in tailwind.config.ts is IGNORED — only `@source` works. Without this the kit
+ * renders UNSTYLED (e.g. giant un-sized avatars). Same fix vitalia/nicolify applied.
+ * Path is relative to this file: comunify/frontend/src/app/ → 4 up = repo root. */
+@source "../../../../core/@luana/ui-kit/src/**/*.{ts,tsx}";
+
 @theme {
   /* Color utilities — Tailwind v4 generates .bg-comunify-X / .text-comunify-X / .border-comunify-X */
   --color-comunify-primary: hsl(264 92% 58%);
