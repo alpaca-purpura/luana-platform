@@ -240,3 +240,12 @@ Patrón cross-brand (vitalia+nicolify) → candidate lift `/pm-luana`. Próximo:
   - Console: solo warns CSS-preload (ruido Next dev) + 1 WebSocket-HMR reset (dev-server memory-loop conocido, NO bug). 0 errores de dark.
 - **Estado:** sigue `developed / AWAIT_CHRIS_VERIFY` (G). `chris_verify.rounds[0].resolution: fixed-pending-chris-reverify`. Tu signoff sigue null — re-ejercés el toggle en G + firmás.
 - **💡 PROPONE:** (1) re-ejercé el toggle dark en G + firmá `chris_verify.signoff`; (2) el concern CORE (dark-contract del kit: `@custom-variant`/css + arch-test consumer en `@luana/ui-kit` + SHELL-DESIGN-CONTRACT) va a **/pm-luana** como proposal aparte, NO en esta story.
+
+### 2026-06-16 — /pm-luana abre promotion proposal (dark-contract del kit)
+**Chris → "sí, abrí el proposal /pm-luana del dark-contract".**
+
+**/pm-luana → ✓ APLICADO:** `docs/promotion-protocol/proposals/2026-06-16-ui-kit-dark-contract.md` (state=proposed).
+- **Scan cross-brand confirmó sistémico:** vitalia `@config`+darkMode (ok) · nicolify `@custom-variant` (fix b09bc9dc, ok) · **comunify SIN wiring + @source=none → dark ROTO** (bug latente sin notar) · lupulo placeholder. 3 mecanismos divergentes; kit shippea 5 componentes `dark:` sin css/contrato; canon ADR-014 sin cláusula dark.
+- **Propuesta (3 piezas):** (1) cláusula `§ Dark-mode wiring` en design-system-canon + SHELL-DESIGN-CONTRACT · (2) arch-test consumer replicable (= los +3 de nicolify, generalizados) · (3) a evaluar: kit ship-ea snippet canónico importable.
+- **Recomendación /pm-luana: APPROVED** (gap del engine con evidencia + arregla bug real comunify + bajo riesgo minor/opt-in). NO incluye el fix de nicolify (ya hecho). El fix de comunify entra en el lift.
+- **💡 PROPONE:** cuando ratifiques (`accepted`) → `/dev-team` ejecuta el lift en worktree core efímero (M13: NO desde worktree de marca). ⚠️ comunify dark roto HOY — si querés, en sesión aparte `/pm-comunify` puede priorizarlo standalone sin esperar el lift.
