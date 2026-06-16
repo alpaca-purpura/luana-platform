@@ -134,6 +134,7 @@ Cada agente con tab: `--agent-{slug}` + `--agent-{slug}-soft`. Default chat = `l
 ## 7. Gates de proceso (ver `ADR-nicolify-001`)
 
 - **Mockup-per-component**: componente shell nuevo → mockup HTML ratificado por Chris ANTES de `refining→refined`. `/architect` REFUSE sin `ratified_visual_by_chris: true`.
+- **★ Mockup-base reusable (ADR-nicolify-003 · cement 2026-06-15)**: todo mockup nicolify **linkea `_shared.css`** (SSoT: `nicolify-r0-design-system-adoption/mockups/_shared.css` — tokens espejo de `globals.css` + átomos + moléculas + layout-primitives + shell wrapper) y porta el wrapper **verbatim**; solo cambia `.panel-content`. Cero estilo inline de layout, cero arbitrary → "lo que veo = lo que programo". Rule: `nicolify/.claude/rules/shell-mockup-per-component.md`.
 - **Shell-feature pattern (9 secciones)**: toda sub-tab cita `architecture_pattern: ADR-nicolify-001`.
 - **SSR-safe persisted store**: factory `createSsrSafePersistedStore` + `useStoreHydration` (skeleton store-free).
 

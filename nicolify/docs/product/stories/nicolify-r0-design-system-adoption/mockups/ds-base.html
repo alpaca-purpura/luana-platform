@@ -1,0 +1,220 @@
+<!doctype html>
+<!--
+  Mockup · nicolify-r0-design-system-adoption (Fase 3) — FIRMA 2 ratificado
+  ESTRUCTURA + TOKENS + ÁTOMOS + MOLÉCULAS + SHELL WRAPPER → todo en _shared.css (la base reusable).
+  Este archivo SOLO escribe su contenido (showcase + la hoja abel/icp). = "lo que veo = lo que programo".
+  Protocolo: ADR-nicolify-003 (mockup-per-component + _shared.css obligatorio).
+  Colores verificados vs nicolify.com live (2026-06-15). Identidad nicolify intacta.
+-->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nicolify · Base de diseño cimentada (Fase 3)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700&family=Bree+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_shared.css">   <!-- ← LA BASE: tokens + átomos + moléculas + shell wrapper -->
+<style>
+  /* SOLO estilos del showcase (no son del producto — visualizan la base) */
+  .wrap{max-width:1180px;margin:0 auto;padding:1.5rem;background:hsl(var(--background))}
+  .sect-label{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:hsl(var(--muted-foreground));margin:2rem 0 .75rem}
+  .panel{background:hsl(var(--card));border:1px solid hsl(var(--border));border-radius:var(--radius);padding:var(--sp-5)}
+  .swatch{display:flex;flex-direction:column;gap:.35rem;align-items:center;font-size:.7rem}
+  .swatch .chip{width:100%;height:42px;border-radius:var(--radius-sm);border:1px solid hsl(var(--foreground)/.06)}
+  .row{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:.6rem}
+  .pill-scale{display:flex;gap:.5rem;align-items:flex-end}
+  .pill-scale i{display:block;background:hsl(var(--agent-abel-soft));border:1px solid hsl(var(--agent-abel));border-radius:3px}
+  .tag{font-size:.66rem;font-weight:700;color:hsl(var(--agent-abel));background:hsl(var(--agent-abel-soft));padding:.1rem .4rem;border-radius:var(--radius-pill)}
+</style>
+</head>
+<body>
+<div class="wrap" style="--agent-active:var(--agent-abel)">
+
+  <h1 style="font-size:1.6rem">Nicolify · Base de diseño cimentada <span class="tag">Fase 3 — adopción</span></h1>
+  <p class="muted" style="max-width:780px">Una sola fuente (<code>_shared.css</code>) para mockup y desarrollo. Identidad nicolify intacta (colores + fuentes), estructura homologada (spacing/curva/escala + primitivas de <code>@luana/ui-kit</code>). Todo compone del <code>design-system-canon.md</code> — cero <code>&lt;div&gt;</code> de layout a mano, cero arbitrary-value.</p>
+
+  <!-- ═══ A · TOKENS ═══ -->
+  <div class="sect-label">A · Tokens — fuente única (_shared.css)</div>
+  <div class="panel">
+    <div class="muted" style="font-weight:600;margin-bottom:.5rem">Colores de marca (se quedan en globals.css · verificados vs nicolify.com)</div>
+    <div class="row">
+      <div class="swatch"><span class="chip" style="background:hsl(var(--primary))"></span>primary / luana<br>#635BFF</div>
+      <div class="swatch"><span class="chip" style="background:hsl(var(--agent-abel))"></span>abel<br>#A855F7</div>
+      <div class="swatch"><span class="chip" style="background:hsl(var(--agent-brenda))"></span>brenda<br>#22C55E</div>
+      <div class="swatch"><span class="chip" style="background:hsl(var(--agent-christian))"></span>christian<br>#3B82F6</div>
+      <div class="swatch"><span class="chip" style="background:hsl(var(--agent-sara))"></span>sara<br>#F59E0B</div>
+      <div class="swatch"><span class="chip" style="background:hsl(var(--agent-norvil))"></span>norvil<br>#EC4899</div>
+      <div class="swatch"><span class="chip" style="background:hsl(var(--agent-config))"></span>config<br>#64748b</div>
+    </div>
+    <div style="display:flex;gap:2.5rem;flex-wrap:wrap;margin-top:1.2rem">
+      <div>
+        <div class="muted" style="font-weight:600;margin-bottom:.4rem">Tipografía (marca)</div>
+        <div style="font-size:1.4rem;font-weight:700">League Spartan · títulos</div>
+        <div class="serif" style="font-size:1.2rem">Bree Serif · métricas y acentos</div>
+      </div>
+      <div>
+        <div class="muted" style="font-weight:600;margin-bottom:.4rem">Escala compartida (@luana/design-tokens)</div>
+        <div class="pill-scale">
+          <i style="width:8px;height:8px"></i><i style="width:12px;height:12px"></i><i style="width:16px;height:16px"></i>
+          <i style="width:20px;height:20px"></i><i style="width:24px;height:24px"></i>
+          <span class="muted" style="font-size:.7rem;margin-left:.4rem">spacing 2·3·4·5·6 · radius .625rem</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ B · ÁTOMOS + MOLÉCULAS ═══ -->
+  <div class="sect-label">B · Átomos &amp; moléculas (clases de _shared.css ← @luana/ui-kit)</div>
+  <div class="panel" style="display:flex;flex-direction:column;gap:1.1rem">
+    <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap">
+      <button class="btn btn-primary">+ Nuevo ICP</button>
+      <button class="btn btn-outline">Importar</button>
+      <button class="btn btn-ghost">Cancelar</button>
+      <span class="badge badge-success">● Activo</span>
+      <span class="badge badge-warning">● Borrador</span>
+      <div class="select">Todas las industrias <span class="chev">▾</span></div>
+      <input class="input" style="max-width:220px" placeholder="Buscar…">
+    </div>
+    <div class="muted" style="font-size:.72rem">Botón primario = <code>--agent-active</code> (Abel púrpura) · lo semántico (éxito/peligro) nunca cambia · <code>Select</code> canónico, no <code>&lt;select&gt;</code> nativo.</div>
+  </div>
+
+  <!-- ═══ C · LA HOJA REAL (abel/icp) ARMADA DE LA BASE ═══ -->
+  <div class="sect-label">C · Hoja real <code>abel/icp</code> — armada de la base (dentro del shell)</div>
+
+  <!-- C.1 · Master (grilla de EntityInfoCard) -->
+  <div class="shell" style="margin-bottom:1.5rem">
+    <aside class="luana">
+      <div class="luana-header">
+        <img class="luana-avatar" src="assets/agents/luana.svg" alt="Luana">
+        <div class="luana-meta"><span class="luana-name">Luana</span><span class="luana-role">Orquestadora</span></div>
+        <span class="luana-status" title="En línea"></span>
+      </div>
+      <div class="luana-messages">
+        <div class="lmsg bot"><span class="who">Luana</span>Tu equipo arrancó el día. Abel tiene 3 ICPs activos y propone afinar el de <b>Agencias de marketing</b>.</div>
+        <div class="lmsg user"><span class="who">Tú</span>Dale, y preparemos los buyers del ICP minero.</div>
+        <div class="lmsg bot"><span class="who">Luana</span>Hecho. Le paso a Abel y te aviso cuando estén listos para revisar.</div>
+      </div>
+      <div class="luana-composer">
+        <div class="crow"><span class="ctext">Escríbele a Luana…</span><span class="cadorno">📎</span><span class="cadorno">🎙️</span><span class="csend">➤</span></div>
+      </div>
+    </aside>
+    <div class="app" style="--agent-active:var(--agent-abel)">
+      <nav class="ribbon">
+        <span class="rtab active"><img class="rthumb" src="assets/agents/abel.svg" alt="Abel"><span style="display:flex;flex-direction:column;align-items:flex-start"><span class="rfn">Mi Empresa</span><span class="rsub">Abel</span></span></span>
+        <span class="rtab"><img class="rthumb" src="assets/agents/brenda.svg" alt="Brenda"><span style="display:flex;flex-direction:column;align-items:flex-start"><span class="rfn">Atraer</span><span class="rsub">Brenda</span></span></span>
+        <span class="rtab"><img class="rthumb" src="assets/agents/christian.svg" alt="Christian"><span style="display:flex;flex-direction:column;align-items:flex-start"><span class="rfn">Vender</span><span class="rsub">Christian</span></span></span>
+        <span class="rtab"><img class="rthumb" src="assets/agents/sara.svg" alt="Sara"><span style="display:flex;flex-direction:column;align-items:flex-start"><span class="rfn">Operar</span><span class="rsub">Sara</span></span></span>
+        <span class="rtab"><img class="rthumb" src="assets/agents/norvil.svg" alt="Norvil"><span style="display:flex;flex-direction:column;align-items:flex-start"><span class="rfn">Retener</span><span class="rsub">Norvil</span></span></span>
+        <span class="rtab" style="margin-left:auto"><span class="gear">⚙️</span> Configurar</span>
+      </nav>
+      <div class="subtabs"><a class="active">ICP &amp; buyers</a><a>Oferta</a><a>Ángulos</a><a>Escalera de valor</a></div>
+      <div class="page-container">
+        <div class="page-stack">
+          <div class="page-header">
+            <div><h2 style="font-size:1.15rem">Perfiles de cliente ideal</h2><div class="muted" style="font-size:.8rem">3 ICPs · 11 buyers definidos</div></div>
+            <button class="btn btn-primary">+ Nuevo ICP</button>
+          </div>
+          <div class="toolbar">
+            <input class="input grow" placeholder="Buscar ICP…">
+            <div class="select">Todas las etapas <span class="chev">▾</span></div>
+            <div class="select" style="min-width:140px">Recientes <span class="chev">▾</span></div>
+          </div>
+          <div class="entity-grid">
+            <article class="ecard" tabindex="0">
+              <span class="kebab">⋮</span>
+              <div class="body">
+                <div class="head"><span class="avatar" style="background:hsl(var(--agent-abel))">AM</span>
+                  <div><h3>Agencias de marketing</h3><div class="muted" style="font-size:.76rem">10–50 empleados · Perú/LatAm</div></div></div>
+                <div class="metrics"><div class="m"><b>4</b><span>buyers</span></div><div class="m"><b>87%</b><span>completo</span></div><div class="m"><b>12</b><span>leads</span></div></div>
+              </div>
+              <div class="foot"><span class="badge badge-success">● Activo</span></div>
+            </article>
+            <article class="ecard" tabindex="0">
+              <span class="kebab">⋮</span>
+              <div class="body">
+                <div class="head"><span class="avatar" style="background:hsl(var(--agent-abel))">BS</span>
+                  <div><h3>Boutiques de software</h3><div class="muted" style="font-size:.76rem">Producto/servicio · ticket alto</div></div></div>
+                <div class="metrics"><div class="m"><b>5</b><span>buyers</span></div><div class="m"><b>62%</b><span>completo</span></div><div class="m"><b>7</b><span>leads</span></div></div>
+              </div>
+              <div class="foot"><span class="badge badge-success">● Activo</span></div>
+            </article>
+            <article class="ecard" tabindex="0">
+              <span class="kebab">⋮</span>
+              <div class="body">
+                <div class="head"><span class="avatar" style="background:hsl(var(--agent-abel)/.55)">PM</span>
+                  <div><h3>Proveedores mineros B2B</h3><div class="muted" style="font-size:.76rem">Subcontratas · ciclo largo</div></div></div>
+                <div class="metrics"><div class="m"><b>2</b><span>buyers</span></div><div class="m"><b>30%</b><span>completo</span></div><div class="m"><b>0</b><span>leads</span></div></div>
+              </div>
+              <div class="foot"><span class="badge badge-warning">● Borrador</span></div>
+            </article>
+          </div>
+          <div class="muted" style="font-size:.72rem">Grilla full-width · reflúye sola (<code>auto-fill minmax(260px)</code>) · card entera clickeable → navega al workspace del ICP.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- C.2 · Detalle (EntityWorkspaceLayout: EntitySubNavBar + leaf) -->
+  <div class="shell">
+    <aside class="luana">
+      <div class="luana-header">
+        <img class="luana-avatar" src="assets/agents/luana.svg" alt="Luana">
+        <div class="luana-meta"><span class="luana-name">Luana</span><span class="luana-role">Orquestadora</span></div>
+        <span class="luana-status" title="En línea"></span>
+      </div>
+      <div class="luana-messages">
+        <div class="lmsg bot"><span class="who">Luana</span>Estás afinando <b>Agencias de marketing</b>. Te dejé sugerencias de buyers basadas en tus 12 leads.</div>
+        <div class="lmsg user"><span class="who">Tú</span>Perfecto, las reviso ahora.</div>
+      </div>
+      <div class="luana-composer">
+        <div class="crow"><span class="ctext">Escríbele a Luana…</span><span class="cadorno">📎</span><span class="cadorno">🎙️</span><span class="csend">➤</span></div>
+      </div>
+    </aside>
+    <div class="app" style="--agent-active:var(--agent-abel)">
+      <nav class="ribbon">
+        <span class="rtab active"><img class="rthumb" src="assets/agents/abel.svg" alt="Abel"><span style="display:flex;flex-direction:column;align-items:flex-start"><span class="rfn">Mi Empresa</span><span class="rsub">Abel</span></span></span>
+        <span class="rtab"><img class="rthumb" src="assets/agents/brenda.svg" alt="Brenda"><span style="display:flex;flex-direction:column;align-items:flex-start"><span class="rfn">Atraer</span><span class="rsub">Brenda</span></span></span>
+        <span class="rtab"><img class="rthumb" src="assets/agents/christian.svg" alt="Christian"><span style="display:flex;flex-direction:column;align-items:flex-start"><span class="rfn">Vender</span><span class="rsub">Christian</span></span></span>
+        <span class="rtab"><img class="rthumb" src="assets/agents/sara.svg" alt="Sara"><span style="display:flex;flex-direction:column;align-items:flex-start"><span class="rfn">Operar</span><span class="rsub">Sara</span></span></span>
+        <span class="rtab"><img class="rthumb" src="assets/agents/norvil.svg" alt="Norvil"><span style="display:flex;flex-direction:column;align-items:flex-start"><span class="rfn">Retener</span><span class="rsub">Norvil</span></span></span>
+        <span class="rtab" style="margin-left:auto"><span class="gear">⚙️</span> Configurar</span>
+      </nav>
+      <div class="subtabs"><a class="active">ICP &amp; buyers</a><a>Oferta</a><a>Ángulos</a><a>Escalera de valor</a></div>
+      <nav class="entitynav">
+        <span class="root-pill">‹ ICPs</span>
+        <span class="epicker"><span class="av">AM</span> Agencias de marketing <span class="chev muted">▾</span></span>
+        <span class="leaf active">Perfil</span>
+        <span class="leaf">Buyers (4)</span>
+        <span class="leaf">Señales</span>
+      </nav>
+      <div class="page-container">
+        <div class="page-stack" style="max-width:760px">
+          <div class="group">
+            <div class="ghead"><h3>Identidad del ICP</h3><span class="badge">para Christian · outbound</span></div>
+            <div class="grid2">
+              <div class="field"><label>Nombre del ICP</label><input class="input" value="Agencias de marketing"></div>
+              <div class="field"><label>Tamaño de empresa</label><div class="select" style="width:100%">10–50 empleados <span class="chev">▾</span></div></div>
+            </div>
+            <div class="field"><label>Dolor principal</label><input class="input" value="Dependen de personal junior para retención de cuentas"></div>
+            <div class="grid2">
+              <div class="field"><label>Mercado</label><div class="select" style="width:100%">Perú · LatAm <span class="chev">▾</span></div></div>
+              <div class="field"><label>Etapa</label><span class="badge badge-success" style="height:36px">● Activo</span></div>
+            </div>
+          </div>
+          <div class="autosave">✓ Guardado · hace 2s</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ D · ESTADOS ═══ -->
+  <div class="sect-label">D · Estados — primitivas EmptyState / ErrorState</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+    <div class="empty"><div style="font-size:1.6rem">◔</div><b style="display:block;margin:.4rem 0;color:hsl(var(--foreground))">Aún no tienes ICPs</b>Crea el primero para que Christian sepa a quién prospectar.<br><br><button class="btn btn-primary">+ Nuevo ICP</button></div>
+    <div class="errstate"><b style="display:block;margin-bottom:.3rem">No pudimos cargar los ICPs</b>Revisa tu conexión.<br><br><button class="btn btn-outline">Reintentar</button></div>
+  </div>
+
+  <p class="muted" style="margin-top:2rem;font-size:.74rem">Estructura 100% de <code>_shared.css</code> (la base reusable) · tokens de marca verificados vs nicolify.com · referencia visual del <code>SHELL-DESIGN-CONTRACT.md</code> (AC-6). Protocolo: ADR-nicolify-003.</p>
+</div>
+</body>
+</html>

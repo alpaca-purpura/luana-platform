@@ -11,6 +11,7 @@ Extiende `.claude/rules/` raíz Luana con rules brand-specific nicolify (**Agent
 |---|---|
 | `agent-revenue-engine.md` | Modelo de los 5 agentes (Luana orquesta, no ejecuta) + autonomía con guardrails (Brenda kill-switch CAC/ROAS, Christian outbound con consentimiento + rate limits, Norvil aprobación humana) + token economy (metering por agente/acción, alertas recarga, funciones críticas nunca se cortan, tier gating server-side) + CRM cuenta/stakeholder (multi tomador de decisión) + propuestas/contratos + scope descartado (billable-hours legacy) |
 | `shell-feature-architecture.md` | Gate bloqueante: toda sub-tab del shell cita `architecture_pattern: ADR-nicolify-001` (9 secciones · hereda ADR-vitalia-004, sin PHI + guardrails agénticos) + gates G1 mockup-per-component, G2 SSR-safe store, G3 Tailwind JIT-safe. `/architect` REFUSE sin la cita. SSoT: `nicolify/docs/architecture/ADR-nicolify-001-shell-feature-architecture.md` |
+| `shell-mockup-per-component.md` | Protocolo mockup-base reusable (cero alucinación UI): todo mockup linkea `_shared.css` (tokens espejo de globals.css + átomos/moléculas/primitivas + shell wrapper) + porta el wrapper VERBATIM + visual golden mockup↔React (`maxDiffPixelRatio:0.001`). `/architect` REFUSE sin `mockup_final_signed`. Mirror de vitalia (sin PHI). SSoT: `nicolify/docs/architecture/ADR-nicolify-003-mockup-base-protocol.md` · base: `nicolify-r0-design-system-adoption/mockups/_shared.css` |
 
 **Naming:** `{topic}.md` (ej. `agent-revenue-engine.md`).
 

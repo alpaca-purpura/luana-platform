@@ -1,0 +1,166 @@
+/* ════════════════════════════════════════════════════════════════════════
+   _shared.css · BASE CANÓNICA de mockups Nicolify (mirror ADR-vitalia-003)
+   ────────────────────────────────────────────────────────────────────────
+   QUÉ ES: la única fuente de tokens + átomos + moléculas + layout-primitives
+   + shell wrapper para TODO mockup nicolify. Cada mockup hace:
+       <link rel="stylesheet" href="_shared.css">
+   y SOLO escribe su `.panel-content` (la hoja). El wrapper es idéntico
+   cross-mockup. Cero estilo inline de layout. = "lo que veo = lo que programo".
+
+   ESPEJO OBLIGATORIO de:
+   - tokens   → nicolify/frontend/src/app/globals.css (@theme + :root) — NO inventar
+   - wrapper  → nicolify/docs/product/stories/nicolify-r0-shell-organism/mockups/shell.html (port verbatim)
+   - átomos/moléculas/primitivas → design-system-canon.md §6 + @luana/ui-kit 0.4.1
+   Colores verificados contra nicolify.com live (2026-06-15).
+   Protocolo: ADR-nicolify-003 + nicolify/.claude/rules/shell-mockup-per-component.md
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ─── TOKENS · valores de MARCA (globals.css) + escala COMPARTIDA (@luana/design-tokens) ─── */
+:root{
+  --background:0 0% 100%; --foreground:222 47% 11%; --card:0 0% 100%; --card-foreground:222 47% 11%;
+  --muted:215 20% 96%; --muted-foreground:215 16% 47%; --border:215 20% 91%; --input:215 20% 91%;
+  --primary:243 100% 68%; --primary-foreground:0 0% 100%; --primary-soft:243 80% 93%; --ring:243 100% 68%;
+  --destructive:0 84% 60%; --success:142 71% 45%; --warning:38 92% 50%;
+  /* agent colors (identidad nicolify — NO se homologan · verificados vs nicolify.com) */
+  --agent-luana:243 100% 68%;    --agent-luana-soft:243 80% 93%;
+  --agent-abel:271 81% 65%;      --agent-abel-soft:271 70% 93%;
+  --agent-brenda:142 71% 45%;    --agent-brenda-soft:142 60% 90%;
+  --agent-christian:217 91% 60%; --agent-christian-soft:217 80% 92%;
+  --agent-sara:38 92% 50%;       --agent-sara-soft:38 80% 90%;     /* ratificado repo (no en sitio) */
+  --agent-norvil:330 81% 60%;    --agent-norvil-soft:330 70% 92%;
+  --agent-config:215 16% 47%;    --agent-config-soft:215 20% 94%;
+  /* escala compartida (@luana/design-tokens 0.2.0) */
+  --radius:.625rem; --radius-sm:.375rem; --radius-pill:999px;
+  --radius-control:var(--radius-pill);  /* ★ controles (btn/input/select) = fully-rounded · brand-overridable (vitalia=md) */
+  --sp-2:.5rem; --sp-3:.75rem; --sp-4:1rem; --sp-5:1.25rem; --sp-6:1.5rem;
+  --topbar-h:50px; --ribbon-h:50px; --subtabs-h:40px; --entitynav-h:46px;
+  /* fuentes de marca */
+  --font-sans:"League Spartan",ui-sans-serif,system-ui,sans-serif;
+  --font-serif:"Bree Serif",ui-serif,Georgia,serif;
+}
+.dark{
+  --background:222 47% 6%; --foreground:0 0% 98%; --card:222 40% 9%; --card-foreground:0 0% 98%;
+  --muted:222 30% 16%; --muted-foreground:215 16% 65%; --border:222 30% 18%; --input:222 30% 18%;
+  --primary:243 100% 74%; --primary-soft:243 40% 22%; --ring:243 100% 74%;
+  --agent-abel-soft:271 40% 22%; --agent-brenda-soft:142 40% 18%;
+}
+
+/* ─── reset + base ─── */
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--font-sans);background:hsl(var(--muted));color:hsl(var(--foreground));font-size:14px;line-height:1.45}
+h1,h2,h3,h4{font-family:var(--font-sans);font-weight:600;margin:0}
+.serif{font-family:var(--font-serif)}
+.muted{color:hsl(var(--muted-foreground))}
+
+/* ─── ÁTOMOS (canon §2.5,§2.8 · @luana/ui-kit) ─── */
+.btn{display:inline-flex;align-items:center;gap:.4rem;height:36px;padding:0 1.1rem;border-radius:var(--radius-control);
+  font-family:var(--font-sans);font-weight:600;font-size:.84rem;border:1px solid transparent;cursor:pointer}
+.btn-primary{background:hsl(var(--agent-active,var(--primary)));color:#fff}  /* acción primaria = color del agente del módulo */
+.btn-outline{background:hsl(var(--card));border-color:hsl(var(--border));color:hsl(var(--foreground))}
+.btn-ghost{background:transparent;color:hsl(var(--muted-foreground))}
+.badge{display:inline-flex;align-items:center;gap:.3rem;height:22px;padding:0 .5rem;border-radius:var(--radius-pill);
+  font-size:.72rem;font-weight:600;background:hsl(var(--muted));color:hsl(var(--muted-foreground))}
+.badge-success{background:hsl(var(--success)/.15);color:hsl(var(--success))}
+.badge-warning{background:hsl(var(--warning)/.15);color:hsl(var(--warning))}
+.input{height:36px;width:100%;padding:0 .95rem;border:1px solid hsl(var(--input));border-radius:var(--radius-control);
+  font-family:var(--font-sans);font-size:.84rem;background:hsl(var(--card));color:hsl(var(--foreground))}
+.input:focus{outline:2px solid hsl(var(--ring));outline-offset:-1px}
+/* Select canónico (canon §2.5 · NUNCA <select> nativo) */
+.select{display:inline-flex;align-items:center;justify-content:space-between;gap:.5rem;height:36px;min-width:200px;
+  padding:0 .95rem;border:1px solid hsl(var(--input));border-radius:var(--radius-control);background:hsl(var(--card));font-size:.84rem;cursor:pointer}
+.select .chev{color:hsl(var(--muted-foreground))}
+
+/* ─── MOLÉCULAS · EntityInfoCard Opción B (canon §2.3) ─── */
+.entity-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.875rem}
+.ecard{position:relative;background:hsl(var(--card));border:1px solid hsl(var(--border));border-top:4px solid hsl(var(--agent-abel));
+  border-radius:var(--radius);cursor:pointer;transition:box-shadow .15s,transform .15s}
+.ecard:hover{box-shadow:0 6px 20px -8px hsl(var(--foreground)/.18);transform:translateY(-1px)}
+.ecard:focus-visible{outline:2px solid hsl(var(--ring));outline-offset:2px}
+.ecard .kebab{position:absolute;top:.45rem;right:.45rem;color:hsl(var(--muted-foreground));cursor:pointer;
+  width:26px;height:26px;display:grid;place-items:center;border-radius:var(--radius-sm)}
+.ecard .kebab:hover{background:hsl(var(--muted))}
+.ecard .body{padding:var(--sp-4);display:flex;flex-direction:column;gap:.65rem}
+.ecard .head{display:flex;align-items:center;gap:.6rem}
+.avatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#fff;flex:0 0 auto}
+.ecard h3{font-size:.95rem}
+.ecard .metrics{display:grid;grid-template-columns:repeat(3,1fr);text-align:center;border-top:1px solid hsl(var(--border));
+  border-bottom:1px solid hsl(var(--border));padding:.55rem 0}
+.ecard .metrics .m b{display:block;font-size:1.05rem;font-family:var(--font-serif)}
+.ecard .metrics .m span{font-size:.68rem;color:hsl(var(--muted-foreground))}
+.ecard .foot{padding:.55rem var(--sp-4)}
+
+/* ─── MOLÉCULA · Group + agent strip + autosave (canon §2.6) ─── */
+.group{position:relative;border:1px solid hsl(var(--border));border-radius:var(--radius);padding:var(--sp-5);padding-left:calc(var(--sp-5) + 4px);background:hsl(var(--card))}
+.group::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:var(--radius) 0 0 var(--radius);background:hsl(var(--agent-abel))}
+.group .ghead{display:flex;align-items:center;gap:.5rem;margin-bottom:.9rem}
+.field{display:flex;flex-direction:column;gap:.3rem;margin-bottom:.8rem}
+.field label{font-size:.78rem;font-weight:600;color:hsl(var(--muted-foreground))}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}  /* 2-col SOLO si campos pareados (canon §2.6) */
+.autosave{position:sticky;bottom:0;display:inline-flex;align-self:center;align-items:center;gap:.4rem;margin:.5rem auto 0;
+  padding:.4rem .8rem;border-radius:var(--radius-pill);background:hsl(var(--card));border:1px solid hsl(var(--border));
+  font-size:.78rem;color:hsl(var(--success));box-shadow:0 4px 14px -6px hsl(var(--foreground)/.2)}
+
+/* ─── LAYOUT-PRIMITIVES (canon §2.7 · @luana/ui-kit src/layout) ─── */
+.page-container{padding:1.25rem 1.5rem;overflow:auto;flex:1}     /* canon §1.3 padding estándar */
+.page-stack{display:flex;flex-direction:column;gap:1.5rem}
+.page-header{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.toolbar{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.toolbar .grow{flex:1;min-width:160px}
+.empty{text-align:center;padding:2.5rem 1rem;border:1px dashed hsl(var(--border));border-radius:var(--radius);color:hsl(var(--muted-foreground))}
+.errstate{text-align:center;padding:2.5rem 1rem;border:1px solid hsl(var(--destructive)/.4);border-radius:var(--radius);background:hsl(var(--destructive)/.06);color:hsl(var(--destructive))}
+
+/* ════════════════════════════════════════════════════════════════════════
+   SHELL WRAPPER (port VERBATIM de nicolify-r0-shell-organism/mockups/shell.html)
+   Idéntico cross-mockup. Solo cambia `.panel-content`. NO reinventar.
+   ════════════════════════════════════════════════════════════════════════ */
+.shell{display:grid;grid-template-columns:248px 1fr;height:660px;border:1px solid hsl(var(--border));border-radius:var(--radius);overflow:hidden;background:hsl(var(--card))}
+.shell-wide{height:auto;min-height:660px}
+/* Luana = sidebar orquestadora (estructura vitalia chat · indigo de marca · burbujas OPACAS con contraste) */
+.luana{background:linear-gradient(180deg,#5a52e6,#4c44cf);color:#fff;display:flex;flex-direction:column;min-width:0}
+/* header: avatar + nombre + rol + status (canon vitalia .chat-header) */
+.luana-header{display:flex;align-items:center;gap:.55rem;padding:.8rem 1rem;border-bottom:1px solid rgba(255,255,255,.14)}
+.luana-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;flex:0 0 auto;border:2px solid rgba(255,255,255,.5)}
+.luana-meta{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.15}
+.luana-name{font-weight:700;font-size:.92rem}
+.luana-role{font-size:.7rem;color:#d6d3ff}
+.luana-status{width:9px;height:9px;border-radius:50%;background:#34d399;box-shadow:0 0 0 3px rgba(52,211,153,.25)}
+/* messages: bot = burbuja BLANCA opaca (pop), user = indigo claro (pop), ambos legibles sobre el bar */
+.luana-messages{flex:1;overflow:auto;padding:1rem;display:flex;flex-direction:column;gap:.6rem}
+.lmsg{max-width:88%;padding:.6rem .75rem;border-radius:var(--radius);font-size:.82rem;line-height:1.4}
+.lmsg.bot{align-self:flex-start;background:#fff;color:#1e1b3a;border-bottom-left-radius:.25rem;box-shadow:0 2px 8px -3px rgba(0,0,0,.3)}
+.lmsg.user{align-self:flex-end;background:#9b93ff;color:#1a1640;border-bottom-right-radius:.25rem;font-weight:500}
+.lmsg .who{display:block;font-size:.66rem;font-weight:700;opacity:.6;margin-bottom:.15rem}
+/* composer: input blanco + adornos (canon vitalia .chat-composer) */
+.luana-composer{margin-top:auto;padding:.7rem .8rem;border-top:1px solid rgba(255,255,255,.14)}
+.luana-composer .crow{display:flex;align-items:center;gap:.4rem;background:#fff;border-radius:var(--radius-pill);padding:.4rem .5rem .4rem .85rem}
+.luana-composer .ctext{flex:1;color:hsl(var(--muted-foreground));font-size:.82rem}
+.luana-composer .cadorno{color:hsl(var(--muted-foreground));cursor:pointer;font-size:.95rem}
+.luana-composer .csend{width:30px;height:30px;border-radius:50%;background:hsl(var(--primary));color:#fff;display:grid;place-items:center;flex:0 0 auto}
+.app{display:flex;flex-direction:column;min-width:0}
+/* Ribbon N1 — full-bleed sticky (canon §1.2) */
+.ribbon{display:flex;gap:.2rem;align-items:center;padding:0 .7rem;height:var(--ribbon-h);border-bottom:1px solid hsl(var(--border));background:hsl(var(--card));position:sticky;top:0;z-index:14}
+/* tab = thumbnail del agente + label de FUNCIÓN (Mi Empresa/Atraer/Vender/…) */
+.rtab{display:inline-flex;align-items:center;gap:.45rem;height:38px;padding:0 .7rem;border-radius:var(--radius-pill);
+  font-weight:600;font-size:.82rem;color:hsl(var(--muted-foreground));cursor:pointer;border:1px solid transparent}
+.rtab .rthumb{width:24px;height:24px;border-radius:50%;object-fit:cover;flex:0 0 auto;box-shadow:0 0 0 1.5px hsl(var(--card))}
+.rtab .rfn{line-height:1}
+.rtab .rsub{font-size:.62rem;color:hsl(var(--muted-foreground));font-weight:500;display:block;margin-top:1px}
+.rtab.active{background:hsl(var(--agent-active,var(--primary))/.12);color:hsl(var(--agent-active,var(--primary)));border-color:hsl(var(--agent-active,var(--primary))/.25)}
+.rtab.active .rthumb{box-shadow:0 0 0 2px hsl(var(--agent-active,var(--primary)))}
+/* Config = tuerquita (gear) */
+.rtab .gear{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:hsl(var(--muted));color:hsl(var(--muted-foreground));font-size:.95rem}
+/* SubTabs N2 — full-bleed sticky */
+.subtabs{display:flex;gap:1.1rem;padding:0 1.5rem;height:var(--subtabs-h);align-items:center;border-bottom:1px solid hsl(var(--border));background:hsl(var(--card));position:sticky;top:var(--ribbon-h);z-index:13;font-size:.82rem}
+.subtabs a{color:hsl(var(--muted-foreground));text-decoration:none;height:100%;display:inline-flex;align-items:center;border-bottom:2px solid transparent;cursor:pointer}
+.subtabs a.active{color:hsl(var(--agent-abel));border-bottom-color:hsl(var(--agent-abel))}
+/* EntitySubNavBar N3 — full-bleed sticky tercer ribbon (canon §2.2) */
+.entitynav{display:flex;align-items:center;gap:.5rem;min-height:var(--entitynav-h);padding:0 1.5rem;border-bottom:1px solid hsl(var(--border));background:hsl(var(--card));position:sticky;top:calc(var(--ribbon-h) + var(--subtabs-h));z-index:12}
+.root-pill{display:inline-flex;align-items:center;gap:.25rem;padding:.35rem .6rem;border-radius:var(--radius-sm);font-weight:600;cursor:pointer}
+.root-pill:hover{background:hsl(var(--muted))}
+.epicker{display:inline-flex;align-items:center;gap:.45rem;padding:.3rem .55rem;border:1px solid hsl(var(--border));border-radius:var(--radius-pill);cursor:pointer;font-weight:600}
+.epicker .av{width:24px;height:24px;border-radius:50%;background:hsl(var(--agent-abel));color:#fff;display:grid;place-items:center;font-size:.7rem;font-weight:700}
+.leaf{padding:.35rem .55rem;border-radius:var(--radius-sm);color:hsl(var(--muted-foreground));cursor:pointer;font-size:.83rem;font-weight:500}
+.leaf.active{color:hsl(var(--agent-abel));background:hsl(var(--agent-abel-soft))}
+
+/* agent-color override helper: el panel del agente activo setea --agent-active.
+   Abel: <div class="app" style="--agent-active:var(--agent-abel)">  */
