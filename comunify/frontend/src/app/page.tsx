@@ -1,3 +1,4 @@
+// cap: comunify-shell-organism
 /**
  * Root page — T-shell (2026-06-15).
  *

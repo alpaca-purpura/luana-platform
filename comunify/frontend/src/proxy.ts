@@ -1,3 +1,4 @@
+// cap: comunify-shell-organism
 /**
  * Clerk Proxy — Comunify (T-shell 2026-06-15)
  *
