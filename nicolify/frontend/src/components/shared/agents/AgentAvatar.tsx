@@ -36,6 +36,7 @@ export interface AgentAvatarProps {
 }
 
 const SIZE_CLASSES = {
+  // ds-lock-allow: 10px initial in 24px circle; below text-xs (12px), no smaller token in brand scale
   sm: "w-6 h-6 text-[10px]",
   md: "w-8 h-8 text-xs",
   lg: "w-12 h-12 text-sm",
