@@ -20,6 +20,7 @@ from pydantic import BaseModel
 from src.modules.comunify.api.routes import offer_router
 from src.modules.comunify.api.routes import router as comunify_router
 from src.modules.comunify.api.webhook_routes import webhook_router
+from src.modules.comunify.copilot.api import copilot_router
 
 # redirect_slashes=False is MANDATORY — Default True → 307 POST → Next.js drops body (DDD rule).
 app = FastAPI(
@@ -51,3 +52,7 @@ app.include_router(comunify_router)
 app.include_router(offer_router)
 # webhook_router: /api/v1/comunify/webhooks/* (T-be-9 — unauthenticated by Clerk, HMAC only)
 app.include_router(webhook_router)
+# copilot_router: /api/v1/comunify/copilot/chat (comunify-shell-organism T-agentic —
+# thin reexport of engine core/luana-core-copilot /chat; auth + tenant isolation +
+# observability all enforced by the engine. RN-3: no domain tools registered).
+app.include_router(copilot_router, prefix="/api/v1/comunify/copilot", tags=["copilot"])
