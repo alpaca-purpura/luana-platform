@@ -106,6 +106,15 @@ Patrón cross-brand (vitalia+nicolify) → candidate lift `/pm-luana`. Próximo:
 - **Step 0 closure gate:** Abel (`reviewing`, gate #37, `code:abel`) ≠ bucket `code:design-system` → WIP cap OK. Bif-5(a) ratificado: Abel converge en esta story → `/architect` destraba el demo único, no abandona Abel.
 - **Handoff `/architect`** con las 4 notas (Bif-5 a convergencia Abel · RN-7 `--radius-control` brand-overridable en kit Input/Button/Select · matar mirrors locales EntityWorkspaceLayout/EntitySubNavBar/EmptyState/AutosaveBadge · lock eslint no-arbitrary migrando 27 + encender en cero, anti-default-flip). Verification `ambas`.
 
+### 2026-06-15 (sesión nueva) — T-1 /dev-team build
+
+**/dev-team → ✓ APLICADO (T-1 GREEN · 39/39 tests passing):**
+- **globals.css modificado:** escala compartida en `@theme` (11 spacing `--spacing-0..16` · 5 radius names `--radius-sm/md/lg/bubble/pill` · 4 typography tiers `--text-display/heading/body/caption`). Identidad nicolify HARD-preservada (--primary 243 100% 68% · 7 agent colors · League Spartan/Bree Serif · dark mode). `--radius-pill: 9999px` + `--radius-control: var(--radius-pill)` en `:root` (RN-7 brand-scoped, kit no tocado).
+- **package.json modificado:** `@luana/eslint-config: workspace:*` en devDependencies (para T-4).
+- **Arch-test NEW:** `src/__tests__/architecture/test-ds-single-token-source.test.ts` (39 tests · TDD RED→GREEN · drift detection vs @luana/design-tokens exports).
+- **Gates:** V1-arch 39/39 GREEN · V2-tsc 0 errors · ESLint 0 errors.
+- Ver T-1-result.md para diff summary + validator output.
+
 ### 2026-06-15 (sesión nueva) — /architect cierra ready package + RN-7 decision
 **Hallazgo bloqueante de RN-7 (verificado, no asumido):** los controls del kit (`Button/Input/Select/Textarea`) **hardcodean `rounded-md`** — `--radius-control` no existe en ningún lado. Hacerlos pill brand-overridable = **cambio cross-brand de engine** (toca `@luana/ui-kit` + `design-tokens` + vitalia debe definir `--radius-control: var(--radius)` para no cambiar) → `/pm-luana` promotion gate. Prohibido meterlo en una story de marca.
 

@@ -68,7 +68,40 @@
   --color-agent-config: hsl(var(--agent-config));
   --color-agent-config-soft: hsl(var(--agent-config-soft));
 
-  /* Radius */
+  /* ── Shared scale: SPACING (@luana/design-tokens SPACING) ────────────────
+   * Values mirror @luana/design-tokens — arch-test V1 asserts no-drift.
+   * Tailwind v4 reads --spacing-{key} to generate spacing utilities.
+   */
+  --spacing-0: 0;
+  --spacing-1: .25rem;
+  --spacing-2: .5rem;
+  --spacing-3: .75rem;
+  --spacing-4: 1rem;
+  --spacing-5: 1.25rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-10: 2.5rem;
+  --spacing-12: 3rem;
+  --spacing-16: 4rem;
+
+  /* ── Shared scale: RADIUS NAMES (@luana/design-tokens RADIUS_NAMES) ──────
+   * Names: sm/md/lg/bubble/pill. Rem values are BRAND-OWNED (nicolify: fully-rounded pill brand).
+   */
+  --radius-sm: .25rem;
+  --radius-md: .5rem;
+  --radius-lg: .75rem;
+  --radius-bubble: 1.25rem;
+  --radius-pill: 9999px;
+
+  /* ── Shared scale: TYPOGRAPHY TIERS (@luana/design-tokens TYPOGRAPHY_TIERS)
+   * Tier names: display/heading/body/caption. Sizes are BRAND-OWNED (nicolify scale).
+   */
+  --text-display: 2.5rem;
+  --text-heading: 1.5rem;
+  --text-body: 1rem;
+  --text-caption: .75rem;
+
+  /* Radius (Shadcn base) */
   --radius: 0.625rem;
 }
 
@@ -116,6 +149,14 @@
 
     /* Radius */
     --radius: 0.625rem;
+
+    /* ── Brand-scoped control radius (RN-7 DECOUPLED) ───────────────────────
+     * Nicolify: controls (button/input/select) = fully-rounded (pill).
+     * @luana/ui-kit Button/Input/Select hardcode rounded-md until kit-radius-control-lift
+     * lands via /pm-luana (external_dependency). Token ready for the lift.
+     */
+    --radius-pill: 9999px;
+    --radius-control: var(--radius-pill);
 
     /* ── Agent tokens — nicolify.com palette ────────────────────────────── */
     /* Luana orquestadora — indigo primario #635BFF */
