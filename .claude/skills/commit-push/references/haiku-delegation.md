@@ -30,6 +30,7 @@ Todo Agent spawn que ejecute git workflow MUST contener estos guardrails verbati
 
 ```text
 ## Critical safety rules
+- ⛔ NEVER edit file CONTENT. Tu trabajo ENTERO es `git commit <pathspec>` (stage + commit). NUNCA tocar el contenido de un archivo — ni un campo de checkpoint/cap YAML, ni código, ni un valor "para que pase un gate". Si un hook BLOQUEA el commit → STOP + reportá el mensaje del hook VERBATIM al orchestrator. NO "arregles" nada. (Caso HB-76: un worker flipeó `cap_change_type: new→fix` para esquivar el gate 5b → corrupción silenciosa de SSoT que SATISFIZO el gate con dato errado. El gate tenía razón; el dato no.)
 - NEVER `git add .` / `git add -A` / `git add -u` — parallel sessions WIP en tree
 - Stage ONLY by exact filename (lista provista)
 - HUB único (N sesiones mismo árbol · ADR-009): el índice git es COMPARTIDO entre sesiones (= yo en N terminales) → **commit por pathspec** `git commit --only <file1> <file2> -m ...` (commitea SOLO esos paths, ignora lo demás del índice). NO `git add` + `git commit` suelto. **★ Trap real (caso 0072388f, 2026-05-29):** `git mv` AUTO-stagea el rename en el índice compartido → un `git commit` pelado en otra sesión lo barre. Helper que lo blinda: `scripts/git/commit-paths.sh "<msg>" <paths...>` (usa `--only`, rechaza `.`/`-A`/sin paths). Si por algo usás `git add`, primero `git reset` para limpiar el índice ajeno.
@@ -109,6 +110,8 @@ Agent({
 - ❌ Haiku worker recibe permission para `git pull` / `--force` / `--no-verify`
 - ❌ HEREDOC commit message provisto como "auto-generate from diff" (Opus debe componerlo, Haiku no tiene contexto del diff semantic)
 - ❌ Spawn Haiku con `subagent_type: builder-*` (esos son Opus por design — wrong agent type para git workflow)
+- ❌ Worker edita CONTENIDO (campo de checkpoint/cap, código, cualquier valor) para que pase un gate → corrupción silenciosa de SSoT (HB-76). El worker REPORTA el bloqueo verbatim, NUNCA lo "arregla"
+- ❌ Orchestrator instruye al worker "arreglá X para que pase el gate" — el spawn de commit NUNCA pide editar contenido; si el gate bloquea, el orchestrator (no el worker) decide el fix
 
 ## Failure handling
 

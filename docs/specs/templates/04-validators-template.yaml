@@ -91,6 +91,11 @@ validators:
   - id: be_arch_fitness
     category: non_functional
     type: pytest
+    # ★ HB-79: este cmd es BRAND-style ({brand}/backend/tests/architecture/). Para una
+    # technical-story que toca un CORE package (core/luana-core-*), ese dir NO existe —
+    # el arch-fitness vive INLINE en la suite del paquete. Usá el layout real del pkg:
+    #   cmd: "cd core/luana-core-<pkg> && ${WS}/.venv/bin/pytest -x -q"
+    # NUNCA copies `tests/architecture/` brand-style a un cmd de validator core.
     cmd: "cd {brand}/backend && ${WS}/.venv/bin/pytest tests/architecture/ -x -q --override-ini='addopts='"
     must_pass: true
     timeout_sec: 120

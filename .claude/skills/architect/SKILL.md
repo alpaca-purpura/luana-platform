@@ -830,7 +830,7 @@ Antes de cerrar story como ready:
 **Validation coherencia cap_change_type (v2 cement 2026-05-27):** antes de cerrar state=ready, verificar coherencia entre `cap_change_type` declarado y archivos producidos:
 - Si `extend`: 03-arch.md DEBE citar cap existente en sección "## Prior art audit" + 06-tickets.yaml no toca files de caps cross-target
 - Si `derive`: 03-arch.md DEBE crear/referenciar cap nuevo con `parent_cap: {origen}` explícito + checkpoint.md tiene `parent_story` declarado
-- Si `new`: 03-arch.md crea cap YAML schema v2 completo
+- Si `new` (o `derive`): **NO hand-authorear el YAML** — corré `make new-cap BRAND=<b> MODULE=<m> SLUG=<s> AREA=<area>` (genera el cap `planned` schema-v2 válido · HB-51) ANTES de cerrar `ready` + stagealo. Sin el cap YAML en HEAD/staged el gate HARD 5b BLOQUEA el commit del ready package (HB-77 caso origen: el orchestrator cerró `new` sin crear el cap → 5b frenó + tentó al commit-worker a flipear el campo, HB-76). El resolver `cap_target`→path valida que exista.
 - Si `fix`: 03-arch.md NO crea cap nuevo · solo modifica comportamiento existente
 
 Incoherencia detectada → emit verdict `⚠️ DUDA` pidiendo Chris ratificar o corregir `cap_change_type`. Doc: `docs/process/capability-protocol.md` § Sección 3.
