@@ -5,7 +5,7 @@ brand: platform
 release: null                          # platform technical-story (engine fix, sin release de marca)
 merged_at: 2026-06-16
 merged_by: /pm-luana
-commit_squash_sha: PENDING             # SHA del squash-merge wip/core-copilot-mountable → main (abajo, post-merge)
+commit_squash_sha: e9f16d06            # squash-merge wip/core-copilot-mountable → main
 checkpoints_path: "./CHECKPOINTS.md"
 story_type: technical-story
 verification_nature: técnica
