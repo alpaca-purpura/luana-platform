@@ -2,9 +2,11 @@
 brand: comunify
 story_id: comunify-shell-organism
 module: platform
-state: developed
-phase: DEVELOPED_RECONCILED  # 2026-06-17 (autonomous_mode → G exento): chat LIVE-VERIFIED por e2e automatizado real-backend + reconciled. Listo para /auditor.
+state: done
+phase: MERGED  # 2026-06-17: auditor-frontend + auditor-agentic PASS (live-verified) → /pm-comunify merge (07-merge.md). cap shell-organism planned→live. autonomous_mode → live-verify sustituyó demo G.
 reconciled: true             # R · /pm-comunify 2026-06-17 — 04-validators § reconciliation (scope real vs ideal, deferred SC, bugs fixed, engine debt → /pm-luana)
+audit_verdict: APPROVED      # auditor-frontend PASS (16 cat, gates green, live-verified) + auditor-agentic PASS (engine boundary clean, RN-3, trace scoped)
+merge_artifact: ./07-merge.md
 dod_live_verified: true
 dod_env: "localhost:3003 (Playwright @clerk/testing ticket+storageState) + dev-app.comunifyagents.com (Chrome DevTools MCP, lane D) · usuario hola@alpacapurpura.lat · gateway luana_litellm_dev:4000"
 dod_evidence:
