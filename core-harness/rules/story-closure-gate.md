@@ -21,7 +21,7 @@ ready → developing → developed ─[G Chris-verify]─[R reconcile]→ review
 |---|---|---|
 | A — DEV | `/dev-team` | `ready → developing → developed` |
 | **G — CHRIS-VERIFY** ★ | Chris + `/dev-team` | `developed` + `phase: AWAIT_CHRIS_VERIFY` (default pausa-y-ofrece; **salta si `autonomous_mode: true`**). Chris ejerce el kit live → `chris_verify.signoff`. Scope dinámico + **piso HARD happy-path** (func. nueva → core construido) |
-| **R — RECONCILE** ★ | `/pm-{brand}` | spec/arch/validators/cap ⟵ realidad + cambios ratificados; escribe `reconciled: true`; congela ledger `deferred` → spawnea historias visibles |
+| **R — RECONCILE** ★ | `/pm-{brand}` | spec/arch/validators/cap ⟵ realidad + cambios ratificados; escribe `reconciled: true`; congela ledger `deferred` → spawnea historias visibles. **★ 04-validators NO es solo el checkpoint (HB-79):** todo validator de scope DEFERIDO/descopado en G → `must_pass: false` + tag `deferred:` (si no, queda verde-fantasma latente que el auditor corre contra código inexistente). |
 | B — AUDIT | `/auditor` (auto-handoff) | `developed → reviewing` — lee docs **RECONCILIADOS** + `chris_verify.signoff` (no revierte scope ratificado) |
 | C — FIX-LOOP | `/dev-team` si CHANGES_REQUESTED | cap 2 iter |
 | D — GHERKIN | `/auditor` Phase D (embedded en B) | gherkin-matrix.md |
