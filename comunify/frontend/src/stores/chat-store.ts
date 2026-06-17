@@ -264,14 +264,19 @@ export const useChatStore = create<ChatStoreState>((set, get) => ({
                     ),
                   }));
                 }
-                // Append delta text
+                // Append delta text. Engine (core/luana-core-copilot api/chat.py) emits
+                // block_delta as { delta: { markdown: "..." } }; tolerate string deltas too.
                 let delta = "";
                 try {
                   const parsed = JSON.parse(sseEvent.data) as {
                     text?: string;
-                    delta?: string;
+                    delta?: string | { markdown?: string; text?: string };
                   };
-                  delta = parsed.text ?? parsed.delta ?? "";
+                  const d = parsed.delta;
+                  delta =
+                    typeof d === "string"
+                      ? d
+                      : (d?.markdown ?? d?.text ?? parsed.text ?? "");
                 } catch {
                   delta = sseEvent.data;
                 }

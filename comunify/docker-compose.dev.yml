@@ -66,6 +66,25 @@ services:
       TRAEFIK_NETWORK: "luana_dev_net"
       API_SECRET_KEY: "comunify-dev-secret-not-prod"
       OPENAI_API_KEY: "sk-dummy-gateway-handles-llm"
+      # Model role → gateway model alias. Sin esto el Settings default es "gpt-4o" → el provider
+      # lo prefija a "openai/gpt-4o", que NO está en el gateway Chinese-first (deepseek/kimi) → 400
+      # "Invalid model name". Valores = paridad con vitalia (bare names; el provider mapea al prefix
+      # correcto: deepseek-v4-flash→deepseek/…, kimi-k2→kimi/…). Descubierto live 2026-06-17.
+      AI_MODEL_NANO: "deepseek-v4-flash"
+      AI_MODEL_REASONING: "deepseek-reasoner"
+      AI_MODEL_FAST: "deepseek-v4-flash"
+      AI_MODEL_VISION: "kimi-k2"
+      AI_MODEL_AGENT: "kimi-k2"
+      AI_MODEL_EMBEDDING: "text-embedding-3-large"
+      # Per-role PROVIDER override. El provider arma el alias del gateway como `{provider}/{model}`;
+      # sin override cae al global AI_PROVIDER=openai → "openai/kimi-k2" (no existe) → 400. Paridad
+      # con vitalia: deepseek/kimi/openai por rol → "kimi/kimi-k2", "deepseek/deepseek-reasoner", etc.
+      AI_PROVIDER_NANO: "deepseek"
+      AI_PROVIDER_REASONING: "deepseek"
+      AI_PROVIDER_FAST: "deepseek"
+      AI_PROVIDER_VISION: "kimi"
+      AI_PROVIDER_AGENT: "kimi"
+      AI_PROVIDER_EMBEDDING: "openai"
     volumes:
       - .:/workspace:rw  # bind mount monorepo completo (hot-reload)
       # Named volume protege el venv del container en la ruta donde el Dockerfile lo crea
