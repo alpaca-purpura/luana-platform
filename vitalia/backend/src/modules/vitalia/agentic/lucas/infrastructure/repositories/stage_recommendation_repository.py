@@ -2,7 +2,7 @@
 # story-origin: TBD
 """Lucas infrastructure — StageRecommendationRepository.
 
-SQLAlchemy 2.0 async repository for LucasStageRecommendationModel.
+SQLAlchemy 2.0 async repository for LucasRecommendationModel.
 
 HIPAA-lite dual filter: ALL queries filter BOTH tenant_id AND clinic_id.
 Soft-delete only: deleted_at IS NULL always included.
@@ -22,14 +22,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.modules.vitalia.agentic.lucas.domain.entities.stage_recommendation import (
     StageRecommendation,
 )
-from src.modules.vitalia.agentic.lucas.persistence.models.stage_recommendation import (
-    LucasStageRecommendationModel,
+from src.modules.vitalia.infrastructure.models.lucas_recommendation_model import (
+    LucasRecommendationModel,
 )
 
 logger = structlog.get_logger()
 
 
-def _model_to_entity(m: LucasStageRecommendationModel) -> StageRecommendation:
+def _model_to_entity(m: LucasRecommendationModel) -> StageRecommendation:
     """Map ORM model → domain entity.
 
     Note: ORM model uses title/body/rationale_json/priority schema.
@@ -56,9 +56,9 @@ def _model_to_entity(m: LucasStageRecommendationModel) -> StageRecommendation:
     )
 
 
-def _entity_to_model(e: StageRecommendation) -> LucasStageRecommendationModel:
+def _entity_to_model(e: StageRecommendation) -> LucasRecommendationModel:
     """Map domain entity → ORM model."""
-    return LucasStageRecommendationModel(
+    return LucasRecommendationModel(
         id=e.id,
         tenant_id=e.tenant_id,
         clinic_id=e.clinic_id,
@@ -100,11 +100,11 @@ class StageRecommendationRepository:
 
         Returns None if not found or belongs to different tenant/clinic.
         """
-        stmt = select(LucasStageRecommendationModel).where(
-            LucasStageRecommendationModel.id == entity_id,
-            LucasStageRecommendationModel.tenant_id == tenant_id,
-            LucasStageRecommendationModel.clinic_id == clinic_id,
-            LucasStageRecommendationModel.deleted_at.is_(None),
+        stmt = select(LucasRecommendationModel).where(
+            LucasRecommendationModel.id == entity_id,
+            LucasRecommendationModel.tenant_id == tenant_id,
+            LucasRecommendationModel.clinic_id == clinic_id,
+            LucasRecommendationModel.deleted_at.is_(None),
         )
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
@@ -121,21 +121,21 @@ class StageRecommendationRepository:
     ) -> list[StageRecommendation]:
         """List recommendations for a stage — dual filter mandatory."""
         stmt = (
-            select(LucasStageRecommendationModel)
+            select(LucasRecommendationModel)
             .where(
-                LucasStageRecommendationModel.tenant_id == tenant_id,
-                LucasStageRecommendationModel.clinic_id == clinic_id,
-                LucasStageRecommendationModel.stage == stage,
-                LucasStageRecommendationModel.deleted_at.is_(None),
+                LucasRecommendationModel.tenant_id == tenant_id,
+                LucasRecommendationModel.clinic_id == clinic_id,
+                LucasRecommendationModel.stage == stage,
+                LucasRecommendationModel.deleted_at.is_(None),
             )
             .order_by(
-                LucasStageRecommendationModel.priority.desc(),
-                LucasStageRecommendationModel.created_at.desc(),
+                LucasRecommendationModel.priority.desc(),
+                LucasRecommendationModel.created_at.desc(),
             )
             .limit(limit)
         )
         if status:
-            stmt = stmt.where(LucasStageRecommendationModel.status == status)
+            stmt = stmt.where(LucasRecommendationModel.status == status)
         result = await self._session.execute(stmt)
         return [_model_to_entity(m) for m in result.scalars().all()]
 
@@ -183,12 +183,12 @@ class StageRecommendationRepository:
         from sqlalchemy import func
 
         stmt = (
-            update(LucasStageRecommendationModel)
+            update(LucasRecommendationModel)
             .where(
-                LucasStageRecommendationModel.id == entity_id,
-                LucasStageRecommendationModel.tenant_id == tenant_id,
-                LucasStageRecommendationModel.clinic_id == clinic_id,
-                LucasStageRecommendationModel.deleted_at.is_(None),
+                LucasRecommendationModel.id == entity_id,
+                LucasRecommendationModel.tenant_id == tenant_id,
+                LucasRecommendationModel.clinic_id == clinic_id,
+                LucasRecommendationModel.deleted_at.is_(None),
             )
             .values(deleted_at=func.now())
         )
