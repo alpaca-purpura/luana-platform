@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useEffect } from "react";
-import { useStore } from "zustand";
+import { useStore } from "zustand/react"; // no el index (turbopack falla el export* del index, HB-78)
 
 import { useSidebar } from "@/components/shared/layout/SidebarContext";
 import { useCopilotStore } from "@/features/copilot/store/copilot-store";

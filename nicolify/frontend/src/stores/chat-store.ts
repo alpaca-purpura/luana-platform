@@ -18,7 +18,7 @@
  * downstream-regression-na: brand-local store; no cross-brand consumers
  */
 
-import { create } from "zustand";
+import { create } from "zustand/react";
 
 import { AGENT_CATALOG, DEFAULT_CHAT_AGENT } from "@/lib/agent-catalog";
 import { MOCK_MESSAGES, MOCK_RESPONSES_BY_AGENT } from "@/stores/_mock-messages";

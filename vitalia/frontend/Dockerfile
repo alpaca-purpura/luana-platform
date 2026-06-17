@@ -17,7 +17,8 @@ FROM base AS dev
 WORKDIR /app
 
 # Pre-instalar dependencias (package.json viene via bind mount en dev, pero pre-instalamos)
-COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY .npmrc pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY patches ./patches
 COPY vitalia/frontend/package.json ./vitalia/frontend/package.json
 # Workspace packages @luana/* (ui-kit, hooks, format, ...): sin sus package.json el
 # install --filter no ve sus deps (ej. tailwind-merge de @luana/format) → store de la
@@ -40,7 +41,8 @@ CMD ["pnpm", "dev", "--port", "3002"]
 FROM base AS builder
 
 WORKDIR /app
-COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY .npmrc pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY patches ./patches
 COPY vitalia/frontend/package.json ./vitalia/frontend/package.json
 # @luana/* completos (manifests + src TS): pnpm build transpila ui-kit/format desde source
 COPY core/@luana ./core/@luana

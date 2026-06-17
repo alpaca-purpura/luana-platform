@@ -19,7 +19,7 @@
  */
 
 
-import { create } from "zustand";
+import { create } from "zustand/react"; // index export* falla en turbopack (HB-78)
 
 export type ColorPickerSlot = "primary" | "accent" | "background" | null;
 

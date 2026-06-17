@@ -13,11 +13,12 @@
  * (attribute="data-theme" → sets <html data-theme="dark"> también)
  */
 
-@import "tailwindcss";
-/* Google Fonts — League Spartan + Bree Serif. DEBE ir junto al resto de @import
- * (arriba de toda otra regla): Tailwind/webpack lo toleraban más abajo, pero
- * turbopack respeta la spec CSS (@import antes que cualquier regla) o falla el parse. */
+/* Google Fonts — League Spartan + Bree Serif. PRIMER @import, ANTES de
+ * `@import "tailwindcss"`: tailwindcss se expande inline a miles de reglas, así que
+ * un @import posterior queda "después de reglas" → turbopack falla el parse (la spec CSS
+ * exige @import antes que toda otra regla). webpack lo toleraba. Preconnect/preload en layout.tsx. */
 @import url("https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800&family=Bree+Serif&display=swap");
+@import "tailwindcss";
 
 /*
  * Dark variant wiring — Tailwind v4 (ds-adoption G round-1 fix, 2026-06-16).

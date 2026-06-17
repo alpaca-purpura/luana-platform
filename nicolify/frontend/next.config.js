@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+const path = require("path");
 const { withSentryConfig } = require("@sentry/nextjs");
 
 // Derive hostnames from environment variables for dev/prod parity
@@ -38,6 +39,28 @@ const imageRemotePatterns = [
 const nextConfig = {
   output: 'standalone',
   devIndicators: false,
+  turbopack: {
+    root: path.join(__dirname, "..", ".."),
+    // Forzar los subpaths de zustand a sus archivos ESM. Turbopack resolvía algunos
+    // (zustand/middleware) a la build CJS → named exports undefined ("(void 0) is not a
+    // function" en createJSONStorage/persist). Issue turbopack#86458 (CJS resolution). (HB-78)
+    resolveAlias: {
+      zustand: "zustand/esm/index.mjs",
+      "zustand/react": "zustand/esm/react.mjs",
+      "zustand/vanilla": "zustand/esm/vanilla.mjs",
+      "zustand/middleware": "zustand/esm/middleware.mjs",
+    },
+  },
+  // @luana/* se consumen como SOURCE (core/@luana/*/src) — turbopack los transpila
+  // desde el contexto de esta app. Junto al .npmrc hoisted (resuelve sus deps), habilita dev:turbo.
+  transpilePackages: [
+    "@luana/api-client",
+    "@luana/design-tokens",
+    "@luana/format",
+    "@luana/hooks",
+    "@luana/schemas",
+    "@luana/ui-kit",
+  ],
   allowedDevOrigins: allowedOrigins,
   images: {
     remotePatterns: imageRemotePatterns,

@@ -31,7 +31,7 @@
  * downstream-regression-na: brand-local store; no cross-brand consumers
  */
 
-import { create } from "zustand";
+import { create } from "zustand/react"; // index export* falla en turbopack (HB-78)
 import type { AgentSlug } from "@/lib/agent-catalog";
 import { AGENT_CATALOG, DEFAULT_CHAT_AGENT } from "@/lib/agent-catalog";
 import {

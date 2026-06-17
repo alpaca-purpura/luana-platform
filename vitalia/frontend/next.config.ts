@@ -1,3 +1,5 @@
+import path from "path";
+
 import type { NextConfig } from "next";
 
 // BE URL for rewrites — dev uses NEXT_PUBLIC_API_URL (localhost:8002), prod/staging uses
@@ -12,6 +14,21 @@ const beUrl =
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  // Turbopack (HB-78): el kit @luana/* vive en core/ (fuera del app root) → turbopack no lo
+  // resuelve sin `root` = monorepo root; y resuelve zustand/middleware a CJS → named exports
+  // undefined ("(void 0) is not a function") sin forzar sus subpaths ESM con resolveAlias.
+  // Requiere root .npmrc node-linker=hoisted + patches/zustand.patch (compartidos). Doc + receta:
+  // nicolify (1ra marca migrada) docker-compose.dev.yml. Stores: `import {create} from "zustand/react"`.
+  turbopack: {
+    root: path.join(__dirname, "..", ".."),
+    resolveAlias: {
+      zustand: "zustand/esm/index.mjs",
+      "zustand/react": "zustand/esm/react.mjs",
+      "zustand/vanilla": "zustand/esm/vanilla.mjs",
+      "zustand/middleware": "zustand/esm/middleware.mjs",
+    },
+  },
+  transpilePackages: ["@luana/design-tokens", "@luana/hooks", "@luana/ui-kit"],
   // Cross-origin Cloudflare Tunnel dev hostname for HMR + dev resources.
   // Without this Next.js blocks /_next/webpack-hmr from dev-app.vitalialat.com.
   allowedDevOrigins: ["dev-app.vitalialat.com"],

@@ -22,7 +22,12 @@ FROM base AS dev
 ENV NODE_ENV=development
 WORKDIR /app
 
-COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+# .npmrc root (node-linker=hoisted) PRIMERO: el `pnpm install` lo lee para aplanar
+# node_modules (turbopack/dev:turbo lo necesita; sin él el image queda isolated → 500).
+COPY .npmrc pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+# patches/ — pnpm aplica el patch de zustand (self-refs → relativos, fix turbopack HB-78)
+# durante el install; sin este COPY el `pnpm install` falla (patch declarado en package.json).
+COPY patches ./patches
 COPY nicolify/frontend/package.json ./nicolify/frontend/package.json
 # Workspace packages @luana/* — sin sus package.json el install --filter no ve sus
 # deps → store de imagen incompleto → "Module not found" runtime (fix 2026-06-11,
@@ -56,7 +61,10 @@ CMD ["npx", "playwright", "test"]
 FROM base AS build
 
 WORKDIR /app
-COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY .npmrc pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+# patches/ — pnpm aplica el patch de zustand (self-refs → relativos, fix turbopack HB-78)
+# durante el install; sin este COPY el `pnpm install` falla (patch declarado en package.json).
+COPY patches ./patches
 COPY nicolify/frontend/package.json ./nicolify/frontend/package.json
 # @luana/* completos (manifests + src TS): build transpila ui-kit/format desde source
 COPY core/@luana ./core/@luana

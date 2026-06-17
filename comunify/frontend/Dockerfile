@@ -16,7 +16,8 @@ FROM base AS dev
 
 WORKDIR /app
 
-COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY .npmrc pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY patches ./patches
 COPY comunify/frontend/package.json ./comunify/frontend/package.json
 # Workspace packages @luana/* — sin sus package.json el install --filter no ve sus
 # deps → store de imagen incompleto → "Module not found" runtime (fix 2026-06-11,
@@ -34,7 +35,8 @@ CMD ["pnpm", "dev", "--port", "3003"]
 FROM base AS builder
 
 WORKDIR /app
-COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY .npmrc pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY patches ./patches
 COPY comunify/frontend/package.json ./comunify/frontend/package.json
 # @luana/* completos (manifests + src TS): build transpila ui-kit/format desde source
 COPY core/@luana ./core/@luana
