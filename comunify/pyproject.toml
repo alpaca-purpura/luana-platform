@@ -26,6 +26,11 @@ dependencies = [
     "luana-core-extraction",
     # Durable flows engine (checkpointer durable compartido) — proposal 2026-06-02
     "luana-core-flows",
+    # Copilot engine (comunify-shell-organism T-agentic — thin mount of /chat) +
+    # IAM (auth deps get_current_user/get_tenant_context que el router del engine importa).
+    # Espejo vitalia/pyproject.toml (declara luana-core-iam para el mismo mount).
+    "luana-core-copilot",
+    "luana-core-iam",
 ]
 
 [build-system]

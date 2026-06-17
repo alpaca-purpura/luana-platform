@@ -25,10 +25,18 @@ function renderValue(value: unknown): string {
   return String(value);
 }
 
-export function VoiceDistilledPreview({ compiledVoice, isLoading, className }: VoiceDistilledPreviewProps) {
+export function VoiceDistilledPreview({
+  compiledVoice,
+  isLoading,
+  className,
+}: VoiceDistilledPreviewProps) {
   if (isLoading) {
     return (
-      <div className={cn("flex flex-col gap-3", className)} aria-busy="true" aria-label="Cargando preview de voz">
+      <div
+        className={cn("flex flex-col gap-3", className)}
+        aria-busy="true"
+        aria-label="Cargando preview de voz"
+      >
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="h-16 animate-pulse rounded-lg bg-muted" />
         ))}
@@ -38,8 +46,16 @@ export function VoiceDistilledPreview({ compiledVoice, isLoading, className }: V
 
   if (!compiledVoice) {
     return (
-      <div className={cn("rounded-xl border bg-card p-6 text-center text-sm text-muted-foreground", className)}>
-        <p>Aún no hay voz destilada. Sube tus muestras de audio y ejecuta la destilación.</p>
+      <div
+        className={cn(
+          "rounded-xl border bg-card p-6 text-center text-sm text-muted-foreground",
+          className,
+        )}
+      >
+        <p>
+          Aún no hay voz destilada. Sube tus muestras de audio y ejecuta la
+          destilación.
+        </p>
       </div>
     );
   }
@@ -48,10 +64,13 @@ export function VoiceDistilledPreview({ compiledVoice, isLoading, className }: V
   const allKeys = Object.keys(BLOCK_LABELS) as (keyof CompiledVoice)[];
 
   return (
-    <div className={cn("flex flex-col gap-3", className)} aria-label="Vista previa de voz destilada">
+    <div
+      className={cn("flex flex-col gap-3", className)}
+      aria-label="Vista previa de voz destilada"
+    >
       <div className="flex items-center justify-between">
         <h3 className="font-semibold">Vista previa de voz</h3>
-        <span className="rounded-full bg-comunify-stable/10 px-2 py-0.5 text-xs font-medium text-comunify-stable">
+        <span className="rounded-full bg-comunify-stable/10 px-2 py-0.5 text-xs font-medium text-comunify-stable-text">
           Destilado
         </span>
       </div>

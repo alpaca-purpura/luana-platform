@@ -30,7 +30,6 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from sqlalchemy.orm import Session
     from luana_core_social_proof.application.services.social_proof_resolver import (
         ResolvedSocialProof,
     )
@@ -38,6 +37,7 @@ if TYPE_CHECKING:
     from luana_core_social_proof.domain.enums import SurfaceType
     from luana_core_social_proof.domain.team_member import TeamMember
     from luana_core_social_proof.domain.testimonial import Testimonial
+    from sqlalchemy.orm import Session
 
 
 def resolve_for_surface(

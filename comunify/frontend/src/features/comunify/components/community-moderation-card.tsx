@@ -18,9 +18,11 @@ const ACTION_LABELS: Record<ModerationAction, string> = {
 };
 
 const ACTION_STYLES: Record<ModerationAction, string> = {
-  approve: "bg-comunify-stable hover:bg-comunify-stable/90 text-white",
-  reject: "bg-comunify-warning hover:bg-comunify-warning/90 text-white",
-  ban: "bg-comunify-critical hover:bg-comunify-critical/90 text-white",
+  approve:
+    "bg-comunify-stable/10 border border-comunify-stable text-comunify-stable-text hover:bg-comunify-stable/20 focus:ring-2 focus:ring-comunify-stable/50",
+  reject:
+    "bg-comunify-warning/10 border border-comunify-warning text-comunify-warning-text hover:bg-comunify-warning/20 focus:ring-2 focus:ring-comunify-warning/50",
+  ban: "bg-comunify-critical/10 border border-comunify-critical text-comunify-critical-text hover:bg-comunify-critical/20 focus:ring-2 focus:ring-comunify-critical/50",
 };
 
 export function CommunityModerationCard({
@@ -31,7 +33,9 @@ export function CommunityModerationCard({
 }: CommunityModerationCardProps) {
   const [reason, setReason] = useState("");
   const [showReason, setShowReason] = useState(false);
-  const [pendingAction, setPendingAction] = useState<ModerationAction | null>(null);
+  const [pendingAction, setPendingAction] = useState<ModerationAction | null>(
+    null,
+  );
 
   const handleAction = (action: ModerationAction) => {
     if (action !== "approve") {
@@ -59,9 +63,10 @@ export function CommunityModerationCard({
         <div>
           <p className="font-medium">{post.author_name}</p>
           <p className="text-xs text-muted-foreground">
-            {new Intl.DateTimeFormat("es-419", { dateStyle: "short", timeStyle: "short" }).format(
-              new Date(post.created_at)
-            )}
+            {new Intl.DateTimeFormat("es-419", {
+              dateStyle: "short",
+              timeStyle: "short",
+            }).format(new Date(post.created_at))}
             {post.cohort_id && (
               <span className="ml-2 rounded-full bg-secondary px-1.5 py-0.5 text-xs">
                 Cohorte
@@ -72,10 +77,13 @@ export function CommunityModerationCard({
         <span
           className={cn(
             "rounded-full px-2 py-0.5 text-xs font-medium",
-            post.status === "pending_moderation" && "bg-comunify-warning/10 text-comunify-warning",
-            post.status === "approved" && "bg-comunify-stable/10 text-comunify-stable",
-            post.status === "rejected" && "bg-comunify-critical/10 text-comunify-critical",
-            post.status === "removed" && "bg-comunify-bg text-comunify-text"
+            post.status === "pending_moderation" &&
+              "bg-comunify-warning/10 text-comunify-warning-text",
+            post.status === "approved" &&
+              "bg-comunify-stable/10 text-comunify-stable-text",
+            post.status === "rejected" &&
+              "bg-comunify-critical/10 text-comunify-critical-text",
+            post.status === "removed" && "bg-comunify-bg text-comunify-text",
           )}
         >
           {post.status}
@@ -86,7 +94,10 @@ export function CommunityModerationCard({
 
       {showReason && (
         <div className="mb-3">
-          <label htmlFor={`reason-${post.id}`} className="mb-1 block text-xs font-medium text-muted-foreground">
+          <label
+            htmlFor={`reason-${post.id}`}
+            className="mb-1 block text-xs font-medium text-muted-foreground"
+          >
             Motivo (opcional)
           </label>
           <input
@@ -108,7 +119,10 @@ export function CommunityModerationCard({
             </button>
             <button
               type="button"
-              onClick={() => { setShowReason(false); setPendingAction(null); }}
+              onClick={() => {
+                setShowReason(false);
+                setPendingAction(null);
+              }}
               className="rounded-lg border px-3 py-1.5 text-xs font-medium hover:bg-muted"
             >
               Cancelar
@@ -119,21 +133,23 @@ export function CommunityModerationCard({
 
       {!showReason && post.status === "pending_moderation" && (
         <div className="flex flex-wrap gap-2">
-          {(["approve", "reject", "ban"] as ModerationAction[]).map((action) => (
-            <button
-              key={action}
-              type="button"
-              onClick={() => handleAction(action)}
-              disabled={isPending}
-              className={cn(
-                "rounded-lg px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 disabled:opacity-50",
-                ACTION_STYLES[action]
-              )}
-              aria-label={`${ACTION_LABELS[action]} post de ${post.author_name}`}
-            >
-              {ACTION_LABELS[action]}
-            </button>
-          ))}
+          {(["approve", "reject", "ban"] as ModerationAction[]).map(
+            (action) => (
+              <button
+                key={action}
+                type="button"
+                onClick={() => handleAction(action)}
+                disabled={isPending}
+                className={cn(
+                  "rounded-lg px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 disabled:opacity-50",
+                  ACTION_STYLES[action],
+                )}
+                aria-label={`${ACTION_LABELS[action]} post de ${post.author_name}`}
+              >
+                {ACTION_LABELS[action]}
+              </button>
+            ),
+          )}
         </div>
       )}
     </article>

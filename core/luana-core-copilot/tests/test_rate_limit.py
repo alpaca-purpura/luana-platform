@@ -28,7 +28,9 @@ class TestCheckRateLimit:
 
     def test_allows_request_when_redis_unavailable(self) -> None:
         """When Redis is None, requests should always be allowed."""
-        with patch("luana_core_platform.core.rate_limit.redis_client", None):
+        with patch(
+            "luana_core_platform.core.rate_limit.get_redis_client", return_value=None
+        ):
             # Should not raise
             check_rate_limit(user_id="user-1", scope="test")
 
@@ -40,7 +42,10 @@ class TestCheckRateLimit:
         # zremrangebyscore result, zcard result, zadd result, expire result
         mock_pipe.execute.return_value = [0, 5, 1, True]
 
-        with patch("luana_core_platform.core.rate_limit.redis_client", mock_redis):
+        with patch(
+            "luana_core_platform.core.rate_limit.get_redis_client",
+            return_value=mock_redis,
+        ):
             check_rate_limit(user_id="user-1", scope="test", max_requests=10)
 
     def test_raises_429_when_limit_exceeded(self) -> None:
@@ -54,7 +59,10 @@ class TestCheckRateLimit:
         mock_redis.zrange.return_value = [("ts", 1000.0)]
 
         with (
-            patch("luana_core_platform.core.rate_limit.redis_client", mock_redis),
+            patch(
+                "luana_core_platform.core.rate_limit.get_redis_client",
+                return_value=mock_redis,
+            ),
             pytest.raises(RateLimitExceeded) as exc_info,
         ):
             check_rate_limit(
@@ -78,7 +86,10 @@ class TestCheckRateLimit:
         mock_redis.zrange.return_value = [("ts", 1000.0)]
 
         with (
-            patch("luana_core_platform.core.rate_limit.redis_client", mock_redis),
+            patch(
+                "luana_core_platform.core.rate_limit.get_redis_client",
+                return_value=mock_redis,
+            ),
             patch("luana_core_platform.core.rate_limit.time") as mock_time,
             pytest.raises(RateLimitExceeded) as exc_info,
         ):
@@ -98,7 +109,10 @@ class TestCheckRateLimit:
         mock_redis = MagicMock()
         mock_redis.pipeline.side_effect = Exception("Redis connection lost")
 
-        with patch("luana_core_platform.core.rate_limit.redis_client", mock_redis):
+        with patch(
+            "luana_core_platform.core.rate_limit.get_redis_client",
+            return_value=mock_redis,
+        ):
             # Should not raise
             check_rate_limit(user_id="user-1", scope="test")
 
@@ -109,7 +123,10 @@ class TestCheckRateLimit:
         mock_redis.pipeline.return_value = mock_pipe
         mock_pipe.execute.return_value = [0, 3, 1, True]
 
-        with patch("luana_core_platform.core.rate_limit.redis_client", mock_redis):
+        with patch(
+            "luana_core_platform.core.rate_limit.get_redis_client",
+            return_value=mock_redis,
+        ):
             check_rate_limit(
                 user_id="user-1",
                 scope="custom-scope",

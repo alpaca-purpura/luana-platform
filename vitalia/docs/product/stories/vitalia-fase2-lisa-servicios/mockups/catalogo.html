@@ -21,7 +21,7 @@
   .eic .eic-kebab { flex-shrink:0; color:hsl(var(--muted-foreground)); font-size:1rem; padding:.125rem; border-radius:.25rem; transition:background .15s; }
   .eic .eic-kebab:hover { background:hsl(var(--muted)); color:hsl(var(--foreground)); }
   .eic .eic-metrics { display:flex; align-items:center; gap:.75rem; font-size:.75rem; color:hsl(var(--muted-foreground)); flex-wrap:wrap; }
-  .eic .eic-foot { display:flex; align-items:center; justify-content:space-between; padding-top:.5rem; border-top:1px solid hsl(var(--border)); }
+  .eic .eic-foot { display:flex; align-items:center; justify-content:space-between; gap:.5rem; padding-top:.5rem; margin-top:auto; border-top:1px solid hsl(var(--border)); }
   .eic-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(250px,1fr)); gap:.875rem; }
   /* search row */
   .search-row { display:flex; flex-wrap:wrap; align-items:center; gap:.5rem; margin-bottom:1rem; }
@@ -85,7 +85,6 @@
               <p class="section-subtitle">El catálogo que Adrián vende y Mateo agenda. 7 servicios · 5 activos.</p>
             </div>
             <div style="display:flex;gap:.5rem;">
-              <button class="btn btn-ghost" onclick="document.querySelectorAll('[data-pane]').forEach(p=>p.classList.toggle('hidden'))">↔ Empty-state</button>
               <button class="btn btn-primary" onclick="location.href='nuevo-servicio.html'">+ Nuevo servicio</button>
             </div>
           </div>
@@ -108,7 +107,7 @@
               </div>
               <div class="eic-title">Evaluación inicial gratuita</div>
               <div class="hint" style="margin:0;">Odontología · 30 min</div>
-              <div class="eic-metrics"><span class="text-agent-lisa" style="font-weight:600;">Gratis</span><span>5 leads / 30d</span></div>
+              <div class="eic-metrics"><span class="text-agent-lisa" style="font-weight:600;">Gratis</span></div>
               <div class="eic-foot">
                 <div class="avatar-stack"><span class="avatar bg-agent-valeria">CL</span></div>
                 <span class="chip-origen estandar">📚 Estándar</span>
@@ -123,7 +122,7 @@
               </div>
               <div class="eic-title">Limpieza dental</div>
               <div class="hint" style="margin:0;">Odontología · 30 min</div>
-              <div class="eic-metrics"><span style="font-weight:600;">S/ 120</span><span>12 leads / 30d</span></div>
+              <div class="eic-metrics"><span style="font-weight:600;">S/ 120</span></div>
               <div class="eic-foot">
                 <div class="avatar-stack"><span class="avatar bg-agent-valeria">CL</span><span class="avatar bg-agent-adrian">JR</span></div>
                 <span class="chip-origen estandar">📚 Estándar</span>
@@ -138,7 +137,7 @@
               </div>
               <div class="eic-title">Diseño de sonrisa</div>
               <div class="hint" style="margin:0;">Odontología · paquete 4 sesiones</div>
-              <div class="eic-metrics"><span style="font-weight:600;">desde S/ 4,500</span><span class="chip" style="font-size:.6875rem;padding:.125rem .4375rem;">💳 6 cuotas</span><span>38 leads / 30d</span></div>
+              <div class="eic-metrics"><span style="font-weight:600;">desde S/ 4,500</span><span class="chip" style="font-size:.6875rem;padding:.125rem .4375rem;">💳 6 cuotas</span></div>
               <div class="eic-foot">
                 <div class="avatar-stack"><span class="avatar bg-agent-valeria">CL</span><span class="avatar bg-agent-adrian">JR</span></div>
                 <span class="chip-origen estandar">📚 Estándar</span>
@@ -153,7 +152,7 @@
               </div>
               <div class="eic-title">Implante dental</div>
               <div class="hint" style="margin:0;">Odontología · 90 min</div>
-              <div class="eic-metrics"><span style="font-weight:600;">desde S/ 2,400</span><span class="chip" style="font-size:.6875rem;padding:.125rem .4375rem;">💳 12 cuotas</span><span>21 leads / 30d</span></div>
+              <div class="eic-metrics"><span style="font-weight:600;">desde S/ 2,400</span><span class="chip" style="font-size:.6875rem;padding:.125rem .4375rem;">💳 12 cuotas</span></div>
               <div class="eic-foot">
                 <div class="avatar-stack"><span class="avatar bg-agent-adrian">JR</span></div>
                 <span class="chip-origen estandar">📚 Estándar</span>
@@ -168,7 +167,7 @@
               </div>
               <div class="eic-title">Carillas de porcelana</div>
               <div class="hint" style="margin:0;">Odontología · paquete 3 sesiones</div>
-              <div class="eic-metrics"><span style="font-weight:600;">desde S/ 6,800</span><span class="chip" style="font-size:.6875rem;padding:.125rem .4375rem;">💳 12 cuotas</span><span>7 leads / 30d</span></div>
+              <div class="eic-metrics"><span style="font-weight:600;">desde S/ 6,800</span><span class="chip" style="font-size:.6875rem;padding:.125rem .4375rem;">💳 12 cuotas</span></div>
               <div class="eic-foot">
                 <div class="avatar-stack"><span class="avatar bg-agent-valeria">CL</span></div>
                 <span class="chip-origen estandar">📚 Estándar</span>
@@ -183,7 +182,7 @@
               </div>
               <div style="display:flex;align-items:center;gap:.375rem;" class="eic-title">Botox facial <span class="rung-badge rung-magnet">↻ recurrente</span></div>
               <div class="hint" style="margin:0;">Estética · 45 min · cada 4-6 meses</div>
-              <div class="eic-metrics"><span style="font-weight:600;">desde S/ 950</span><span>15 leads / 30d</span></div>
+              <div class="eic-metrics"><span style="font-weight:600;">desde S/ 950</span></div>
               <div class="eic-foot">
                 <div class="avatar-stack"><span class="avatar bg-agent-camila">AM</span></div>
                 <span class="chip-origen estandar">📚 Estándar</span>

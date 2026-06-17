@@ -38,8 +38,8 @@ class TestEmitSectionCompletePillIdempotency:
 
         with (
             patch(
-                "luana_core_copilot.application.extraction_card_flow.redis_client",
-                mock_redis,
+                "luana_core_copilot.application.extraction_card_flow._get_redis_client",
+                return_value=mock_redis,
             ),
             patch(
                 "luana_core_copilot.infrastructure.repositories.conversation_repository.ConversationRepository.append_messages"
@@ -78,8 +78,8 @@ class TestEmitSectionCompletePillIdempotency:
 
         with (
             patch(
-                "luana_core_copilot.application.extraction_card_flow.redis_client",
-                mock_redis,
+                "luana_core_copilot.application.extraction_card_flow._get_redis_client",
+                return_value=mock_redis,
             ),
             patch(
                 "luana_core_copilot.infrastructure.repositories.conversation_repository.ConversationRepository.append_messages"
@@ -109,8 +109,8 @@ class TestEmitSectionCompletePillIdempotency:
 
         with (
             patch(
-                "luana_core_copilot.application.extraction_card_flow.redis_client",
-                None,
+                "luana_core_copilot.application.extraction_card_flow._get_redis_client",
+                return_value=None,
             ),
             patch(
                 "luana_core_copilot.infrastructure.repositories.conversation_repository.ConversationRepository.append_messages"
@@ -156,8 +156,8 @@ class TestEmitSectionCompletePillIdempotency:
 
         with (
             patch(
-                "luana_core_copilot.application.extraction_card_flow.redis_client",
-                mock_redis,
+                "luana_core_copilot.application.extraction_card_flow._get_redis_client",
+                return_value=mock_redis,
             ),
             patch(
                 "luana_core_copilot.infrastructure.repositories.conversation_repository.ConversationRepository.append_messages"
@@ -196,8 +196,8 @@ class TestEmitExtractionSummaryCardIdempotency:
 
         with (
             patch(
-                "luana_core_copilot.application.extraction_card_flow.redis_client",
-                mock_redis,
+                "luana_core_copilot.application.extraction_card_flow._get_redis_client",
+                return_value=mock_redis,
             ),
             patch(
                 "luana_core_copilot.infrastructure.repositories.conversation_repository.ConversationRepository.append_messages"
@@ -235,8 +235,8 @@ class TestEmitExtractionSummaryCardIdempotency:
 
         with (
             patch(
-                "luana_core_copilot.application.extraction_card_flow.redis_client",
-                mock_redis,
+                "luana_core_copilot.application.extraction_card_flow._get_redis_client",
+                return_value=mock_redis,
             ),
             patch(
                 "luana_core_copilot.infrastructure.repositories.conversation_repository.ConversationRepository.append_messages"
@@ -276,8 +276,8 @@ class TestEmitExtractionSummaryCardIdempotency:
 
         with (
             patch(
-                "luana_core_copilot.application.extraction_card_flow.redis_client",
-                mock_redis,
+                "luana_core_copilot.application.extraction_card_flow._get_redis_client",
+                return_value=mock_redis,
             ),
             patch(
                 "luana_core_copilot.infrastructure.repositories.conversation_repository.ConversationRepository.append_messages"

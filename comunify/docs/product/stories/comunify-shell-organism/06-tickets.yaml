@@ -1,0 +1,195 @@
+story_id: comunify-shell-organism
+brand: comunify
+generated_by: /architect
+generated_on: 2026-06-16
+autonomous_mode: false        # default — Chris opt-in; story funcional con DoD #37 + demo (G)
+verification_nature: funcional
+total_tickets: 6
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DAG resumen:
+#   T-0 (hygiene) ──blocks──> T-tokens, T-shell, T-chat-store
+#   T-agentic (BE mount) ────blocks──> T-chat-store, T-e2e
+#   T-tokens ──blocks──> T-shell
+#   T-shell + T-chat-store ──blocks──> T-e2e
+# ═══════════════════════════════════════════════════════════════════════════════
+
+tickets:
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: T-0
+    title: "Hygiene — lockfiles align-to-vitalia + next-env tracked + @luana/* deps + pnpm install verde"
+    surface: hygiene
+    production_code: config
+    depends_on: []
+    blocks: [T-tokens, T-shell, T-chat-store]
+    scope:
+      - "DELETE comunify/frontend/package-lock.json (tracked) + comunify/frontend/pnpm-lock.yaml (tracked) — root pnpm-lock.yaml es SSoT (align vitalia: sin lockfile frontend per-brand)"
+      - "TRACK comunify/frontend/next-env.d.ts (git add — como nicolify/vitalia)"
+      - "EDIT comunify/frontend/package.json — declarar @luana/{ui-kit,design-tokens,format,hooks,schemas,api-client}: workspace:* (mirror nicolify)"
+      - "GATE: pnpm install desde root → verde (verificar resolución, NO blind-delete)"
+    acceptance:
+      validator_ids: [nf-pnpm-install]
+      assert: "pnpm install verde + sin lockfile redundante + next-env trackeado + @luana/* declaradas (AC-8)"
+    gherkin_coverage: []         # AC-8 = gate de build, no SC Playwright
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: workhorse
+      must_load_skills: [frontend-expert]
+      must_load_artifacts: ["03-arch.md § 10 (HYGIENE)", "nicolify/frontend/package.json (ref @luana deps)"]
+      forbidden_to_touch: ["core/**", "src/app/**", "src/components/**", "nicolify/**", "vitalia/**"]
+      rationale: "Config puro — desbloquea todos los tickets FE. Workhorse. pnpm install verde es el gate (no blind-delete)."
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: T-agentic
+    title: "BE thin mount — engine copilot /chat en /api/v1/comunify/copilot + deps + persona Luana (sin tools)"
+    surface: agentic
+    production_code: true          # ← R23 HARD → flagship
+    depends_on: []
+    blocks: [T-chat-store, T-e2e]
+    scope:
+      - "NEW comunify/backend/src/modules/comunify/copilot/api/__init__.py — reexport thin: from luana_core_copilot.api.chat import router as copilot_router"
+      - "EDIT comunify/backend/src/main.py — app.include_router(copilot_router, prefix='/api/v1/comunify/copilot', tags=['copilot'])"
+      - "EDIT comunify/backend/pyproject.toml — deps luana-core-{copilot,iam,platform} (editable workspace)"
+      - "VERIFY (no build) — comunify/.../copilot/ NO tiene tools/ de dominio (CONFIRMADO) → Luana conversa+anuncia, no ejecuta (RN-3 por construcción)"
+      - "VERIFY — el turno deja fila copilot_trace_event scoped al tenant (lo emite el engine; NO crear recorder)"
+    acceptance:
+      validator_ids: [nf-be-arch, nf-be-lint, arch-be-mount-thin, agentic-trace-scoped, agentic-no-tools-registered]
+      assert: "POST /api/v1/comunify/copilot/chat → 200 SSE con auth válida; 401 sin tenant/JWT; cero tools de dominio; trace scoped (RN-7, AC-2, RN-3)"
+    gherkin_coverage: [SC-chat-ok, SC-chat-delegate]
+    test_surfaces:
+      - "RED: tests/modules/comunify/copilot/test_chat_mount.py (200 SSE / 401)"
+    assignment:
+      primary_agent: builder-agentic
+      model_preference: flagship      # R23 HARD — production_code agentic
+      must_load_skills: [copilot-expert]
+      must_load_artifacts: ["03-arch-agentic.md", "core/luana-core-copilot/src/luana_core_copilot/api/chat.py (contract)", ".claude/rules/anti-duplication.md (§0 copilot)"]
+      forbidden_to_touch:
+        - "core/luana-core-copilot/src/**"        # engine — consume, lift = /pm-luana
+        - "comunify/.../copilot/{extractors,kb,workflows}/"   # existentes
+        - "comunify/.../copilot/observability/"   # anti-dup §0 — NO crear
+        - "comunify/.../sales_agent/"             # N/A
+        - "nicolify/**, vitalia/**"
+      rationale: "Superficie agentic production_code=true → R23 flagship obligatorio. Mount thin del engine; cero engine build. RN-3 por construcción (sin tools)."
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: T-tokens
+    title: "FE tokens — globals.css + tailwind.config.ts (color/radius-pill/fonts/gradient) + kit content scan"
+    surface: frontend
+    production_code: true
+    depends_on: [T-0]
+    blocks: [T-shell]
+    scope:
+      - "EDIT app/globals.css — :root vars (design-system §4) + --agent-{luana,nina,tomas,sofia,bruno,lucia} + dark mode override (mockup) + --radius mantiene 0.75rem / --radius-lg 1.25rem"
+      - "EDIT tailwind.config.ts — mapear tokens (design-system §5) + borderRadius + fonts; ★ content/@source DEBE incluir el path del kit (@luana/ui-kit/src/**) — copiar glob de nicolify (memoria tailwind-jit-scan)"
+      - "EDIT app/layout.tsx — fonts next/font/local Satoshi + next/font/google Manrope/Inter"
+      - "Radius pill = controles rounded-full (clase literal del kit, ya presente) — NO override per-componente; verificar que el kit lo honra (token-driven, 03-arch Resolución punto 4)"
+    acceptance:
+      validator_ids: [nf-fe-tsc, nf-fe-eslint, nf-fe-arch]
+      assert: "tokens aplicados (morado/azul) + controles pill + fonts cargadas; cero hardcoded hex; kit estilado (visual)"
+    gherkin_coverage: [SC-i18n]      # tokens habilitan el render correcto; visual via § visual
+    test_surfaces:
+      - "RED: arch-test no-hardcoded-hex + visual smoke tokens"
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: workhorse
+      must_load_skills: [frontend-expert]
+      must_load_artifacts: ["03-arch-fe.md", "comunify/docs/architecture/design-system.md", "design-inventory.md §1", "nicolify/frontend/tailwind.config.ts (content glob ref)"]
+      forbidden_to_touch: ["core/**", "app/[tenantId]/**", "app/onboarding/**", "app/(dashboard)/**", "nicolify/**", "vitalia/**"]
+      rationale: "Tokens + fonts. Workhorse. ★ Footgun crítico: incluir el path del kit en el content scan o el shell pierde estilos (gate visual, no tsc)."
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: T-shell
+    title: "FE shell wrapper + routing — (shell-organism) consumiendo kit + shell-routes + cast + thin wrappers + edge-auth + retire (dashboard)"
+    surface: frontend
+    production_code: true
+    depends_on: [T-0, T-tokens]
+    blocks: [T-e2e]
+    scope:
+      - "NEW lib/routing/shell-routes.ts — AGENT_CATALOG (nina/tomas/sofia/bruno/lucia + plataforma) + AGENT_RIBBON_ORDER + AGENT_SUBTABS + AGENT_SUBSUBTABS (nina.marca/nina.ofertas) + DEFAULT_LANDING={agent:'nina',subtab:'marca'} + guards whitelist-only (port re-temizado nicolify)"
+      - "NEW lib/agents.ts — catálogo cast full (slug/name/role/colorToken/initial/thumbnail) ADR-comunify-001 (checkpoint + nav-tree + mockup)"
+      - "NEW components/shared/shell-organism/{AgentAvatar,LogoMark,ThemeToggle,TenantSwitcher(single-user display),_agent-tw-classes} — thin wrappers de marca (NO mirror del kit)"
+      - "NEW stores/shell-store.ts — createShellStore({storageKey:'comunify-shell-state'}) (kit factory SSR-safe)"
+      - "NEW app/[tenantId]/(shell-organism)/{layout.tsx (Server, valida sesión Clerk), _components/ShellLayoutWire.tsx (client bridge → kit ShellLayout), page.tsx (redirect a DEFAULT_LANDING), [agent]/page.tsx + [agent]/[subtab]/page.tsx + not-found (placeholders EmptyState 'Próximamente' + CTA Hablar con Luana)}"
+      - "EDIT proxy.ts — edge-redirect Clerk (allowlist + bare-tenant /:tenantId → /:tenantId/nina/marca; NO redirect() in-render)"
+      - "EDIT app/page.tsx — retirar (dashboard) del routing; post-login → shell tenant-scoped (queda (dashboard) en git, no reachable). onboarding INTACTO"
+    acceptance:
+      validator_ids: [nf-fe-tsc, nf-fe-eslint, nf-fe-arch, arch-anti-dup, arch-tenant-isolation, arch-fsd-boundaries]
+      assert: "shell renderiza (Luana full + nina activa + Ribbon + placeholders); consume @luana/ui-kit (cero mirror); useTenantId; edge-redirect; (dashboard) no reachable; onboarding intacto (AC-1,4,5,6,7; RN-1,2,4,5)"
+    gherkin_coverage: [SC-happy, SC-tab-placeholder, SC-luana-states, SC-luana-history-empty, SC-plataforma-min, SC-auth, SC-dashboard-unreachable, SC-adversarial-tenant, SC-a11y]
+    test_surfaces:
+      - "RED: smoke e2e (shell-organism) ANTES de la página + Vitest wire render"
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: workhorse
+      must_load_skills: [frontend-expert, playwright-expert]
+      must_load_artifacts: ["03-arch-fe.md", "navigation-tree.md", "mockups/shell.html", "design-inventory.md", "nicolify/frontend/src/app/[tenantId]/(shell-organism)/** (port ref)", "nicolify/frontend/src/proxy.ts", "nicolify/frontend/src/lib/routing/shell-routes.ts"]
+      forbidden_to_touch:
+        - "core/@luana/ui-kit/src/**"             # kit — consume, lift = /pm-luana
+        - "app/onboarding/**"                      # wizard intacto
+        - "app/(dashboard)/** (contenido)"         # solo retirar del routing
+        - "nicolify/**, vitalia/**"                # REFERENCE read-only, nunca importar
+        - "stores/chat-store.ts"                   # ese es T-chat-store
+      rationale: "El grueso del shell FE. Workhorse. Port re-temizado de nicolify (re-skin, NO importar). Consume kit. Cero mirror (Cat 12). Tenant via iam. Edge-redirect."
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: T-chat-store
+    title: "FE chat-store SSE real → ChatPanel injection (LIFT CANDIDATE)"
+    surface: frontend
+    production_code: true
+    depends_on: [T-0, T-agentic]
+    blocks: [T-e2e]
+    scope:
+      - "NEW stores/chat-store.ts — zustand store implementa ShellChatStoreApi del kit (messages/conversations/activeAgent/status/sendMessage/clearMessages/newConversation/setActiveAgent)"
+      - "sendMessage = SSE REAL contra /api/v1/comunify/copilot/chat vía fetchClient (auto X-Tenant-ID + Bearer). Estados idle/thinking/streaming/error/network"
+      - "Parse SSE: status→streaming/idle · block_delta→append burbuja bot · message_end/done→idle · error→error · abort/timeout→network"
+      - "graceful-degradation: timeout + fallback (network) + manejo 5xx (error) sin perder el msg del user; un solo request en vuelo (composer bloqueado si status∈{thinking,streaming}) → SC-chat-double-send"
+      - "Inyectar en ShellLayoutWire: useChatStore={useChatStore as unknown as ShellChatStore} (como nicolify)"
+      - "⚠️ LIFT CANDIDATE → @luana — marcar en header del archivo; NO liftear (es /pm-luana proposal post-prueba)"
+    acceptance:
+      validator_ids: [nf-fe-tsc, nf-fe-eslint, agentic-no-domain-write]
+      assert: "mensaje → SSE stream → burbuja + traza (sin duplicado en doble-envío); 5xx→error+Reintentar; abort→network+Reintentar; cero filas dominio tras delegación (AC-2,3; RN-3,7)"
+    gherkin_coverage: [SC-chat-ok, SC-chat-error, SC-chat-network, SC-chat-delegate, SC-chat-double-send]
+    test_surfaces:
+      - "RED: stores/__tests__/chat-store.test.ts (SSE parse, idle→streaming→idle, 5xx→error, abort→network, double-send block)"
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: workhorse
+      must_load_skills: [frontend-expert, copilot-expert, playwright-expert]
+      must_load_artifacts: ["03-arch-fe.md (contrato chat-store)", "core/@luana/ui-kit/src/organism/shell/types.ts (ShellChatStoreApi)", "nicolify/frontend/src/stores/chat-store.ts (MOCK ref — NO copiar el setTimeout, hacer SSE real)"]
+      forbidden_to_touch: ["core/**", "app/onboarding/**", "nicolify/**", "vitalia/**"]
+      rationale: "El único net-new sustantivo. Workhorse FE (consume el contrato del kit + el endpoint del engine). LIFT CANDIDATE notado. Depende del mount BE (T-agentic)."
+
+  # ───────────────────────────────────────────────────────────────────────────
+  - id: T-e2e
+    title: "E2E + live-verify — 15 SC + DoD #37 (SC-chat-ok write real)"
+    surface: frontend
+    production_code: true
+    depends_on: [T-agentic, T-shell, T-chat-store]
+    blocks: []
+    scope:
+      - "NEW comunify/frontend/e2e/regression/comunify-shell-organism/*.spec.ts — uno por SC del scenario_coverage (14 Playwright + SC-dashboard-unreachable grep+nav)"
+      - "NEW e2e/pages/{ShellPage,LuanaChatPom}.ts + e2e/fixtures/base.ts (gate anti-burbuja) + auth.fixture (Clerk testing token)"
+      - "axe wcag2aa (SC-a11y) + grep voseo pre-commit §1 (SC-i18n)"
+      - "DoD #37 live-verify SC-chat-ok en dev-app comunify autenticado: enviar mensaje → burbuja stream + fila copilot_trace_event + backend log sin traceback"
+    acceptance:
+      validator_ids: [nf-fe-arch]   # + todos los scenario_coverage tests
+      assert: "15 SC verdes (specs importan base.ts, NO @playwright/test) + dod_live_verified:true + dod_evidence (write SC-chat-ok)"
+    gherkin_coverage: [SC-happy, SC-chat-ok, SC-chat-error, SC-chat-network, SC-chat-delegate, SC-adversarial-tenant, SC-tab-placeholder, SC-luana-states, SC-luana-history-empty, SC-plataforma-min, SC-a11y, SC-i18n, SC-chat-double-send, SC-auth, SC-dashboard-unreachable]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: workhorse
+      must_load_skills: [playwright-expert, frontend-expert, chrome-devtools-verify]
+      must_load_artifacts: ["04-validators.yaml § scenario_coverage + test_construction_plan + dev_app_verified", "01-spec.md § Gherkin"]
+      forbidden_to_touch: ["core/**", "app/onboarding/**", "nicolify/**", "vitalia/**"]
+      rationale: "Cierra la verificación funcional (DoD #37). Workhorse + chrome-devtools-verify para el write live. Depende de mount + shell + chat-store."
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DEFER / OPEN
+# ═══════════════════════════════════════════════════════════════════════════════
+open_items:
+  - "OQ-1 (T-tokens): verificar Tailwind content incluye path del kit — gate visual e2e."
+  - "OQ-2: ADR shell comunify diferido (esta story = origen del patrón)."
+  - "OQ-3: skill comunify-design-system no existe → follow-up /pm-comunify (no bloquea)."
+  - "OQ-5: chat-store lift = /pm-luana proposal POST-merge (no en esta story)."
+  - "dev-app: binding tenant comunify 🟡 pendiente seed — si falta, SC-chat-ok live-verify se firma en G (gate manual Chris)."

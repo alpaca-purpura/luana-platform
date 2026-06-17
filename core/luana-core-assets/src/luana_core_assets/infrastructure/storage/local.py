@@ -5,17 +5,23 @@ import uuid
 from pathlib import Path
 from typing import BinaryIO
 
-from luana_core_platform.core.config import settings
-
 from .base import StorageStrategy
+
+# Sentinel — resolved lazily so that importing this module does NOT trigger
+# Settings instantiation at import time (T-2 copilot-chat-mountable fix).
+_UNSET = object()
 
 
 class LocalStorageStrategy(StorageStrategy):
     """Implement local storage storage strategy."""
 
-    def __init__(self, upload_dir: str = settings.UPLOAD_DIR) -> None:
+    def __init__(self, upload_dir: object = _UNSET) -> None:
         """Initialize LocalStorageStrategy."""
-        self.upload_dir = upload_dir
+        if upload_dir is _UNSET:
+            from luana_core_platform.core.config import get_settings
+
+            upload_dir = get_settings().UPLOAD_DIR
+        self.upload_dir = str(upload_dir)
         Path(self.upload_dir).mkdir(parents=True, exist_ok=True)
 
     def save(

@@ -41,7 +41,7 @@ from luana_core_events.outbox.application.event_bus_adapter import (
     adapter_bus as EventBus,  # noqa: N812
 )
 from luana_core_platform.core.context import set_conversation_id
-from luana_core_platform.core.database import redis_client
+from luana_core_platform.core.database import get_redis_client as _get_redis_client
 
 from luana_core_copilot.api.dto import ClientContextDTO, SSEEvent
 from luana_core_copilot.application.extraction.active_job_state import load_active_job
@@ -1937,7 +1937,9 @@ class CopilotOrchestrator:
         self, conv_id: str, tenant_id: UUID, conv_model: CopilotConversationModel
     ) -> list:
         """Load conversation history, preferring Redis cache."""
-        # Try Redis first
+        # Try Redis first — lazy call so import does not trigger Settings at
+        # module-load time (T-2 copilot-chat-mountable).
+        redis_client = _get_redis_client()
         redis_key = f"{REDIS_CONV_PREFIX}{conv_id}"
         try:
             cached = redis_client.get(redis_key) if redis_client else None
@@ -1965,6 +1967,8 @@ class CopilotOrchestrator:
 
     def _cache_history(self, conv_id: str, tenant_id: UUID, new_messages: list) -> None:
         """Append new messages to Redis cache."""
+        # Lazy call — see _load_history (T-2 copilot-chat-mountable).
+        redis_client = _get_redis_client()
         redis_key = f"{REDIS_CONV_PREFIX}{conv_id}"
         try:
             if not redis_client:

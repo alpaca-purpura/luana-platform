@@ -25,7 +25,7 @@ from uuid import UUID, uuid4
 import structlog
 from langchain_core.tools import tool
 from luana_core_platform.core.context import get_conversation_id, get_tenant_id
-from luana_core_platform.core.database import redis_client
+from luana_core_platform.core.database import get_redis_client as _get_redis_client_fn
 
 logger = structlog.get_logger()
 
@@ -171,6 +171,8 @@ async def extract_from_doc(
         )
 
     # Check Redis is available (for progress tracking)
+    # T-2: lazy call — avoids eager Settings() at import time (copilot-chat-mountable)
+    redis_client = _get_redis_client_fn()
     if redis_client is None:
         return _err("No se puede registrar el progreso. Intenta de nuevo.")
 

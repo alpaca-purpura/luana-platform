@@ -100,7 +100,7 @@ from luana_core_platform.core.context import (
     get_tenant_id,
     get_user_id,
 )
-from luana_core_platform.core.database import redis_client
+from luana_core_platform.core.database import get_redis_client as _get_redis_client_fn
 from luana_core_platform.domain.extraction_jobs import ExtractionJob
 
 from luana_core_copilot.application.extraction.active_job_persistence import (
@@ -293,7 +293,7 @@ def _validate_extract_args(  # noqa: PLR0911 — independent guard clauses read 
             "El servicio de análisis en segundo plano no está disponible en este "
             "momento. Intenta de nuevo en unos segundos.",
         )
-    if redis_client is None:
+    if _get_redis_client_fn() is None:
         return _err(
             "No se puede registrar el progreso del análisis. Intenta de nuevo.",
         )
@@ -327,6 +327,7 @@ async def _extract_from_url_impl(
     # Both are guaranteed non-None by _validate_extract_args.
     assert tenant_id is not None  # noqa: S101 — narrowing for type checker
     assert arq_pool is not None  # noqa: S101 — narrowing for type checker
+    redis_client = _get_redis_client_fn()
     assert redis_client is not None  # noqa: S101 — narrowing for type checker
 
     # --- Dispatch ---

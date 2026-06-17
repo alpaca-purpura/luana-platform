@@ -1,0 +1,295 @@
+story_id: comunify-shell-organism
+brand: comunify
+generated_by: /architect
+generated_on: 2026-06-16
+
+# ── Naturaleza de la verificación (top-level · D-X4) ──────────────────────────
+verification_nature: funcional        # → DoD #37 mandatory + gate anti-burbuja + demo Chris (G)
+demo_required: true
+regression_guard: true
+
+# concurrent_users / large_dataset declarados N/A en 01-spec (ratificado en handoff) — NO inventar.
+not_applicable_subcategories:
+  - subcategory: concurrent_users
+    reason: "comunify = single-user brand (RN-1) + MVP sin list/detail filtrable. Multi-tenant lo cubre SC-adversarial-tenant."
+  - subcategory: large_dataset
+    reason: "MVP sin list paginada. Único stream = historial de chat (scroll simple). Aplica en R-shell+1..N."
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CATEGORÍA 1 — NON-FUNCTIONAL (técnica · gates automáticos)
+# ═══════════════════════════════════════════════════════════════════════════════
+non_functional:
+  - id: nf-be-arch
+    surface: backend
+    gate: "cd comunify/backend && ${WS}/.venv/bin/pytest tests/architecture/ -x -q"
+    asserts:
+      - "redirect_slashes=False presente en main.py"
+      - "no cross-module imports prohibidos (mount thin solo importa engine + main)"
+      - "tenant-isolation enforce (delegado al engine)"
+  - id: nf-be-lint
+    surface: backend
+    gate: "cd comunify/backend && ${WS}/.venv/bin/ruff check src/ && ${WS}/.venv/bin/ruff format --check src/"
+  - id: nf-fe-tsc
+    surface: frontend
+    gate: "cd comunify/frontend && npx tsc --noEmit"
+  - id: nf-fe-eslint
+    surface: frontend
+    gate: "cd comunify/frontend && npx eslint src/ --cache"
+  - id: nf-fe-arch
+    surface: frontend
+    gate: "cd comunify/frontend && npx vitest run src/__tests__/architecture/"
+    asserts:
+      - "FSD boundaries (boundaries/dependencies: error)"
+      - "test-no-clerk-organizations (useTenantId, NUNCA useAuth().orgId) — RN-2"
+      - "no-hardcoded-hex (tokens, no #RRGGBB en componentes)"
+      - "no-low-contrast-pairs (WCAG AA dark/light)"
+  - id: nf-pnpm-install
+    surface: hygiene
+    gate: "cd ${WS} && pnpm install"
+    asserts:
+      - "resuelve con @luana/* declaradas (workspace:*) — verde, NO blind-delete"
+      - "sin lockfile redundante en comunify/frontend (root pnpm-lock SSoT)"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CATEGORÍA 2 — FUNCTIONAL (DoD #37 · cada SC funcional FE con verificación REAL)
+# ═══════════════════════════════════════════════════════════════════════════════
+functional:
+  business_rules:
+    - id: RN-1
+      rule: "single-user — Ribbon completo sin role-gating"
+      covered_by: [SC-happy]
+    - id: RN-2
+      rule: "tenant_id vía useTenantId (iam), NUNCA Clerk org; X-Tenant-ID en cada llamada"
+      covered_by: [SC-adversarial-tenant]
+    - id: RN-3
+      rule: "Luana no ejecuta — conversa + anuncia; sin tools de dominio"
+      covered_by: [SC-chat-delegate, SC-chat-double-send]
+    - id: RN-4
+      rule: "consume @luana/ui-kit, cero mirror (kit + nicolify locals)"
+      covered_by: [arch-anti-dup]      # gate de build/auditor, no Playwright
+    - id: RN-5
+      rule: "(dashboard) no reachable post-merge; post-login → shell"
+      covered_by: [SC-dashboard-unreachable]
+    - id: RN-6
+      rule: "spanish neutro LatAm, sin voseo"
+      covered_by: [SC-i18n]
+    - id: RN-7
+      rule: "engine único — Luana consume core/luana-core-copilot /chat"
+      covered_by: [SC-chat-ok]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CATEGORÍA 3 — VISUAL (mockup adherence · playwright_visual_scope)
+# ═══════════════════════════════════════════════════════════════════════════════
+visual:
+  golden: "mockups/shell.html"
+  design_system: "comunify/docs/architecture/design-system.md"
+  checks:
+    - { screen: shell-landing, assert: "Luana sidebar full (avatar + 'Orquestadora · en línea' + StatusDot) + Ribbon (nina activa, ring agent-nina) + panel 'Próximamente'" }
+    - { screen: shell-landing, assert: "TopBar wordmark 'Comunify' (grad-text) + LogoMark isotipo + theme toggle" }
+    - { screen: chat-delegate, assert: "DelegateMarker chip 'delega en Nina · Mi Marca' color agent-nina" }
+    - { screen: tab-placeholder, assert: "EmptyState '{Sub-tab} · Próximamente' + CTA 'Hablar con Luana' + nota 'Se portará en una próxima entrega'" }
+    - { screen: ribbon, assert: "5 RibbonTab (Mi Marca/Atraer/Vender/Operar/Retener) + Plataforma; controles pill (rounded-full)" }
+    - { theme: dark, assert: "bordes vía --line adaptan (no blancos hardcodeados); contraste AA" }
+
+playwright_visual_scope:
+  story_scope_routes:
+    - "/[tenantId]/(shell-organism)"
+    - "/[tenantId]/nina/marca"
+    - "/[tenantId]/[agent]/[subtab]"   # placeholders
+    - "/[tenantId]/plataforma"
+  story_scope_components:
+    - "app/[tenantId]/(shell-organism)/**"
+    - "components/shared/shell-organism/**"
+    - "stores/{chat-store,shell-store}.ts"
+    - "lib/routing/shell-routes.ts"
+  forbidden_visual_changes:
+    - "core/@luana/ui-kit/src/**"       # engine kit — lift only, NUNCA editar
+    - "comunify/frontend/src/app/(dashboard)/**"   # retirar del routing, NO refactorizar visual
+    - "comunify/frontend/src/app/onboarding/**"    # wizard intacto
+  out_of_mockup_scope:
+    - "contenido real de las tabs de agente (placeholder only en MVP)"
+    - "N3 sub-sub-tabs salvo nina.marca / nina.ofertas (combos poblados)"
+  notes: "Avatares = placeholders SVG en public/agents/{slug}/avatar.svg (Chris da finales). NO screenshot full-page; scoped al shell."
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CATEGORÍA 4 — AGENTIC EVAL (THIN — trace + cost; sin goldens de comportamiento)
+# ═══════════════════════════════════════════════════════════════════════════════
+agentic_eval:
+  rationale: "Sin specialist nuevo ni prompt modificado — se CONSUME el engine /chat tal cual. NO se piden ≥3 goldens de voz/comportamiento."
+  checks:
+    - id: agentic-trace-scoped
+      assert: "tras un turno de chat → ≥1 fila copilot_trace_event WHERE tenant_id=:tid"
+      query: "SELECT count(*) FROM copilot_trace_event WHERE tenant_id = :tid AND created_at > :t0"
+      expect: ">= 1"
+      maps_sc: SC-chat-ok
+    - id: agentic-no-domain-write
+      assert: "tras turno de delegación → cero filas nuevas en tablas de dominio (offer/cohort/community) — prueba RN-3"
+      expect: "0 filas nuevas"
+      maps_sc: SC-chat-delegate
+    - id: agentic-no-tools-registered
+      assert: "comunify/.../copilot/ NO tiene tools/ de dominio (grep) — Luana no puede ejecutar"
+      grep: "test -d comunify/backend/src/modules/comunify/copilot/tools && echo FAIL || echo OK"
+      expect: "OK"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CATEGORÍA 5 — ARCHITECTURAL VALIDATION (anti-dup + tenant + FSD + no-clerk-org)
+# ═══════════════════════════════════════════════════════════════════════════════
+architectural_validation:
+  - id: arch-anti-dup
+    name: "anti-duplication Cat 12 — cero mirror del kit + cross-brand"
+    checks:
+      - grep: "find comunify/frontend/src -name 'Ribbon.tsx' -o -name 'ChatPanel.tsx' -o -name 'ConfigTab.tsx' -o -name 'SubSubTabsBar.tsx' -o -name 'EmptyState.tsx' -o -name 'ShellLayout.tsx'"
+        expect: "0 matches (esos organismos se importan de @luana/ui-kit)"
+      - grep: "grep -rn 'from \"@luana/ui-kit\"' comunify/frontend/src/app/'[tenantId]'/'(shell-organism)'/"
+        expect: ">= 1 (el wrapper consume el kit)"
+      - grep: "grep -rln 'from .*nicolify/frontend' comunify/frontend/src/"
+        expect: "0 (cero import cross-brand)"
+  - id: arch-tenant-isolation
+    name: "tenant via useTenantId, no Clerk org (RN-2)"
+    checks:
+      - grep: "grep -rn 'useAuth().orgId\\|useOrganization\\|orgId.*X-Tenant' comunify/frontend/src/app/'[tenantId]'/"
+        expect: "0 matches"
+      - assert: "arch-test test-no-clerk-organizations.test.ts verde"
+  - id: arch-fsd-boundaries
+    name: "FSD-Lite boundaries (kit consumido vía @luana, wrappers en components/shared)"
+    checks:
+      - assert: "boundaries/dependencies: error → 0 violations"
+  - id: arch-be-mount-thin
+    name: "BE mount thin (engine reexport, cero lógica)"
+    checks:
+      - grep: "grep -rn 'from luana_core_copilot.api.chat import router' comunify/backend/src/modules/comunify/copilot/api/"
+        expect: ">= 1 (reexport thin)"
+      - grep: "grep -rn 'include_router(copilot_router, prefix=\"/api/v1/comunify/copilot\"' comunify/backend/src/main.py"
+        expect: "1"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SCENARIO COVERAGE — cada SC del 01-spec § Gherkin mapeado
+# ═══════════════════════════════════════════════════════════════════════════════
+scenario_coverage:
+  - sc: SC-happy
+    category: happy
+    playwright_required: true
+    covers: [Bif SC-happy, AC-1]
+    test: "comunify/frontend/e2e/regression/comunify-shell-organism/shell-happy.spec.ts"
+  - sc: SC-chat-ok
+    category: happy
+    playwright_required: true
+    dod_write: true            # ← DoD #37 write real
+    covers: [Bif SC-chat-ok, AC-2, RN-7]
+    test: ".../shell-chat-ok.spec.ts"
+    live_verify: "enviar mensaje en dev-app autenticado → burbuja stream + fila copilot_trace_event + backend log sin traceback"
+  - sc: SC-chat-error
+    category: negative
+    playwright_required: true
+    covers: [Bif SC-chat-error]
+    test: ".../shell-chat-error.spec.ts"   # mock 500 en /copilot/chat
+  - sc: SC-chat-network
+    category: network_failure
+    playwright_required: true
+    covers: [Bif SC-chat-network]
+    test: ".../shell-chat-network.spec.ts"  # route.abort
+  - sc: SC-chat-delegate
+    category: edge
+    playwright_required: true
+    covers: [Bif SC-chat-delegate, RN-3, AC-3]
+    test: ".../shell-chat-delegate.spec.ts"
+  - sc: SC-adversarial-tenant
+    category: adversarial
+    playwright_required: true
+    covers: [Bif SC-tenant, RN-2]
+    test: ".../shell-tenant-isolation.spec.ts"
+  - sc: SC-tab-placeholder
+    category: empty_state
+    playwright_required: true
+    covers: [Bif SC-tab-placeholder, AC-4]
+    test: ".../shell-tab-placeholder.spec.ts"
+  - sc: SC-luana-states
+    category: edge
+    playwright_required: true
+    covers: [Bif SC-luana-full/rail/history, AC-7]
+    test: ".../shell-luana-states.spec.ts"
+  - sc: SC-luana-history-empty
+    category: empty_state
+    playwright_required: true
+    covers: [Bif SC-luana-history]
+    test: ".../shell-luana-history-empty.spec.ts"
+  - sc: SC-plataforma-min
+    category: happy
+    playwright_required: true
+    covers: [Bif SC-plataforma-min, Q2]
+    test: ".../shell-plataforma-min.spec.ts"
+  - sc: SC-a11y
+    category: accessibility
+    playwright_required: true
+    covers: [AC-7, RN-6]
+    test: ".../shell-a11y-keyboard.spec.ts"   # + axe wcag2aa
+  - sc: SC-i18n
+    category: i18n
+    playwright_required: true
+    covers: [RN-6]
+    test: ".../shell-i18n-neutro.spec.ts"     # + grep voseo pre-commit §1
+  - sc: SC-chat-double-send
+    category: race_condition
+    playwright_required: true
+    covers: [RN-3, AC-2]
+    test: ".../shell-chat-double-send.spec.ts"
+  - sc: SC-auth
+    category: negative
+    playwright_required: true
+    covers: [Bif SC-auth]
+    test: ".../shell-auth-redirect.spec.ts"   # edge-redirect, no in-render
+  - sc: SC-dashboard-unreachable
+    category: edge
+    playwright_required: false               # verificación de routing (grep + nav)
+    covers: [Bif SC-happy, RN-5, AC-6]
+    test: ".../shell-replace-dashboard.spec.ts + grep (dashboard) fuera del routing; onboarding intacto"
+
+# coverage check (del 01-spec § Matriz): 0 huecos / 0 huérfanos
+coverage_audit:
+  gaps: none
+  orphans: none
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TEST CONSTRUCTION PLAN (TDD · creation_order · POMs · fixtures)
+# ═══════════════════════════════════════════════════════════════════════════════
+test_construction_plan:
+  playwright_required: true
+  creation_order:
+    - step: 1
+      surface: hygiene
+      what: "T-0: pnpm install verde + lockfile align + next-env tracked (gate, no test unitario)"
+    - step: 2
+      surface: agentic-be
+      what: "RED: tests/modules/comunify/copilot/test_chat_mount.py (mount 200 SSE / 401 sin tenant) → GREEN mount"
+    - step: 3
+      surface: fe-tokens
+      what: "RED: arch-test no-hardcoded-hex + visual smoke tokens → GREEN globals.css/tailwind/fonts"
+    - step: 4
+      surface: fe-chat-store
+      what: "RED: stores/__tests__/chat-store.test.ts (SSE parse, idle→streaming→idle, 5xx→error, abort→network, double-send block) → GREEN chat-store"
+    - step: 5
+      surface: fe-shell-wrapper
+      what: "RED: smoke e2e (shell-organism) ANTES de la página + Vitest wire render → GREEN wrapper/routing/proxy"
+    - step: 6
+      surface: e2e
+      what: "RED→GREEN cada spec del scenario_coverage (15 SC; 14 playwright + 1 grep-routing)"
+  poms:
+    - "comunify/frontend/e2e/pages/ShellPage.ts (NEW — Luana sidebar, Ribbon, composer, tab panel)"
+    - "comunify/frontend/e2e/pages/LuanaChatPom.ts (NEW — send, waitStream, retry, history)"
+  fixtures:
+    - "comunify/frontend/e2e/fixtures/base.ts (gate anti-burbuja: pageerror/console-error/api≥400/Next overlay)"
+    - "auth.fixture (Clerk testing token — specs importan base.ts, NO @playwright/test)"
+    - "tenant seed comunify dev (single-user creator) para SC-chat-ok / adversarial-tenant"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DEV-APP LIVE VERIFICATION (DoD #37)
+# ═══════════════════════════════════════════════════════════════════════════════
+dev_app_verified:
+  required: true
+  env: "make dev-comunify → dev-app.comunifylat.com (Chrome DevTools MCP) o localhost:3003 fallback"
+  write_action: "SC-chat-ok — enviar mensaje a Luana autenticado"
+  observed_expected: "burbuja stream + fila copilot_trace_event scoped al tenant + backend log sin traceback"
+  preconditions:
+    - "alembic upgrade head en comunify_dev (copilot_trace_event existe)"
+    - "creds prueba en comunify/.env.dev (Clerk-level; binding tenant ⚠️ pendiente seed — ver MEMORY dev-app-test-creds: comunify 🟡)"
+  note: "Si el binding tenant de comunify aún no está seedeado → flaggear a Chris en G (gate manual). El chat-store + mount se verifican igual a nivel SSE/log."

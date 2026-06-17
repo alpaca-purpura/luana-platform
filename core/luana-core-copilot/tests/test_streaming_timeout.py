@@ -177,8 +177,8 @@ class TestStreamingTimeout:
                 0.1,  # 100ms timeout for fast test
             ),
             patch(
-                "luana_core_copilot.application.orchestrator.chat.redis_client",
-                None,
+                "luana_core_copilot.application.orchestrator.chat._get_redis_client",
+                return_value=None,
             ),
             patch(
                 "luana_core_copilot.application.orchestrator.chat.ConversationRepository",
@@ -215,8 +215,8 @@ class TestStreamingTimeout:
                 0.1,
             ),
             patch(
-                "luana_core_copilot.application.orchestrator.chat.redis_client",
-                None,
+                "luana_core_copilot.application.orchestrator.chat._get_redis_client",
+                return_value=None,
             ),
             patch(
                 "luana_core_copilot.application.orchestrator.chat.ConversationRepository",
@@ -254,8 +254,8 @@ class TestStreamingTimeout:
                 5,
             ),
             patch(
-                "luana_core_copilot.application.orchestrator.chat.redis_client",
-                None,
+                "luana_core_copilot.application.orchestrator.chat._get_redis_client",
+                return_value=None,
             ),
             patch(
                 "luana_core_copilot.application.orchestrator.chat.ConversationRepository",
@@ -289,8 +289,8 @@ class TestStreamingTimeout:
                 0.1,
             ),
             patch(
-                "luana_core_copilot.application.orchestrator.chat.redis_client",
-                None,
+                "luana_core_copilot.application.orchestrator.chat._get_redis_client",
+                return_value=None,
             ),
             patch(
                 "luana_core_copilot.application.orchestrator.chat.ConversationRepository",
@@ -325,8 +325,8 @@ class TestStreamingTimeout:
                 0.1,
             ),
             patch(
-                "luana_core_copilot.application.orchestrator.chat.redis_client",
-                None,
+                "luana_core_copilot.application.orchestrator.chat._get_redis_client",
+                return_value=None,
             ),
             patch(
                 "luana_core_copilot.application.orchestrator.chat.ConversationRepository",

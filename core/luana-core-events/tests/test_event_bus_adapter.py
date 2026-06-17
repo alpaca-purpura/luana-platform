@@ -91,8 +91,8 @@ class TestEventBusAdapterFlagOn:
     def test_flag_on_no_session_falls_back_to_legacy(self, monkeypatch):
         """Flag ON + session=None → log warning + legacy fallback."""
         monkeypatch.setattr(
-            "luana_core_events.outbox.application.event_bus_adapter.settings",
-            MagicMock(
+            "luana_core_events.outbox.application.event_bus_adapter.get_settings",
+            lambda: MagicMock(
                 USE_OUTBOX_PATTERN_DEFAULT=True,
                 USE_OUTBOX_PATTERN_SALES_AGENT=True,
             ),
@@ -111,8 +111,8 @@ class TestEventBusAdapterFlagOn:
     def test_flag_on_sync_session_calls_outbox_enqueue(self, monkeypatch):
         """Flag ON + sync session → calls outbox.enqueue_sync."""
         monkeypatch.setattr(
-            "luana_core_events.outbox.application.event_bus_adapter.settings",
-            MagicMock(
+            "luana_core_events.outbox.application.event_bus_adapter.get_settings",
+            lambda: MagicMock(
                 USE_OUTBOX_PATTERN_DEFAULT=False,
                 USE_OUTBOX_PATTERN_SALES_AGENT=True,
             ),
@@ -136,8 +136,8 @@ class TestEventBusAdapterFlagOn:
         via monkeypatch.setattr to assert the flag-off branch contract.
         """
         monkeypatch.setattr(
-            "luana_core_events.outbox.application.event_bus_adapter.settings",
-            MagicMock(USE_OUTBOX_PATTERN_SALES_AGENT=False, USE_OUTBOX_PATTERN_DEFAULT=False),
+            "luana_core_events.outbox.application.event_bus_adapter.get_settings",
+            lambda: MagicMock(USE_OUTBOX_PATTERN_SALES_AGENT=False, USE_OUTBOX_PATTERN_DEFAULT=False),
         )
         result = EventBusAdapter._is_outbox_enabled("sales_agent")
         assert result is False
@@ -145,8 +145,8 @@ class TestEventBusAdapterFlagOn:
     def test_is_outbox_enabled_with_module_none_uses_default_flag(self, monkeypatch):
         """_is_outbox_enabled(None) uses USE_OUTBOX_PATTERN_DEFAULT."""
         monkeypatch.setattr(
-            "luana_core_events.outbox.application.event_bus_adapter.settings",
-            MagicMock(
+            "luana_core_events.outbox.application.event_bus_adapter.get_settings",
+            lambda: MagicMock(
                 USE_OUTBOX_PATTERN_DEFAULT=True,
             ),
         )
@@ -156,8 +156,8 @@ class TestEventBusAdapterFlagOn:
     def test_flag_on_unknown_module_uses_default(self, monkeypatch):
         """Flag ON for unknown module falls back to USE_OUTBOX_PATTERN_DEFAULT."""
         monkeypatch.setattr(
-            "luana_core_events.outbox.application.event_bus_adapter.settings",
-            MagicMock(
+            "luana_core_events.outbox.application.event_bus_adapter.get_settings",
+            lambda: MagicMock(
                 USE_OUTBOX_PATTERN_DEFAULT=False,
                 spec=["USE_OUTBOX_PATTERN_DEFAULT"],
             ),

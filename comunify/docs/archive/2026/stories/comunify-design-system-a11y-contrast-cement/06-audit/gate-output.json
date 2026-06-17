@@ -1,0 +1,36 @@
+{
+  "brand": "comunify",
+  "story_id": "comunify-design-system-a11y-contrast-cement",
+  "iter": 1,
+  "executed_by": "auditor-frontend (manual execution)",
+  "executed_at": "2026-05-20T16:13:00-05:00",
+  "head_sha": "0a5af6b",
+  "gates": {
+    "tsc_no_emit": { "exit": 0, "status": "PASS" },
+    "eslint_src": { "exit": 0, "status": "PASS" },
+    "prettier_check_story_scope": { "exit": 0, "status": "PASS", "note": "70 pre-existing files outside story scope have warnings; all story-modified files PASS" },
+    "vitest_full_suite": { "exit": 0, "status": "PASS", "tests": "49/49" },
+    "vitest_arch_low_contrast": { "exit": 0, "status": "PASS", "tests": "4/4" },
+    "vitest_arch_stock_palette_regression": { "exit": 0, "status": "PASS", "tests": "3/3" },
+    "vitest_coverage_threshold": {
+      "exit": 0,
+      "status": "WARN",
+      "actual_lines_pct": 1.47,
+      "threshold_pct": 20,
+      "note": "PRE-EXISTING — this story adds arch tests only, not unit tests. T-3-result.md documents it. NOT a regression introduced by this story."
+    },
+    "playwright_e2e_live": {
+      "exit": null,
+      "status": "DEFERRED",
+      "note": "Dev stack not running; per builder T-4-impl-log: live verification escalated to Chris staging gate. chrome-devtools-verify deprecated on Linux per 2026-05-15."
+    },
+    "tokens_in_globals_css_count": { "expected": 5, "actual": 5, "status": "PASS" },
+    "tokens_in_tailwind_config_count": { "expected": 5, "actual": 5, "status": "PASS" },
+    "allowlist_baseline_empty": { "expected": "[]", "actual": "[]", "status": "PASS" },
+    "spanish_neutro_voseo_scan": { "matches": 0, "status": "PASS" },
+    "cross_brand_pollution_scan": { "other_brand_paths": 0, "engine_paths": 0, "status": "PASS" },
+    "mirror_detection": { "cross_brand_artifact_collisions": 0, "status": "PASS" }
+  },
+  "raw_log_path": "(captured inline in audit transcript)",
+  "verdict": "APPROVED"
+}

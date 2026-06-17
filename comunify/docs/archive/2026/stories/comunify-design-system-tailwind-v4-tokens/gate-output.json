@@ -1,0 +1,85 @@
+{
+  "schema_version": "1.0",
+  "brand": "comunify",
+  "story_id": "comunify-design-system-tailwind-v4-tokens",
+  "iter": "audit-1",
+  "ran_at": "2026-05-18T21:41:05Z",
+  "command": "test-frontend (validators 04-validators.yaml)",
+  "gates": [
+    {
+      "id": "val-be-1",
+      "category": "non_functional",
+      "description": "Backend /health endpoint stays 200 (no regression — sanity check)",
+      "command": "curl -sS http://127.0.0.1:8003/health | grep -q '\"status\":\"ok\"'",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_tail": "{\"status\":\"ok\",\"brand\":\"comunify\",\"version\":\"0.1.0\"}",
+      "duration_seconds": 0.009556540,
+      "blocks_release": false
+    },
+    {
+      "id": "val-fe-1",
+      "category": "visual",
+      "description": "CSS bundle generates .bg-comunify-bg utility class rule",
+      "command": "curl -sS \"$(curl -sS http://127.0.0.1:3003/sign-in | grep -oE '/_next/static/chunks/[^\\\"]+\\.css' | head -1 | sed 's|^|http://127.0.0.1:3003|')\" | grep -qE '\\.bg-comunify-bg\\s*\\{'",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_tail": ".bg-comunify-bg {",
+      "duration_seconds": 0.085112787,
+      "blocks_release": true
+    },
+    {
+      "id": "val-fe-2",
+      "category": "visual",
+      "description": "Playwright design-system smoke 3/3 PASS",
+      "command": "cd ${WS}/comunify/frontend && E2E_BASE_URL=http://localhost:3003 COMUNIFY_BE_URL=http://127.0.0.1:8003 npx playwright test --project=smoke e2e/specs/smoke/design-system.smoke.spec.ts --reporter=list",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_tail": "✓  1 [smoke] › e2e/specs/smoke/design-system.smoke.spec.ts:27:7 › Comunify design system cement smoke › font CSS variables are present on <html> (933ms)\n\n  3 passed (1.5s)",
+      "duration_seconds": 2.167794438,
+      "blocks_release": true
+    },
+    {
+      "id": "val-fe-3",
+      "category": "visual",
+      "description": "Smoke regression: 5 baseline passing tests still pass + 3 design-system added",
+      "command": "cd ${WS}/comunify/frontend && E2E_BASE_URL=http://localhost:3003 npx playwright test --project=smoke --reporter=list",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_tail": "8 passed (3.1s)",
+      "duration_seconds": 3.753515775,
+      "blocks_release": true,
+      "note": "Baseline (pre-fix): 5 pass / 21 fail (18 Clerk env pre-existing + 3 design-system). Post-fix: 8 passed (5 baseline + 3 design-system unlocked). ✅ Target met."
+    },
+    {
+      "id": "val-arch-1",
+      "category": "non_functional",
+      "description": "Arch fitness ratchet still clean — no stock palette violations introduced",
+      "command": "cd ${WS}/comunify/frontend && npx vitest run src/__tests__/architecture/ --reporter=default",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_tail": "Test Files  1 passed (1)\n     Tests  3 passed (3)",
+      "duration_seconds": 0.987319295,
+      "blocks_release": true
+    },
+    {
+      "id": "val-typecheck-1",
+      "category": "non_functional",
+      "description": "TSC strict still 0 errors post-test corrections",
+      "command": "cd ${WS}/comunify/frontend && npx tsc --noEmit",
+      "exit_code": 0,
+      "status": "PASS",
+      "stdout_tail": "(no output — 0 errors)",
+      "duration_seconds": 2.920285293,
+      "blocks_release": false
+    }
+  ],
+  "overall": {
+    "total": 6,
+    "pass": 6,
+    "fail": 0,
+    "any_fail": false,
+    "summary": "All 6 validators PASS (val-be-1 sanity + val-fe-1 CSS bundle + val-fe-2 design-system smoke + val-fe-3 full regression ≥8 + val-arch-1 ratchet clean + val-typecheck-1 tsc strict)"
+  },
+  "notes": "Story comunify-design-system-tailwind-v4-tokens audit-1 validation complete. Tailwind v4 @theme block + token variables cement. CSS utility .bg-comunify-bg generated. 3 design-system smoke tests pass. Full smoke regression shows 8 tests passing (baseline 5 + added 3, matching expected outcome). Architecture ratchet clean (no stock palette violations). TypeScript strict 0 errors. Ready for `/pm-comunify` merge handoff."
+}

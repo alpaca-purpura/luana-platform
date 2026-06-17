@@ -11,7 +11,7 @@ import time
 import structlog
 from fastapi import HTTPException
 
-from luana_core_platform.core.database import redis_client
+from luana_core_platform.core.database import get_redis_client
 
 logger = structlog.get_logger(__name__)
 
@@ -59,7 +59,8 @@ def check_rate_limit(
     Raises:
         RateLimitExceeded: If the user has exceeded the limit.
     """
-    if not redis_client:
+    rc = get_redis_client()
+    if not rc:
         logger.debug("rate_limit_skip_no_redis", scope=scope)
         return
 
@@ -71,7 +72,7 @@ def check_rate_limit(
     retry_after = window_seconds
 
     try:
-        pipe = redis_client.pipeline()
+        pipe = rc.pipeline()
         # Remove expired entries
         pipe.zremrangebyscore(key, "-inf", window_start)
         # Count current entries
@@ -86,7 +87,7 @@ def check_rate_limit(
 
         if current_count >= max_requests:
             # Find oldest entry to calculate retry-after
-            oldest = redis_client.zrange(key, 0, 0, withscores=True)
+            oldest = rc.zrange(key, 0, 0, withscores=True)
             if oldest:
                 oldest_ts = oldest[0][1]
                 retry_after = max(1, int((oldest_ts + window_seconds) - now))
@@ -100,7 +101,7 @@ def check_rate_limit(
                 retry_after=retry_after,
             )
             # Remove the entry we just added since we're rejecting
-            redis_client.zrem(key, str(now))
+            rc.zrem(key, str(now))
             exceeded = True
 
     except Exception:

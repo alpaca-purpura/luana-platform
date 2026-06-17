@@ -1,5 +1,80 @@
 @import "tailwindcss";
 
+/* Tailwind v4 JIT: scan @luana/ui-kit so the kit's static class usages (avatar/ribbon
+ * sizing, shell layout, etc.) are included in the generated CSS. In v4 the `content[]`
+ * array in tailwind.config.ts is IGNORED — only `@source` works. Without this the kit
+ * renders UNSTYLED (e.g. giant un-sized avatars). Same fix vitalia/nicolify applied.
+ * Path is relative to this file: comunify/frontend/src/app/ → 4 up = repo root.
+ * Bare-dir form (not glob): matches vitalia verbatim (the form proven to land kit
+ * utilities in the CLIENT stylesheet under Turbopack). The explicit glob form put the
+ * classes in a server-only chunk. */
+@source "../../../../core/@luana/ui-kit/src";
+
+/* Dark variant wiring — Tailwind v4 (canon §2.10, lift 2026-06-16).
+ * next-themes (providers.tsx) usa attribute="data-theme" → pone <html data-theme="dark">.
+ * Por default v4, dark: cae a @media (prefers-color-scheme) e IGNORA ese atributo →
+ * los dark: del kit (AutosaveBadge/alert/chart/FloatingAutosaveIndicator) no conmutaban
+ * con el toggle. Re-apuntamos dark: al mismo selector que los overrides de CSS-var
+ * (.dark, [data-theme="dark"]). Idiom v4-puro, 1 línea, sin tailwind.config (= nicolify). */
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
+@theme {
+  /* Color utilities — Tailwind v4 generates .bg-comunify-X / .text-comunify-X / .border-comunify-X */
+  --color-comunify-primary: hsl(264 92% 58%);
+  --color-comunify-primary-foreground: hsl(0 0% 100%);
+  --color-comunify-primary-hover: hsl(254 79% 49%);
+  --color-comunify-purple-mid: hsl(252 100% 62%);
+  --color-comunify-blue: hsl(217 95% 58%);
+  --color-comunify-blue-deep: hsl(220 84% 45%);
+  --color-comunify-accent: hsl(355 100% 69%);
+  --color-comunify-stable: hsl(152 80% 43%);
+  --color-comunify-warning: hsl(45 100% 48%);
+  --color-comunify-critical: hsl(0 84% 60%);
+
+  /* Dark-foreground -text tokens (a11y contrast cement — WCAG AA ≥ 4.5:1 on tint bg/10) */
+  --color-comunify-warning-text: hsl(
+    45 100% 28%
+  ); /* #8E6B00 — 4.72:1 on bg-comunify-bg */
+  --color-comunify-stable-text: hsl(
+    152 80% 28%
+  ); /* #0E804B — 4.54:1 on bg-comunify-bg */
+  --color-comunify-accent-text: hsl(
+    355 100% 45%
+  ); /* #E50013 — 4.53:1 on bg-comunify-bg */
+  --color-comunify-critical-text: hsl(
+    0 84% 49%
+  ); /* #E51313 — 4.60:1 on bg-comunify-bg */
+  --color-comunify-blue-text: hsl(
+    217 95% 52%
+  ); /* #1069F8 — 4.51:1 on bg-comunify-bg */
+
+  --color-comunify-text: hsl(226 49% 9%);
+  --color-comunify-text-muted: hsl(215 16% 47%);
+  --color-comunify-bg: hsl(210 40% 98%);
+  --color-comunify-surface: hsl(0 0% 100%);
+  --color-comunify-border: hsl(214 32% 91%);
+
+  /* Font utilities — Tailwind v4 generates .font-satoshi / .font-manrope / .font-inter */
+  --font-satoshi:
+    var(--font-satoshi), "ui-sans-serif", "system-ui", "sans-serif";
+  --font-manrope:
+    var(--font-manrope), "ui-sans-serif", "system-ui", "sans-serif";
+  --font-inter: var(--font-inter), "ui-sans-serif", "system-ui", "sans-serif";
+
+  /* Border radius — Tailwind v4 generates .rounded-default / .rounded-lg */
+  --radius-default: 0.75rem;
+  --radius-lg: 1.25rem;
+
+  /* Background image — Tailwind v4 generates .bg-comunify-gradient */
+  --background-image-comunify-gradient: linear-gradient(
+    135deg,
+    #7b2ff7 0%,
+    #6a3cff 35%,
+    #2d7ff9 70%,
+    #1e5eff 100%
+  );
+}
+
 :root {
   /* Brand core */
   --comunify-primary: 264 92% 58%;
@@ -15,6 +90,13 @@
   --comunify-warning: 45 100% 48%;
   --comunify-critical: 0 84% 60%;
 
+  /* Dark-foreground -text tokens (a11y — WCAG AA dark fg for tint backgrounds) */
+  --comunify-warning-text: 45 100% 28%;
+  --comunify-stable-text: 152 80% 28%;
+  --comunify-accent-text: 355 100% 45%;
+  --comunify-critical-text: 0 84% 49%;
+  --comunify-blue-text: 217 95% 52%;
+
   /* Neutral */
   --comunify-text: 226 49% 9%;
   --comunify-text-muted: 215 16% 47%;
@@ -22,10 +104,55 @@
   --comunify-surface: 0 0% 100%;
   --comunify-border: 214 32% 91%;
 
+  /* Shell surface tokens (light mode) — consumed by ShellLayoutClient, Ribbon, ChatPanel */
+  --bg: 240 20% 99%;
+  --panel: 0 0% 100%;
+  --line: 240 14% 92%;
+  --muted: 240 10% 46%;
+  --ink: 240 24% 14%;
+
+  /* Agent ring tokens — per-agent color for RibbonTab / avatar border / StatusDot */
+  --agent-luana: 264 92% 58%;
+  --agent-nina: 252 100% 62%;
+  --agent-tomas: 217 95% 58%;
+  --agent-sofia: 152 80% 43%;
+  --agent-bruno: 38 92% 50%;
+  --agent-lucia: 220 84% 45%;
+
   /* Shape */
   --radius: 0.75rem;
   --radius-lg: 1.25rem;
+  /* RN-7: control-atom radius — brand-overridable via @luana/ui-kit rounded-control.
+   * Set to 0.375rem = Tailwind v4's --radius-md default, which is what comunify's
+   * Button/Input/Select/Textarea used pre-lift (comunify has no borderRadius.md
+   * override in tailwind.config.ts → Tailwind default 0.375rem applied).
+   * Zero visual change: controls render at exactly 6px as before.
+   * Nicolify overrides this to 9999px (pill) on its own branch. */
+  --radius-control: 0.375rem;
 
   /* Gradient (valor literal con HEX — SSoT canónico, allowlisted en arch fitness) */
-  --comunify-gradient: linear-gradient(135deg, #7B2FF7 0%, #6A3CFF 35%, #2D7FF9 70%, #1E5EFF 100%);
+  --comunify-gradient: linear-gradient(
+    135deg,
+    #7b2ff7 0%,
+    #6a3cff 35%,
+    #2d7ff9 70%,
+    #1e5eff 100%
+  );
+}
+
+/* Dark mode: next-themes attribute="data-theme" sets <html data-theme="dark"> (also .dark). */
+.dark,
+[data-theme="dark"] {
+  --bg: 240 18% 8%;
+  --panel: 240 16% 12%;
+  --line: 240 12% 22%;
+  --muted: 240 8% 62%;
+  --ink: 240 20% 96%;
+}
+
+/* Border cement rule: all borders adapt to theme via --line token */
+*,
+*::before,
+*::after {
+  border-color: hsl(var(--line));
 }

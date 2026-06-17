@@ -101,7 +101,9 @@ def _evaluate_golden(
     latency_ms = int((time.monotonic() - started) * 1000)
 
     citations = tuple(
-        dict.fromkeys(str(chunk.get("source_doc")) for chunk in chunks if chunk.get("source_doc")),
+        dict.fromkeys(
+            str(chunk.get("source_doc")) for chunk in chunks if chunk.get("source_doc")
+        ),
     )
     recall = 1.0 if golden.expected_source_doc in citations else 0.0
 
@@ -151,10 +153,17 @@ def _aggregate(results: Iterable[_GoldenResult]) -> dict[str, Any]:
         for dim in r.judge_result.dimensions:
             if dim.name in dim_totals and dim.score > 0:
                 dim_totals[dim.name].append(dim.score)
-    judge_dim_avg = {dim: round(sum(scores) / len(scores), 2) if scores else None for dim, scores in dim_totals.items()}
+    judge_dim_avg = {
+        dim: round(sum(scores) / len(scores), 2) if scores else None
+        for dim, scores in dim_totals.items()
+    }
 
     judge_models = sorted(
-        {r.judge_result.judge_model for r in results_list if r.judge_result.judge_model},
+        {
+            r.judge_result.judge_model
+            for r in results_list
+            if r.judge_result.judge_model
+        },
     )
 
     return {
@@ -220,7 +229,9 @@ def run_weekly_rag_eval(
     aggregate["failed_golden_ids"] = failed
 
     judge_avg = None
-    judge_dim_scores = [score for score in aggregate["judge_dimensions"].values() if score is not None]
+    judge_dim_scores = [
+        score for score in aggregate["judge_dimensions"].values() if score is not None
+    ]
     if judge_dim_scores:
         judge_avg = round(sum(judge_dim_scores) / len(judge_dim_scores), 2)
 

@@ -157,7 +157,7 @@ def db(db_engine):
 @pytest.fixture(autouse=True)
 def _force_prompt_source_file(monkeypatch):
     """Force PROMPT_SOURCE=file for every test."""
-    from luana_core_platform.core.config import settings
+    from luana_core_platform.core.config import get_settings
     from luana_core_platform.core.enums import PromptSource
 
-    monkeypatch.setattr(settings, "PROMPT_SOURCE", PromptSource.FILE)
+    monkeypatch.setattr(get_settings(), "PROMPT_SOURCE", PromptSource.FILE)

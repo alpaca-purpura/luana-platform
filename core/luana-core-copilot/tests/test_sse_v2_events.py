@@ -574,8 +574,8 @@ async def _run_stream_chat(
             return_value=fake_graph,
         ),
         patch(
-            "luana_core_copilot.application.orchestrator.chat.redis_client",
-            None,
+            "luana_core_copilot.application.orchestrator.chat._get_redis_client",
+            return_value=None,
         ),
     ):
         raw_frames = [

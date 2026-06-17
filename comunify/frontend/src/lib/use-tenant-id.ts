@@ -1,28 +1,38 @@
+// story-origin: comunify-shell-organism
 "use client";
 
-import { useOrganization, useUser } from "@clerk/nextjs";
-
 /**
- * Returns the active tenant ID for Comunify multi-tenant fetchClient.
+ * useTenantId — returns the current tenant ID for all Comunify API requests.
  *
- * Priority: Clerk active organization id > user-id fallback for single-tenant creator.
+ * Per MEMORY.md::no-clerk-organizations (2026-05-20 + 2026-06-01):
+ *   Luana does NOT use Clerk Organizations. tenant_id is OUR data
+ *   (luana-core-iam), written by us into Clerk user.publicMetadata for
+ *   convenient FE access. It is NOT the Clerk Organization id
+ *   (format: org_3DzUI3...) — that is NOT a UUID and causes backend
+ *   UUID() parse errors (500 on all data endpoints).
  *
- * Rationale: Clerk `useAuth().userId` is the user identity, not the tenant.
- * In a multi-tenant SaaS, one user can belong to multiple orgs (tenants).
- * Using userId as X-Tenant-ID assumes 1:1 user→tenant which breaks multi-brand
- * creators. Organization.id is the correct tenant anchor.
+ * Source of truth: user.publicMetadata.tenant_id (UUID string), set by
+ *   luana-core-iam when the user is provisioned.
  *
- * Multi-creator switcher (Q2-B deferred — ticket 12.bis) will add an explicit
- * tenant picker; this hook will be updated to read from that context then.
+ * NEVER use useOrganization() / useAuth().orgId — Clerk Orgs not used in Luana.
+ * Mirrors vitalia/frontend/src/hooks/useTenantId.ts (post no-clerk-org fix).
  *
  * @see .claude/rules/tenant-isolation.md
  */
+
+import { useUser } from "@clerk/nextjs";
+
 export function useTenantId(): string | null {
-  const { organization, isLoaded: orgLoaded } = useOrganization();
-  const { user, isLoaded: userLoaded } = useUser();
+  const { user, isLoaded } = useUser();
 
-  if (!orgLoaded || !userLoaded) return null;
+  if (!isLoaded) return null;
 
-  // Prefer Clerk org id (multi-tenant) over user id (single-tenant fallback)
-  return organization?.id ?? user?.id ?? null;
+  if (user) {
+    const meta = user.publicMetadata as Record<string, unknown>;
+    if (typeof meta.tenant_id === "string" && meta.tenant_id.length > 0) {
+      return meta.tenant_id;
+    }
+  }
+
+  return null;
 }

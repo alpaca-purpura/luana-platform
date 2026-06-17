@@ -1,3 +1,18 @@
+## 0.6.0 — 2026-06-16 (minor · `CollapsibleSection` molécula colapsable de sección · lift vitalia-fase2-lisa-servicios)
+### Added — `molecule/CollapsibleSection`
+- **`CollapsibleSection`** — sección colapsable que compone `accordion` + `Group` (header + cuerpo colapsable). Exportada desde el barrel (`src/index.ts`) + test. SSoT: `docs/promotion-protocol/proposals/2026-06-16-collapsible-section-ui-kit.md`.
+- **Reconciliación de integración (checkpoint 2026-06-16):** construido en `wip/vitalia` sobre base 0.4.1 en paralelo al lift `--radius-control` (0.5.0, nicolify). Al integrar ambos a `main` → **0.6.0** (radius-control + CollapsibleSection coexisten; `index.ts` auto-merge con ambos exports, sin conflicto).
+
+## 0.5.0 — 2026-06-15 (minor · `--radius-control` brand-overridable control radius · RN-7 lift, nicolify-r0-design-system-adoption)
+### Added — control-atom radius token
+- **Control atoms (`Button`/`Input`/`Select` trigger/`Textarea`) usan `rounded-control`** en vez de `rounded-md` hardcodeado. `rounded-control` resuelve a `var(--radius-control)` con fallback al radio md de cada marca → **brand-overridable**: una marca puede hacer sus controles pill (nicolify) o mantenerlos md (vitalia/comunify/lupulo) sin tocar el kit.
+- **`@luana/design-tokens` `RADIUS_NAMES`** += `"control"` (tuple: `sm·md·lg·bubble·pill·control`). Nombre compartido, valor por marca.
+- **Cero cambio visual en marcas existentes (downstream-regression verificada):** cada marca mapea `borderRadius.control` + `--radius-control` a su radio `rounded-md` EXACTO previo — vitalia `calc(var(--radius) - 2px)` (8px) · comunify `0.375rem` (6px) · lupulo `var(--radius)` (6px). Solo nicolify (en su branch) opta a pill (`9999px`). tsc 0 errores + arch vitalia 187/187 + comunify 3/3 + ui-kit 270/270 + design-tokens 12/12.
+- `SelectContent`/`SelectItem` radii SIN cambio (superficies de dropdown, no el control).
+### Consumer requirement (coordinado en este lift)
+- Una marca que consume `rounded-control` DEBE mapear `borderRadius.control` en su tailwind config (fallback `var(--radius-control, <su-md>)`). Hecho para las 4 marcas en este lift. Marca que omita token+utilidad rendiría controles sin radio → coordinar al bumpear.
+- **SEMVER 0.4.1 → 0.5.0 (minor — token aditivo + opt-in pill por marca; fallback preserva md).** SSoT: `docs/promotion-protocol/proposals/2026-06-15-ui-kit-radius-control-token.md`.
+
 ## 0.4.1 — 2026-06-15 (fix · AppPanelSlot content-area flex-col · vitalia-bugfix-horarios-toolbar-sticky)
 ### Fixed — `organism/shell/AppPanelSlot`
 - **Content-area host ahora es `flex flex-col` (no solo block scroll).** Era `<div className="flex-1 min-h-0 overflow-y-auto">`; pasa a `<div className="flex flex-col flex-1 min-h-0 overflow-y-auto">`. Las hojas que se montan con `EntityWorkspaceLayout` (N3 fijo + scroll interno propio, vía `flex-1`) necesitan un padre **flex-column** para CLAMPAR a la altura del panel; con el content-area en `block`, su `flex-1` era inerte → la hoja crecía a su contenido → el content-area scrolleaba TODO y arrastraba los toolbars de la hoja (la N3 sobrevivía solo por su `sticky`). Caso origen: vitalia Lisa › Staff › {doctor} › Horarios — el toolbar (Disponibilidad + Semana/Mes + nav-semana + Mostrar 24 horas) scrolleaba en vez de quedar fijo. Verificado LIVE en dev-app (Chrome DevTools MCP): EWL clampa, la grilla pasa a único scroller interno, toolbars FIJOS, página no scrollea. Páginas normales (hoja = un bloque alto) siguen scrolleando vía `overflow-y-auto` (no rompe el caso común).

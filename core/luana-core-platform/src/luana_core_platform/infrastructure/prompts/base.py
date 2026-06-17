@@ -8,9 +8,7 @@ from uuid import UUID
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from sqlalchemy import text
 
-from luana_core_platform.core.config import settings
 from luana_core_platform.core.context import get_tenant_id
-from luana_core_platform.core.database import SessionLocal
 from luana_core_platform.core.enums import PromptSource
 from luana_core_platform.domain.datetime_utils import utc_now
 
@@ -39,6 +37,9 @@ class PromptLoader:
     def _get_tenant_config(self, tenant_id: UUID) -> dict[str, Any]:
         if tenant_id in self._tenant_config_cache:
             return self._tenant_config_cache[tenant_id]
+
+        # Lazy import — T-2 copilot-chat-mountable: no module-level settings access.
+        from luana_core_platform.core.database import SessionLocal
 
         db = SessionLocal()
         try:
@@ -76,6 +77,9 @@ class PromptLoader:
 
     def _get_from_db(self, key: str, tenant_id: UUID | None) -> str | None:
         try:
+            # Lazy import — T-2 copilot-chat-mountable: no module-level settings access.
+            from luana_core_platform.core.database import SessionLocal
+
             db = SessionLocal()
         except Exception as exc:  # noqa: BLE001 — DB resilience: any failure falls back to file
             logger.warning("Error opening DB session for prompt '%s': %s", key, exc)
@@ -140,8 +144,11 @@ class PromptLoader:
 
     def render(self, template_name: str, **kwargs: Any) -> str:  # noqa: ANN401 — template variable expansion
         """Render a prompt template by name using the configured resolution strategy."""
+        # Lazy import — T-2 copilot-chat-mountable: no module-level settings access.
+        from luana_core_platform.core.config import get_settings
+
         key = template_name.replace(".j2", "")
-        mode = settings.PROMPT_SOURCE
+        mode = get_settings().PROMPT_SOURCE
         tenant_id = get_tenant_id()
 
         if tenant_id:

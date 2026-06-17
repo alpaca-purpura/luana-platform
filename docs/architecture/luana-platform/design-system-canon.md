@@ -105,6 +105,19 @@ Reemplaza el `<select>` nativo del browser (feo, no-tokenizado). Componente cust
 | EntityInfoCard | Opción B sobre base `StaffCard` (vitalia) + ícono agent-color (nicolify IcpCard) |
 | Grupo info | `Group`/`GroupHeader` (base nicolify) |
 
+### 2.10 · Dark-mode wiring (contrato del consumer · cement 2026-06-16)
+
+`@luana/ui-kit` shippea componentes con `dark:` variants de Tailwind (`AutosaveBadge`, `alert`, `chart`, `FloatingAutosaveIndicator`, + chrome del shell), pero **NO shippea CSS ni `@custom-variant`** — el wiring de dark vive en el `globals.css` de cada consumer (limitación Tailwind v4 · ver §6.8). El kit define el contrato; el consumer lo cumple. **Contrato HARD que TODO consumer del kit cumple en su `globals.css`:**
+
+1. **Toggle:** next-themes con `attribute="data-theme"` → pone `<html data-theme="dark">`. (Requiere `<ThemeProvider attribute="data-theme">` montado en `providers.tsx` — sin él el toggle es no-op.)
+2. **`@custom-variant dark`** re-apuntando `dark:` al selector `[data-theme="dark"]`/`.dark`. Por default Tailwind v4 manda `dark:` a `@media (prefers-color-scheme)` e **ignora el atributo** → los `dark:` del kit no conmutan con el toggle. Mecanismo canónico: `@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *))` (v4-puro, 1 línea, sin `tailwind.config`).
+3. **`@source "<rel>/core/@luana/ui-kit/src"`** (el `src` COMPLETO, no un subdir). Los molecules consumidos (`EntityWorkspaceLayout`/`EntitySubNavBar`/`Group`/`AutosaveBadge`) viven en `ui-kit/src` raíz, fuera de `organism/shell`; un `@source` angosto purga sus clases `dark:`/arbitrary **en silencio** (tsc verde, visual roto).
+4. **Overrides de CSS-var dark** (token swap) bajo el **mismo** par de selectores (`.dark, [data-theme="dark"]`), no solo `.dark`.
+
+**Equivalente legacy aceptado (vitalia):** `@config "../../tailwind.config.ts"` + `darkMode: ["class", '[data-theme="dark"]']` produce el **mismo efecto** que `@custom-variant`. Es válido — el gate asserta el **EFECTO** (`dark:` responde a `[data-theme="dark"]`/`.dark`, no a `prefers-color-scheme`), NO el mecanismo exacto. Migrar vitalia a `@custom-variant` es follow-up opcional, no urgente.
+
+**Gate (replicable por marca):** `{brand}/frontend/src/__tests__/architecture/` asserta el contrato leyendo `globals.css` (+ `tailwind.config.ts` si usa `@config`): dark variant → `[data-theme="dark"]`/`.dark` por cualquiera de los dos mecanismos + `@source` escanea el `ui-kit/src` completo. nicolify + vitalia lo tienen; cada marca nueva lo replica. Es lo que faltó y dejó pasar la regresión (origen: nicolify ds-adoption G round-1, fix `b09bc9dc`).
+
 ---
 
 ## 3. Binding — quién consume el canon y CÓMO (enforcement)
@@ -283,6 +296,27 @@ export function AgentScopedForm({ agentSlug }: Props){
 }
 ```
 
+### 6.8 · Dark-mode wiring — snippet canónico del consumer (§2.10)
+
+```css
+/* {brand}/frontend/src/app/globals.css */
+@import "tailwindcss";
+
+/* (2) dark: responde al toggle data-theme/.dark, NO a prefers-color-scheme */
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
+/* (3) JIT escanea el kit COMPLETO (molecules fuera de organism/shell se purgan si no) */
+@source "../../../../core/@luana/ui-kit/src";
+
+@layer base {
+  /* (4) token swap bajo el MISMO par de selectores que (2) */
+  .dark,
+  [data-theme="dark"] { --background: 240 18% 8%; /* … */ }
+}
+```
+
+> **Por qué no lo shippea el kit (pieza-3 evaluada, descartada 2026-06-16):** `@custom-variant`/`@source` son directivas del **CSS entry** de Tailwind v4 — se procesan en el `globals.css` del consumer y `@source` resuelve relativo a ese archivo. No son re-exportables útilmente desde un paquete TS, y empaquetar un `.css` importable ahorraría ~2 líneas por marca a cambio de una superficie de export versionada + un `@source` con path relativo frágil. Las piezas 1 (contrato §2.10) + 2 (arch-test por marca) cierran el gap sin tocar `ui-kit/src` (sin bump del kit). vitalia usa el equivalente legacy `@config` + `tailwind.config.ts`.
+
 ## 7. Referencias
 
 - `ADR-014-design-system-homologation.md` — doctrina (5 capas + enforcement mecánico)
@@ -290,6 +324,7 @@ export function AgentScopedForm({ agentSlug }: Props){
 - `design-system-inventory-best-of-best.md` — análisis best-of-best (file:line)
 - `vitalia/docs/product/stories/vitalia-ds-showcase/` — origen ratificación (`checkpoint.md::ratified_decisions` + `mockups/showcase.html`)
 - `.claude/rules/frontend-visual-fidelity.md` — D1/D2/D3 (bindea a este canon)
+- `docs/promotion-protocol/proposals/2026-06-16-ui-kit-dark-contract.md` — lift del contrato §2.10 (dark-mode wiring + arch-test replicable)
 - `vitalia/docs/learnings/2026-06-06-n3-entity-workspace-layout-from-nicolify.md` — `EntityWorkspaceLayout` (primera primitiva)
 - `ADR-012-autosave-primitive-platform.md` — patrón hermano
 - `core/@luana/{design-tokens, ui-kit}` — homes

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 import httpx
 import structlog
-from luana_core_platform.core.config import settings
+from luana_core_platform.core.config import get_settings
 
 logger = structlog.get_logger()
 
@@ -28,7 +28,7 @@ class TavilySearchService:
 
     def __init__(self, api_key: str | None = None) -> None:
         """Initialize with optional API key override."""
-        self.api_key = api_key or settings.TAVILY_API_KEY
+        self.api_key = api_key or get_settings().TAVILY_API_KEY
 
     async def search(
         self,

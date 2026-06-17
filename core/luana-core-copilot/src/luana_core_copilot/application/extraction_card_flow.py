@@ -24,7 +24,9 @@ from __future__ import annotations
 from uuid import UUID, uuid4
 
 import structlog
-from luana_core_platform.core.database import redis_client
+from luana_core_platform.core.database import (
+    get_redis_client as _get_redis_client,
+)  # T-2: lazy — avoid eager Settings() at import time
 from luana_core_platform.domain.events import DomainEvent, EventBus
 
 from luana_core_copilot.domain.events import CardEmitted
@@ -65,9 +67,10 @@ def emit_section_complete_pill(
        backward-compat with events published before this refactor.
     """
     idempotency_key = f"extract_card:{job_id}:nav:{section_slug}"
-    if redis_client:
+    _rc = _get_redis_client()
+    if _rc:
         # Atomic NX claim: returns True on first set, None if key already exists.
-        claimed = redis_client.set(idempotency_key, "1", ex=86400, nx=True)
+        claimed = _rc.set(idempotency_key, "1", ex=86400, nx=True)
         if not claimed:
             logger.debug(
                 "nav_pill_duplicate_skipped",
@@ -165,9 +168,10 @@ def emit_extraction_summary_card(
     in the card payload for future FE reference.
     """
     idempotency_key = f"extract_card:{job_id}:summary"
-    if redis_client:
+    _rc = _get_redis_client()
+    if _rc:
         # Atomic NX claim: returns True on first set, None if key already exists.
-        claimed = redis_client.set(idempotency_key, "1", ex=86400, nx=True)
+        claimed = _rc.set(idempotency_key, "1", ex=86400, nx=True)
         if not claimed:
             logger.debug("summary_card_duplicate_skipped", job_id=job_id)
             return

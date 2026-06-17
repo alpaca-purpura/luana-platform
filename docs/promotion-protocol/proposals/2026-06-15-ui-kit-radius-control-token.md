@@ -1,10 +1,12 @@
 ---
 proposal_id: 2026-06-15-ui-kit-radius-control-token
-state: accepted                # ★ Chris GO 2026-06-15 ("arrancá ambos") — /pm-luana ejecuta el lift en worktree core efímero (scope M13: NO desde worktree de marca)
+state: migrated                # ★ merged a main 2026-06-16 (/pm-luana squash-merge wip/core-radius-control · regression re-verificada: design-tokens 12/12 + vitalia tsc 0 err)
 opened_date: 2026-06-15
 opened_by: /architect (nicolify-r0-design-system-adoption)
 ratified_by: chris
 ratified_date: 2026-06-15
+migrated_date: 2026-06-16
+migrated_by: /pm-luana
 
 # Origen
 origin_story: nicolify/docs/product/stories/nicolify-r0-design-system-adoption   # RN-7
@@ -23,14 +25,15 @@ brands_affected: [nicolify, vitalia, comunify, lupulo]   # todas consumen los co
 
 # Lift: `--radius-control` token brand-overridable en los controls de @luana/ui-kit
 
-## ✅ Build status (2026-06-15) — LIFT BUILT, pendiente merge a main
+## ✅ MIGRATED (2026-06-16) — merged a main · ui-kit 0.5.0 vive en main
 
 - **Worktree:** `wip/core-radius-control` (4 commits, pushed): `0ca11f0f` (lift) · `9574e31c` (fix md-exact — ver abajo) · `9081d1de` (docs) · `125696b4` (bump 0.5.0 + CHANGELOG).
 - **Version:** `@luana/ui-kit` 0.4.1 → **0.5.0** (minor).
 - **Regression cross-brand VERDE (md-exact, cero cambio visual):** vitalia control=`calc(var(--radius)-2px)` 8px (=old md) · comunify=`0.375rem` 6px (=old md) · lupulo=`var(--radius)` 6px (=its md). tsc 0 err ×brands + arch vitalia 187/187 + comunify 3/3 + ui-kit 270/270 + design-tokens 12/12.
 - **★ Regression caught + fixed:** la 1ª pasada mapeó `--radius-control: var(--radius)` (10px) → +2px en vitalia/comunify (habría roto sus goldens 0.001). Corregido a md-exact en `9574e31c`. (El wording de esta proposal decía `var(--radius)` — era impreciso; el INTENT era "stay md".)
 - **Mecanismo:** brand `tailwind.config.ts::borderRadius.control: "var(--radius-control, <su-md>)"` + `--radius-control` en globals.css. Kit atoms usan `rounded-control`. Doble fallback → marca que omite el token = md.
-- **PENDIENTE (gated):** (1) merge `wip/core-radius-control` → main (ci-parity + squash, manual/Chris) · (2) esta proposal → `migrated` post-merge · (3) nicolify bumpea dep a 0.5.0 → controls pill → destraba golden `atoms.png` + demo #37 (Abel) full-fidelity.
+- **✅ (1) merged a main** 2026-06-16 (squash-merge `wip/core-radius-control`, sin solape con los 3 commits que main avanzó; regression re-verificada independiente: design-tokens 12/12 + vitalia tsc 0 err). · **✅ (2) proposal → `migrated`** (este commit).
+- **⏳ PENDIENTE downstream (handoff `/pm-nicolify`):** (3) nicolify bumpea dep `@luana/ui-kit` → 0.5.0 → controls pill → destraba golden `atoms.png` (hoy `test.skip blocked_on: kit-radius-control-lift`) + demo #37 (Abel) full-fidelity. Esto NO bloquea el merge — es trabajo de la branch `wip/nicolify`.
 
 ## Problema
 

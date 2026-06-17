@@ -71,7 +71,14 @@ services:
         required: false
     environment:
       PORT: "3003"
-      NEXT_PUBLIC_API_URL: "http://127.0.0.1:8003"
+      # Cap heap V8 de `next dev`. 768 alcanzaba con .next caliente, pero el COLD-compile del shell
+      # (@luana/ui-kit completo vía Turbopack) revienta el proceso (exit-during-compile) tras un wipe
+      # de .next. 2048 da headroom para el cold-compile; el límite de memoria sube a 3G acorde.
+      NODE_OPTIONS: "--max-old-space-size=2048"
+      # NEXT_PUBLIC_API_URL removed (2026-05-20) — let env_file (comunify/.env.dev) win:
+      #   - tunnel mode: https://dev-app.comunifyagents.com (browser hits tunnel which routes /api/* to backend)
+      #   - local mode:  http://127.0.0.1:8003 (set en .env.dev cuando no se usa tunnel)
+      # Hardcode previo rompía post-login flows desde dev-app.* (mixed content + 127.0.0.1 unreachable from external host).
     volumes:
       # Bind mount al path donde el Dockerfile pone WORKDIR + pnpm install (/app/comunify/frontend),
       # NO en /app raíz (eso sobrescribiría /app/node_modules + /app/pnpm-workspace.yaml del image).
@@ -86,7 +93,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: 3G
 
   comunify_cloudflared_dev:
     image: cloudflare/cloudflared:latest

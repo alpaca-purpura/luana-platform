@@ -34,7 +34,6 @@ from luana_core_assets.infrastructure.repositories.asset_repository import (
     AssetRepository,
 )
 from luana_core_platform.core.context import get_tenant_id
-from luana_core_platform.core.database import SessionLocal
 from sqlalchemy import or_, select
 
 if TYPE_CHECKING:
@@ -169,6 +168,9 @@ def search_assets(
             return json.dumps({"error": f"offer_id inválido: {offer_id}"})
 
     try:
+        # Lazy import — T-2 copilot-chat-mountable: no module-level settings access.
+        from luana_core_platform.core.database import SessionLocal
+
         with SessionLocal() as db:
             # Use our inline search query (AssetRepository doesn't have search_by_query yet)
             models = _search_assets_query(
@@ -219,6 +221,9 @@ def get_asset(asset_id: str) -> str:
         return json.dumps({"error": "not_found"})
 
     try:
+        # Lazy import — T-2 copilot-chat-mountable: no module-level settings access.
+        from luana_core_platform.core.database import SessionLocal
+
         with SessionLocal() as db:
             repo = AssetRepository(db)
             asset = repo.get_by_id(parsed_id, tenant_id=tenant_id)
