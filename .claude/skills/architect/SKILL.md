@@ -824,6 +824,7 @@ Antes de cerrar story como ready:
 **★ v4.3 cement 2026-05-28 (anti-isla + fidelidad visual):**
 - [ ] `03-arch.md § Integration design (CONN)` presente: reachability path concreto + consumers (≥1 por surface, o justificación infra) + registration points (router/nav/DI/tool registry como deliverables) + home (cap_target). Sin esto → NO ready (`anti-orphan-integration.md`)
 - [ ] Cada surface nuevo en 06-tickets tiene su deliverable de **registro** (no solo crear el archivo): BE `include_router`, FE ruta+nav, agentic tool registry
+- [ ] **★ HB-71 (contrato-imaginado · REFUSE ready):** toda superficie **editable con autosave / write** declarada en `03-arch.md` (StructuredProfileEditor, form-autosave, mutation hook) DEBE tener su **write endpoint (method + path exacto)** en la TABLA DE ENDPOINTS del mismo arch. Editor declarado sin su write endpoint en la tabla → el builder FE lo INVENTA (404 live · 10 instancias en una story). Sin el endpoint declarado → NO ready. El builder FE además cementa el contrato con un test que assertea method+URL contra el router BE real (no contra sí mismo) — ver `test_http_contract_parity.py`
 - [ ] UI stories: `02-design-ui.md` lista elementos visuales clave + `04-validators § playwright_visual_scope` separa `story_scope_*` de `out_of_mockup_scope` (no exceder mockup). `frontend-visual-fidelity.md`
 - [ ] UI tickets: deliverables citan reutilización de átomos `components/ui/` + moléculas `components/shared/` (no reinventar primitivas)
 
