@@ -10,6 +10,14 @@
  * classes in a server-only chunk. */
 @source "../../../../core/@luana/ui-kit/src";
 
+/* Dark variant wiring — Tailwind v4 (canon §2.10, lift 2026-06-16).
+ * next-themes (providers.tsx) usa attribute="data-theme" → pone <html data-theme="dark">.
+ * Por default v4, dark: cae a @media (prefers-color-scheme) e IGNORA ese atributo →
+ * los dark: del kit (AutosaveBadge/alert/chart/FloatingAutosaveIndicator) no conmutaban
+ * con el toggle. Re-apuntamos dark: al mismo selector que los overrides de CSS-var
+ * (.dark, [data-theme="dark"]). Idiom v4-puro, 1 línea, sin tailwind.config (= nicolify). */
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
 @theme {
   /* Color utilities — Tailwind v4 generates .bg-comunify-X / .text-comunify-X / .border-comunify-X */
   --color-comunify-primary: hsl(264 92% 58%);
@@ -125,8 +133,9 @@
   );
 }
 
-/* Dark mode: toggled via .dark class on <html> (next-themes ThemeProvider) */
-.dark {
+/* Dark mode: next-themes attribute="data-theme" sets <html data-theme="dark"> (also .dark). */
+.dark,
+[data-theme="dark"] {
   --bg: 240 18% 8%;
   --panel: 240 16% 12%;
   --line: 240 12% 22%;
