@@ -296,3 +296,16 @@ Patrón cross-brand (vitalia+nicolify) → candidate lift `/pm-luana`. Próximo:
 - **Sin regresiones (lo pediste):** tsc 0 · eslint 0 errors · arch test-ds **47/47** (+3 round-3) · **vitest FE 542/542** (incluso los 2 ex-reds R0 ya verdes).
 - **NO firmé tu signoff** — son bugs que vos viste, los firmás vos tras re-ejercer. Sigue `developed / AWAIT_CHRIS_VERIFY`.
 - **💡 PROPONE (cierre G):** re-ejercé en `dev-app.nicolify.com` — (a) toggle dark/light (conmuta shell entero ambas direcciones), (b) controles pill, (c) **logout + login limpio** (aterriza en el shell, no se queda en `/`). Si te satisface → escribo `chris_verify.signoff = SATISFIED` → R (reconcile, `reconciled:true`) → /auditor → merge.
+
+### 2026-06-17 — /pm-nicolify diagnóstico del "You're already signed in" + retries (NO es bug de producto)
+**Chris → "incognito → login → 'You're already signed in' en /sign-in/factor-one?redirect_url=/ ; tras varios intentos ingreso. Revisá los logs."**
+
+**/pm-nicolify → ✓ APLICADO (root cause = dev-infra, no producto):** revisé logs FE + reproduje live.
+- **Smoking gun (network):** la API de Clerk `POST /v1/client/sign_ins` da **200** (sesión creada OK), pero acto seguido aparece un **`webpack hot-update.json`** y el `POST /sign-in` (Server Action de Next que completa el redirect) da **404 "Failed to find Server Action — from an older or newer deployment"**. El redirect post-login nunca completa → `<SignIn>` re-renderiza, ve la sesión activa → **"You're already signed in"** → reintentás hasta que el browser toma un bundle fresco.
+- **Por qué pasa:** el FE dev-server estaba al **97% de mem (2.92/3GiB)** → recompila/hot-updatea bundles **debajo de la sesión viva** (footgun documentado del dev-stack: 3 stacks de marca corriendo + host con ~3.8GiB libres). Cada login corre carrera contra un cambio de bundle → Server Action IDs viejos → 404. **Es dev-infra, NO un bug de producto** (un build de prod tiene action IDs estables, sin HMR).
+- **Fix aplicado (dev-infra):** reinicié el container FE → mem 97%→73%, compile limpio. **Re-verifiqué login en contexto fresco: 1 solo intento, `/sign-in` → `/7f464ab7-.../christian/pipeline` (shell), 0 errores de consola, 0 "already signed in", 0 Server Action 404.** El fix del redirect `/` (proxy edge) anda perfecto cuando el server no flapea.
+- **Tu test ahora:** abrí un **incognito NUEVO** (el anterior cacheó el bundle viejo de cuando yo editaba) → login → debe caer directo en el shell.
+- **2 bugs PRE-EXISTENTES que encontré en los logs (NO regresiones mías, NO de esta story):**
+  - `@luana/ui-kit/.../SupervisorHistory.tsx:106` → `filter of undefined` (sidebar de Luana). Bug del **kit/engine** → `/pm-luana` (no lo toco desde el worktree de nicolify · M13). Documentado en `observed-bugs`.
+  - `auth() can't detect clerkMiddleware()` ×71 → wrinkle conocido Clerk+Next16 en requests RSC/Server-Action sobre el layout del shell. Pre-existente.
+- **Capturé el footgun de memoria del dev-stack** al harness-backlog (recurrente, ya mordió 2 live-verifies) — opciones reales: `make dev-nicolify` solo (parar vitalia+comunify durante verify single-brand) o subir el límite de mem.
