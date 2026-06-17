@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import structlog
 from fastapi import FastAPI
+from luana_core_iam.api.routers import auth_router as iam_users
 from pydantic import BaseModel
 
 from src.modules.comunify.api.routes import offer_router
@@ -25,14 +26,12 @@ from src.modules.comunify.api.webhook_routes import webhook_router
 logger = structlog.get_logger(__name__)
 
 # copilot_router: thin mount of engine core/luana-core-copilot /chat (comunify-shell-organism T-agentic).
-# ⚠️ BLOCKED — live-verify 2026-06-16: importing the engine chat router transitively instantiates the
-# LEGACY monolithic ``luana_core_platform.core.config.Settings`` (POSTGRES_*/WHATSAPP_*/TRAEFIK_NETWORK/
-# QDRANT_URL — "Visionarias Brain" pre-multibrand config). comunify is configured the multibrand way
-# (DATABASE_URL / QDRANT_HOST+PORT / LITELLM_*) and never provides those → the import raised pydantic
-# ValidationError at app boot and bricked the whole comunify BE. No brand actually thin-mounts the engine
-# chat router (vitalia writes its OWN copilot routes). Guarded so an optional mount never crashes the
-# brand app. Re-enable when the engine exposes a brand-mountable chat router (decision pending /pm-luana —
-# see comunify/docs/product/stories/comunify-shell-organism/checkpoint.md § Blocker).
+# Unblocked 2026-06-17 by the engine "Settings lazy" fix (proposal 2026-06-16-copilot-chat-brand-mountable,
+# e9f16d06): luana_core_platform now exposes ``@lru_cache get_settings()`` so importing the engine chat
+# router no longer instantiates the legacy monolithic Settings at import-time. comunify (multibrand config:
+# DATABASE_URL / QDRANT_HOST+PORT / LITELLM_*) mounts it cleanly. The try/except is KEPT as defense in depth
+# — an optional engine mount must never crash brand boot — but the import now succeeds and the router mounts
+# (verified: tests/modules/comunify/copilot/test_chat_mount.py 4-pass + live boot health 200).
 try:
     from src.modules.comunify.copilot.api import copilot_router
 except Exception as exc:  # noqa: BLE001 — an optional engine mount must never crash brand app boot
@@ -67,11 +66,20 @@ async def health() -> HealthResponse:
 app.include_router(comunify_router)
 # offer_router: /api/v1/offers/* (per 03-arch-be.md § 6.4 — no /comunify prefix)
 app.include_router(offer_router)
+# IAM router: /api/v1/iam/users/* (engine luana-core-iam — REUSE, no local /me stub).
+# Enables GET /api/v1/iam/users/me/tenants used by the FE shell login→tenant resolution
+# (useTenantId hook, mirrors vitalia/nicolify pattern). Unblocked 2026-06-17 by the
+# engine Settings-lazy fix (proposal 2026-06-16-copilot-chat-brand-mountable, e9f16d06).
+app.include_router(
+    iam_users.router,
+    prefix="/api/v1/iam/users",
+    tags=["IAM - Users"],
+)
 # webhook_router: /api/v1/comunify/webhooks/* (T-be-9 — unauthenticated by Clerk, HMAC only)
 app.include_router(webhook_router)
 # copilot_router: /api/v1/comunify/copilot/chat (comunify-shell-organism T-agentic —
-# thin reexport of engine core/luana-core-copilot /chat). Mounted ONLY if the import
-# succeeded (see guard above). BLOCKED on the engine legacy-config dependency.
+# thin reexport of engine core/luana-core-copilot /chat). Mounted when the import
+# succeeded (guard above) — now active post engine Settings-lazy fix.
 if copilot_router is not None:
     app.include_router(copilot_router, prefix="/api/v1/comunify/copilot", tags=["copilot"])
 else:

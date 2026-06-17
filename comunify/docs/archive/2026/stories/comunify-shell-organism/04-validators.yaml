@@ -293,3 +293,42 @@ dev_app_verified:
     - "alembic upgrade head en comunify_dev (copilot_trace_event existe)"
     - "creds prueba en comunify/.env.dev (Clerk-level; binding tenant ⚠️ pendiente seed — ver MEMORY dev-app-test-creds: comunify 🟡)"
   note: "Si el binding tenant de comunify aún no está seedeado → flaggear a Chris en G (gate manual). El chat-store + mount se verifican igual a nivel SSE/log."
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# RECONCILIATION (R · /pm-comunify · 2026-06-17) — scope real vs ideal del architect
+# autonomous_mode: true → G (chris-verify) exento; auditor live-verify + dod_evidence sustituyen el demo.
+# HB-79: SC NO construidos como Playwright spec → must_pass: false + deferred (no son verde-fantasma
+# para el auditor: NO los corra contra specs inexistentes).
+# ═══════════════════════════════════════════════════════════════════════════════
+reconciliation:
+  live_verified:                 # construidos + ejercidos contra el stack real (localhost:3003), NO mock
+    - sc: SC-chat-ok
+      must_pass: true
+      test: "comunify/frontend/e2e/shell-organism/shell-chat-ok.spec.ts"
+      evidence: "e2e autenticado (@clerk/testing ticket + storageState) — write real al engine /chat → stream LLM (kimi) → ≥2 burbujas + contenido >20 chars. DB tenant-scoped: copilot_trace_event 11→20, llm_call 3→7, conversations 6→7. 4 passed (setup×2 + login→tenant + chat-ok)."
+    - sc: login-tenant-nav      # cubre SC-auth (authed, no /sign-in) + nav tenant-scoped + composer montado
+      must_pass: true
+      test: "comunify/frontend/e2e/shell-organism/shell-chat-ok.spec.ts::login→tenant"
+    - sc: SC-happy
+      must_pass: true
+      test: "comunify/frontend/e2e/regression/comunify-shell-organism/shell-happy.spec.ts (existente; skip sin E2E_BASE_URL)"
+  deferred:                      # must_pass: false — NO bloquean el merge de esta story
+    - bucket: "SSE behaviors (error/network/double-send/delegate)"
+      scs: [SC-chat-error, SC-chat-network, SC-chat-double-send, SC-chat-delegate]
+      must_pass: false
+      reason: "Ya cubiertos a nivel UNIT por stores/__tests__/chat-store.test.ts (18 tests verdes: 5xx→error, abort→network, double-send no-op, agentic-no-domain-write). Un Playwright mockeado duplicaría sin valor adicional (sería falso-verde si mockea el backend)."
+    - bucket: "Shell polish (placeholders/luana-states/plataforma/a11y/i18n/dashboard-unreachable/tenant-isolation)"
+      scs: [SC-tab-placeholder, SC-luana-states, SC-luana-history-empty, SC-plataforma-min, SC-a11y, SC-i18n, SC-adversarial-tenant, SC-dashboard-unreachable]
+      must_pass: false
+      reason: "R-shell MVP = shell levantado + chat live. Estos son pulido del shell/zonas y se materializan en R-shell+1..N cuando se porten las áreas. SC-adversarial-tenant: tenant-isolation ya enforced por arch-test test-no-clerk-organizations + RN-2 (useTenantId, no Clerk org) verde. SC-i18n: cubierto por pre-commit §1 voseo + arch tests neutro."
+  bugs_fixed_in_reconcile:       # cazados por la live-verify e2e (verde-pero-roto)
+    - id: fe-api-rewrite-missing
+      surface: frontend
+      detail: "comunify/frontend/next.config.ts NO tenía async rewrites() — todo fetch relativo /api/* devolvía 404 de Next salvo vía el túnel (cloudflared rutea /api→BE). El chat (y TODO hook de datos) sólo andaba detrás del túnel. Fix: portado el rewrite /api+/public → ${INTERNAL_API_URL ?? NEXT_PUBLIC_API_URL}/api (patrón vitalia/nicolify). Afectaba la marca entera, no sólo el chat."
+    - id: plataforma-avatar-500
+      surface: frontend
+      detail: "/agents/plataforma/avatar.svg 500 (placeholder faltante; plataforma es tab, no agente). Fix: placeholder SVG agregado (consistente con los 6 agentes)."
+  engine_debt_deferred_to_pm_luana:
+    - "Persona del copilot por-marca: _BASE_IDENTITY del engine está hardcodeado a 'Nicolify' (cross-brand). prompt_versions NO es la palanca (sólo sales_agent lo lee). Voz genérica NO bloquea 'el chat funciona' (no-fatal). Detalle: comunify/docs/learnings/2026-06-17-engine-deuda-surfaced-by-shell-organism.md (promotable: candidate)."
+    - "Settings legacy 16 campos required → Optional (follow-up del proposal accepted 2026-06-16-copilot-chat-brand-mountable)."
+    - "copilot/llm/observability del engine sin migraciones (marcas materializan por create_all 004/005)."

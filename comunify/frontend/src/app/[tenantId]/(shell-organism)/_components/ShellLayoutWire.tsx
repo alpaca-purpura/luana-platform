@@ -17,6 +17,7 @@
  * downstream-regression-na: brand-local layout; no cross-brand consumers.
  */
 
+import { useAuth } from "@clerk/nextjs";
 import {
   ShellLayout,
   type AgentClassBundle,
@@ -25,6 +26,9 @@ import {
   type ShellTestIds,
 } from "@luana/ui-kit";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
+
+import { useTenantId } from "@/lib/use-tenant-id";
 
 import {
   agentBgClass,
@@ -152,8 +156,29 @@ interface ShellLayoutWireProps {
 export function ShellLayoutWire({ children }: ShellLayoutWireProps) {
   const pathname = usePathname();
 
-  // NOTE: Future data-layer ticket will wire auth context injection (useChatStore.setAuthContext).
-  // Kit hydrates the shell store internally in its ssr:false chunk.
+  // Auth context injection for the chat-store SSE fetch (POST /copilot/chat).
+  // The engine verifies a Clerk Bearer token in the Authorization header (HTTPBearer —
+  // it does NOT read the __session cookie), and resolves the tenant from X-Tenant-ID.
+  // Clerk session tokens expire (~60s) so we refresh on an interval; sendMessage reads
+  // the latest _authContext. Without this the chat POST 401s (caught by live-verify 2026-06-17).
+  const { getToken } = useAuth();
+  const tenantId = useTenantId();
+  const setAuthContext = useChatStore((s) => s.setAuthContext);
+
+  useEffect(() => {
+    if (!tenantId) return;
+    let active = true;
+    const sync = async () => {
+      const token = await getToken();
+      if (active && token) setAuthContext(token, tenantId);
+    };
+    void sync();
+    const intervalId = setInterval(() => void sync(), 30_000);
+    return () => {
+      active = false;
+      clearInterval(intervalId);
+    };
+  }, [getToken, tenantId, setAuthContext]);
 
   return (
     <ShellLayout

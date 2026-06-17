@@ -2,53 +2,175 @@
 capability_id: comunify-shell-organism
 module: platform
 slug: shell-organism
-status: planned
+status: live
 date_introduced: 2026-06-15
 story_introduced: comunify-shell-organism
-package_version: 0.0.0
+package_version: 0.1.0
 package_path: comunify/frontend/src/app/[tenantId]/(shell-organism)
 license: proprietary
+
+# v3 — 4 dimensiones + dev_preview
+tech_module: platform
+agent_owner: luana            # supervisora/orquestadora (sidebar) — el shell es su hogar
+functional_area: luana.shell
+user_visible: true
+nature: feature
+user_facing_name: "Shell-organism agéntico de Comunify"
+user_facing_description: >
+  El chrome agéntico de Comunify: sidebar de la supervisora Luana (chat orquestador),
+  Ribbon del cast creator-economy (Nina · Tomás · Sofía · Bruno · Lucía) + tab Plataforma,
+  routing tenant-scoped y mapa de 3 zonas. Consume @luana/ui-kit (organism/shell) — sin mirror.
+  El chat de la sidebar conversa en vivo con el engine copilot (stream SSE).
+
+dev_preview:
+  route: "/{tenantId}/nina/marca"
+  how_to_navigate: "Login Clerk → root resuelve el tenant → shell en /{tenant}/nina/marca → escribir a Luana en la sidebar."
+  main_component: "comunify/frontend/src/app/[tenantId]/(shell-organism)/_components/ShellLayoutWire.tsx"
+  api_endpoints:
+    - "POST /api/v1/comunify/copilot/chat"
+    - "GET /api/v1/iam/users/me/tenants"
+  e2e_test: "comunify/frontend/e2e/shell-organism/shell-chat-ok.spec.ts"
+  fixtures_required: []
+  storybook_url: null
+  loom_demo: null
+
+created_in_story: comunify-shell-organism
+created_date: 2026-06-15
+last_modified: 2026-06-17
+parent_cap: null
+derives_capabilities: []
+
 change_log:
   - story_id: comunify-shell-organism
     date: 2026-06-15
     type: new
     summary: >-
-      Nace la cap (status=planned) en el intake-handshake de la story shell-organism
-      (R-shell MVP). Migra comunify del dashboard viejo al shell-organism agéntico
-      consumiendo @luana/ui-kit organism/shell (no mirror). Surface/scenarios/test_coverage
-      se llenan en refined/ready; pasa a live al merge de la story.
+      Nace la cap (status=planned) en el intake-handshake de la story shell-organism (R-shell MVP).
     status: planned
+  - story_id: comunify-shell-organism
+    date: 2026-06-17
+    type: new
+    summary: >-
+      Cementada a LIVE al merge. Shell montado (chrome + routing tenant-scoped + Ribbon cast comunify +
+      sidebar Luana + nav 3 zonas + Config) consumiendo @luana/ui-kit organism/shell (cero mirror). Chat
+      de la sidebar LIVE end-to-end contra el engine copilot /chat (stream SSE kimi). Verificado por e2e
+      autenticado real-backend (shell-chat-ok.spec.ts · @clerk/testing) + DB tenant-scoped. autonomous_mode
+      → auditor live-verify sustituye el demo G. Auditores frontend+agentic = PASS.
+    merge_sha: null
+    status: live
+
+access:
+  model: single_user            # RN-1 — creator solo; Ribbon completo sin role-gating
+  roles: [owner]
+  tenant_scoped: true           # RN-2 — tenant vía useTenantId (iam), X-Tenant-ID en cada llamada; NUNCA Clerk org
+
+business_rules:
+  - id: RN-1
+    rule: "single-user — Ribbon completo sin role-gating"
+  - id: RN-2
+    rule: "tenant_id vía useTenantId (iam), NUNCA Clerk org; X-Tenant-ID en cada llamada"
+  - id: RN-3
+    rule: "Luana conversa + anuncia, no ejecuta — copilot sin tools de dominio"
+  - id: RN-4
+    rule: "consume @luana/ui-kit, cero mirror del kit ni cross-brand"
+  - id: RN-5
+    rule: "(dashboard) viejo no reachable post-merge; post-login → shell"
+  - id: RN-6
+    rule: "español neutro LatAm, sin voseo"
+  - id: RN-7
+    rule: "engine único — Luana consume core/luana-core-copilot /chat (cero engine duplicado)"
+
+scenarios:
+  - id: shell-chat-ok
+    name: "El usuario chatea en vivo con Luana y el engine responde por stream"
+    actor: owner
+    status: live
+    given: "Usuario autenticado en el shell /{tenant}/nina/marca con la sidebar de Luana montada"
+    when: "Escribe un mensaje (p.ej. '¿Qué es una escalera de valor?') y lo envía"
+    then: "El chat-store hace POST /api/v1/comunify/copilot/chat con Bearer + X-Tenant-ID → el engine copilot responde por SSE → la burbuja del bot acumula contenido real (kimi) → persiste tenant-scoped (copilot_trace_event/llm_call/conversations)"
+    e2e_test: "comunify/frontend/e2e/shell-organism/shell-chat-ok.spec.ts"
+    story_spec_ref: "comunify/docs/archive/2026/stories/comunify-shell-organism/01-spec.md"
+    edge_cases:
+      - "5xx/4xx del engine → status error, burbuja del bot removida, mensaje del usuario preservado (unit: chat-store.test.ts)"
+      - "abort/timeout (30s) → status network (unit: chat-store.test.ts)"
+      - "double-send mientras thinking/streaming → no-op (unit: chat-store.test.ts)"
+    added_in_story: comunify-shell-organism
+    added_date: 2026-06-17
+  - id: login-tenant-nav
+    name: "El usuario autenticado llega al shell tenant-scoped (no /sign-in)"
+    actor: owner
+    status: live
+    given: "Sesión Clerk activa"
+    when: "Navega a una ruta del shell /{tenant}/nina/marca"
+    then: "No rebota a /sign-in · la ruta queda tenant-scoped · monta el composer de la sidebar de Luana"
+    e2e_test: "comunify/frontend/e2e/shell-organism/shell-chat-ok.spec.ts"
+    story_spec_ref: "comunify/docs/archive/2026/stories/comunify-shell-organism/01-spec.md"
+    edge_cases:
+      - "Tenant bare /{tenant} → edge-redirect (proxy.ts) a /{tenant}/nina/marca (no redirect() in-render — Next 16 soft-nav learning)"
+    added_in_story: comunify-shell-organism
+    added_date: 2026-06-17
+  - id: shell-happy
+    name: "El shell monta con Ribbon del cast comunify y sidebar de Luana"
+    actor: owner
+    status: live
+    given: "Usuario en /{tenant}/nina/marca"
+    when: "Carga el shell"
+    then: "Renderiza la sidebar de Luana + Ribbon (Nina activa) + TopBar (wordmark Comunify + theme toggle); slug de agente inválido → 404"
+    e2e_test: "comunify/frontend/e2e/regression/comunify-shell-organism/shell-happy.spec.ts"
+    story_spec_ref: "comunify/docs/archive/2026/stories/comunify-shell-organism/01-spec.md"
+    edge_cases: []
+    added_in_story: comunify-shell-organism
+    added_date: 2026-06-17
+
+test_coverage:
+  e2e:
+    - "comunify/frontend/e2e/shell-organism/shell-chat-ok.spec.ts (authed real-backend: SC-chat-ok write real + login→tenant)"
+    - "comunify/frontend/e2e/regression/comunify-shell-organism/shell-happy.spec.ts (shell mount + Ribbon + 404)"
+  unit:
+    - "comunify/frontend/src/stores/__tests__/chat-store.test.ts (18: SSE parse, idle→streaming→idle, 5xx→error, abort→network, double-send, no-domain-write)"
+    - "comunify/frontend/src/lib/__tests__/use-tenant-id.test.tsx (5: tenant vía publicMetadata, no Clerk org)"
+  arch:
+    - "comunify/backend/tests/architecture/ (144 · redirect_slashes, mount thin)"
+    - "comunify/frontend/src/__tests__/architecture/ (no-clerk-organizations, no-hardcoded-hex, contrast)"
 ---
 
 # comunify-shell-organism
 
 Shell-organism agéntico de comunify (zona **Plataforma** del mapa de 3 zonas — el chrome que
-hospeda Agentes · Plataforma · Infraestructura). Migra comunify del paradigma dashboard viejo
+hospeda Agentes · Plataforma · Infraestructura). Migró comunify del paradigma dashboard viejo
 (`app/(dashboard)/*`) al shell-organism que nicolify/vitalia ya tienen, **consumiendo**
 `@luana/ui-kit` (incl. `organism/shell`, lifteado 2026-06-11) — NO mirror cross-brand
 (`.claude/rules/anti-duplication.md`).
 
-> `status: planned` — esta cap se cementa a `live` al merge de la story `comunify-shell-organism`
-> (R-shell MVP). Los scenarios + test_coverage + surface real se llenan en `refined`/`ready`.
+> `status: live` (merge 2026-06-17). El chat de la sidebar de Luana funciona end-to-end contra el
+> engine copilot `/chat` (stream SSE), verificado por e2e autenticado real-backend + DB tenant-scoped.
 
-## Surface (planeado · /architect refina)
+## Surface
 
 - **Frontend** (`comunify/frontend/src/app/[tenantId]/(shell-organism)/` + `components/shared/shell-organism/`):
-  routing tenant-scoped, Ribbon del cast comunify, sidebar supervisora (Luana orquestadora),
-  nav de 3 zonas, Config tab.
-- **Shared kit consumido:** `@luana/ui-kit` (organism/shell), `@luana/design-tokens`, `@luana/hooks`,
-  `@luana/schemas`, `@luana/format`, `@luana/api-client`.
+  routing tenant-scoped, Ribbon del cast comunify (Nina · Tomás · Sofía · Bruno · Lucía + Plataforma),
+  sidebar supervisora (Luana orquestadora con chat live), nav de 3 zonas, Config tab.
+  `stores/{chat-store,shell-store}.ts` (chat-store = SSE lifecycle, lift candidate `@luana` post-merge).
+  `next.config.ts` rewrite `/api`+`/public` → BE (patrón vitalia/nicolify).
+- **Backend** (`comunify/backend/src/modules/comunify/copilot/api` + `main.py`): mount THIN del engine
+  `core/luana-core-copilot /chat` en `/api/v1/comunify/copilot` (reexport, cero lógica de dominio).
+- **Shared kit consumido:** `@luana/ui-kit` (organism/shell), `@luana/design-tokens`.
 - **Reskin:** tokens comunify (`comunify/docs/architecture/design-system.md`).
 
 ## Dependencies
 
-- `@luana/ui-kit` (organism/shell — consumir vía import, no recrear)
+- `@luana/ui-kit` (organism/shell — consumido vía import, no recreado)
+- `core/luana-core-{copilot,iam,platform}` (engine — consumido; chat-router brand-mountable vía Settings-lazy)
 - referencia de port: `nicolify/frontend` shell-organism + skill `nicolify-design-system`
-- `comunify-frontend-design-system` (tokens visuales)
-- ADR-comunify cast de agentes (blocker — define el Ribbon)
 
 ## Scope (MVP R-shell)
 
-Esta cap cubre el **shell levantado** (chrome + routing + Ribbon + nav + Config). El porte de las
-10 áreas dashboard (authority, cohorts, community, offers, ladder, subscriptions, voice, brand-studio,
-community-audit) a sus homes de agente son caps/stories siguientes (R-shell+1..N).
+Esta cap cubre el **shell levantado** (chrome + routing + Ribbon + nav + Config + chat live de la sidebar).
+El porte de las 10 áreas dashboard (authority, cohorts, community, offers, ladder, subscriptions, voice,
+brand-studio, community-audit) a sus homes de agente son caps/stories siguientes (R-shell+1..N).
+
+## Deuda diferida (→ /pm-luana · engine)
+
+- Persona del copilot por-marca: `_BASE_IDENTITY` del engine hardcodeado "Nicolify" (cross-brand). La voz
+  comunify exige hacerlo brand-aware en el engine. `prompt_versions` NO es la palanca (sólo sales_agent).
+  Voz genérica = no-fatal. Detalle: `comunify/docs/learnings/2026-06-17-engine-deuda-surfaced-by-shell-organism.md`.
