@@ -102,8 +102,8 @@ def lookup_booking_link_by_token(db: Session, token: str) -> object | None:
     ``InternalSchedulerProvider`` uses this so it never imports scheduling
     models directly.
     """
-    from sqlalchemy import select
     from luana_core_scheduling.infrastructure.models.booking_link import BookingLink
+    from sqlalchemy import select
 
     stmt = select(
         BookingLink.status,
@@ -127,10 +127,10 @@ def lookup_latest_appointment_for_lead(
     ``verify_booking_status`` to derive high-level status without crossing
     DDD boundaries.
     """
-    from sqlalchemy import select
     from luana_core_scheduling.infrastructure.models.appointment_model import (
         AppointmentModel,
     )
+    from sqlalchemy import select
 
     stmt = (
         select(

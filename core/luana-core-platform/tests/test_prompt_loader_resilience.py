@@ -25,7 +25,7 @@ def test_get_from_db_catches_operational_error_and_returns_none(monkeypatch):
         raise OperationalError(stmt, {}, cause)
 
     monkeypatch.setattr(
-        "luana_core_platform.infrastructure.prompts.base.SessionLocal",
+        "luana_core_platform.core.database.SessionLocal",
         _raise_op_error,
     )
     assert loader._get_from_db("any_key", tenant_id=None) is None
@@ -44,7 +44,7 @@ def test_render_hybrid_falls_back_to_file_when_db_unreachable(monkeypatch):
 
     with patch.object(loader, "_load_from_file", return_value="file-rendered") as file_stub:
         monkeypatch.setattr(
-            "luana_core_platform.infrastructure.prompts.base.SessionLocal",
+            "luana_core_platform.core.database.SessionLocal",
             _raise_op_error,
         )
         result = loader.render("copilot/base.j2")

@@ -258,22 +258,22 @@ class TestEventBusAdapterPublishWithInferredModule:
         """_is_outbox_enabled('sales_agent') respects USE_OUTBOX_PATTERN_SALES_AGENT."""
         import luana_core_events.outbox.application.event_bus_adapter as _mod
 
-        original = _mod.settings.USE_OUTBOX_PATTERN_SALES_AGENT
+        original = _mod.get_settings().USE_OUTBOX_PATTERN_SALES_AGENT
         try:
-            object.__setattr__(_mod.settings, "USE_OUTBOX_PATTERN_SALES_AGENT", True)
+            object.__setattr__(_mod.get_settings(), "USE_OUTBOX_PATTERN_SALES_AGENT", True)
             result = EventBusAdapter._is_outbox_enabled("sales_agent")
             assert result is True
         finally:
-            object.__setattr__(_mod.settings, "USE_OUTBOX_PATTERN_SALES_AGENT", original)
+            object.__setattr__(_mod.get_settings(), "USE_OUTBOX_PATTERN_SALES_AGENT", original)
 
     def test_is_outbox_enabled_none_uses_default(self) -> None:
         """_is_outbox_enabled(None) reads USE_OUTBOX_PATTERN_DEFAULT."""
         import luana_core_events.outbox.application.event_bus_adapter as _mod
 
-        original = _mod.settings.USE_OUTBOX_PATTERN_DEFAULT
+        original = _mod.get_settings().USE_OUTBOX_PATTERN_DEFAULT
         try:
-            object.__setattr__(_mod.settings, "USE_OUTBOX_PATTERN_DEFAULT", False)
+            object.__setattr__(_mod.get_settings(), "USE_OUTBOX_PATTERN_DEFAULT", False)
             result = EventBusAdapter._is_outbox_enabled(None)
             assert result is False
         finally:
-            object.__setattr__(_mod.settings, "USE_OUTBOX_PATTERN_DEFAULT", original)
+            object.__setattr__(_mod.get_settings(), "USE_OUTBOX_PATTERN_DEFAULT", original)

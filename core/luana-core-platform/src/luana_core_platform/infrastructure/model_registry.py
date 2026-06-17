@@ -17,24 +17,11 @@ the first DB session triggers ``configure_mappers()``.
 
 # --- Advertising ---
 # --- LLM config registry (PI-2 S4 PR-1) ---
-from luana_core_llm.infrastructure.audit_model import (
-    LLMConfigAuditModel,  # noqa: F401
-)
-from luana_core_llm.infrastructure.role_binding_model import (
-    LLMRoleBindingModel,  # noqa: F401
-)
-from luana_core_observability.persistence.models.pricing_snapshot_model import (
-    ModelPricingSnapshotModel,  # noqa: F401
-)
-from luana_core_observability.persistence.models.tenant_billing_config_model import (
-    TenantBillingConfigModel,  # noqa: F401
-)
 # NOTE post-multibrand-reorg 2026-05-15: advertising + scheduling not yet carved
 # out to core packages (pending decision per docs/promotion-protocol/proposals/
 # 2026-05-16-reclassify-nicolify-advertising-not-placeholder.md). Brand-specific
 # model registration lives in `{brand}/backend/src/shared/infrastructure/model_registry.py`.
 # Core's model_registry holds only models from carved-out engine packages.
-
 # --- IAM ---
 # --- Brand ---
 from luana_core_brand_studio.infrastructure.models.buyer_persona_model import (
@@ -74,6 +61,18 @@ from luana_core_iam.infrastructure.models.tenant_model import TenantModel  # noq
 from luana_core_iam.infrastructure.models.user_model import UserModel  # noqa: F401
 from luana_core_iam.infrastructure.models.user_tenant_model import (
     UserTenantModel,  # noqa: F401
+)
+from luana_core_llm.infrastructure.audit_model import (
+    LLMConfigAuditModel,  # noqa: F401
+)
+from luana_core_llm.infrastructure.role_binding_model import (
+    LLMRoleBindingModel,  # noqa: F401
+)
+from luana_core_observability.persistence.models.pricing_snapshot_model import (
+    ModelPricingSnapshotModel,  # noqa: F401
+)
+from luana_core_observability.persistence.models.tenant_billing_config_model import (
+    TenantBillingConfigModel,  # noqa: F401
 )
 from luana_core_offer_studio.infrastructure.models.external_product_mapping_model import (
     ExternalProductMappingModel,  # noqa: F401

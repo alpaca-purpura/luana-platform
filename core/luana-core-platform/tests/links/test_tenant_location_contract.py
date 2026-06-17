@@ -13,7 +13,6 @@ Validates:
 from __future__ import annotations
 
 import pytest
-
 from luana_core_platform.links.ports.tenant_profile import TenantLocationContract
 
 

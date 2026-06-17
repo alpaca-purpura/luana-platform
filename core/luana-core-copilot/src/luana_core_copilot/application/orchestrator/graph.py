@@ -20,7 +20,6 @@ import re
 from uuid import UUID
 
 import structlog
-from luana_core_platform.core.config import settings
 from luana_core_platform.links.ports.editable_fields import get_catalog
 
 from luana_core_copilot.application.orchestrator.state import CopilotState
@@ -943,8 +942,12 @@ def _get_telegram_channel_context_es() -> str:
     if _telegram_channel_context_es_cache is not None:
         return _telegram_channel_context_es_cache
 
-    url = settings.FRONTEND_URL.rstrip("/") if settings.FRONTEND_URL else ""
-    bot = settings.COPILOT_TELEGRAM_BOT_USERNAME
+    # Lazy settings access — T-2 copilot-chat-mountable: no module-level import.
+    from luana_core_platform.core.config import get_settings
+
+    _s = get_settings()
+    url = _s.FRONTEND_URL.rstrip("/") if _s.FRONTEND_URL else ""
+    bot = _s.COPILOT_TELEGRAM_BOT_USERNAME
     if not url or not bot:
         raise RuntimeError(
             f"Cannot build telegram channel context: "

@@ -34,7 +34,7 @@ from functools import cache
 from typing import TYPE_CHECKING, Any
 
 import structlog
-from luana_core_platform.core.config import settings
+from luana_core_platform.core.config import get_settings
 
 if TYPE_CHECKING:
     from luana_core_events.outbox.domain.event import DomainEvent
@@ -228,11 +228,16 @@ class EventBusAdapter:
         ``module=None`` means inference failed → falls back to
         ``USE_OUTBOX_PATTERN_DEFAULT`` (False by default, preserving
         legacy behavior for any call-site we could not classify).
+
+        Uses ``get_settings()`` (lazy) instead of the module-level ``settings``
+        global to avoid eager Settings() instantiation at import time (T-2
+        copilot-chat-mountable brand-mountable unblock).
         """
+        _settings = get_settings()
         if module is None:
-            return settings.USE_OUTBOX_PATTERN_DEFAULT
+            return _settings.USE_OUTBOX_PATTERN_DEFAULT
         flag_attr = f"USE_OUTBOX_PATTERN_{module.upper()}"
-        return getattr(settings, flag_attr, settings.USE_OUTBOX_PATTERN_DEFAULT)
+        return getattr(_settings, flag_attr, _settings.USE_OUTBOX_PATTERN_DEFAULT)
 
 
 def _is_async_session(session: Any) -> bool:  # noqa: ANN401

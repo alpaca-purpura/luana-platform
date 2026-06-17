@@ -6,7 +6,6 @@ from typing import BinaryIO
 
 import boto3
 from botocore.client import Config
-from luana_core_platform.core.config import settings
 
 from .base import StorageStrategy
 
@@ -16,13 +15,18 @@ class R2StorageStrategy(StorageStrategy):
 
     def __init__(self) -> None:
         """Initialize R2StorageStrategy."""
-        self.bucket = settings.R2_BUCKET_NAME
-        self.public_base_url = settings.R2_PUBLIC_URL.rstrip("/")
+        # Lazy settings access — importing this module must not trigger
+        # Settings instantiation at import time (T-2 copilot-chat-mountable).
+        from luana_core_platform.core.config import get_settings
+
+        s = get_settings()
+        self.bucket = s.R2_BUCKET_NAME
+        self.public_base_url = s.R2_PUBLIC_URL.rstrip("/")
         self.client = boto3.client(
             "s3",
-            endpoint_url=settings.R2_ENDPOINT_URL,
-            aws_access_key_id=settings.R2_ACCESS_KEY_ID,
-            aws_secret_access_key=settings.R2_SECRET_ACCESS_KEY,
+            endpoint_url=s.R2_ENDPOINT_URL,
+            aws_access_key_id=s.R2_ACCESS_KEY_ID,
+            aws_secret_access_key=s.R2_SECRET_ACCESS_KEY,
             config=Config(signature_version="s3v4"),
             region_name="auto",
         )

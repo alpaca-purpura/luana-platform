@@ -105,8 +105,8 @@ class TestCopilotOutboxAdapterFlagOff:
         monkeypatch.setattr to assert the flag-off branch contract.
         """
         monkeypatch.setattr(
-            "luana_core_events.outbox.application.event_bus_adapter.settings",
-            MagicMock(
+            "luana_core_events.outbox.application.event_bus_adapter.get_settings",
+            lambda: MagicMock(
                 USE_OUTBOX_PATTERN_COPILOT=False, USE_OUTBOX_PATTERN_DEFAULT=False
             ),
         )
@@ -117,8 +117,8 @@ class TestCopilotOutboxAdapterFlagOff:
         """Verify flag OFF via monkeypatch.setattr on settings (pydantic-settings
         loads env at startup; setenv after import does not propagate)."""
         monkeypatch.setattr(
-            "luana_core_events.outbox.application.event_bus_adapter.settings",
-            MagicMock(
+            "luana_core_events.outbox.application.event_bus_adapter.get_settings",
+            lambda: MagicMock(
                 USE_OUTBOX_PATTERN_COPILOT=False, USE_OUTBOX_PATTERN_DEFAULT=False
             ),
         )

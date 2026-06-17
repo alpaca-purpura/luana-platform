@@ -35,18 +35,24 @@ class TestLegacyEventBusDeprecationWarning:
         Test capability suites call EventBus.publish directly (Caso D/E).
         _is_internal_caller_or_test() detects /tests/ in call stack → suppresses.
         """
-        monkeypatch.setattr("luana_core_platform.core.config.settings.USE_OUTBOX_PATTERN_SALES_AGENT", True)
-        monkeypatch.setattr("luana_core_platform.core.config.settings.USE_OUTBOX_PATTERN_COPILOT", False)
-        monkeypatch.setattr("luana_core_platform.core.config.settings.USE_OUTBOX_PATTERN_BRAND", False)
+        from luana_core_platform.core.config import get_settings
+
+        s = get_settings()
+        monkeypatch.setattr(s, "USE_OUTBOX_PATTERN_SALES_AGENT", True)
+        monkeypatch.setattr(s, "USE_OUTBOX_PATTERN_COPILOT", False)
+        monkeypatch.setattr(s, "USE_OUTBOX_PATTERN_BRAND", False)
         event = _make_event()
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
             EventBus.publish(event, session=None)
         # This test itself is in /tests/ → _is_internal_caller_or_test() returns True
-        # → no DeprecationWarning emitted
-        deprecation_warnings = [x for x in w if issubclass(x.category, DeprecationWarning)]
-        assert len(deprecation_warnings) == 0, (
-            f"Expected NO DeprecationWarning from test context, got {len(deprecation_warnings)}"
+        # → no EventBus DeprecationWarning emitted.
+        # Filter out T-1 shim migration warnings (config.settings back-compat).
+        eventbus_deprecations = [
+            x for x in w if issubclass(x.category, DeprecationWarning) and "EventBus.publish" in str(x.message)
+        ]
+        assert len(eventbus_deprecations) == 0, (
+            f"Expected NO EventBus DeprecationWarning from test context, got {len(eventbus_deprecations)}"
         )
 
     def test_deprecation_suppressed_in_shared_domain_events_context(self) -> None:
@@ -54,6 +60,10 @@ class TestLegacyEventBusDeprecationWarning:
 
         EventBusAdapter fall-through path calls EventBus.publish when flag=False.
         _is_internal_caller_or_test() detects shared/domain_events/ in call stack → suppresses.
+
+        NOTE: warnings about `config.settings` (T-1 shim back-compat migration) are
+        filtered from this assertion — the test is specifically about EventBus
+        deprecation, not config-level migration warnings.
         """
         # Import from the adapter directly to simulate adapter fall-through call
         from luana_core_events.outbox.application.event_bus_adapter import EventBusAdapter
@@ -66,9 +76,12 @@ class TestLegacyEventBusDeprecationWarning:
             # Adapter with flag OFF calls EventBus.publish (fall-through path)
             with patch.object(EventBusAdapter, "_is_outbox_enabled", return_value=False):
                 adapter.publish(event, session=None)
-        deprecation_warnings = [x for x in w if issubclass(x.category, DeprecationWarning)]
-        assert len(deprecation_warnings) == 0, (
-            f"Expected NO DeprecationWarning from adapter fall-through path, got {len(deprecation_warnings)}"
+        # Filter out T-1 shim migration warnings (config.settings back-compat)
+        eventbus_deprecations = [
+            x for x in w if issubclass(x.category, DeprecationWarning) and "EventBus.publish" in str(x.message)
+        ]
+        assert len(eventbus_deprecations) == 0, (
+            f"Expected NO EventBus DeprecationWarning from adapter fall-through path, got {len(eventbus_deprecations)}"
         )
 
     def test_deprecation_suppressed_when_all_flags_off(self, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -77,9 +90,12 @@ class TestLegacyEventBusDeprecationWarning:
         When outbox is not enabled, EventBus.publish is the canonical path.
         No warning should be emitted (not a deprecated use case in legacy mode).
         """
-        monkeypatch.setattr("luana_core_platform.core.config.settings.USE_OUTBOX_PATTERN_SALES_AGENT", False)
-        monkeypatch.setattr("luana_core_platform.core.config.settings.USE_OUTBOX_PATTERN_COPILOT", False)
-        monkeypatch.setattr("luana_core_platform.core.config.settings.USE_OUTBOX_PATTERN_BRAND", False)
+        from luana_core_platform.core.config import get_settings
+
+        s = get_settings()
+        monkeypatch.setattr(s, "USE_OUTBOX_PATTERN_SALES_AGENT", False)
+        monkeypatch.setattr(s, "USE_OUTBOX_PATTERN_COPILOT", False)
+        monkeypatch.setattr(s, "USE_OUTBOX_PATTERN_BRAND", False)
         event = _make_event()
 
         # Simulate external caller by patching _is_internal_caller_or_test to return False
@@ -92,8 +108,11 @@ class TestLegacyEventBusDeprecationWarning:
         ):
             warnings.simplefilter("always")
             EventBus.publish(event, session=None)
-        deprecation_warnings = [x for x in w if issubclass(x.category, DeprecationWarning)]
-        assert len(deprecation_warnings) == 0, "Expected NO DeprecationWarning when all outbox flags are OFF"
+        # Filter out T-1 shim migration warnings (config.settings back-compat).
+        eventbus_deprecations = [
+            x for x in w if issubclass(x.category, DeprecationWarning) and "EventBus.publish" in str(x.message)
+        ]
+        assert len(eventbus_deprecations) == 0, "Expected NO EventBus DeprecationWarning when all outbox flags are OFF"
 
     def test_deprecation_emitted_for_external_caller_when_outbox_on(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """External caller (non-test, non-adapter) + outbox flag ON → DeprecationWarning.
@@ -104,9 +123,12 @@ class TestLegacyEventBusDeprecationWarning:
         Uses _is_internal_caller_or_test mock to simulate external caller context
         (since this test IS inside /tests/ which normally suppresses).
         """
-        monkeypatch.setattr("luana_core_platform.core.config.settings.USE_OUTBOX_PATTERN_BRAND", True)
-        monkeypatch.setattr("luana_core_platform.core.config.settings.USE_OUTBOX_PATTERN_SALES_AGENT", False)
-        monkeypatch.setattr("luana_core_platform.core.config.settings.USE_OUTBOX_PATTERN_COPILOT", False)
+        from luana_core_platform.core.config import get_settings
+
+        s = get_settings()
+        monkeypatch.setattr(s, "USE_OUTBOX_PATTERN_BRAND", True)
+        monkeypatch.setattr(s, "USE_OUTBOX_PATTERN_SALES_AGENT", False)
+        monkeypatch.setattr(s, "USE_OUTBOX_PATTERN_COPILOT", False)
         event = _make_event()
 
         # Patch _is_internal_caller_or_test to return False to simulate external caller
@@ -120,8 +142,10 @@ class TestLegacyEventBusDeprecationWarning:
             warnings.simplefilter("always")
             EventBus.publish(event, session=None)
 
-        deprecation_warnings = [x for x in w if issubclass(x.category, DeprecationWarning)]
-        assert len(deprecation_warnings) == 1, (
-            f"Expected 1 DeprecationWarning for external caller with outbox flag ON, got {len(deprecation_warnings)}"
-        )
-        assert "EventBus.publish called when outbox cutover active" in str(deprecation_warnings[0].message)
+        # Filter to EventBus-specific DeprecationWarnings only (exclude T-1 shim back-compat).
+        eventbus_deprecations = [
+            x for x in w if issubclass(x.category, DeprecationWarning) and "EventBus.publish" in str(x.message)
+        ]
+        n = len(eventbus_deprecations)
+        assert n == 1, f"Expected 1 EventBus DeprecationWarning for external caller with outbox ON, got {n}"
+        assert "EventBus.publish called when outbox cutover active" in str(eventbus_deprecations[0].message)
