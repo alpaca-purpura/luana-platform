@@ -28,6 +28,24 @@
   .stat-num { font-size:1.5rem; font-weight:700; }
   .safety { border-left:3px solid hsl(var(--warning)); background:hsl(var(--warning) / .08); border-radius:.5rem; padding:.625rem .75rem; font-size:.75rem; }
   .group-h { font-size:.6875rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:hsl(var(--muted-foreground)); margin:.25rem 0 .5rem; }
+  /* barra de estado consolidada del servicio (Chris 2026-06-15 · 1 fila en vez de banner+ficha+toggle+chip apilados) */
+  .svc-statusbar { display:flex; align-items:center; gap:.5rem .875rem; flex-wrap:wrap; padding:.5rem .75rem; margin-bottom:.75rem; background:hsl(var(--card)); border:1px solid hsl(var(--border)); border-radius:var(--radius); }
+  .svc-statusbar .svc-active { font-weight:600; color:hsl(var(--foreground)); font-size:.8125rem; }
+  .svc-status-note { font-size:.75rem; color:hsl(var(--muted-foreground)); }
+  .svc-statusbar .completeness-chip { margin-left:auto; }
+  /* Peldaño = 5 botones · servicio estándar → bloqueado (Chris 2026-06-15) */
+  .rung-picker.id-rung .rung-opt { font-size:.6875rem; padding:.5rem .375rem; line-height:1.2; }
+  .rung-picker.locked .rung-opt { cursor:not-allowed; opacity:.45; }
+  .rung-picker.locked .rung-opt[data-sel="true"] { opacity:1; }
+  .select-canon select:disabled { opacity:1; color:hsl(var(--foreground)); background:hsl(var(--muted) / .45); cursor:not-allowed; }
+  /* Modalidad del servicio (Chris 2026-06-15 · reemplaza "¿Recurrente?") */
+  .modalidad-picker { display:grid; grid-template-columns:repeat(3,1fr); gap:.375rem; }
+  .mod-opt { border:1px solid hsl(var(--border)); border-radius:.5rem; padding:.5rem; cursor:pointer; transition:all .12s; }
+  .mod-opt:hover { border-color:hsl(var(--agent-lisa) / .5); }
+  .mod-opt[data-sel="true"] { border-color:hsl(var(--agent-lisa)); background:hsl(var(--agent-lisa-soft) / .5); }
+  .mod-t { font-size:.75rem; font-weight:600; display:flex; align-items:center; gap:.3125rem; }
+  .mod-d { font-size:.625rem; color:hsl(var(--muted-foreground)); margin-top:.1875rem; line-height:1.3; }
+  .mod-detail { margin-top:.75rem; }
 </style>
 </head>
 <body>
@@ -78,7 +96,7 @@
         </div>
         <!-- EntityPicker (§2.4) — cambia de servicio sin volver al catálogo -->
         <div class="entity-picker" id="ep" style="margin-left:.5rem;">
-          <button class="entity-picker-trigger" onclick="document.getElementById('ep-panel').classList.toggle('open')" aria-haspopup="listbox" aria-expanded="false">
+          <button class="entity-picker-trigger" onclick="toggleEP(event, this)" aria-haspopup="listbox" aria-expanded="false" aria-controls="ep-panel">
             <span class="ep-avatar">DS</span>
             <span>Diseño de sonrisa</span>
             <span class="ep-chevron">▾</span>
@@ -108,17 +126,14 @@
       <div class="panel-content">
         <div class="panel-inner">
 
-          <!-- strip service-level: Activo + origen + completeness (AC-19 · NUNCA bloquea Activo) -->
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem;">
-            <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
-              <span class="chip chip-primary">🤖 Activo → Adrián conoce este servicio y lo ofrece (2 especialistas vinculados).</span>
-              <span class="chip-origen estandar" title="Vinculado a la biblioteca estándar: 'Diseño de sonrisa dental'">📚 Estándar</span>
-              <span class="completeness-chip" title="Completa los campos faltantes para que Adrián pueda responder con más detalle. No bloquea 'Activo'.">
-                <span class="cc-bar"><span class="cc-fill" style="width:88%;"></span></span>
-                ficha 23/26 · faltan: expectativas realistas, duración resultado, tiempo de recuperación
-              </span>
-            </div>
-            <span class="switch-label" style="color:hsl(var(--foreground));font-size:.8125rem;"><span class="switch"><input type="checkbox" checked><span class="track"></span></span> Activo</span>
+          <!-- barra de estado consolidada (Chris 2026-06-15 · AC-19 · completitud NUNCA bloquea Activo) -->
+          <div class="svc-statusbar">
+            <label class="switch-label svc-active"><span class="switch"><input type="checkbox" checked><span class="track"></span></span> Activo</label>
+            <span class="svc-status-note">🤖 Adrián lo ofrece · <span class="statuslink" onclick="goLeaf('doctores')" title="Ver/editar quién realiza este servicio">2 especialistas vinculados</span></span>
+            <span class="chip-origen estandar" title="Vinculado a la biblioteca estándar: 'Diseño de sonrisa dental'">📚 Estándar</span>
+            <span class="completeness-chip" title="Faltan: expectativas realistas, duración resultado, tiempo de recuperación. No bloquea 'Activo' — solo enriquece lo que Adrián puede responder.">
+              <span class="cc-bar"><span class="cc-fill" style="width:88%;"></span></span> ficha 23/26
+            </span>
           </div>
 
           <!-- ★ PANEL CONOCIMIENTO (persiste + colapsable · #1 + #9B · visible en todos los leaves) -->
@@ -145,16 +160,22 @@
                 <h2 class="card-title">📋 Identidad</h2>
                 <div class="field-row">
                   <div><label class="label">Nombre</label><input value="Diseño de sonrisa"></div>
-                  <div><label class="label"><span class="tip" title="Las opciones salen del TIPO DE CLÍNICA que definiste en el Onboarding (se edita en Lisa → Marca). Acá solo eliges la categoría de este servicio.">Especialidad / categoría</span></label><span class="select-canon" style="display:block;"><select><option>Estética dental</option><option>Odontología general</option><option>Ortodoncia</option><option>Implantología</option></select></span></div>
+                  <div><label class="label"><span class="tip" title="Categoría del servicio · sale de las áreas de tu clínica (Lisa → Marca). En un servicio estándar la define la biblioteca.">Especialidad / categoría</span> <span title="Definido por el servicio estándar — no editable" style="cursor:help;font-size:.75rem;">🔒</span></label><span class="select-canon" style="display:block;"><select disabled><option>Estética dental</option><option>Odontología general</option><option>Ortodoncia</option><option>Implantología</option></select></span></div>
                 </div>
                 <div style="margin-top:.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
                   <span class="chip-origen estandar">📚 Servicio estándar: <strong>Diseño de sonrisa dental</strong></span>
                 </div>
                 <div style="margin-top:.625rem;">
-                  <label class="label"><span class="tip" title="En qué momento del recorrido del paciente entra: gancho gratuito → primera visita → tratamiento principal → premium → plan. Ordena cómo Adrián lo ofrece.">Peldaño</span></label>
-                  <div style="display:flex;align-items:center;gap:.625rem;flex-wrap:wrap;"><span class="select-canon"><select style="max-width:240px;"><option>Tratamiento principal</option><option>Gancho gratuito</option><option>Primera visita</option><option>Premium</option><option>Plan / convenio</option></select></span><span class="hint" style="margin:0;">también lo mueves arrastrando en la vista <strong>Escalera</strong></span></div>
+                  <label class="label"><span class="tip" title="En qué momento del recorrido del paciente entra. En un servicio estándar lo define la biblioteca.">Peldaño</span> <span title="Definido por el servicio estándar — no editable" style="cursor:help;font-size:.75rem;">🔒</span></label>
+                  <div class="rung-picker id-rung locked">
+                    <div class="rung-opt" data-rung="Gancho gratuito">Gancho gratuito</div>
+                    <div class="rung-opt" data-rung="Primera visita">Primera visita</div>
+                    <div class="rung-opt" data-sel="true" data-rung="Tratamiento principal">Tratamiento principal</div>
+                    <div class="rung-opt" data-rung="Premium">Premium</div>
+                    <div class="rung-opt" data-rung="Plan / convenio">Plan / convenio</div>
+                  </div>
+                  <span class="hint" style="margin:.375rem 0 0;display:block;">🔒 Lo define el servicio estándar.</span>
                 </div>
-                <div style="margin-top:.625rem;"><label class="label">¿Recurrente?</label><span class="switch-label" style="color:hsl(var(--foreground));"><span class="switch"><input type="checkbox"><span class="track"></span></span> Sí, se repite periódicamente</span></div>
               </section>
 
               <!-- GRUPO 2: Qué es -->
@@ -168,7 +189,26 @@
                   <div><label class="label">Qué incluye <span class="field-sparkle" title="Pre-llenado desde la biblioteca — revísalo">✨</span></label><textarea rows="3">Diagnóstico · mockup digital previsualizable · 8 carillas de porcelana · prueba en boca · ajustes finales</textarea></div>
                   <div><label class="label">Qué no incluye</label><textarea rows="3">Tratamientos previos de encías o caries (se cotizan aparte si se requieren).</textarea></div>
                 </div>
-                <div class="field-row" style="margin-top:.625rem;"><div><label class="label">Variantes</label><input value="Composite (económica) · Porcelana (premium)"></div><div><label class="label">Garantía</label><input value="5 años sobre las carillas"></div></div>
+                <div style="margin-top:.625rem;">
+                  <label class="label">Variantes <span class="hint" style="display:inline;margin:0;font-weight:400;">— opciones del mismo servicio que cambian el precio</span></label>
+                  <div class="variants-list" id="variants-list">
+                    <div class="variant-row">
+                      <input class="v-name" value="Composite" placeholder="Nombre">
+                      <div class="num-affix"><span class="num-unit">S/</span><input type="number" class="v-price" value="2500"></div>
+                      <input class="v-note" value="más económica" placeholder="qué cambia (opcional)">
+                      <button class="v-del" title="Quitar variante" onclick="this.closest('.variant-row').remove()">✕</button>
+                    </div>
+                    <div class="variant-row">
+                      <input class="v-name" value="Porcelana" placeholder="Nombre">
+                      <div class="num-affix"><span class="num-unit">S/</span><input type="number" class="v-price" value="4500"></div>
+                      <input class="v-note" value="premium · más duradera" placeholder="qué cambia (opcional)">
+                      <button class="v-del" title="Quitar variante" onclick="this.closest('.variant-row').remove()">✕</button>
+                    </div>
+                  </div>
+                  <button class="btn btn-ghost v-add" onclick="addVariant('variants-list')">+ Agregar variante</button>
+                  <p class="hint" style="margin:.375rem 0 0;">Adrián cotiza la variante exacta: "en porcelana te queda S/ 4.500". Si no hay variantes, vale el precio del tratamiento.</p>
+                </div>
+                <div class="field-row" style="margin-top:.625rem;"><div><label class="label">Garantía</label><input value="5 años sobre las carillas"></div><div></div></div>
               </section>
 
               <!-- GRUPO 3: El procedimiento (★ NUEVO v3 · RN-26 ficha completa paciente) -->
@@ -179,15 +219,15 @@
                 <textarea rows="4">1. Diagnóstico y toma de fotos · 2. Mockup digital para que lo visualices · 3. Preparación mínima del diente con anestesia local · 4. Prueba de las carillas en boca · 5. Cementación definitiva y ajustes · 6. Control a los 7-10 días</textarea>
                 <div class="field-row" style="margin-top:.625rem;">
                   <div><label class="label">¿Lleva anestesia / duele? <span class="field-sparkle" title="Pre-llenado desde la biblioteca — revísalo">✨</span></label><input value="Anestesia local; molestias leves los primeros días"></div>
-                  <div><label class="label">Duración de cada sesión</label><input value="~60 min por sesión"></div>
+                  <div><label class="label">Duración de cada sesión</label><div class="num-affix"><input type="number" min="5" step="5" value="60"><span class="num-unit">min</span></div></div>
                 </div>
                 <div class="field-row" style="margin-top:.625rem;">
-                  <div><label class="label">Número de sesiones</label><input value="2–3 sesiones (~4 semanas)"></div>
                   <div><label class="label">Preparación previa <span class="field-sparkle" title="Pre-llenado desde la biblioteca — revísalo">✨</span></label><input value="Encías sanas + limpieza si hay sarro"></div>
+                  <div><label class="label">Cuidados posteriores <span class="field-sparkle" title="Pre-llenado desde la biblioteca — revísalo">✨</span></label><input value="Higiene normal; evitar morder hielo o abrir cosas con los dientes"></div>
                 </div>
                 <div class="field-row" style="margin-top:.625rem;">
-                  <div><label class="label">Cuidados posteriores <span class="field-sparkle" title="Pre-llenado desde la biblioteca — revísalo">✨</span></label><input value="Higiene normal; evitar morder hielo o abrir cosas con los dientes"></div>
                   <div><label class="label">Tiempo de recuperación / downtime <span class="field-sparkle" title="Pre-llenado desde la biblioteca — revísalo">✨</span></label><input value="Sin downtime"></div>
+                  <div></div>
                 </div>
               </section>
 
@@ -200,7 +240,7 @@
                 </div>
                 <div class="field-row" style="margin-top:.625rem;">
                   <div><label class="label">¿Cuánto dura el resultado?</label><input value="15-20 años (porcelana) con buen cuidado"></div>
-                  <div><label class="label">Expectativas realistas <span class="hint" style="display:inline;margin:0;">(AC-19 campo faltante)</span></label><input placeholder="Ej: Las carillas no blanquean los dientes adyacentes sin tratar"></div>
+                  <div><label class="label">Expectativas realistas</label><input placeholder="Ej: Las carillas no blanquean los dientes adyacentes sin tratar"></div>
                 </div>
               </section>
 
@@ -218,10 +258,42 @@
 
               <!-- GRUPO 6: Operación -->
               <section class="card">
-                <h2 class="card-title">🗓️ Operación</h2>
-                <div class="field-row">
-                  <div><label class="label">Duración de la cita inicial</label><input value="30-40 min (valoración + diseño digital)"></div>
-                  <div><label class="label">Tipo de cita inicial</label><span class="select-canon" style="display:block;"><select><option>Valoración + diagnóstico</option><option>Primera sesión directa</option><option>Consulta informativa gratuita</option></select></span></div>
+                <h2 class="card-title">🗓️ Modalidad y agenda</h2>
+                <label class="label"><span class="tip" title="Cómo se entrega y se agenda el servicio. Define si Adrián vende una cita, un paquete de sesiones, o un plan que se repite.">Modalidad</span> <span class="field-sparkle" title="Sugerido por la plantilla — ajústalo a tu clínica">✨</span></label>
+                <div class="modalidad-picker" id="f-modalidad">
+                  <div class="mod-opt" data-mod="unica" onclick="pickMod(this)"><div class="mod-t">🟢 Sesión única</div><div class="mod-d">Se resuelve en una sola cita</div></div>
+                  <div class="mod-opt" data-sel="true" data-mod="sesiones" onclick="pickMod(this)"><div class="mod-t">🔁 Por sesiones</div><div class="mod-d">Un paquete de varias sesiones completa el tratamiento</div></div>
+                  <div class="mod-opt" data-mod="recurrente" onclick="pickMod(this)"><div class="mod-t">📅 Recurrente</div><div class="mod-d">El paciente lo repite cada cierto tiempo (mantenimiento)</div></div>
+                </div>
+                <div class="mod-detail" id="mod-detail-sesiones">
+                  <div class="field-row">
+                    <div><label class="label">Número de sesiones</label><div class="num-affix"><input type="number" min="1" value="3"><span class="num-unit">sesiones</span></div></div>
+                    <div><label class="label">Cada cuánto</label><div class="num-affix"><span class="num-unit">cada</span><input type="number" min="1" value="2" style="max-width:68px;"><span class="select-canon" style="min-width:118px;"><select><option>semanas</option><option>días</option><option>meses</option></select></span></div></div>
+                  </div>
+                  <p class="hint" style="margin:.375rem 0 0;">El paquete se vende junto; Adrián lo ofrece como un solo tratamiento y Mateo agenda las sesiones.</p>
+                </div>
+                <div class="mod-detail" id="mod-detail-recurrente" style="display:none;">
+                  <div class="field-row">
+                    <div><label class="label">Se repite cada</label><div class="num-affix"><input type="number" min="1" value="6" style="max-width:68px;"><span class="select-canon" style="min-width:118px;"><select><option>meses</option><option>semanas</option><option>años</option></select></span></div></div>
+                    <div></div>
+                  </div>
+                  <p class="hint" style="margin:.375rem 0 0;">Camila lo usa para reactivar al paciente cuando toca repetir.</p>
+                </div>
+                <div class="field-row" style="margin-top:.875rem;">
+                  <div><label class="label">Duración de la cita inicial</label><div class="num-affix"><input type="number" min="5" step="5" value="40"><span class="num-unit">min</span></div></div>
+                  <div><label class="label">Tipo de cita inicial</label>
+                    <div class="rich-select" id="rs-tipocita">
+                      <button class="rich-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" onclick="toggleRich(event,this)">
+                        <span class="rs-label"><span class="rs-title">Valoración + diagnóstico</span><span class="rs-desc">Primera cita para evaluar y planificar el tratamiento</span></span>
+                        <span class="rs-chevron">▾</span>
+                      </button>
+                      <div class="rich-select-panel" role="listbox">
+                        <div class="rich-option" data-sel="true" role="option" onclick="pickRich(this)"><span class="rs-title">Valoración + diagnóstico</span><span class="rs-desc">Primera cita para evaluar y planificar el tratamiento</span></div>
+                        <div class="rich-option" role="option" onclick="pickRich(this)"><span class="rs-title">Primera sesión directa</span><span class="rs-desc">El tratamiento arranca en la primera cita, sin valoración previa</span></div>
+                        <div class="rich-option" role="option" onclick="pickRich(this)"><span class="rs-title">Consulta informativa gratuita</span><span class="rs-desc">Charla sin costo para resolver dudas antes de decidir</span></div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </section>
 
@@ -355,12 +427,23 @@
             <div class="section-header"><div><h1 class="section-title">Prueba social</h1><p class="section-subtitle">Casos y reseñas que Adrián muestra para generar confianza.</p></div><button class="btn btn-primary">+ Subir caso</button></div>
             <section class="card">
               <h2 class="card-title">🖼️ Antes / después <span class="chip chip-warning" style="margin-left:auto;">con consentimiento</span></h2>
-              <div class="cards-grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));"><div class="ba">caso 1</div><div class="ba">caso 2</div><div class="ba">caso 3</div><div class="ba" style="border:1px dashed hsl(var(--border));">+ subir</div></div>
+              <div class="cards-grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));"><div class="ba">caso 1</div><div class="ba">caso 2</div><div class="ba">caso 3</div><div class="ba" style="border:1px dashed hsl(var(--border));cursor:pointer;">+ subir caso</div></div>
+              <p class="hint" style="margin-top:.5rem;">Cada caso requiere el consentimiento firmado del paciente (HIPAA-lite). "+ Subir caso" abre la carga: foto antes · foto después · confirmar consentimiento.</p>
             </section>
             <section class="card" style="margin-top:.875rem;">
-              <h2 class="card-title">⭐ Testimonios · volumen</h2>
-              <p style="font-size:.8125rem;font-style:italic;">"Cambió mi vida, ahora sonrío en todas las fotos." — Sofía M.</p>
-              <p class="chip chip-lisa" style="margin-top:.625rem;">+300 diseños de sonrisa realizados</p>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;"><h2 class="card-title" style="margin:0;">⭐ Testimonios</h2><button class="btn btn-ghost" style="font-size:.75rem;" onclick="addTesti('testi-list')">+ Agregar testimonio</button></div>
+              <p class="hint" style="margin-top:.25rem;">Escríbelos o pégalos (de Google, Instagram, encuestas). Adrián los cita para generar confianza.</p>
+              <div class="testi-list" id="testi-list">
+                <div class="testi-row">
+                  <span class="testi-stars">★★★★★</span>
+                  <div style="flex:1;min-width:0;">
+                    <textarea rows="2">Cambió mi vida, ahora sonrío en todas las fotos.</textarea>
+                    <div class="field-row" style="margin-top:.375rem;"><div><input value="Sofía M." placeholder="Autor (nombre o iniciales)"></div><div><input value="Google" placeholder="Origen (Google, Instagram…)"></div></div>
+                  </div>
+                  <button class="v-del" title="Quitar testimonio" onclick="this.closest('.testi-row').remove()">✕</button>
+                </div>
+              </div>
+              <p class="chip chip-lisa" style="margin-top:.75rem;">+300 diseños de sonrisa realizados</p>
             </section>
           </div>
 
@@ -380,11 +463,27 @@
     document.querySelectorAll('.leaf-pane').forEach(p=>p.classList.remove('active'));
     document.querySelector(`[data-pane="${b.dataset.leaf}"]`).classList.add('active');
   }));
-  // EntityPicker: cerrar al hacer click fuera
+  // EntityPicker: popover position:fixed anclado al trigger (escapa overflow-x del subnav)
+  function toggleEP(e, trigger){
+    e.stopPropagation();
+    const panel = document.getElementById('ep-panel');
+    const willOpen = !panel.classList.contains('open');
+    panel.classList.toggle('open', willOpen);
+    trigger.setAttribute('aria-expanded', String(willOpen));
+    if (willOpen){
+      const r = trigger.getBoundingClientRect();
+      panel.style.left = Math.min(r.left, window.innerWidth - panel.offsetWidth - 8) + 'px';
+      panel.style.top  = (r.bottom + 4) + 'px';
+    }
+  }
+  // cerrar al hacer click fuera
   document.addEventListener('click', e => {
     const ep = document.getElementById('ep');
     const panel = document.getElementById('ep-panel');
-    if (ep && panel && !ep.contains(e.target)) panel.classList.remove('open');
+    if (ep && panel && !ep.contains(e.target)){
+      panel.classList.remove('open');
+      ep.querySelector('.entity-picker-trigger')?.setAttribute('aria-expanded','false');
+    }
   });
   // FloatingAutosave: simular estados al editar campos
   let autosaveTimer;
@@ -395,6 +494,76 @@
     clearTimeout(autosaveTimer);
     autosaveTimer = setTimeout(() => { fa.setAttribute('data-state','saved'); fa.innerHTML = '<span class="fa-dot"></span> Guardado'; }, 900);
   }));
+  // Acordeón de grupos del Resumen (Chris 2026-06-15): Identidad abierto, resto colapsado · click en el título abre/cierra
+  document.querySelectorAll('[data-pane="resumen"] .cards-stack > .card').forEach((card, i) => {
+    card.classList.add('acc');
+    card.setAttribute('data-open', i === 0 ? 'true' : 'false');
+    const title = card.querySelector('.card-title');
+    if (!title) return;
+    const n = card.querySelectorAll('input,textarea,select').length;
+    if (n && !title.querySelector('.acc-count')) {
+      const c = document.createElement('span');
+      c.className = 'acc-count';
+      c.textContent = n === 1 ? '1 campo' : n + ' campos';
+      title.appendChild(c);
+    }
+    title.addEventListener('click', () => card.setAttribute('data-open', card.getAttribute('data-open') === 'true' ? 'false' : 'true'));
+  });
+  // Modalidad: única / por sesiones / recurrente — revela el detalle correspondiente
+  function applyMod(mod) {
+    const ds = document.getElementById('mod-detail-sesiones');
+    const dr = document.getElementById('mod-detail-recurrente');
+    if (ds) ds.style.display = (mod === 'sesiones') ? '' : 'none';
+    if (dr) dr.style.display = (mod === 'recurrente') ? '' : 'none';
+  }
+  function pickMod(el) {
+    const wrap = document.getElementById('f-modalidad');
+    wrap.querySelectorAll('.mod-opt').forEach(o => o.setAttribute('data-sel', 'false'));
+    el.setAttribute('data-sel', 'true');
+    applyMod(el.dataset.mod);
+  }
+  // #6 saltar a una pestaña (leaf) del workspace
+  function goLeaf(name){ const b = document.querySelector('.entity-leaf[data-leaf="'+name+'"]'); if (b) b.click(); }
+  // #3 RichSelect (Select con descripción · candidato CORE) — popover position:fixed anclado al trigger (escapa el scroll del content)
+  function toggleRich(e, trigger){
+    e.stopPropagation();
+    const panel = trigger.parentElement.querySelector('.rich-select-panel');
+    const willOpen = !panel.classList.contains('open');
+    document.querySelectorAll('.rich-select-panel.open').forEach(p => { if (p !== panel){ p.classList.remove('open'); p.parentElement.querySelector('.rich-select-trigger').setAttribute('aria-expanded','false'); } });
+    panel.classList.toggle('open', willOpen);
+    trigger.setAttribute('aria-expanded', String(willOpen));
+    if (willOpen){
+      const r = trigger.getBoundingClientRect();
+      panel.style.width = r.width + 'px';
+      panel.style.left = Math.min(r.left, window.innerWidth - r.width - 8) + 'px';
+      panel.style.top  = (r.bottom + 4) + 'px';
+    }
+  }
+  function pickRich(opt){
+    const panel = opt.parentElement;
+    panel.querySelectorAll('.rich-option').forEach(o => o.setAttribute('data-sel','false'));
+    opt.setAttribute('data-sel','true');
+    panel.parentElement.querySelector('.rich-select-trigger .rs-label').innerHTML = opt.innerHTML;
+    panel.classList.remove('open');
+    panel.parentElement.querySelector('.rich-select-trigger').setAttribute('aria-expanded','false');
+  }
+  document.addEventListener('click', e => {
+    document.querySelectorAll('.rich-select-panel.open').forEach(panel => {
+      const rs = panel.closest('.rich-select');
+      if (rs && !rs.contains(e.target)){ panel.classList.remove('open'); rs.querySelector('.rich-select-trigger').setAttribute('aria-expanded','false'); }
+    });
+  });
+  // #4/#8 agregar fila vacía
+  function addVariant(listId){
+    const row = document.createElement('div'); row.className = 'variant-row';
+    row.innerHTML = '<input class="v-name" placeholder="Nombre"><div class="num-affix"><span class="num-unit">S/</span><input type="number" class="v-price" placeholder="0"></div><input class="v-note" placeholder="qué cambia (opcional)"><button class="v-del" title="Quitar variante" onclick="this.closest(\'.variant-row\').remove()">✕</button>';
+    document.getElementById(listId).appendChild(row);
+  }
+  function addTesti(listId){
+    const row = document.createElement('div'); row.className = 'testi-row';
+    row.innerHTML = '<span class="testi-stars">★★★★★</span><div style="flex:1;min-width:0;"><textarea rows="2" placeholder="Pega o escribe el testimonio…"></textarea><div class="field-row" style="margin-top:.375rem;"><div><input placeholder="Autor (nombre o iniciales)"></div><div><input placeholder="Origen (Google, Instagram…)"></div></div></div><button class="v-del" title="Quitar testimonio" onclick="this.closest(\'.testi-row\').remove()">✕</button>';
+    document.getElementById(listId).appendChild(row);
+  }
 </script>
 </body>
 </html>

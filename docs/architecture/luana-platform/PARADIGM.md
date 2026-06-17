@@ -97,7 +97,7 @@ El cockpit ("Mapa Implementado") agrupa toda capability en **una de tres zonas**
 
 Dos dimensiones que extienden los 3 planos. Detalle completo: `ADR-013` + `docs/architecture/luana-platform/empleados-ia-research.md`.
 
-**(A) El motor se auto-extiende — "el usuario pide → lo creamos", gobernado.** Todo pedido del dueño se reduce a **12 primitivas (objetos)** en 3 familias (Ver/Hacer-Guardar/Gobernar), con **operaciones de ciclo de vida** ortogonales (incl. desactivar/eliminar). Se resuelve en **5 tiers**: T0 rechazo (refuse-with-reframe) · T1 orquestar/mostrar · T2 configurar sobre extension-points (sin código) · T3 construir (sandbox+humano+live-verify) · T3+ producto / **core invariante**. **Router de 2 niveles:** L1 supervisora (¿de qué dominio?) → L2 empleado dueño (¿T1/T2/T3 en mi dominio?). **Flywheel:** T3 frecuente → lift a EP nuevo → colapsa a T2. **El flujo es unidad durable de 1ª clase** (estado+seguimiento), distinto de la acción transaccional.
+**(A) El motor se auto-extiende — "el usuario pide → lo creamos", gobernado.** Todo pedido del dueño se reduce a **12 primitivas (objetos)** en 3 familias (Ver/Hacer-Guardar/Gobernar), con **operaciones de ciclo de vida** ortogonales (incl. desactivar/eliminar). Se resuelve en **5 tiers**: T0 rechazo (refuse-with-reframe) · T1 orquestar/mostrar · T2 configurar sobre extension-points (sin código) · T3 construir (sandbox+humano+live-verify) · T3+ producto / **core invariante**. **Router de 2 niveles:** L1 supervisora (¿de qué dominio?) → L2 empleado dueño (¿T1/T2/T3 en mi dominio?). **Flywheel:** T3 frecuente → lift a EP nuevo → colapsa a T2. **El flujo es unidad durable de 1ª clase** (estado+seguimiento), distinto de la acción transaccional — implementado como **late-bound saga** (planner LLM compone el plan al vuelo sobre tools, plan-como-dato + compensaciones), no como flujo pre-declarado (`ADR-015` · `saga-runtime-design.md`).
 
 **(B) El producto es un equipo vendido por puesto.** Base obligatoria (identidad + Configuración + supervisora) + **cadena de valor** (Atraer→Vender→Operar→Retener) como **SKUs** combinables. Cada empleado = cara (FE) · dominio acotado (un engine, no motor propio) · autonomía (tiers) · SKU. **Cross-brand 60/40 (Liskov):** la etapa = interfaz estable (core); roster + procesos = instancia por marca (extension).
 
@@ -113,6 +113,7 @@ Lo de la izquierda **no cambia**. Lo de la derecha es **swappable** sin tocar el
 |---|---|
 | Acción única, descubrible progresivamente, datos fuera del contexto | **Code-execution + progressive disclosure** interno · **MCP** como gateway externo/PHI/gobernado. (No "MCP vs CLI": ambos sobre el mismo SSoT) |
 | Una supervisora + especialistas scoped | **LangGraph** supervisor + `deepagents SubAgentMiddleware` |
+| Flujo durable de 1ª clase (estado + seguimiento del conjunto) | **Late-bound saga runtime** (planner LLM dinámico + plan-como-dato + compensaciones/contingencias) sobre L1 durable checkpointer — `ADR-015` (supersede el L2 `FlowCompiler` estático) |
 | Un solo engine por audiencia | `core/luana-core-copilot` · `core/luana-core-sales-agent` |
 | Memoria/voz por trabajador con cache | Anthropic prompt cache (slots 5min/1h TTL) |
 | cap↔código bidireccional sin grep | header `# cap:` + `dev_preview` + `validate_code_cap_bidirectional.py` |

@@ -14,6 +14,8 @@ export * from "./card";
 export * from "./chart";
 export * from "./checkbox";
 export * from "./collapsible";
+// CollapsibleSection — molécula colapsable de sección (promotion 2026-06-16 · compone accordion + Group)
+export * from "./CollapsibleSection";
 export * from "./command";
 export * from "./currency-selector";
 export * from "./detail-panel";

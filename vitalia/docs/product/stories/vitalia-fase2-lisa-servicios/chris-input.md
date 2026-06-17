@@ -246,3 +246,275 @@ Hice la prework de re-validación N3/canon. Hallazgo: los componentes del canon 
 **2 · Root "‹ Servicios" = leaf-peer** (= construcción nueva de staff: ui-kit `EntitySubNavBar.tsx` — "the root is a peer leaf in the tablist", primera entrada con ‹, mismas clases que los leaf-tabs). Aplicado en ambos workspaces (`entity-leaf-root`).
 **3 · Picker inline, NO popup:** eliminado el modal/backdrop; el picker es la PRIMERA VISTA de la hoja "Nuevo servicio" (franja en ese estado: solo ‹ Servicios + título, sin leaves — el workspace no existe aún); **el borrador recién se crea al elegir** plantilla o "Crear personalizado" → ahí aparece el workspace. "↻ Volver a elegir" regresa al picker.
 Spec actualizado: RN-16 refinada + AC-9/AC-18 reescritos + § Wireframes (bullet nuevo-servicio v3.1 + nota root leaf-peer). Verificación independiente: 4× HTTP 200 · grupos idénticos ambos archivos · cero `fixed/absolute` en biblio-overlay. **Refrescá `nuevo-servicio.html` + `servicio-workspace.html`** — pendiente tu ✍ FIRMA 2.
+
+### 2026-06-15 · 👤 Chris · 💬
+"El desplegable de servicios cuando estoy en un servicio específico está fallando, se ve mal, veelo tú mismo y repáralo."
+
+### 2026-06-15 · 🤖 claude · `/po-ux` · ✓ APLICADO
+**Root cause:** el `EntityPicker` (switcher ▾ del servicio) y el root-pill `‹ Servicios` se agregaron al markup (Cambio B + picker, 2026-06-12) pero **su CSS nunca se escribió** — `.entity-picker*`, `.entity-leaf-root`, `.rl-arrow` tenían CERO reglas. Sin estilo, el panel `#ep-panel` renderizaba como bloque estático visible → escupía las 6 opciones inline en la franja, colisionando con `‹ Servicios` y los tabs (lo que viste). Verificado con Chrome DevTools MCP (el a11y snapshot mostraba el listbox suelto dentro de la barra).
+**Fix (CSS + JS mínimo):**
+- CSS canónico del `EntityPicker` + root-pill escrito en `_shared.css` (hogar correcto: componente shell compartido, junto a `.entity-subnav`/`.entity-leaf`): trigger pill (avatar+nombre+▾), panel popover **oculto por defecto** (`display:none` → `.open` flex), buscador, lista con avatares por-peldaño, fila activa resaltada, footer "Mostrando N de M", tokens reales (card/border/shadow/agent-lisa-soft · cero hex hardcoded).
+- El panel va `position:fixed` anclado al trigger vía `toggleEP()` (JS) — **escapa el `overflow-x:auto` del `.entity-subnav`** que lo clipearía si fuera `absolute`, y preserva el scroll horizontal de la barra. Click-fuera cierra + resetea `aria-expanded`.
+**Verificado live (Chrome MCP):** cerrado → franja limpia (root-pill + trigger + 5 leaves, sin colisión) · abierto → popover ancla bajo el trigger, flota sobre el contenido (z-index), 6 servicios con avatares · **light + dark** ambos correctos · cero error JS en consola.
+**Archivos:** `mockups/_shared.css` (reglas nuevas) · `mockups/servicio-workspace.html` (trigger `onclick=toggleEP` + función + reset aria). Sin tocar nada firmado ni el contenido de las hojas. **Refrescá `http://127.0.0.1:8899/servicio-workspace.html`** y abrí el ▾ — sigue pendiente tu ✍ FIRMA 2 sobre los 4 mockups. State `refining`.
+
+### 2026-06-15 · 👤 Chris · 💬
+"Entra tú mismo a ver, no es solo eso, se ha desacomodado varias cosas, revisa tú mismo con tus ojos y de paso dale una última revisión a tu propuesta porque la estoy viendo poco entendible a nivel UI."
+
+### 2026-06-15 · 🤖 claude · `/po-ux` · ✓ APLICADO + 💡 PROPONE
+**Recorrí los 4 mockups con Chrome DevTools MCP (los 4 estados de scroll + light/dark). Lo desacomodado = la ESCALERA, rota:** mismo patrón de bug que el picker — `.rung-row` (que marca PELDAÑO 1 y 5 como fila full-width, tu pedido del 12-jun) estaba en el markup **pero su CSS nunca se escribió**, y `.ladder` era un grid de **5 columnas `minmax(190px)` (~950px)** que reventaba el panel de ~684px → 5 columnas en fila desbordando + PELDAÑO 5 cortado + scroll horizontal. **Fix:** `.ladder` → grid 3 columnas + escribí `.rung-row` (span `1/-1`, banda horizontal head-izquierda) + media query <760px. Verificado: Gancho=fila arriba · 3 medios=columnas · Plan=fila abajo, sin desborde.
+**Revisión crítica de la propuesta (coincido: hay ruido que la hace poco entendible) — 4 hallazgos:**
+1. 🔴 **Workspace Resumen = muro de ~26 campos en 6 grupos H2 en UN scroll de ~2400px.** Es el principal "poco entendible": el dueño de la clínica no ve estructura, solo scrollea. → pregunto cómo reestructurar (3 opciones abajo).
+2. 🟡 **Artefactos de mockup filtrados como UI real:** botón "↔ Empty-state" en el toolbar del catálogo + etiqueta "(AC-19 campo faltante)" junto a "Expectativas realistas" en el workspace. Son scaffolding/notas internas, confunden. → los saco (no es decisión de diseño, es limpieza).
+3. 🟡 **Cards del catálogo recargadas + desparejas:** precio + "X leads / 30d" (jerga analítica en una card de catálogo) + chip cuotas + avatares + chip Estándar + toggle Activo, y las alturas quedan irregulares (la metadata varía card a card). → propongo aligerar (sacar "leads/30d" de la card, llevarlo a Stats) + filas de metadata uniformes.
+4. 🟢 **Header del workspace cargado:** banner "🤖 Activo →…" + "ficha 23/26 · faltan…" + toggle Activo + chip Estándar + panel "Fuentes & conocimiento" apilados arriba. Mucho indicador de estado junto. → propongo consolidar en una sola barra de estado.
+**Pregunta (la grande, gate del resto): cómo hacer digerible el Resumen** — opción vía AskUserQuestion (índice sticky / acordeón / dividir en leaves N3). Con tu respuesta + OK a los 3 de limpieza, refresco los mockups y vamos a ✍ FIRMA 2. State `refining`.
+
+### 2026-06-15 · 👤 Chris · 💬 (AskUserQuestion)
+Resumen layout → **"Grupos en acordeón"** (Identidad abierto, resto colapsable).
+
+### 2026-06-15 · 🤖 claude · `/po-ux` · ✓ APLICADO (acordeón + 2 limpiezas) · 💡 2 propuestas pendientes
+**1 · Acordeón del Resumen (tu elección):** los 6 grupos (Identidad · Qué es · El procedimiento · Resultados · Riesgos · Operación) ahora son colapsables — **Identidad abierto por defecto, resto cerrado**, chevron ▸/▼ + chip "N campos" a la derecha de cada título. Aplicado en `servicio-workspace.html` **y** `nuevo-servicio.html` (nuevo = editar, mismo patrón). Implementación: clase `.card.acc[data-open]` en `_shared.css` + init JS scopeado a `[data-pane="resumen"] .cards-stack > .card` (reúsa el patrón chevron del `.kpanel`; cero cirugía de markup en los 6 grupos). **Verificado live: el leaf pasó de ~2400px → ~940px de alto; click en un título abre/cierra (toggle `false→true`, campos visibles).**
+**2 · Artefacto AC-19 removido:** la etiqueta "(AC-19 campo faltante)" junto a "Expectativas realistas" se borró (era nota interna de refinamiento).
+**3 · Botón "↔ Empty-state" removido** del toolbar del catálogo (era scaffolding del mockup).
+**Pendiente tu OK (2 propuestas que NO toqué aún):** (a) **cards del catálogo** — aligerar (sacar "leads/30d" de la card → vive en Stats) + filas de metadata uniformes para que no queden desparejas · (b) **header del workspace** — consolidar banner "Activo →" + "ficha 23/26" + toggle + chip + panel Fuentes en una sola barra de estado. ¿Las aplico también, o con el acordeón + limpieza ya vamos a ✍ FIRMA 2? **Refrescá `servicio-workspace.html` (Resumen) + `escalera.html` + `catalogo.html`.** State `refining`.
+
+### 2026-06-15 · 👤 Chris · 💬
+"Aplicá las 2 propuestas también."
+
+### 2026-06-15 · 🤖 claude · `/po-ux` · ✓ APLICADO (2/2)
+**(a) Cards del catálogo aligeradas + uniformes:** saqué "X leads / 30d" de las 6 cards (jerga analítica → su hogar es la pestaña Stats del servicio) + ancré el `.eic-foot` con `margin-top:auto` → el pie (avatares + Estándar + toggle Activo) ahora se alinea abajo en TODAS las cards, sin importar cuánto contenido tenga el cuerpo (antes flotaba a media card = el desparejo que veías) + sin wrap de la fila de métricas. Card ahora = media + título + especialidad·duración + precio [+chip cuotas] + pie alineado. `catalogo.html` (CSS inline `.eic-foot` + 6 ediciones de markup).
+**(b) Header del workspace consolidado:** los 4 indicadores apilados (banner "🤖 Activo →…" + chip Estándar + completitud "ficha 23/26 · faltan…" + toggle) → **una sola `.svc-statusbar`**: `[toggle Activo] · 🤖 Adrián lo ofrece · 2 especialistas vinculados · 📚 Estándar · ···· ficha 23/26` (el verboso "faltan: …" pasó a tooltip de la barrita de completitud; toggle a la izquierda como acción primaria; completitud anclada a la derecha). El panel "Fuentes & conocimiento" queda debajo como bloque funcional colapsable (no es indicador de estado). Aplicado en `servicio-workspace.html` **y** `nuevo-servicio.html` (variante borrador, preservando IDs `ws-*` que usa el JS).
+**Verificado live (Chrome MCP, hard reload, los 3):** catálogo → cards limpias + pies alineados + sin Empty-state + sin leads · servicio-workspace → barra única + Resumen acordeón · nuevo-servicio (borrador, tras elegir plantilla) → barra única borrador + EntityPicker + acordeón 6 grupos (Identidad abierto). Cero error JS.
+**Estado de la propuesta:** escalera arreglada · Resumen acordeón · cards uniformes · header consolidado · 2 artefactos de mockup fuera · picker ▾ OK (light+dark). Listo para tu **✍ FIRMA 2** sobre los 4 mockups → con tu firma genero RONDA 2 (Gherkin + Matriz) y paso `refining → refined` → `/architect`. State `refining`.
+
+### 2026-06-15 · 👤 Chris · 💬
+"Mirá nuevo-servicio.html, no se ve bien; entendiendo el contexto en que se crea el servicio, dame una mejor versión UI."
+
+### 2026-06-15 · 🤖 claude · `/po-ux` · ✓ APLICADO (rediseño picker de creación)
+**Diagnóstico (lo miré con Chrome MCP):** el `BibliotecaPicker` se veía como lista cruda porque **todas sus clases `.biblio-*`/`.br-*` no tenían CSS** (mismo patrón de bug que el picker/escalera/cards: markup sin estilar). Encima tenía 3 problemas de diseño: 6 botones azules pesados repetidos, toggle "probar (demo)" filtrado como UI, e íconos huérfanos flotando.
+**Rediseño entendiendo el contexto de creación** (el dueño agrega un servicio; lo mejor es partir de la biblioteca estándar — trae la ficha clínica lista + estandariza nombres — o crear personalizado):
+- **CSS completo del picker** (escrito en el `<style>` del mockup): panel/buscador/filas/footer con tokens reales.
+- **Contexto en vez de demo-toggle:** chip "📚 Biblioteca de tu clínica · Odontología + Estética · cada plantilla ya trae la ficha clínica completa" (derivado del Onboarding, no interactivo). Saqué el "probar (demo)".
+- **Buscador con ícono adentro** (typeahead por nombre/sinónimo) — antes el 🔍 flotaba arriba suelto.
+- **Filas = cards seleccionables:** ícono en chip circular + nombre + chips (área + peldaño) + sinónimos atenuados + botón **liviano outline** "Usar esta plantilla" (se rellena en hover de la fila) — adiós a los 6 botones azules pesados. **Toda la fila es clickeable → crea el borrador en 1 paso** (delegación JS al botón; cero cirugía en las 6 filas).
+- **"Crear personalizado" prominente:** botón dashed full-width con `+` ("¿No está en la lista? + Crear un servicio personalizado") en vez del ghost enterrado.
+**Verificado live (Chrome MCP, hard reload):** picker limpio + buscador con ícono + filas-card + custom dashed · click en fila (no en botón) → entra al workspace con "Diseño de sonrisa [borrador]" + barra consolidada + acordeón. Cero error JS. **Refrescá `nuevo-servicio.html`.** Sigue pendiente tu **✍ FIRMA 2**. State `refining`.
+
+### 2026-06-15 · 👤 Chris · 💬
+"OK, pero me refería a cuando ya se seleccionó uno. Pensala bien: si escogimos uno, ¿es recomendable que escoja el peldaño? Lo mismo con especialidad — ¿no se supone que ya estaría en una? ¿O especialidad de dónde proviene?"
+
+### 2026-06-15 · 🤖 claude · `/po-ux` · ✓ APLICADO (herencia plantilla) + 💡 model-clarification
+**Tenías razón.** Reglas de negocio aclaradas + aplicadas al mockup:
+- **De dónde proviene "Especialidad / categoría":** es la **categoría del servicio dentro del catálogo de Offer Studio** (engine), y sus OPCIONES = las **áreas que la clínica configuró en el Onboarding** (editables en Lisa → Marca). NO es lista global hardcodeada. Para Sonrisa Plena = Odontología + Estética. (Dependencia para `/architect`: el set de opciones lo OWNea Onboarding/Marca, esta story lo consume.)
+- **Herencia desde la biblioteca:** si el servicio viene de una plantilla, **peldaño + especialidad se HEREDAN** de la plantilla — el usuario NO los re-elige. Se muestran **pre-llenados con ✨ (editables)**. Solo el servicio **personalizado** los pide: peldaño de los 5 fijos · especialidad de las áreas de la clínica.
+**Implementado en `nuevo-servicio.html`:** `useBiblio(...)` ahora recibe `area` y setea `#f-esp` + `#f-peldano` con ✨ (helper `markSparkle`); los 6 botones de la biblioteca pasan su categoría; `#f-esp` lista las áreas de la clínica (+ inyecta la de la plantilla si falta); `useCustom()` deja especialidad en "Elige…" sin ✨.
+**Verificado live (Chrome MCP):** plantilla "Diseño de sonrisa" → especialidad="Estética dental" ✨ + peldaño="Tratamiento principal" ✨ + chip "📚 Estándar" · personalizado → especialidad="Elige…" sin ✨ + chip "Personalizado". Cero error JS.
+**Para RONDA 2 (al firmar):** nace RN nueva — *"servicio creado desde biblioteca hereda categoría + peldaño (editables); personalizado los pide; opciones de categoría = áreas de la clínica (Onboarding/Marca)"*. Sigue pendiente tu **✍ FIRMA 2**. State `refining`.
+
+### 2026-06-15 · 👤 Chris · 💬
+"En Peldaño me sale un dropdown y debería ser los 'botones' para escoger entre los 5 niveles, con el de la plantilla pre-marcado. Y tanto eso como la especialidad deberían estar pre-marcadas y NO poder cambiarlas. ¿Y dónde está la gestión de especialidad/categoría?"
+
+### 2026-06-15 · 🤖 claude · `/po-ux` · ✓ APLICADO (3/3) — corrige la RN anterior
+**Corrección a mi vuelta anterior:** dije "heredados editables" — Chris lo ajustó a **heredados + BLOQUEADOS** (un servicio estándar NO se re-categoriza · es el sentido de la biblioteca). RN actualizada.
+1. **Peldaño = 5 botones** (no dropdown): Gancho gratuito · Primera visita · Tratamiento principal · Premium · Plan/convenio (orden del recorrido). Reúsa `.rung-picker`/`.rung-opt` de `_shared.css`.
+2. **Desde estándar → pre-marcado + bloqueado:** el peldaño heredado queda activo (verde) + los otros 4 en gris no-clickeables (`.rung-picker.locked`); especialidad = `<select disabled>` con su valor; ambos labels con **🔒** + hint "🔒 Lo define el servicio estándar". **Personalizado** → los 5 botones son clickeables (`pickRung`) + especialidad editable ("Elige…"), sin 🔒.
+3. **¿Dónde se gestiona especialidad/categoría?** → en **Lisa → Marca** (las áreas/especialidades que la clínica ofrece, sembradas en el Onboarding). Story dedicada: **`vitalia-fase2-marca-especialidad-clinica`** (state `idea`). Servicios la **consume**. Dependencia para `/architect`.
+**Aplicado en `nuevo-servicio.html` (dinámico: useBiblio bloquea / useCustom desbloquea) + `servicio-workspace.html` (estándar → bloqueado estático).** Verificado live ambos: plantilla "Diseño de sonrisa" → 5 botones con "Tratamiento principal" marcado+bloqueado + especialidad "Estética dental" 🔒 disabled · personalizado → botones clickeables (elegí "Premium" ✓) + especialidad "Elige…" editable. Cero error JS.
+**RN para RONDA 2 (revisada):** *"servicio desde biblioteca → categoría + peldaño heredados y **bloqueados** (los define el estándar); personalizado → el usuario los elige (peldaño de los 5 fijos · categoría de las áreas de la clínica). La gestión de áreas/categorías vive en Marca (story marca-especialidad-clinica)."* ⚠️ Nota para `/architect`: revisar el "mover peldaño arrastrando en Escalera" — con estándar bloqueado, el drag aplicaría solo a personalizados (o el peldaño del estándar es fijo). **Refrescá `nuevo-servicio.html` + `servicio-workspace.html`.** Pendiente tu **✍ FIRMA 2**. State `refining`.
+
+### 2026-06-15 · 👤 Chris · 💬
+"Ajuste en 'Recurrente': no se entiende y no está bien ahí. Pensá + investigá cómo creamos procedimientos de múltiples sesiones; solución simple e inteligente basada en cómo lo hacen los mejores, adaptada a nuestro flujo. Sin sobre-ingeniería." + (2º) "'Operación' suena quirúrgico en lo médico — usá otro nombre o ponelo en procedimiento o antes."
+
+### 2026-06-15 · 🤖 claude · `/po-ux` · ✓ APLICADO (modalidad de servicio · investigado)
+**Investigación (cómo lo hacen los mejores · cité en chat):** Zenoti/Pabau/Fresha separan 3 modalidades — servicio único · **paquete/serie de sesiones** (finito, un tratamiento) · **membresía/plan recurrente** (se repite). El toggle "¿Recurrente?" colapsaba esas 3 en un sí/no → por eso no se entendía. ([zenoti.com/medical-spa-software/aesthetic-software](https://www.zenoti.com/medical-spa-software/aesthetic-software) · [pabau.com/blog/best-aesthetic-clinic-software](https://pabau.com/blog/best-aesthetic-clinic-software/))
+**Solución (simple, adaptada · sin sobre-ingeniería):** reemplacé el toggle por un selector **Modalidad** de 3 opciones (cards) con **progressive disclosure**:
+- 🟢 **Sesión única** → sin campos extra.
+- 🔁 **Por sesiones** → revela "Número de sesiones" + "Cada cuánto (intervalo)" + hint "el paquete se vende junto; Adrián lo ofrece como un tratamiento y Mateo agenda las sesiones".
+- 📅 **Recurrente** → revela "Se repite cada" (cadencia) + hint "Camila lo usa para reactivar".
+**Ubicación + naming (tu 2º mensaje):** lo saqué de Identidad (donde estaba el toggle) y lo puse en el grupo de logística, **renombrado de "Operación" → "🗓️ Modalidad y agenda"** (evita la connotación quirúrgica) — junto a "cita inicial". "Número de sesiones" se movió de "El procedimiento" (ahora 6 campos) a la Modalidad.
+**Herencia:** plantilla pre-selecciona su modalidad (Diseño→Por sesiones · Botox/Limpieza/Plan→Recurrente · etc.) con ✨ **editable** (la clínica ajusta sesiones/cadencia/precio — a diferencia de categoría/peldaño que van bloqueados). Personalizado → sin modalidad pre-elegida (el usuario decide).
+**Aplicado en `nuevo-servicio.html` (dinámico) + `servicio-workspace.html` (estático "Por sesiones").** Verificado live: Diseño→Por sesiones+detalle sesiones ✓ · Botox→Recurrente+cadencia ✓ · custom→ninguna ✓ · grupo renombrado, "Operación" ya no existe. Cero error JS.
+**RN nueva RONDA 2:** *"todo servicio tiene una Modalidad ∈ {única, por-sesiones, recurrente}; por-sesiones define nº+intervalo; recurrente define cadencia; la plantilla la sugiere (editable)."* **Refrescá `nuevo-servicio.html` (Modalidad y agenda) + `servicio-workspace.html`.** Pendiente tu **✍ FIRMA 2**. State `refining`.
+
+### 2026-06-15 · 👤 Chris · 💬 (8 comentarios sobre el workspace)
+1. En Resumen, nº de sesiones y duración = campos **numéricos**; "cada cuánto" = por semana/mes (unidad).
+2. "Guardado automático" debe respetar el componente ya acordado de la **pastilla flotante** (ahora son letras sueltas abajo a la derecha) — respetar componentes core/base.
+3. El desplegable **"Tipo de cita inicial"**: ¿de dónde viene?, ¿es configurable?, ¿cuántos selects hardcodeados hay en la historia? Usar un **dropdown enriquecido** (descripción debajo de cada opción para saber cuál escoger) — mejor alternativa Shadcn, hacerla **CORE si funciona**.
+4. "Variantes": ¿son otros servicios? Investigar y pegarlo a lo que realmente requieren estos negocios.
+5. Al costado de "Adrián lo ofrece" aparece "ficha 23/26" y no se entiende qué es.
+6. "2 especialidades vinculadas" — no se sabe cuáles ni cómo se vinculan (¿va con #4?).
+7. En Especialistas, ¿qué pasa al click en "+ Vincular especialista"? "Veo todo junto pero no sé el flujo."
+8. Prueba social: ¿qué pasa al "Subir caso"? Y los testimonios, ¿se agregan?, ¿cómo?
+
+### 2026-06-15 · 🤖 claude · `/po-ux` · ✓ APLICADO (#1,#2,#5,#7 reparados) · respuestas + 💡 2 forks (#4,#8)
+**Causa raíz de #2/#5/#7 = el mismo bug recurrente:** clases en el markup sin CSS escrito. `.floating-autosave`/`.fa-dot`, `.hidden`, `.chip-origen`, `.completeness-chip`/`.cc-bar`/`.cc-fill`, `.select-canon` — **todas referenciadas, ninguna definida**. Renderizaban como texto suelto / paneles siempre visibles. Escritas en `_shared.css` (hogar correcto, junto al resto del chrome shell).
+- **#2 ✓** `FloatingAutosaveIndicator` canónico (canon §2.6): pastilla `position:fixed` centrada abajo + punto de estado (ámbar "Guardando…" → verde "Guardado"), una por página.
+- **#1 ✓** numéricos en editar + nuevo: Número de sesiones (`type=number` + "sesiones"), Duración de sesión / Duración cita inicial (`number` + "min"), Cada cuánto / Se repite cada (`number` + unidad días/semanas/meses/años vía `.select-canon`).
+- **#7 ✓** `.hidden{display:none}` → el panel "Vincular especialistas del roster" ya no se ve siempre; el toggle del botón ahora funciona. Flujo explicado abajo.
+- **#5/#6 ✓** chips de la `svc-statusbar` (barrita "ficha 23/26" + chip "Estándar") ahora estilizados (barra de progreso legible).
+**Respuestas:**
+- **#3** "Tipo de cita inicial" = **enum fijo del sistema** (3: Valoración+diagnóstico · Primera sesión directa · Consulta informativa gratuita), lo consume la agenda (Mateo/Valeria) — **no configurable por clínica** (YAGNI). **Selects/enums en la historia: ~7**, casi todos enums fijos (Peldaño 5 · Modalidad 3 · Tipo-cita 3 · Precio-modo 2 · Reserva-tipo 2 · Anticipo-unidad 2 · Interés 2); **el único configurable por clínica es "Especialidad/categoría"** (áreas Onboarding/Marca). **Dropdown enriquecido CORE:** propongo `RichSelect` (Shadcn Select con título + descripción por opción) como primitiva `@luana/ui-kit` candidata CORE → lo construyo en la próxima vuelta junto a #4/#8 (no hacerlo dos veces).
+- **#5** "ficha 23/26" = **completitud de la ficha** (23 de 26 campos). No bloquea "Activo". ¿"23/26" o "88% completa"? (pregunta menor, prosa).
+- **#6** dice **especialistas** (doctores), no "especialidades": conteo de doctores del roster que realizan el servicio (pestaña Especialistas). NO es Variantes. Propongo hacerlo **clickeable** → salta a la pestaña Especialistas.
+- **#7** flujo: click "+ Vincular especialista" → panel checklist del **roster** (Lisa→Especialistas) → marcás quién hace el servicio → **guarda al marcar** → "Listo" cierra. Vincular **no crea** especialistas (sus datos se editan en Especialistas).
+**Forks (vía AskUserQuestion — cambian estructura):**
+- **#4 Variantes** → recomiendo **lista estructurada {nombre · precio · qué cambia}** (misma ficha clínica, distinto precio; Adrián cotiza la variante exacta; no ensucia el catálogo). Investigación: Zenoti/Pabau/Fresha modelan "service variants" (material/duración/zonas/unidades) como opciones de UN servicio, no servicios separados.
+- **#8 Prueba social** → "Subir caso" = uploader antes/después + consentimiento (HIPAA-lite) manual. Testimonios = el fork: recomiendo **alimentados de reseñas reales (Camila/NPS), Lisa elige cuáles destaca** (read-only acá) vs carga manual vs ambos.
+Pendiente tu ✍ FIRMA 2 (tras resolver #3/#4/#8). State `refining`.
+
+### 2026-06-15 · 👤 Chris · 💬 (AskUserQuestion #4/#8)
+**#4 Variantes → "Lista estructurada"** (nombre · precio · qué cambia). **#8 Testimonios → "Carga manual acá"** (Lisa escribe/pega).
+
+### 2026-06-15 · 🤖 claude · `/po-ux` · ✓ APLICADO (#3 RichSelect + #4 variantes + #8 testimonios + #6 link)
+- **#4 Variantes** → repeater estructurado `{nombre · S/ precio · qué cambia · ✕}` + "Agregar variante" + hint "Adrián cotiza la variante exacta". En editar (Composite S/2.500 · Porcelana S/4.500) y nuevo (vacío, 1 fila). RN nueva RONDA 2: *"un servicio puede tener N variantes (misma ficha clínica, distinto precio); si no hay, vale el precio del tratamiento; Adrián cotiza la variante exacta."*
+- **#8 Prueba social** → testimonios = lista manual `{★★★★★ · texto · autor · origen · ✕}` + "Agregar testimonio" + volumen ("+300 …"); "Subir caso" antes/después con hint de consentimiento firmado (HIPAA-lite). Solo en editar (en nuevo el leaf queda empty-state borrador). RN: *"testimonios y casos antes/después son carga manual de Lisa; cada caso exige consentimiento del paciente."*
+- **#3 RichSelect** → primitiva nueva (Shadcn Select con título + descripción por opción), popover `position:fixed` (reúsa el patrón probado de EntityPicker), aplicada a "Tipo de cita inicial" en editar + nuevo. **Candidata CORE `@luana/ui-kit` → dependencia/nota para `/architect`.** Las 3 opciones llevan su explicación ("Primera cita para evaluar y planificar", etc.).
+- **#6** "2 especialistas vinculados" → ahora `statuslink` clickeable → salta a la pestaña Especialistas. Microcopy aclarado (especialistas = doctores, no especialidades).
+**Verificación:** estática (4× HTTP 200 · clases/JS/CSS presentes y consistentes en ambos archivos). ⚠️ **NO live-verify este turno** — Chrome DevTools MCP quedó con lock de userDataDir (footgun aislamiento por sesión); el RichSelect popover replica el `toggleEP` que ya funciona en el mismo archivo. **Refrescá `servicio-workspace.html` + `nuevo-servicio.html`** (probá abrir "Tipo de cita inicial", agregar variante, agregar testimonio). Pendiente: tu ✍ FIRMA 2 o más comentarios. State `refining`.
+
+### 2026-06-15 · 👤 Chris · 💬
+"Ya revisé, queda. Ahora refresca el spec con TODOS los cambios, bien estructurado para lograr todo lo que veo en el mockup, indicando qué átomo/molécula/token usar y si no existe créalo como mockup y en next. Cada campo: su tooltip con la descripción mapeada, su por qué, a qué entidad va. Todo."
+
+### 2026-06-15 · 🤖 claude · `/po-ux` · ✓ APLICADO (spec RONDA 2 draft) + ⚠️ scope note "en next"
+**Tomé "queda" como visto-bueno visual** (FIRMA 2 verbal; flip formal de `mockup_final_signed` al cerrar refined).
+**Scope clarificado:** /po-ux = refining = **docs**. Crear el componente "en next" (frontend prod) es fase build (`/architect` contrata → `/dev-team` construye en `@luana/ui-kit`/`features`). En el spec **declaré cada primitiva nueva con su contrato** + ya está mockup'eada → el build la crea fiel. NO edité `vitalia/frontend/src` (rompería scope discipline · M13).
+**Reconcilié el spec (`01-spec.md`) con la sesión:** frontmatter `round:2` · RN-5 superseded · **RN-28** modalidad · **RN-29** variantes estructuradas · **RN-30** herencia categoría+peldaño bloqueada · **RN-31** numéricos tipados · **RN-32** tipo-cita enum fijo + RichSelect (+ inventario de 7 selects) · **RN-33** prueba social manual · § Workspace Resumen (Identidad/Qué-es/Modalidad-y-agenda) · § Prueba social · Próximo paso.
+**2 secciones NUEVAS (el centro del pedido):**
+- **§ Mapa de campos** — cada campo de los 5 leaves + barra de estado + Plan de pago + panel Fuentes → `entidad (dónde persiste) · por qué/quién consume · tooltip (texto literal) · átomo/molécula/token`. Leyenda de entidades (Offer engine · OfferExt brand · SalesBrief · ServiceSpecialistLink · KnowledgeSource · Case/Testimonial · Computed · Tenant).
+- **§ Inventario de componentes** — (A) existe→reusar (ui-kit/canon: Input/Select/Switch/FloatingAutosaveIndicator/Entity*/tokens) · (B) **crear (⊕) con contrato** (props + dónde vive + mockup ref): `RichSelect`+`NumberWithUnit` (candidatos CORE `/pm-luana`) · `ModalidadPicker`·`RungPicker`·`VariantsRepeater`·`TestimonialsList`·`FaqPairList`·`ObjecionPairList`·`TagInput`·`FichaCompletenessChip`·`ServiceStatusBar`·`BibliotecaPicker`·`EspecialistaLinkPicker`·`KnowledgeSourcesPanel`·`chip-origen`.
+**Falta SOLO para `refined`:** (1) tu ✍ FIRMA 2 formal · (2) **RONDA 2 ejecutable** = § Gherkin (`@rule` por RN) + § Matriz de cobertura — la genero apenas confirmes → `refining→refined` → `/architect`. State `refining`.
+
+### 2026-06-15 · 👤 Chris · 💬
+"Genera toda la casuística pero ponete en todos los escenarios posibles, y las reglas de negocio. Todo bien pensado para que al desarrollar no haya 'huecos'."
+
+### 2026-06-15 · 🤖 claude · `/po-ux` · ✓ APLICADO (RONDA 2 ejecutable — § Gherkin + § Matriz de cobertura)
+**Escrito en `01-spec.md` (entre los AC y los Wireframes):**
+- **§ Gherkin** — **~55 scenarios en 16 grupos**, cada uno tagueado `@categoría` (happy/negative/edge/adversarial/a11y/keystone) + `@RN-N` + `@SC-id`. Grupos: catálogo · crear (picker/plantilla/personalizado/borrador-fantasma) · identidad+herencia bloqueada · qué-es+variantes · modalidad+numéricos+RichSelect · ficha paciente · Para Adrián+safety · especialistas (vincular/desvincular/sin-doctor) · plan de pago (3 cobros/calculados/precio<0) · prueba social (manual/consentimiento) · escalera (drag/a11y) · autosave · tooltips/edit-policy · Fuentes&conocimiento (autocompletar+RAG+guardas) · KEYSTONE agente · adversarial transversal (cross-tenant/RBAC/idioma/vertical).
+- **§ Matriz de cobertura** — tabla **RN-1..33 → scenarios → método de verificación** (unit/int/e2e/live/arch) + **18/18 bifurcaciones del árbol mapeadas** + **bloque "Fuera de scope declarado"** (match-tool canal-inbound · RAG engine-lift `/pm-luana` · testimonios↔Camila · landing/Stats/A-B/imports/AI-pricing · áreas-clínica) — para que lo que NO se construye sea **decisión explícita, no hueco silencioso**.
+**Para cerrar `refined` necesito tu ✍ FIRMA 2 / ratificación del spec.** Con tu OK: floto `mockup_final_signed:true` + `ratified_visual_by_chris:true` + `state refining→refined` (lo hace `/pm-vitalia`) → handoff `/architect`. NO transiciono sin tu sí explícito. State `refining`.
+
+### 2026-06-15 · 👤 Chris · 💬 ✍ FIRMA 2
+"Confirmo, quiero pasar a architect y continuar autónomo hasta el done, pero en una nueva conversación; pasame el prompt para pegar."
+
+### 2026-06-15 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO (refined + handoff diferido a nueva conversación)
+**✍ FIRMA 2 dada.** `/pm-vitalia` flipeó: `state refining→refined` · `mockup_final_signed:true` · `ratified_by_chris:true` · `ratified_visual_by_chris:true` (+ `ratified_visual_mockups` los 4) · `autonomous_mode:true` (opt-in Chris) en `checkpoint.md`; `mockup_final_signed:true` + `state_note:refined` en `01-spec.md`. `next_action` → `/architect` ready package.
+**NO encadeno `/architect` en esta conversación** (Chris lo pidió en una NUEVA, autónomo hasta done) — le pasé el prompt de arranque. La nueva conversación corre `/architect` → `/dev-team` (autonomous, sin pausa G) → `/auditor` → `/pm-vitalia` merge.
+⚠️ **Dejado marcado para esa corrida:** dependencia HARD engine-lift RAG (indexer Qdrant + retrieval tool sales_agent · `/pm-luana`) — NO se puede completar 100% autónomo sin pasar por el promotion gate; `/architect` debe fasearlo o escalar, no saltarlo silencioso. State `refined`.
+
+### 2026-06-15 · 🤖 claude · `/architect` · ✓ APLICADO (READY PACKAGE cerrado · refined→ready)
+**Produje el ready package completo** (8 archivos) sobre 01-spec.md RONDA 2: `03-arch.md` consolidado + per-surface (`03-arch-be.md` · `03-arch-fe.md` · `03-arch-agentic.md`) + `04-validators.yaml` + `05-guidelines.md` + `06-tickets.yaml` + `dispatch-plan.md`. ADR-vitalia-004 `adr_004_compliance: full`.
+
+**Faseado HARD (tu constraint):**
+- **Sub-phase A (NO-RAG · autónomo a live-verified):** BE net-new módulo `offer` (DDD · Offer-core persiste como engine `ProductModel` vía port D-1 → el keystone lee SIN plomería · OfferExt brand-level con 3 cobros/variantes/modalidad/SalesBrief/ServiceSpecialistLink/Case-consent/biblioteca) + EP-2 preset pack (biblioteca seed dental+estética) + FE completo (catálogo grid + escalera 5 fijos dnd+a11y + workspace 5 leaves + autosave + biblioteca picker inline + KnowledgeSourcesPanel extract-only) + document→autocomplete (consume copilot extract_from_doc · NOT RAG) + **KEYSTONE AC-6 consume-only, verificable LIVE**. 8 tickets T-1..T-8.
+- **Sub-phase B (RAG · engine-lift `/pm-luana` · GATED):** RN-17(b)+RN-22+AC-15(B)+§14(b) dimensionados como T-B1/B2/B3 `status: blocked` (IRAGIndexerPort real Qdrant binding + sales_agent retrieval tool + 4 guards · flagship R23). NO buildable en este package. Draft de promotion proposal referenciado: `docs/promotion-protocol/proposals/2026-06-15-offer-knowledge-rag-indexer-and-sales-agent-retrieval.md`.
+
+**Decisiones ui-kit (delegadas a mí):**
+- **RichSelect** YA shipped en `@luana/ui-kit` 0.4.1 (verificado) → CONSUME (RN-32). NO recrear.
+- **NumberWithUnit** = único net-new primitive → `components/shared/NumberWithUnit.tsx` (vitalia-local shared, reusable) + documentado lift-candidate `/pm-luana` — **NO lift en esta story** (lift = engine gate = rompe autonomía; un solo stop /pm-luana ya alcanza para Sub-phase B RAG).
+- `ModalidadPicker`/`OptionCardGroup` = feature-local now.
+
+**Ground truth verificado (greps · § Prior art audit):** `offer/` no existía (net-new) · `OfferValueLevel` 5 fijos (lead_magnet/activacion/transformacion/maximizacion/corporativo) · `TenantKnowledgeBuilder.build_identity` lee `get_offer_repository().get_all_by_tenant` filtrando status active/draft (KEYSTONE) · `IRAGIndexerPort` = STUB default binding (Sub-phase A doc-autocomplete funciona sin Qdrant) · clinics doctor roster (link FK vía port) · comunify offer_ladder = STUDY only (no lift).
+
+**Surface→builder→auditor:** BE `offer/`+EP-2+keystone → builder-backend/auditor-backend (workhorse · NO agentic-runtime en A → R23 NO aplica). FE → builder-frontend/auditor-frontend. Sub-phase B → `/pm-luana` gate (flagship).
+
+**2 hard stops (NO done autónomo):** STOP-1 `chris_verify.signoff` (funcional · merge) · STOP-2 `/pm-luana` RAG engine-lift OK.
+
+**Flip:** `checkpoint.md state refined→ready` · `phase: READY_PACKAGE_CLOSED` · `next_action: /dev-team Sub-phase A T-1`. autonomous_mode:true (Sub-phase A). State `ready`.
+
+### 2026-06-15 · 🤖 claude · `builder-frontend` · ✓ APLICADO (T-5 build-phase done · tests-passing)
+**T-5 (FE · primitivas/moléculas de campo) construido — fase A, sub-phase A no-RAG.**
+- **NumberWithUnit** (`components/shared/NumberWithUnit.tsx`) — net-new shared molecule vitalia-local (lift-candidate `/pm-luana` diferido, NO lift en esta story). Compone `Input` + `Select` raw de `@luana/ui-kit`; clamp ≥ min, nunca emite NaN/empty.
+- **9 moléculas feature-local** en `features/lisa/components/servicios/`: `ModalidadPicker` (discriminated reveal) · `RungPicker` (escalera 5 OfferValueLevel, locked RN-31) · `VariantsRepeater` (add/remove, currency prefix) · `TestimonialsList` · `FaqPairList` · `ObjecionPairList` · `TagInput` (de-dupe case-insensitive) · `FichaCompletenessChip` (count) · `ChipOrigen` (estándar 📚 vs personalizado).
+- **CONSUME (no recrea)** de `@luana/ui-kit`: RichSelect, Select, Input, Textarea, Switch, Badge, Button. Tokens de `globals.css` (`--agent-lisa`, `text-vitalia-warning`, `--radius`). CERO hex/arbitrary-value. Spanish neutro.
+- **Tests RED→GREEN:** 10 files Vitest, 45/45 PASS (cubren RN-28/29/31/32 + AC-19 + gherkin §4 variantes, §5 modalidad+richselect).
+- **Gate G5 GREEN:** tsc 0 · eslint 0 · vitest 45/45 · arch fitness 187/187 (div-layout ratchet vuelto a baseline 301/121, native-select, ds-tokens-lock, FSD boundaries, no-default-export, no-clerk-organizations).
+- **Barrel** `features/lisa/index.ts` exporta las 9 moléculas + types (named, sin default).
+**Pendiente downstream:** orchestrator → gate-runner → `auditor-frontend` (verdict independiente). T-5 NO toca BE/keystone/RAG. Composición en workspace = T-6/T-7. State `developing`.
+
+### 2026-06-15 · 🤖 claude · `builder-backend` · ✓ APLICADO (T-2/T-3/T-4 build-phase done · tests-passing)
+**T-2/T-3/T-4 (BE · offer application + Extension SDK + KEYSTONE) construido — fase A, sub-phase A no-RAG.** commit `aabcc502` (pushed `wip/vitalia`).
+- **T-4 KEYSTONE (AC-6/AE-A1) GREEN:** `medical_offer_factory.build_medical_service_offer` llena los **13 campos required del engine `Offer`** (archetype SERVICIO, status ACTIVE/DRAFT, pricing_options, guarantee, etc.). `OfferEngineAdapter` puentea async brand → sync engine repo (D-1) y `list_service_offers` espeja `get_all_by_tenant` — el path EXACTO que lee `TenantKnowledgeBuilder`/Adrián. `test_keystone_offer_shape.py` 3/3 PASS (RED-first). + `document_autocomplete_service` consume copilot doc-extract (read-only, RN-8/RN-17a).
+- **T-3 EP-2 GREEN:** biblioteca preset pack dental+estética registrado vía Extension SDK EP-2 (BRAND-CONFIG, **sin `_CATALOG_VERSION` bump**) + `biblioteca_service` typeahead synonym-aware scoped al tipo de clínica (RN-25/RN-27). CERO engine edit.
+- **T-2 service layer GREEN:** `catalog_service` (create=Offer+OfferExt, activate, soft-delete, filtros server-side, keyset pagination RN-15, create-on-choose=DRAFT RN-16) · `proof_service` (consent gate RN-33 ANTES de audit + audit_log SYNC pre-response, sin PHI en payload · HIPAA-lite) · `sales_brief_service` · `specialist_link_service` (link/unlink vía roster port) · ports + adapters (offer_engine/doctor_roster/doc_extract/brand_voice/knowledge_source).
+- **Gates G5:** offer battery **82/82 PASS** · `ruff check`+`format` clean · arch fitness GREEN salvo 1 fallo PRE-EXISTENTE de `pgcrypto` en `treatment_plans.notes` (módulo fidelizacion, NO offer — fuera de scope, no tocado por este diff) · voseo clean (5 archivos `domain.vos` con `# voseo-allowed`).
+- **NO done — remanente honesto (T-2-impl-log § Remaining):** la **capa API de T-2** (`offer/api/dtos.py` + `servicios_router.py` 16 endpoints + `main.py include_router /api/v1/offer` + tests HTTP RBAC/cross-tenant) **NO fue construida** — `offer/api/` solo tiene `__init__.py`. La superficie REST es una isla (CONN Notarized/Navigable UNMET). El path de surfacing al agente (KEYSTONE) SÍ está completo. No fingí registrar router. Follow-up: 1 router + 1 dtos + 1 línea main.py + 3 tests HTTP.
+**Pendiente downstream:** orchestrator → gate-runner → `auditor-backend` (verdict independiente) + el follow-up del router T-2. State `developing`.
+
+### 2026-06-15 · 🤖 claude · `builder-backend` · ✓ APLICADO (T-2 REMAINDER · HTTP surface · tests-passing)
+**T-2 remanente (BE · offer/api router + DTOs) construido — isla cerrada.** commit `86fa8bdf` (pushed `f55beb01..86fa8bdf` wip/vitalia).
+- **`offer/api/dtos.py`** — 24 DTOs Pydantic v2. Response: `ConfigDict(from_attributes=True)` whitelist allowlisted only (pii-sanitisation: `CaseDTO` sin patient/tenant/clinic ids). Request: `ConfigDict(extra="forbid")`. Monetario `price: Decimal | None` + `currency: str | None` (nunca USD hardcoded). Sin `Any`.
+- **`offer/api/servicios_router.py`** — 16 endpoints, `response_model=` en CADA route (`response_model=None` en las 4 DELETE/204 por el arch gate). Capa thin: validate DTO → service → map exception → HTTPException. DI espeja el gemelo canónico `brand_studio/api/routers/marca_router.py` (`_get_db` / `_build_service`→`_ServiceBundle` / `_resolve_audit_actor` / `_brand_owner_required`).
+- **`main.py`** — `include_router(servicios_router, prefix="/api/v1/offer")` tras `marca_router`. **Isla cerrada** (CONN Notarized + Navigable MET).
+- **Contratos HTTP pinned:** cross-tenant → service None → **404** (sin existence leak) · RBAC writes `require_brand_owner_access()` → **403** `BRAND_OWNER_RBAC_DENIED` · Case PHI: `X-Clinic-ID` dual filter + consent gate RN-33 `ConsentNotSignedError` → **422** ANTES de persist/audit + audit SYNC pre-response (sin PHI en payload) · PHI nunca en URL.
+- **Tests (4 files, +39):** `test_servicios_router.py` (happy/edge) · `test_servicios_rbac.py` (403) · `test_servicios_cross_tenant.py` (404) · `test_case_consent_gate.py` (422 + no-leak). httpx 0.28.1 `ASGITransport`.
+- **Gates G5 GREEN:** offer battery **121/121 PASS** (82 service + 39 HTTP) · arch fitness **353 passed** (1 fallo PRE-EXISTENTE `pgcrypto` `treatment_plans.notes` de fidelizacion deseleccionado — confirmado falla sin mi diff, fuera de scope) · `ruff check`+`format --check` clean · cap G1-G9 HARD 0 drift · voseo clean.
+**Pendiente downstream:** orchestrator → gate-runner → `auditor-backend` (verdict independiente). State `developing`.
+
+---
+
+### 2026-06-15 · /dev-team (orchestrator · autonomous Sub-phase A) · ✓ APLICADO
+
+**Run autónomo architect→build.** Ready package cerrado + Sub-phase A al ~60% (BE 100% · FE foundation 100%), todo GREEN + committed + pushed. Checkpoint limpio en `developing` (no se fingió `done`).
+
+- **BE (T-1·T-2·T-3·T-4) ✓** — módulo `offer` net-new (domain+infra+repos+migración 045 + application + API 16 endpoints + RBAC + EP-2 biblioteca + KEYSTONE medical_offer_factory + doc-autocomplete). 121 tests offer GREEN · cap G1-G9 0 drift · island cerrada (include_router).
+- **FE foundation (T-5·T-6·T-7-m0) ✓** — primitivas (NumberWithUnit + 9 moléculas) · catálogo grid + escalera dnd (coordinateGetter a11y) + N3 routing + data layer + workspace hooks/DTOs. tsc 0 · eslint 0 · vitest 772/772.
+- **Decisiones aplicadas:** RichSelect=consume (shipped) · NumberWithUnit=vitalia-shared (lift-candidate, no lift) · ServiceCard=bespoke (EntityInfoCard closed-slot divergence documentada) · cap=`lisa.servicios` (corregido de `clinics.lisa.servicios`) · voseo-escape `vos` module.
+
+**Pendiente (próxima sesión `/dev-team`):** T-7 UI (workspace shell + 5 leaves + 3 pickers + knowledge panel + nuevo route — hooks/primitivas ya listas) → T-8 (playwright real-backend + visual goldens 8 + **live-verify DoD#37**: aplicar migración 045 al dev DB + dev-app-vitalia + Chrome MCP + writes reales) → auditor → **STOP-1 chris_verify.signoff** (funcional) → **STOP-2 /pm-luana RAG** (Sub-phase B). Resume exacto en checkpoint.md::sub_phase_a_progress.resume + T-7-impl-log § REMAINING.
+
+**Por qué checkpoint y no done:** T-7 UI + live-verify (stack corriendo + Chrome MCP) exceden un cierre limpio en esta sesión; todo está durable (10 commits, `eb380ba5`→`f6e81a61`) → resume trivial. Los 2 stops (tu firma + /pm-luana) son tuyos por diseño.
+
+### 2026-06-15 · /dev-team (orchestrator · autonomous Sub-phase A) · ✓ APLICADO (T-7 UI · GREEN + pushed)
+
+**T-7 UI completo — workspace FE (N3 detail) construido + verde.** commit `52528ffc` (pushed wip/vitalia).
+
+- **Shell + leaves + pickers:** `ServicioWorkspaceShell` (EntityWorkspaceLayout + EntitySubNavBar + EntityPicker ▾ + root-pill ‹ Servicios · 5 leaves) RED→GREEN contra el test stasheado (7/7) · `ServicioWorkspaceView` (crear=editar RN-16) · `ServiceStatusBar` (Activo nunca bloqueado AC-19 + ChipOrigen + FichaCompletenessChip) · 5 leaves (Resumen 6-grupos · ParaAdrián · Especialistas · PlanPago 3-cobros · PruebaSocial consent-gate) · BibliotecaPicker (inline) · EspecialistaLinkPicker (roster autosave-on-mark) · KnowledgeSourcesPanel (extract-only ✨ · RAG toggle DISABLED = Sub-phase B) · FieldTooltip · N3 routes `[offer-id]/{layout,page,[leaf]/page}` (segments resumen·para-adrian·doctores·plan-pago·prueba-social) + `nuevo/page`.
+- **Composición canon:** todo de `@luana/ui-kit` (Switch/Checkbox/Group/EntityWorkspaceLayout/EntityPicker/FloatingAutosaveIndicator) · useTenantId (nunca orgId) · RHF+Zod discriminated por modality · autosave 600ms UNA indicator (RN-20).
+- **Gates G5 GREEN:** tsc 0 · eslint 0 · vitest **271 files / 2508 tests** (shell 7/7 · arch no-cross-feature-imports + no-div-layout §2.7 pass). Consume T-5 moléculas + T-6/T-7-m0 data layer (committed).
+- **Builder→orchestrator finalize:** builder-frontend (sonnet) construyó todo pero quedó sin tool-budget mid-fix; sin SendMessage disponible, el orchestrator continuó (trabajo en árbol, cero commits perdidos) y arregló ~16 tsc + 6 eslint + 3 arch wiring (Switch/Checkbox de ui-kit no de components/ui · prop-contracts T-5 · route→public-API · §2.7 grid→flex). Detalle en `T-7-result.md`.
+- **2 upstream deficiencies flagged** (→ R/auditor): (1) RungPicker T-5 enum casing UPPERCASE diverge del data layer lowercase (bridge `.toUpperCase()` en ResumenView) · (2) 03-arch-fe escribió segment `especialistas` pero el test locked usa `doctores` (test ganó).
+
+**Pendiente (próximo ticket T-8):** BE pytest dual-tenant + mutation + RBAC/consent/keystone · arch fitness EXTEND · FE leaf/use-autosave vitest + Playwright real-backend (auth fixture + base.ts anti-burbuja) + a11y axe + visual goldens 8 (4 mockups × light/dark · 0.001) + **LIVE-VERIFY DoD#37** (migración 045 al dev DB → dev-app-vitalia → Chrome MCP writes reales). Luego auditor → STOP-1 (chris_verify.signoff) → STOP-2 (/pm-luana RAG Sub-phase B).
+
+### 2026-06-15 · /dev-team (orchestrator · autonomous Sub-phase A) · ⚠️ DUDA (T-8 tests GREEN · LIVE-VERIFY DoD#37 BLOCKED · story HELD en developing)
+
+**T-8 test battery completo + verde + pushed; live-verify NO se pudo cerrar — story queda en `developing` (no fingí `developed`).** commits `995ba147` (vitest leaf/picker + BE arch + e2e specs) · `f73ccf03` (registro playwright + import fixes).
+
+- **✅ GREEN+pushed:** FE vitest **279 files / 2568 tests** (5 leaf + 3 picker tests nuevos) · BE `offer/` 121 + arch `test_offer_no_engine_edit.py` · tsc 0 · eslint 0 · migración 045 confirmada en head del dev DB.
+- **❌ LIVE-VERIFY (DoD#37) BLOCKED — 2 causas, honesto:**
+  1. **Chrome DevTools MCP roto** (recurrencia HB-73): el perfil `luana-vitalia-solo` está tomado por **instancias duplicadas** del server chrome-devtools-mcp (sesiones solapadas) → toda tool-call alterna entre "Restore window to normal state" y "browser already running --isolated". `isolatedContext` + matar chrome + limpiar locks NO lo resolvió (un MCP server respawnea chrome). `LUANA_LANE` se fija al arrancar la sesión → no se puede resetear desde adentro. **Fix tuyo:** `export LUANA_LANE=A` antes de lanzar claude + matar `chrome-devtools-mcp` viejos.
+  2. **POMs del create-flow asumen modal dialog; el flujo real es ruta inline** (`/lisa/servicios/nuevo`, RN-16/25). Pivoteé a Playwright real-backend (browser propio, NO bloqueado por MCP): el stack **autentica + renderiza LIVE** (preflight READY, **2/5 escenarios `crear` PASARON** vs localhost:3002 con Clerk storageState). Pero `ServiciosCatalogoPage.openNuevoServicio` espera `getByRole('dialog')` que no existe → falta rework POM (modal→inline) + `data-testid` en componentes + generar 8 goldens + capturar logs BE del write real.
+- **Por qué developing y no developed:** `verification_nature: ambas` + `demo_required` → Step 4.6 es gate HARD. Sin write real ejercido + logs + `dod_evidence` NO se marca `dod_live_verified`. Preferí parar honesto a fingir verde (regla cardinal DoD#37). `dod_live_verified: false` en checkpoint.
+- **Pre-existing OUT-OF-SCOPE:** arch `test_pgcrypto_phi_columns` falla por `treatment_plans.notes` (módulo fidelizacion, deuda cifrado PHI) — NO es offer, nunca tocado → CIL L3.
+
+**2 HB candidates (CIL L1):** (1) Chrome MCP multi-instance collision sin recuperación in-session (HB-73 recurrente). (2) builder-frontend escribe POMs/specs Playwright sin correrlos vs stack live → artefacto falso (clase HB-42 "imagined contract": POM modal vs ruta inline, project inexistente, import depth, orphan no-project). Gate candidato: builder DEBE correr ≥1 spec authored vs stack antes de cerrar ticket e2e.
+
+**Próximo (resume en checkpoint.md::sub_phase_a_progress.resume):** SOLO live-verify. `export LUANA_LANE=A` → Chrome MCP O Playwright (POM rework) → write real (crear+activar+autosave) + logs BE + dod_evidence + 8 goldens + KEYSTONE AC-6 live → developed → auditor → STOP-1 (chris_verify.signoff) → STOP-2 (/pm-luana RAG Sub-phase B).
+
+### 2026-06-16 · /dev-team (orchestrator · live-verify) · ⚠️ DUDA (DoD#37 core verificado live · developed · AWAIT_CHRIS_VERIFY · 3 findings)
+
+**Live-verify DoD#37 hecho contra dev-app real (LUANA_LANE=A resolvió el Chrome MCP).** 2 bugs bloqueantes cazados + arreglados, 3 writes reales confirmados, 3 findings abiertos. commit `9884d313`. Story → `developed` · `phase: AWAIT_CHRIS_VERIFY`.
+
+- **2 bugs (commit `9884d313`):** (1) `POST /custom → 500 'relation products does not exist'` — el módulo offer persiste vía el engine `OfferRepository` (D-1) pero NINGUNA migración creó las tablas engine offer-studio en el DB de vitalia (045 difirió `products` a "keystone", nunca se construyó; los tests BE pasan sobre metadata.create_all). → **migración 046** materializa las 6 tablas engine (`metadata.create_all(checkfirst=True)`). (2) Resumen leaf crasheaba (`useFormContext() null`) — el `RichSelect` de ui-kit hard-renderea `<FormControl>` que necesita `<Form>` shadcn, pero el leaf usa `<Controller>` pelado → reemplazado por `Select` plano de ui-kit.
+- **3 writes reales verificados (DB + logs BE):** CREATE `POST /custom → 201` (products row, ARS 8000) · AUTOSAVE nombre `PATCH → 200` (DB name actualizado) · ACTIVATE `POST /activate → 200` (status→active + `growth_studio_event: service_activated`). KEYSTONE AC-6: offer activo en `products` tenant-scoped (lo que lee `build_identity`) + unit test. Evidencia: `checkpoint.md::dod_evidence` + `.live-verify/*.png` + `demo-script.md`.
+- **3 findings a triar (tu llamada en G):**
+  - **F1 (medium):** el **workspace no muestra ServiceStatusBar** (toggle Activo / chip-origen / completitud) — `layout.tsx` monta `ServicioWorkspaceShell` directo, no `ServicioWorkspaceView`. Activar funciona desde la card del catálogo. → fix de wiring.
+  - **F2 (HIGH · contrato BE / architect-gap):** los campos ricos de la ficha (descripción/qué incluye/procedimiento/resultados/riesgos/cuidados, RN-26 §6) **no se guardan**: `ServicePatchRequest` sólo acepta `{public_name, price, category, modality}`. El dominio offer no los modela → textareas placeholder. NO es bug del builder; falta extender el contrato (reconcile o recorte de scope).
+  - **F3 (low):** appointment_type no persiste (sin campo BE).
+- **Pendiente técnico:** visual goldens 8 (project=visual) no generados — el render real quedó verificado live. Sub-phase B (RAG) gated /pm-luana.
+
+**Por qué developed + AWAIT_CHRIS_VERIFY y no auto-handoff a auditor:** funcional (demo_required) → tu firma es el gate (STOP-1). F2 es un gap de contrato BE (architect) que conviene que decidas vos (extender vs recortar) antes del auditor, no rebuild a ciegas. Ejercé `demo-script.md` + firmá `chris_verify.signoff` con el triage de F1/F2/F3. **HB candidates:** migración engine-schema faltante no cazada por tests (test DB usa metadata.create_all → enmascara el gap real del dev/prod DB) · RichSelect ui-kit acoplado a `<Form>` (inusable con Controller).
+
+### 2026-06-16 · /dev-team (G round 1 reconcile — DISEÑO→BUILD→RE-LIVE-VERIFY) · ✓ APLICADO
+
+> ⚠️ Esta entry CONSOLIDA 3 entries previas de esta sesión que una **lane paralela clobbeó** este archivo (las re-escribo acá). El código + checkpoint quedaron a salvo (commiteados). HB candidate: chris-input.md en hub multi-lane es clobbeable — append-only no protege contra otra sesión que reescribe el archivo.
+
+**Chris vio el workspace "horrible" en vivo → ratificó scope-delta en G → diseñado, construido y re-live-verificado en la sesión.** Commits `286bb833`→`02b7ee6e` (pushed wip/vitalia).
+
+- **Diagnóstico (live + scouts):** workspace al ~40% del mockup. 3 mecanismos + meta-causa. (1) colapsables aplanados = gap design-system (mockup usaba acordeón JS sin componente nombrado → builder cayó a `<Group>` estático). (2) campos vacíos = gap contrato FE↔BE clase embudo HB-42 (OfferExt persiste 19 campos pero la API quedó en 4 · `extra=forbid` → el FE ni podía mandarlos). (3) StatusBar+KnowledgePanel huérfanos = anti-isla CONN. **META: la live-verify del happy-path fue angosta** (ejerció create+activar, no la ficha) + 8 goldens diferidos → el 40% pasó como verde.
+- **Diseño (/architect reconcile-delta):** 5 docs delta + promotion proposal CollapsibleSection (Chris ratificó home=@luana/ui-kit). Cero engine BE lift (OfferExt ya completo). 2 follow-ups flaggeados (adrian-ficha-rica-knowledge · accordion-dedup-cleanup).
+- **Build (sole driver · Chris confirmó · lane paralela muerta):** T-R0 CollapsibleSection en ui-kit (18 tests · export) · T-R1 BE widen DTO **read+write** (el orchestrator cazó que el read-path también era angosto) + routing VOs (33 ticket · 154 offer · 342 arch) · T-R2 StatusBar dentro del Shell + borrar View huérfano (G2 SSR-safe preservado · 11) · T-R3 ResumenView 6 colapsables + hidratar+autosave todos los campos ricos + KnowledgePanel cableado (668 vitest). T-R3 builder pegó API 500 mid-build → retomé yo (gates + fix de 1 regresión: shell test mock de KnowledgePanel). Commits por pathspec (hub compartido).
+- **Re-live-verify (DoD#37 · Chrome MCP):** workspace ahora = mockup (screenshot `.live-verify/live-servicio-workspace-after.png`: 6 colapsables c/contador · Identidad abierto · StatusBar Activo+chip · KnowledgePanel montado · campos hidratados). **Write real de campo rico:** `PATCH /offer/servicios/{id}` body `{description_long:...}` → **200 (NO 422)** · response devuelve el valor persistido + los 19 campos ricos · BE log sin traceback. **F1/F2/F3 RESUELTOS** (chris_verify.rounds[1]).
+
+**Próximo (tu llamada):** (1) ejercé vos el workspace + firmá `chris_verify.signoff` · (2) 8 visual goldens (opcional pre-merge) · (3) /auditor (reconcile delta) · (4) /pm-vitalia R formal (cap YAML F.3 + spawnear los 2 follow-ups). `reconciled: false` hasta R.

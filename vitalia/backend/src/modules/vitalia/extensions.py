@@ -142,6 +142,7 @@ from src.modules.vitalia.copilot.tools import (
     extract_tenant_context,
     simulate_personality,
 )
+from src.modules.vitalia.offer.biblioteca_seed import MEDICAL_SERVICES_V1_PRESETS
 from src.modules.vitalia.sales_agent.tools import (
     reschedule_appointment,
     screening_questions,
@@ -259,7 +260,7 @@ def register_all(registry: ExtensionPointRegistry) -> None:
     registry.offer_preset_pack_register(
         PresetPack(
             name=_ns("medical_services_v1"),
-            presets=(),  # populated later — offer-studio Medical preset ticket
+            presets=MEDICAL_SERVICES_V1_PRESETS,  # brand-local seed (dental + estética Tier-1)
             applies_to_brand=_BRAND_SLUG,
             description="Vitalia medical services offer preset (consultas + procedures + treatments)",
         ),

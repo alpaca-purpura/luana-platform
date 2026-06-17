@@ -1,3 +1,8 @@
+## 0.6.0 — 2026-06-16 (minor · `CollapsibleSection` molécula colapsable de sección · lift vitalia-fase2-lisa-servicios)
+### Added — `molecule/CollapsibleSection`
+- **`CollapsibleSection`** — sección colapsable que compone `accordion` + `Group` (header + cuerpo colapsable). Exportada desde el barrel (`src/index.ts`) + test. SSoT: `docs/promotion-protocol/proposals/2026-06-16-collapsible-section-ui-kit.md`.
+- **Reconciliación de integración (checkpoint 2026-06-16):** construido en `wip/vitalia` sobre base 0.4.1 en paralelo al lift `--radius-control` (0.5.0, nicolify). Al integrar ambos a `main` → **0.6.0** (radius-control + CollapsibleSection coexisten; `index.ts` auto-merge con ambos exports, sin conflicto).
+
 ## 0.5.0 — 2026-06-15 (minor · `--radius-control` brand-overridable control radius · RN-7 lift, nicolify-r0-design-system-adoption)
 ### Added — control-atom radius token
 - **Control atoms (`Button`/`Input`/`Select` trigger/`Textarea`) usan `rounded-control`** en vez de `rounded-md` hardcodeado. `rounded-control` resuelve a `var(--radius-control)` con fallback al radio md de cada marca → **brand-overridable**: una marca puede hacer sus controles pill (nicolify) o mantenerlos md (vitalia/comunify/lupulo) sin tocar el kit.

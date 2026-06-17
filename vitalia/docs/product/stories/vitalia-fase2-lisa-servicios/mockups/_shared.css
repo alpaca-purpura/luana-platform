@@ -218,6 +218,13 @@ input:focus, textarea:focus, select:focus {
   margin-bottom: 0.625rem;
   display: flex; align-items: center; gap: 0.5rem;
 }
+/* Acordeón de grupos — workspace Resumen (Chris 2026-06-15 · colapsa el muro de ~26 campos) */
+.card.acc > .card-title { cursor:pointer; user-select:none; margin-bottom:0; }
+.card.acc > .card-title::before { content:'▸'; color:hsl(var(--muted-foreground)); font-size:.6875rem; transition:transform .15s; }
+.card.acc[data-open="true"] > .card-title { margin-bottom:.625rem; }
+.card.acc[data-open="true"] > .card-title::before { transform:rotate(90deg); }
+.card.acc[data-open="false"] > :not(.card-title) { display:none; }
+.card.acc .acc-count { margin-left:auto; font-size:.6875rem; font-weight:500; color:hsl(var(--muted-foreground)); }
 
 .autosave-badge {
   display: inline-flex; align-items: center; gap: 0.375rem;
@@ -735,10 +742,19 @@ input:focus, textarea:focus, select:focus {
 /* warn inline (sin doctores) */
 .warn-inline { font-size:.6875rem; color:hsl(var(--warning)); background:hsl(var(--warning) / .12); border-radius:.4375rem; padding:.375rem .5rem; }
 
-/* ===== ESCALERA — peldaños FIJOS + autoexplicativo ===== */
-.ladder { display:grid; grid-template-columns:repeat(5, minmax(190px,1fr)); gap:.75rem; }
-.rung-col { background:hsl(var(--muted) / .35); border:1px solid hsl(var(--border)); border-radius:var(--radius); padding:.75rem; min-height:360px; display:flex; flex-direction:column; gap:.5rem; }
+/* ===== ESCALERA — peldaños FIJOS + autoexplicativo =====
+   Layout (Chris 2026-06-12): Gancho = fila full-width arriba · 3 peldaños medios en columnas ·
+   Plan/convenio = fila full-width abajo. PELDAÑO 1 y 5 llevan .rung-row (span 1/-1, banda horizontal). */
+.ladder { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:.75rem; }
+.rung-col { background:hsl(var(--muted) / .35); border:1px solid hsl(var(--border)); border-radius:var(--radius); padding:.75rem; min-height:300px; display:flex; flex-direction:column; gap:.5rem; }
 .rung-col[data-empty="true"] { border-style:dashed; }
+/* fila full-width (Gancho arriba · Plan abajo) — banda horizontal: head a la izquierda, contenido fluye a la derecha */
+.rung-row { grid-column:1 / -1; min-height:auto; flex-direction:row; flex-wrap:wrap; align-items:stretch; gap:.625rem .875rem; }
+.rung-row .rung-head { flex:0 0 210px; border-bottom:none; border-right:1px solid hsl(var(--border)); padding-bottom:0; padding-right:.875rem; justify-content:center; }
+.rung-row > .lad-card { flex:1 1 200px; align-self:center; }
+.rung-row > .rung-empty-hint { flex:1 1 320px; align-self:center; }
+.rung-row > .rung-create { flex:0 0 auto; align-self:center; }
+@media (max-width:760px) { .ladder { grid-template-columns:1fr; } .rung-row { flex-direction:column; } .rung-row .rung-head { flex:1 1 auto; border-right:none; border-bottom:1px solid hsl(var(--border)); padding-right:0; padding-bottom:.5rem; } }
 .rung-head { padding-bottom:.5rem; border-bottom:1px solid hsl(var(--border)); display:flex; flex-direction:column; gap:.25rem; }
 .rung-num { font-size:.625rem; font-weight:700; color:hsl(var(--muted-foreground)); }
 .rung-explain { font-size:.6875rem; color:hsl(var(--muted-foreground)); line-height:1.4; }
@@ -760,6 +776,32 @@ input:focus, textarea:focus, select:focus {
 .entity-leaf { padding:.375rem .875rem; font-size:.8125rem; font-weight:500; border-radius:.5rem; color:hsl(var(--muted-foreground)); white-space:nowrap; border:1px solid transparent; display:inline-flex; align-items:center; gap:.4375rem; transition:all .15s; }
 .entity-leaf:hover { background:hsl(var(--muted)); color:hsl(var(--foreground)); }
 .entity-leaf[data-active="true"] { background:hsl(var(--agent-lisa)); color:#fff; border-color:hsl(var(--agent-lisa)); box-shadow:0 1px 2px hsl(var(--agent-lisa) / .3); font-weight:600; }
+
+/* root leaf (‹ Servicios) — peer-leaf que vuelve al catálogo (Cambio B 2026-06-12) */
+.entity-leaf-root { display:inline-flex; align-items:center; gap:.25rem; padding:.375rem .75rem .375rem .5rem; margin-right:.375rem; font-size:.8125rem; font-weight:500; color:hsl(var(--muted-foreground)); text-decoration:none; border-radius:.5rem; white-space:nowrap; border:1px solid transparent; transition:all .15s; }
+.entity-leaf-root:hover { background:hsl(var(--muted)); color:hsl(var(--foreground)); }
+.entity-leaf-root .rl-arrow { font-size:1rem; line-height:1; }
+
+/* ===== EntityPicker (canon §2.4) — cambia de entidad sin volver al catálogo =====
+   Panel = popover position:fixed (escapa el overflow-x:auto del .entity-subnav · posicionado por JS toggleEP). */
+.entity-picker { position:relative; flex:0 0 auto; }
+.entity-picker-trigger { display:inline-flex; align-items:center; gap:.4375rem; max-width:240px; padding:.3125rem .5rem .3125rem .375rem; font-size:.8125rem; font-weight:600; color:hsl(var(--foreground)); background:hsl(var(--card)); border:1px solid hsl(var(--border)); border-radius:.5rem; cursor:pointer; white-space:nowrap; transition:all .15s; }
+.entity-picker-trigger:hover { background:hsl(var(--muted)); border-color:hsl(var(--ring)); }
+.entity-picker-trigger > span:nth-child(2) { overflow:hidden; text-overflow:ellipsis; }
+.ep-avatar { flex:0 0 auto; width:22px; height:22px; border-radius:9999px; background:hsl(var(--agent-lisa)); color:#fff; font-size:.625rem; font-weight:700; display:inline-flex; align-items:center; justify-content:center; }
+.ep-chevron { flex:0 0 auto; font-size:.625rem; color:hsl(var(--muted-foreground)); }
+.entity-picker-panel { position:fixed; display:none; width:min(280px, 90vw); max-height:min(360px, 70vh); flex-direction:column; background:hsl(var(--card)); border:1px solid hsl(var(--border)); border-radius:var(--radius); box-shadow:var(--shadow-md); z-index:50; overflow:hidden; }
+.entity-picker-panel.open { display:flex; }
+.entity-picker-search { padding:.5rem; border-bottom:1px solid hsl(var(--border)); }
+.entity-picker-search input { width:100%; padding:.375rem .5rem; font-size:.8125rem; border:1px solid hsl(var(--border)); border-radius:.4375rem; background:hsl(var(--background)); color:hsl(var(--foreground)); }
+.entity-picker-search input:focus { outline:none; border-color:hsl(var(--ring)); box-shadow:0 0 0 2px hsl(var(--ring) / .2); }
+.entity-picker-list { overflow-y:auto; padding:.25rem; display:flex; flex-direction:column; gap:.125rem; }
+.entity-picker-option { display:flex; align-items:center; gap:.5rem; padding:.375rem .5rem; font-size:.8125rem; border-radius:.4375rem; cursor:pointer; color:hsl(var(--foreground)); white-space:nowrap; }
+.entity-picker-option > span:last-child { overflow:hidden; text-overflow:ellipsis; }
+.entity-picker-option:hover { background:hsl(var(--muted)); }
+.entity-picker-option[data-active="true"] { background:hsl(var(--agent-lisa-soft)); font-weight:600; }
+.ep-opt-avatar { flex:0 0 auto; width:24px; height:24px; border-radius:9999px; background:hsl(var(--agent-lisa)); color:#fff; font-size:.625rem; font-weight:700; display:inline-flex; align-items:center; justify-content:center; }
+.entity-picker-footer { padding:.4375rem .625rem; border-top:1px solid hsl(var(--border)); font-size:.6875rem; color:hsl(var(--muted-foreground)); }
 
 /* ===== modal/sheet crear servicio ===== */
 .sheet-overlay { position:absolute; inset:0; background:hsl(0 0% 0% / .35); display:flex; justify-content:flex-end; z-index:30; }
@@ -786,3 +828,93 @@ input:focus, textarea:focus, select:focus {
 .src-chip.rag  { background:hsl(var(--agent-adrian-soft)); color:hsl(var(--agent-adrian)); }
 .src-chip.wait { background:hsl(var(--warning) / .15); color:hsl(var(--warning)); }
 .ai-fill { font-size:.625rem; font-weight:600; color:hsl(var(--agent-lisa)); background:hsl(var(--agent-lisa-soft)); padding:.0625rem .375rem; border-radius:9999px; margin-left:.375rem; cursor:help; }
+
+/* ============================================================
+   REPARACIONES 2026-06-15 — clases referenciadas en el markup
+   sin CSS escrito (mismo patrón de bug que EntityPicker/escalera/biblioteca).
+   ============================================================ */
+
+/* utilitario hidden (toggles JS del panel Vincular + empty-state) — sin esto el panel se ve SIEMPRE (#7) */
+.hidden { display: none !important; }
+
+/* FloatingAutosaveIndicator — componente CORE canon §2.6 · UNA por página · fixed bottom-center · "pastilla flotante" (#2) */
+.floating-autosave {
+  position: fixed; left: 50%; bottom: 1rem; transform: translateX(-50%);
+  display: inline-flex; align-items: center; gap: .4375rem;
+  padding: .375rem .8125rem .375rem .625rem;
+  background: hsl(var(--card)); border: 1px solid hsl(var(--border));
+  border-radius: 9999px; box-shadow: var(--shadow-md);
+  font-size: .75rem; font-weight: 500; color: hsl(var(--muted-foreground));
+  z-index: 60; transition: opacity .2s, color .2s;
+}
+.floating-autosave .fa-dot { width: 7px; height: 7px; border-radius: 9999px; background: hsl(var(--success)); flex-shrink: 0; transition: background .2s; }
+.floating-autosave[data-state="saving"] { color: hsl(var(--foreground)); }
+.floating-autosave[data-state="saving"] .fa-dot { background: hsl(var(--warning)); animation: fa-pulse 1s ease-in-out infinite; }
+.floating-autosave[data-state="saved"] .fa-dot { background: hsl(var(--success)); }
+@keyframes fa-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+
+/* chip de origen del servicio (estándar / personalizado) — barra de estado (#5/#6) */
+.chip-origen { display:inline-flex; align-items:center; gap:.3125rem; padding:.1875rem .5rem; border-radius:9999px; font-size:.6875rem; font-weight:600; white-space:nowrap; }
+.chip-origen.estandar { background:hsl(var(--agent-lisa-soft)); color:hsl(var(--agent-lisa)); }
+.chip-origen.personalizado { background:hsl(var(--muted)); color:hsl(var(--muted-foreground)); }
+
+/* completitud de la ficha (la barrita "ficha 23/26") — sin CSS se veía como texto suelto (#5) */
+.completeness-chip { display:inline-flex; align-items:center; gap:.4375rem; font-size:.6875rem; color:hsl(var(--muted-foreground)); white-space:nowrap; cursor:help; }
+.cc-bar { width:54px; height:6px; border-radius:9999px; background:hsl(var(--muted)); overflow:hidden; display:inline-block; flex-shrink:0; }
+.cc-fill { display:block; height:100%; background:hsl(var(--agent-lisa)); border-radius:9999px; transition:width .3s; }
+
+/* Select canónico (Shadcn-style · canon §2.5 · ❌ select nativo en producto) — wrapper que estiliza el <select> del mockup */
+.select-canon { position:relative; display:inline-block; }
+.select-canon select {
+  appearance:none; -webkit-appearance:none; -moz-appearance:none;
+  width:100%; padding:.5rem 2rem .5rem .75rem;
+  font-size:.8125rem; line-height:1.4;
+  background:hsl(var(--background)); color:hsl(var(--foreground));
+  border:1px solid hsl(var(--input)); border-radius:.5rem; cursor:pointer;
+}
+.select-canon::after { content:'▾'; position:absolute; right:.6875rem; top:50%; transform:translateY(-50%); font-size:.625rem; color:hsl(var(--muted-foreground)); pointer-events:none; }
+.select-canon select:focus { outline:none; border-color:hsl(var(--ring)); box-shadow:0 0 0 2px hsl(var(--ring) / .2); }
+
+/* affix numérico (campo número + unidad: min · sesiones · cada N semanas) — #1 */
+.num-affix { display:flex; gap:.375rem; align-items:center; }
+.num-affix input[type="number"] { max-width:90px; }
+.num-affix .num-unit { font-size:.75rem; color:hsl(var(--muted-foreground)); white-space:nowrap; }
+
+/* ===== Variantes estructuradas (#4) — opciones del MISMO servicio que cambian precio ===== */
+.variants-list { display:flex; flex-direction:column; gap:.375rem; margin:.25rem 0 .5rem; }
+.variant-row { display:grid; grid-template-columns:1.1fr auto 1.4fr auto; gap:.5rem; align-items:center; }
+.variant-row .v-name { font-weight:500; }
+.variant-row .num-affix { gap:.25rem; }
+.variant-row .v-price { max-width:96px; }
+.variant-row .v-del { width:28px; height:28px; border-radius:.4375rem; color:hsl(var(--muted-foreground)); font-size:.75rem; flex-shrink:0; }
+.variant-row .v-del:hover { background:hsl(var(--destructive) / .12); color:hsl(var(--destructive)); }
+.v-add { font-size:.75rem; }
+@media (max-width:560px){ .variant-row { grid-template-columns:1fr; } }
+
+/* ===== Testimonios manuales (#8) ===== */
+.testi-list { display:flex; flex-direction:column; gap:.625rem; margin-top:.625rem; }
+.testi-row { display:flex; gap:.5rem; align-items:flex-start; border:1px solid hsl(var(--border)); border-radius:.5rem; padding:.625rem; }
+.testi-stars { color:hsl(var(--warning)); font-size:.875rem; flex-shrink:0; letter-spacing:1px; line-height:1.6; }
+.testi-row textarea { min-height:auto; }
+.testi-row .v-del { width:28px; height:28px; border-radius:.4375rem; color:hsl(var(--muted-foreground)); font-size:.75rem; flex-shrink:0; }
+.testi-row .v-del:hover { background:hsl(var(--destructive) / .12); color:hsl(var(--destructive)); }
+
+/* ===== RichSelect (#3) — Shadcn-style Select con descripción por opción · candidato CORE @luana/ui-kit ===== */
+.rich-select { position:relative; display:block; }
+.rich-select-trigger { display:flex; align-items:center; gap:.5rem; width:100%; text-align:left; padding:.4375rem .625rem; background:hsl(var(--background)); border:1px solid hsl(var(--input)); border-radius:.5rem; cursor:pointer; transition:border-color .15s, box-shadow .15s; }
+.rich-select-trigger:hover { border-color:hsl(var(--ring)); }
+.rich-select-trigger[aria-expanded="true"] { border-color:hsl(var(--ring)); box-shadow:0 0 0 2px hsl(var(--ring) / .2); }
+.rich-select-trigger .rs-label { flex:1; min-width:0; display:flex; flex-direction:column; gap:.0625rem; }
+.rs-title { font-size:.8125rem; font-weight:500; color:hsl(var(--foreground)); }
+.rs-desc { font-size:.6875rem; color:hsl(var(--muted-foreground)); line-height:1.3; }
+.rs-chevron { flex:0 0 auto; font-size:.625rem; color:hsl(var(--muted-foreground)); }
+.rich-select-panel { position:fixed; display:none; width:min(340px,92vw); max-height:min(320px,60vh); overflow-y:auto; flex-direction:column; gap:.125rem; padding:.25rem; background:hsl(var(--card)); border:1px solid hsl(var(--border)); border-radius:var(--radius); box-shadow:var(--shadow-md); z-index:55; }
+.rich-select-panel.open { display:flex; }
+.rich-option { display:flex; flex-direction:column; gap:.0625rem; padding:.5rem .625rem; border-radius:.4375rem; cursor:pointer; }
+.rich-option:hover { background:hsl(var(--muted)); }
+.rich-option[data-sel="true"] { background:hsl(var(--agent-lisa-soft)); }
+.rich-option[data-sel="true"] .rs-title { color:hsl(var(--agent-lisa)); font-weight:600; }
+
+/* enlace inline (ej. "2 especialistas vinculados" → salta a la pestaña Especialistas · #6) */
+.statuslink { color:hsl(var(--agent-lisa)); cursor:pointer; text-decoration:underline dotted; text-underline-offset:2px; }
+.statuslink:hover { text-decoration-style:solid; }

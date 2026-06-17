@@ -84,6 +84,8 @@ export default defineConfig({
         /.*\/e2e\/shell-organism\/adrian-inbox-(modes|nudge|phi-redirect|tenant|states)\.spec\.ts/,
         // F4 vitalia-fase2-config-cuenta live-verify spec (datos/preferencias/responsable + WRITE real)
         /.*\/e2e\/shell-organism\/config-cuenta\.spec\.ts/,
+        // F2-S9 vitalia-fase2-lisa-servicios behavioral specs (crear/autosave/especialistas/escalera-drag)
+        /.*\/e2e\/shell-organism\/lisa-servicios-.*\.spec\.ts/,
         // D3-E vitalia-fase2-lisa-doctores month view specs (SC-D3E-1..4)
         /.*\/e2e\/specs\/vitalia\/.*\.spec\.ts/,
       ],
@@ -94,6 +96,8 @@ export default defineConfig({
       testIgnore: [
         /.*\/visual-goldens\.spec\.ts/,
         /.*\/live-reconciliation\/sweep\.spec\.ts$/,
+        // lisa-servicios visual goldens run EXCLUSIVELY in project=visual (0.001 config)
+        /.*\/e2e\/visual\/lisa-servicios-visual\.spec\.ts$/,
       ],
       use: {
         ...devices["Desktop Chrome"],
