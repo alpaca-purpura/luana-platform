@@ -3,7 +3,14 @@ brand: comunify
 story_id: comunify-shell-organism
 module: platform
 state: developing
-phase: AWAIT_FE_AND_AUTH_VERIFY  # 2026-06-17 sesión larga: BE chain COMPLETO + wired + 401-verified (gateway+iam-foundation+seed+Clerk-bind). Falta: FE root→tenant resolve (iam-adoption FE) + authenticated live-verify (Chrome contended por sesión paralela) + T-e2e + auditor + merge
+phase: CHAT_LIVE_VERIFIED  # 2026-06-17: chat funciona END-TO-END live (DoD #37 ✓ — Nina respondió coherente vía kimi/kimi-k2, persistió tenant-scoped). Falta: follow-ups no-fatales (prompt_versions persona · agent:'valeria' stale) + T-e2e formal + auditor + merge
+dod_live_verified: true
+dod_env: "dev-app.comunifyagents.com (Chrome DevTools MCP, lane D) · Clerk sign-in-token hola@alpacapurpura.lat · gateway luana_litellm_dev:4000"
+dod_evidence:
+  - action: "Login (Clerk sign-in token) → shell /comunify-demo/nina/marca → enviar mensaje a Nina ('¿qué es una escalera de valor?')"
+    observed: "Nina respondió coherente + on-topic en español neutro ('Una escalera de valor es la secuencia de ofertas…'), streamed en la burbuja"
+    backend_log: "POST /api/v1/comunify/copilot/chat 200 OK · Bearer + X-Tenant-ID enviados · sin traceback fatal · DB tenant-scoped: copilot_llm_call=3 (kimi/kimi-k2), copilot_trace_event=11, copilot_conversations=6"
+verified_at: 2026-06-17
 story_type: ui-mixed          # FE shell + AGENTIC copilot mount + HYGIENE(config)
 created: 2026-06-15
 last_updated: 2026-06-17
@@ -96,6 +103,43 @@ las tabs como shell/placeholder.
 Sidebar: **Luana** (supervisora+orquestadora+onboarding). Ribbon: **Nina** (estratega) ·
 **Tomás** (atraer) · **Sofía** (vender) · **Bruno** (operar) · **Lucía** (retener) + tab **Plataforma**.
 Mapeo 1:1 a cadena de valor canónica (vitalia/nicolify). Detalle: `ADR-comunify-001-agentes-cast.md`.
+
+## ✅✅ CHAT LIVE-VERIFICADO end-to-end 2026-06-17 (DoD #37 · Chris "probá con lane D")
+
+**El chat de comunify FUNCIONA en vivo.** Login real (Clerk) → shell → mensaje a Nina → respuesta
+coherente streameada (kimi/kimi-k2 vía gateway) → persistida tenant-scoped. Ejercido con Chrome DevTools
+MCP (lane D, sign-in-token de hola@alpacapurpura.lat). Ver `dod_evidence` en frontmatter.
+
+**Respuesta real de Nina:** *"Una escalera de valor es la secuencia de ofertas que diseñas para que un
+cliente empiece con algo pequeño y de bajo riesgo (lead magnet), suba a una oferta media (trial o core),
+y llegue hasta tu premium o programa estrella, maximizando el valor que capturas en cada etapa…"*
+
+**5 bugs que cazó la live-verify (los tests mockeados los pasaban TODOS — el patrón "verde pero roto"):**
+1. **FE auth nunca cableada** — `ShellLayoutWire` tenía `// NOTE: Future data-layer ticket will wire
+   auth context` → `setAuthContext` jamás se llamaba → chat 401. Fix: inyecta token Clerk (`getToken`) +
+   tenantId, refresh por intervalo (~60s expiry). Commit `0a968fd9`.
+2. **FE SSE delta mal parseado** — el engine emite `block_delta: {delta:{markdown:"…"}}` (objeto), el store
+   leía `parsed.delta` (objeto) → `[object Object]` ×N en la burbuja. Fix: leer `delta.markdown`.
+3. **Tablas copilot del engine ausentes** — comunify_dev no tenía NINGUNA de las 13 (`copilot_conversations`
+   etc.); ningún brand usa el orquestador de chat del engine (vitalia usa sus propias conversations). Migración
+   `004` (create_all idempotente).
+4. **Tablas llm/observability del engine ausentes** — `model_pricing_snapshot`/`llm_role_binding`/etc. (cost
+   recorder las necesita). Migración `005`.
+5. **Modelo LLM mal ruteado** — sin `AI_MODEL_*`/`AI_PROVIDER_*` el default `gpt-4o` → `openai/gpt-4o`/`openai/kimi-k2`,
+   no existen en el gateway Chinese-first → 400. Fix compose: per-rol deepseek/kimi (paridad vitalia).
+
+**+ Infra provisionada:** gateway LiteLLM levantado (estaba caído 11d) + apuntado por service-name · engine-IAM
+foundation (migración 003 + iam router + seed + Clerk bind, tenant `9cf1ef9b`) · 16 campos legacy Settings.
+
+**Follow-ups NO-fatales (no bloquean "el chat funciona", sí pulir antes de `done`):**
+- `prompt_versions` table ausente → Nina usa prompt default (genérico, no la persona comunify-voiced). Seedear.
+- chat-store manda `agent:"valeria"` hardcodeado (comunify usa Nina/Luana) — cosmético.
+- `cost_recorder.unknown_provider` warning (no rompe el turno).
+- `AI_MODEL_*`/legacy Settings viven en el compose (dev). DEUDA /pm-luana: engine hace esos campos Optional.
+
+**Próximo:** T-e2e formal (15 SC) con @clerk/testing + fixes de los follow-ups (persona) → auditor → merge.
+
+---
 
 ## 🔧 Sesión 2026-06-17 (tarde · provisión + build autónomo · Chris "hazlo tú mismo")
 
