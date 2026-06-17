@@ -45,7 +45,7 @@ build_status_2026_06_03:
   e2e_status: "AUTHORED + static GREEN (tsc/eslint/--list). base.ts anti-burbuja, 4 POMs, cold-start variant, visual goldens 4×2. LIVE RUN + baselines + dod_evidence = DEFERIDO al demo gate #37 (stack stale + Chrome MCP down)"
   harness_fix: "HB-31 commiteado (f734a1f1): isolation:worktree removido de los 3 builders → builders in-place. Worktree huérfano agent-a2dcc99f removido (verificado 0 orphan-only)."
 dod_status:
-  dod_live_verified: partial   # BE writes ejercidos live (2026-06-04) · falta FE-UI live + demo_signoff Chris
+  dod_live_verified: substantial   # core flows UI-verificados live 2026-06-04 (corazón de la story); deferrals env-limited documentados · falta demo_signoff Chris
   dod_env: "make dev-nicolify refrescado → BE :8001 health 200 (migración 002 aplicada) · FE :3001 compila (307 auth). Stack stale + 2 bugs reparados (ver below). Chrome MCP desconectado → BE-writes vía curl header-auth (W1)."
   bugs_caught_by_37:
     be_dep_gap: "luana-core-extraction/llm no declaradas en nicolify/pyproject.toml → container BE crash-loop (host tests verdes ocultaban). FIX d13ecc14 + uv sync → BE up. (los tests host pasaban porque el venv root tiene los 26 core pkgs)"
@@ -72,7 +72,6 @@ dod_status:
       - "baseline arranque (empty-state): requiere tenant sin ICPs · baseline propuesta: requiere origin=draft (LLM)."
       - "growth_studio_event 0 filas: telemetría best-effort, Redis down en dev (no-bloqueante)."
       - "W1 auth app-layer abel routes (ratificar pre-non-localhost) · W2 lift GrowthStudioEmitter (/pm-luana)."
-  dod_live_verified: substantial   # core flows UI-verificados live (corazón de la story); deferrals env-limited documentados
   pending_for_done:
     - "demo_signoff de Chris (APPROVED | APPROVED_WITH_NOTES severity≤medium) sobre demo-script.md → habilita /pm-nicolify merge."
   blocking_done: "/pm-nicolify REFUSE merge sin demo_signoff de Chris. Resto del DoD #37 (BE+FE-UI live + anti-burbuja + 4 baselines) CUMPLIDO. Deferrals documentados (LLM extract + 2 baselines + telemetría)."

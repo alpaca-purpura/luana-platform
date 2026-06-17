@@ -1,0 +1,199 @@
+story_id: nicolify-r0-design-system-adoption
+brand: nicolify
+schema_version: v4.1
+architecture_pattern: ADR-014-design-system-homologation
+
+# ── Verification nature (top-level · D-X4) ─────────────────────────────────────
+verification_nature: ambas          # técnica (eslint lock + arch-test + tsc) + funcional (fidelidad visual live)
+demo_required: true                 # visual: hojas render idéntico/mejor, cero regresión
+
+dev_app_verified:
+  required: true
+  env: "make dev-nicolify → dev-app.nicolify (o localhost:3001 fallback) · Chrome DevTools MCP"
+  notes: "Ejercer /{tenantId}/abel/icp master + abrir un ICP (detalle) + un write real (autosave) + leer logs + confirmar render fiel al mockup + persistencia. dod_evidence obligatorio."
+
+# ── Mutation gate (HB-54) — ADVISORY ───────────────────────────────────────────
+mutation_gate:
+  mode: advisory                    # refactor/adopción estructural · cero lógica de negocio nueva
+  rationale: "Story de adopción/refactor: repoint de imports + composición de primitivas + tokens. No introduce ramas de lógica de negocio nuevas → mutation testing degrada a advisory."
+
+# ── Categories (5) ─────────────────────────────────────────────────────────────
+categories:
+
+  - id: cat-1-tokens-identity
+    name: "globals.css ↔ design-tokens (escala compartida + identidad intacta)"
+    verification_nature: técnica
+    validators:
+      - id: V1-arch-single-token-source
+        type: arch-test
+        path: nicolify/frontend/src/__tests__/architecture/test-ds-single-token-source.test.ts
+        asserts:
+          - "globals.css declara la escala spacing con los valores de @luana/design-tokens::SPACING (4px-ladder)"
+          - "cada nombre de @luana/design-tokens::RADIUS_NAMES (sm/md/lg/bubble/pill) tiene token correspondiente en globals.css"
+          - "cada tier de @luana/design-tokens::TYPOGRAPHY_TIERS (display/heading/body/caption) está representado"
+          - "los nombres semánticos compartidos de COLOR_NAMES (primary/background/foreground/card/muted/border/ring) presentes"
+          - "IDENTIDAD INTACTA: --primary = '243 100% 68%' (#635BFF); --agent-{luana,abel,brenda,christian,sara,norvil,config} presentes; --font-sans League Spartan + --font-serif Bree Serif"
+          - "--radius-control + --radius-pill presentes (brand-scoped RN-7)"
+        scenario_ids: [SC-1, SC-3, SC-6]
+        red_first: true
+      - id: V2-tsc
+        type: typecheck
+        cmd: "cd nicolify/frontend && npx tsc --noEmit"
+        scenario_ids: [SC-1]
+
+  - id: cat-2-no-arbitrary-lock
+    name: "Lock no-arbitrary-value encendido en cero allowlist (anti-default-flip)"
+    verification_nature: técnica
+    validators:
+      - id: V3-arch-tokens-lock
+        type: arch-test
+        path: nicolify/frontend/src/__tests__/architecture/test-ds-tokens-lock.test.ts
+        asserts:
+          - "Linter real con @luana/ds/no-arbitrary-value=error lockea los 4 ejes {font-size, radius, spacing, color-hex} con suggestion accionable (SC-2)"
+          - "sizing arbitraries (w/h/min-w/max-w/min-h/size) NO se lockean (RN-1)"
+          - "tokenized arbitraries (var()/hsl()/theme()) NO se flaggean"
+          - "escape // ds-lock-allow: <razón> suprime el report; prosa arbitraria NO (SC-3)"
+        scenario_ids: [SC-2, SC-3]
+        red_first: true
+      - id: V4-eslint-lock-zero
+        type: lint
+        cmd: "cd nicolify/frontend && npx eslint src/ --cache"
+        asserts:
+          - "0 violations de @luana/ds/no-arbitrary-value (allowlist = 0; arbitraries de ejes lockeados migrados a tokens)"
+          - "EL ROJO DEL LINT ES LA PRUEBA (SC-2) — no GET 200"
+        anti_default_flip:
+          run_off_baseline: "eslint con regla OFF → verde (baseline)"
+          run_on_zero: "eslint con regla ON → verde a cero violations"
+          commit_body: "no-arbitrary-value flipped off→on en nicolify. N arbitraries migrados, 0 allowlisted."
+        scenario_ids: [SC-2, SC-3]
+
+  - id: cat-3-anti-mirror
+    name: "Cero mirror local de componentes del kit"
+    verification_nature: técnica
+    validators:
+      - id: V5-arch-no-kit-mirror
+        type: arch-test
+        path: nicolify/frontend/src/__tests__/architecture/test-no-kit-mirror.test.ts
+        asserts:
+          - "grep de EntityWorkspaceLayout/EntitySubNavBar/EmptyState/AutosaveBadge declarados LOCALMENTE en nicolify/frontend/src/components = 0 (consumir @luana/ui-kit)"
+          - "ratchet shrink-only: allowlist vacía (ningún componente kit duplicado local permitido)"
+        scenario_ids: [SC-4]
+        red_first: true
+      - id: V6-arch-no-cross-brand-import
+        type: arch-test
+        path: nicolify/frontend/src/__tests__/architecture/test-no-cross-brand-import.test.ts
+        asserts:
+          - "grep '^import.*from.*(vitalia|comunify|lupulo)' en nicolify/frontend/src = 0 (replica CHECK A de vitalia)"
+        scenario_ids: [SC-4]
+
+  - id: cat-4-visual-fidelity
+    name: "Fidelidad visual (hojas componen de primitivas, render fiel al mockup)"
+    verification_nature: funcional
+    validators:
+      - id: V7-e2e-abel-icp-fidelity
+        type: e2e-playwright-visual
+        path: nicolify/frontend/e2e/regression/nicolify-r0-design-system-adoption/abel-icp-fidelity.spec.ts
+        max_diff_pixel_ratio: 0.001
+        goldens:
+          - golden: tokens-swatch.png
+            mockup_region: "ds-base.html (A)"
+            blocked_on: null
+          - golden: atoms.png
+            mockup_region: "ds-base.html (B) — Button/Select/Badge/Input"
+            blocked_on: kit-radius-control-lift          # los controles renderizan rounded-md hasta el lift; estructura/color NO gateada
+            note: "Solo el RADIO (pill) de los controles está gateado en el kit-lift. La estructura/color/estado de los átomos corre ahora — el builder snapshotea estructura, no el border-radius del control, hasta el bump."
+          - golden: abel-icp-master.png
+            mockup_region: "ds-base.html (C.1) — EntityWorkspaceLayout master + EntityInfoCard + Toolbar"
+            blocked_on: null
+          - golden: abel-icp-detail.png
+            mockup_region: "ds-base.html (C.2) / icp-buyer.html — EntityWorkspaceLayout + EntitySubNavBar full-bleed + Group + FloatingAutosaveIndicator"
+            blocked_on: null
+            note: "Active-leaf accent: si el kit (tokens semánticos accent/primary) no matchea el agent-abel del mockup → FLAG lift candidate /pm-luana (kit accentToken/agentSlot) + gatear ESTE golden en kit-accent-slot-lift. El resto del detalle (full-bleed, root-pill, avatares, roving tabindex) NO gateado."
+          - golden: states.png
+            mockup_region: "ds-base.html (D) — EmptyState/ErrorState"
+            blocked_on: null
+        asserts:
+          - "master = grilla EntityInfoCard full-width + Toolbar; detalle = EntitySubNavBar full-bleed sticky border-radius:0 + Group + 1 autosave"
+          - ".entity-sub-nav → full-bleed sticky border-radius:0 (canon §1.2)"
+        scenario_ids: [SC-1]
+      - id: V8-live-verify-dod37
+        type: live-verify
+        gate: 37
+        blocked_on: "kit-radius-control-lift + esta-adopción-estructural (demo único Abel convergence corre cuando AMBOS aterrizan)"
+        asserts:
+          - "ejercer /{tenantId}/abel/icp master + abrir ICP (detalle) + write real (autosave) en dev-app + leer logs + confirmar render idéntico/mejor + persistencia"
+        scenario_ids: [SC-1]
+
+  - id: cat-5-a11y-i18n
+    name: "Accesibilidad (subnav teclado) + Spanish neutro + identidad"
+    verification_nature: funcional
+    validators:
+      - id: V9-e2e-a11y-subnav
+        type: e2e-playwright
+        path: nicolify/frontend/e2e/regression/nicolify-r0-design-system-adoption/a11y-subnav.spec.ts
+        asserts:
+          - "EntitySubNavBar (kit): role=tablist + roving tabindex; flechas ←→/Home/End mueven foco; leaf activo derivado de URL"
+          - "axe wcag2aa sin violaciones nuevas"
+        scenario_ids: [SC-5]
+      - id: V10-arch-spanish-neutro
+        type: arch-test
+        path: nicolify/frontend/src/__tests__/architecture/test_spanish_neutro.test.ts
+        asserts:
+          - "microcopy user-facing sin voseo (EmptyState/ErrorState/autosave neutro)"
+        scenario_ids: [SC-6]
+      - id: V11-vitest
+        type: unit
+        cmd: "cd nicolify/frontend && npx vitest run --coverage"
+        asserts:
+          - "tests de componentes re-expresados verdes (props adaptados; mirrors locales + sus tests borrados)"
+        scenario_ids: [SC-1, SC-5]
+
+# ── Scenario coverage (SC-1..6 — todos mapeados) ───────────────────────────────
+scenario_coverage:
+  SC-1: { name: "happy — abel/icp render compuesto de primitivas, fiel al mockup", validators: [V1-arch-single-token-source, V2-tsc, V7-e2e-abel-icp-fidelity, V8-live-verify-dod37, V11-vitest] }
+  SC-2: { name: "negative — arbitrary nuevo rompe el lock", validators: [V3-arch-tokens-lock, V4-eslint-lock-zero] }
+  SC-3: { name: "edge — arbitrary sin token → allowlist justificado (shrink-only)", validators: [V3-arch-tokens-lock, V4-eslint-lock-zero, V1-arch-single-token-source] }
+  SC-4: { name: "adversarial — reaparece mirror local de un componente kit", validators: [V5-arch-no-kit-mirror, V6-arch-no-cross-brand-import] }
+  SC-5: { name: "accessibility — navegación teclado preservada en EntitySubNavBar", validators: [V9-e2e-a11y-subnav, V11-vitest] }
+  SC-6: { name: "i18n/identidad — Spanish neutro + tokens de marca intactos", validators: [V10-arch-spanish-neutro, V1-arch-single-token-source] }
+
+scenario_to_test:
+  SC-1: nicolify/frontend/e2e/regression/nicolify-r0-design-system-adoption/abel-icp-fidelity.spec.ts
+  SC-2: nicolify/frontend/src/__tests__/architecture/test-ds-tokens-lock.test.ts (+ eslint lock ON)
+  SC-3: nicolify/frontend/src/__tests__/architecture/test-ds-tokens-lock.test.ts (escape ds-lock-allow)
+  SC-4: nicolify/frontend/src/__tests__/architecture/test-no-kit-mirror.test.ts
+  SC-5: nicolify/frontend/e2e/regression/nicolify-r0-design-system-adoption/a11y-subnav.spec.ts
+  SC-6: nicolify/frontend/src/__tests__/architecture/{test-ds-single-token-source,test_spanish_neutro}.test.ts
+
+# ── Playwright visual scope discipline ─────────────────────────────────────────
+playwright_visual_scope:
+  story_scope_paths:
+    - "nicolify/frontend/src/app/(shell-organism)/**"
+    - "nicolify/frontend/src/components/shared/**"
+    - "nicolify/frontend/src/features/abel/**"
+    - "nicolify/frontend/src/app/globals.css"
+    - "nicolify/frontend/eslint.config.mjs"
+    - "nicolify/frontend/src/__tests__/architecture/**"
+  story_scope_routes:
+    - "/{tenantId}/abel/icp"                          # master
+    - "/{tenantId}/abel/icp/{icpId}/{leaf}"           # detalle
+  forbidden_to_touch:
+    - "core/@luana/**"                                # ENGINE — RN-7 lift = /pm-luana (escalate, NO editar)
+    - "vitalia/**"
+    - "comunify/**"
+    - "lupulo/**"
+  out_of_mockup_scope:
+    - "hojas del árbol sin UI real (skeletons) — Bif-4 out-of-scope, nacen homologadas al construirse"
+    - "components/ui/** (shadcn auto-gen, eslint-ignored) — no migrar arbitraries salvo que el visual lo exija"
+
+# ── Regression guard ───────────────────────────────────────────────────────────
+regression_guard:
+  - "Arch-tests existentes verdes: no-store-in-ssr-skeleton (G2), test_agent_tw_classes (G3 — _agent-tw-classes.ts se mantiene), test_shell_routes_ssot, test_spanish_neutro, test-tenant-id-not-from-params"
+  - "Shell chrome (ShellLayoutWire → ShellLayout) sigue render idéntico"
+  - "abel/icp sigue funcional (master list + detalle + crear buyer) — solo cambia composición, no contrato BE"
+
+# ── Technical gates (opt-in por naturaleza) ────────────────────────────────────
+technical_gates:
+  schemathesis: false                # sin endpoints nuevos
+  hypothesis: false                  # sin invariantes nuevos
+  mutation_gate: advisory            # ver § mutation_gate

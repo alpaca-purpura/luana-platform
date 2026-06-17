@@ -101,6 +101,7 @@ export function WhatForChip({ consumers, fieldLabel, className }: WhatForChipPro
           data-testid="what-for-chip"
           tabIndex={0}
         >
+          {/* ds-lock-allow: 10px emoji decorator in chip; below text-xs (12px), no smaller token */}
           <span aria-hidden="true" className="text-[10px]">
             🔍
           </span>

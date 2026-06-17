@@ -1,5 +1,6 @@
 // For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
 import js from "@eslint/js";
+import luanaDs from "@luana/eslint-config";
 import tseslint from "typescript-eslint";
 import nextConfig from "eslint-config-next";
 import storybook from "eslint-plugin-storybook";
@@ -508,6 +509,17 @@ export default [
       "*.config.mjs",
       "prettier.config.*",
     ],
+  },
+
+  // ─── DS token lock — @luana/ds/no-arbitrary-value (T-4 ds-adoption) ───
+  // Locks 4 axes: font-size / radius / spacing / color-hex.
+  // OFF in components/ui/** (shadcn auto-generated) + tests (mirrors vitalia pattern).
+  // Zero allowlist target — all remaining arbitraries in shared/features use ds-lock-allow escape.
+  {
+    files: ["src/**/*.ts", "src/**/*.tsx"],
+    ignores: ["src/components/ui/**", "src/__tests__/**"],
+    plugins: { "@luana/ds": luanaDs },
+    rules: { "@luana/ds/no-arbitrary-value": "error" },
   },
 
   // ─── Nicolify custom rules (T-7 app-shell-sidebar-copilot-decoupling) ───

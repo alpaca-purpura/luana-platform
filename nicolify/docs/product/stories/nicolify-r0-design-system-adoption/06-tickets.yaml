@@ -1,0 +1,185 @@
+story_id: nicolify-r0-design-system-adoption
+brand: nicolify
+schema_version: v4.1
+architecture_pattern: ADR-014-design-system-homologation
+surface: frontend            # FE-only · cero BE, cero agentic, cero migración
+autonomous_mode: false       # default — Chris opt-in al ratificar (architect propone, Chris ratifica)
+
+# DAG: T-1 → T-3 ; T-2 → T-3 ; T-3 → T-4 → T-5
+# (T-1 y T-2 paralelos; T-3 depende de ambos; T-4 tras T-3; T-5 cierra)
+
+tickets:
+
+  - id: T-1
+    title: "globals.css ↔ @luana/design-tokens align + --radius-control token + arch-test single-token-source"
+    surface: frontend
+    production_code: true
+    depends_on: []
+    nature: [styling-with-logic, arch-test]
+    deliverables:
+      - "MODIFY nicolify/frontend/src/app/globals.css: declarar escala spacing (valores SPACING) + radius names (sm/md/lg/bubble/pill) + typography tiers (display/heading/body/caption) en @theme; conservar identidad (--primary 243 100% 68%, 7 agent colors, League Spartan/Bree Serif, rem radius); agregar --radius-control: var(--radius-pill) + --radius-pill"
+      - "MODIFY nicolify/frontend/package.json: + '@luana/eslint-config': 'workspace:*' (para T-4)"
+      - "NEW src/__tests__/architecture/test-ds-single-token-source.test.ts: importa SPACING/RADIUS_NAMES/TYPOGRAPHY_TIERS/COLOR_NAMES de @luana/design-tokens, asserta escala presente en globals.css + identidad intacta (--primary exacto + agent colors + fonts) + --radius-control/--radius-pill presentes"
+    acceptance:
+      validator_ids: [V1-arch-single-token-source, V2-tsc]
+      gherkin_coverage: [SC-1, SC-3, SC-6]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: workhorse
+      must_load_skills:
+        - nicolify-design-system
+        - frontend-expert
+        - docs/architecture/luana-platform/design-system-canon.md
+        - .claude/rules/frontend-visual-fidelity.md
+        - .claude/rules/spanish-text.md
+      must_load_artifacts:
+        - nicolify/docs/product/stories/nicolify-r0-design-system-adoption/03-arch.md   # §Q1 + §11
+        - nicolify/docs/product/stories/nicolify-r0-design-system-adoption/04-validators.yaml
+        - core/@luana/design-tokens/src/{spacing,radius,typography,z-index,color-names}.ts
+        - vitalia/frontend/src/__tests__/architecture/test-ds-single-token-source.test.ts   # precedente (replicar patrón, NO copiar cross-brand)
+      forbidden_to_touch: ["core/@luana/", "vitalia/", "comunify/", "lupulo/", "nicolify/backend/"]
+      rationale: "Token alignment FE-only, workhorse. Replica el patrón de vitalia (arch-test per-brand) sin cross-brand mirror. Identidad de marca es HARD-preservada."
+
+  - id: T-2
+    title: "Matar 4 mirrors locales + repoint imports a @luana/ui-kit + arch-test anti-mirror"
+    surface: frontend
+    production_code: true
+    depends_on: []
+    nature: [refactor, arch-test]
+    deliverables:
+      - "DELETE src/components/shared/shell-organism/{EntityWorkspaceLayout,EntitySubNavBar,EmptyState}.tsx (+ EntityWorkspaceLayout.test.tsx + EntitySubNavBar.test.tsx) + src/components/shared/AutosaveBadge.tsx"
+      - "MODIFY src/components/shared/shell-organism/SubTabContent.tsx: repoint EmptyState→ShellEmptyState (@luana/ui-kit), EntitySubNavBar→@luana/ui-kit (quitar agentSlug)"
+      - "MODIFY src/features/abel/components/icp/IcpEntityLayoutClient.tsx: repoint EntityWorkspaceLayout + EntitySubNavBar/tipos→@luana/ui-kit (quitar agentSlug)"
+      - "MODIFY src/features/abel/components/icp/{IcpDatosForm,BuyerLeafForm}.tsx: repoint AutosaveBadge→@luana/ui-kit (mapear status 4→5 valores; ajustar selectors test a [data-state])"
+      - "NEW src/__tests__/architecture/test-no-kit-mirror.test.ts: grep componente kit duplicado local = 0 (ratchet shrink-only, allowlist vacía)"
+      - "NEW src/__tests__/architecture/test-no-cross-brand-import.test.ts: grep import desde vitalia/comunify/lupulo = 0 (replica CHECK A vitalia)"
+    acceptance:
+      validator_ids: [V5-arch-no-kit-mirror, V6-arch-no-cross-brand-import, V2-tsc, V11-vitest]
+      gherkin_coverage: [SC-4]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: workhorse
+      must_load_skills:
+        - nicolify-design-system
+        - frontend-expert
+        - .claude/rules/anti-duplication.md
+        - .claude/rules/frontend-fsd.md
+      must_load_artifacts:
+        - nicolify/docs/product/stories/nicolify-r0-design-system-adoption/03-arch.md   # §6 prop-divergence
+        - core/@luana/ui-kit/src/{index.ts,EntityWorkspaceLayout.tsx,EntitySubNavBar.tsx,AutosaveBadge.tsx}
+        - core/@luana/ui-kit/src/organism/shell/EmptyState.tsx
+      forbidden_to_touch: ["core/@luana/", "vitalia/", "comunify/", "lupulo/", "nicolify/backend/"]
+      rationale: "Refactor repoint mirror→kit, workhorse. Las divergencias de prop-API se adaptan en el consumer (03-arch §6); NUNCA retener mirror ni editar el kit. Si la divergencia exige cambio del kit → FLAG lift /pm-luana en el review, no editar engine."
+
+  - id: T-3
+    title: "Re-expresar abel/icp + shell chrome vía layout-primitives + archetypes + EntityWorkspaceLayout/Group"
+    surface: frontend
+    production_code: true
+    depends_on: [T-1, T-2]
+    nature: [refactor, fe-component]
+    deliverables:
+      - "MODIFY src/features/abel/components/icp/{IcpMasterListView,IcpWorkspaceView,IcpDatosForm,BuyerLeafForm,IcpCard}.tsx: componer de layout-primitives (PageContainer/PageHeader/PageContentStack/Toolbar/FilterBar/EmptyState/ErrorState/ListPageSkeleton/FormPageSkeleton) + archetypes (List/Detail) + EntityInfoCard (master grid) + Group/GroupHeader (forms) + autosave kit. Cero <div> de layout sustituible."
+      - "MODIFY src/app/[tenantId]/(shell-organism)/_components/ShellLayoutWire.tsx + SubTabContent.tsx: swap <div> de layout crudos por primitivas donde aplique (verify)"
+      - "Evaluar (si no toca lógica): migrar AutosaveBadge per-form → 1 FloatingAutosaveIndicator por página (canon §2.6); si toca lógica → follow-up documentado"
+    acceptance:
+      validator_ids: [V2-tsc, V11-vitest]
+      gherkin_coverage: [SC-1, SC-5]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: workhorse
+      must_load_skills:
+        - nicolify-design-system
+        - frontend-expert
+        - docs/architecture/luana-platform/design-system-canon.md
+        - .claude/rules/frontend-visual-fidelity.md
+        - nicolify/.claude/rules/shell-mockup-per-component.md
+      must_load_artifacts:
+        - nicolify/docs/product/stories/nicolify-r0-design-system-adoption/03-arch.md   # §6.5
+        - nicolify/docs/product/stories/nicolify-r0-design-system-adoption/mockups/ds-base.html
+        - nicolify/docs/product/stories/nicolify-r0-design-system-adoption/mockups/_shared.css
+        - core/@luana/ui-kit/src/{layout/index.ts,archetypes/index.ts,Group.tsx,EntityInfoCard.tsx}
+      forbidden_to_touch: ["core/@luana/", "vitalia/", "comunify/", "lupulo/", "nicolify/backend/"]
+      rationale: "Composición FE, workhorse. Re-expresión estructural (cero cambio de lógica de negocio). Si la composición exige tocar lógica de abel/icp → FLAG follow-up, no scope creep."
+
+  - id: T-4
+    title: "Migrar arbitraries a tokens + encender lock no-arbitrary en cero allowlist (anti-default-flip)"
+    surface: frontend
+    production_code: true
+    depends_on: [T-3]
+    nature: [styling-with-logic, default-flag-flip, arch-test]
+    deliverables:
+      - "Migrar TODOS los arbitraries de ejes lockeados (spacing/radius/font-size/color-hex) en src/components/shared/** + src/features/abel/** a tokens (ej. text-[10px]/text-[9px] → text-xs o tier caption). Bif-2: sin token equiv → escalate /pm-luana (FLAG) o // ds-lock-allow con justificación (shrink-only). NUNCA arbitrary suelto."
+      - "MODIFY nicolify/frontend/eslint.config.mjs: import @luana/eslint-config; plugins {'@luana/ds': luanaDs}; rules {'@luana/ds/no-arbitrary-value': 'error'} sobre src/**/*.{ts,tsx} (off en components/ui/** shadcn + tests, espejo de vitalia)"
+      - "NEW src/__tests__/architecture/test-ds-tokens-lock.test.ts: Linter real verifica lock 4 ejes + suggestion + sizing exento + tokenized exento + escape ds-lock-allow (replica vitalia)"
+      - "ANTI-DEFAULT-FLIP: correr eslint OFF (baseline verde) + ON (cero violations); documentar en commit body 'no-arbitrary-value flipped off→on. N migrados, 0 allowlisted.'"
+    acceptance:
+      validator_ids: [V3-arch-tokens-lock, V4-eslint-lock-zero, V2-tsc]
+      gherkin_coverage: [SC-2, SC-3]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: workhorse
+      must_load_skills:
+        - frontend-expert
+        - .claude/rules/anti-default-flip-audit.md
+        - .claude/rules/tdd-mandatory.md   # § Default flag flips
+        - docs/architecture/luana-platform/design-system-canon.md
+      must_load_artifacts:
+        - nicolify/docs/product/stories/nicolify-r0-design-system-adoption/03-arch.md   # §9.5 Tests audit (default flip)
+        - core/@luana/eslint-config/src/{index.js,no-arbitrary-value.js}
+        - vitalia/frontend/eslint.config.mjs    # patrón de wiring (off en ui-kit/tests)
+        - vitalia/frontend/src/__tests__/architecture/test-ds-tokens-lock.test.ts
+      forbidden_to_touch: ["core/@luana/", "vitalia/", "comunify/", "lupulo/", "nicolify/backend/"]
+      rationale: "Default-flip de regla eslint off→on = anti-default-flip workflow OBLIGATORIO (migrar first, flip second, suite verde ambos lados, commit body documenta). Workhorse FE."
+
+  - id: T-5
+    title: "Visual goldens (gated kit-lift) + abel-icp-fidelity + a11y-subnav e2e + SHELL-DESIGN-CONTRACT update + live-verify"
+    surface: frontend
+    production_code: true
+    depends_on: [T-4]
+    nature: [e2e-visual, e2e-a11y, doc, live-verify]
+    deliverables:
+      - "NEW e2e/regression/nicolify-r0-design-system-adoption/abel-icp-fidelity.spec.ts: goldens side-by-side vs ds-base.html (maxDiffPixelRatio 0.001). Goldens NO gateados: tokens-swatch, abel-icp-master, abel-icp-detail (estructura/full-bleed/avatares), states. Goldens GATEADOS (blocked_on kit-radius-control-lift / kit-accent-slot-lift): radio de control (pill) en atoms.png + active-leaf-accent en abel-icp-detail si no matchea agent-abel con tokens semánticos → FLAG lift /pm-luana"
+      - "NEW e2e/regression/nicolify-r0-design-system-adoption/a11y-subnav.spec.ts: axe wcag2aa + roving tabindex EntitySubNavBar (←→/Home/End)"
+      - "MODIFY nicolify/docs/architecture/SHELL-DESIGN-CONTRACT.md §7: verify declara mockups componen de canon + tokens (RN-6/AC-6 — mayormente ya hecho vía ADR-nicolify-003)"
+      - "LIVE-VERIFY (DoD #37): ejercer /{tenantId}/abel/icp master + abrir ICP (detalle) + write real (autosave) en dev-app nicolify + leer logs + confirmar render idéntico/mejor + persistencia → dod_evidence"
+    acceptance:
+      validator_ids: [V7-e2e-abel-icp-fidelity, V8-live-verify-dod37, V9-e2e-a11y-subnav, V10-arch-spanish-neutro, V4-eslint-lock-zero]
+      gherkin_coverage: [SC-1, SC-5, SC-6]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: workhorse
+      must_load_skills:
+        - playwright-expert
+        - nicolify-design-system
+        - .claude/rules/frontend-visual-fidelity.md
+        - nicolify/.claude/rules/shell-mockup-per-component.md
+        - .claude/rules/definition-of-done-live-verify.md
+      must_load_artifacts:
+        - nicolify/docs/product/stories/nicolify-r0-design-system-adoption/01-spec.md   # § Visual Goldens table
+        - nicolify/docs/product/stories/nicolify-r0-design-system-adoption/04-validators.yaml   # cat-4 goldens blocked_on
+        - nicolify/docs/product/stories/nicolify-r0-design-system-adoption/mockups/ds-base.html
+      forbidden_to_touch: ["core/@luana/", "vitalia/", "comunify/", "lupulo/", "nicolify/backend/"]
+      rationale: "E2E visual + a11y + live-verify, workhorse. El golden de control-radius/pill + (condicional) active-leaf-accent quedan blocked_on el kit-lift /pm-luana; el resto corre ahora. El demo único Abel convergence (gate #37) corre cuando AMBOS (esta adopción + kit-lift) aterrizan."
+
+# ── Coverage check ─────────────────────────────────────────────────────────────
+gherkin_coverage_map:
+  SC-1: [T-1, T-3, T-5]      # happy fidelidad
+  SC-2: [T-4]                # lock RED con arbitrary
+  SC-3: [T-1, T-4]           # arbitrary sin token / escape
+  SC-4: [T-2]                # anti-mirror
+  SC-5: [T-3, T-5]           # a11y subnav
+  SC-6: [T-1, T-5]           # neutro + identidad
+
+# ── External dependency (RN-7) ─────────────────────────────────────────────────
+external_dependencies:
+  - id: kit-radius-control-lift
+    owner: /pm-luana
+    description: "kit Button/Input/Select/Textarea consumen --radius-control (hoy hardcodean rounded-md). CROSS-BRAND ENGINE change → promotion gate. Manejado por architect skill EN PARALELO, NUNCA en esta story."
+    blocks: ["golden control-radius/pill (atoms.png) en T-5", "demo gate #37 final (corre cuando AMBOS aterrizan)"]
+  - id: kit-accent-slot-lift
+    owner: /pm-luana
+    description: "(condicional) kit EntitySubNavBar acepta accentToken/agentSlot opcional para active-leaf agent-color. SOLO si el render con tokens semánticos no matchea el golden agent-abel → FLAG lift candidate."
+    blocks: ["golden active-leaf-accent (abel-icp-detail.png) en T-5 — condicional"]
+
+# ── NO tickets editan core/@luana — enforcement ────────────────────────────────
+engine_off_limits: "NINGÚN ticket edita core/@luana/**/src/ ni core/luana-core-*/src/. RN-7 = /pm-luana lift SEPARADO."

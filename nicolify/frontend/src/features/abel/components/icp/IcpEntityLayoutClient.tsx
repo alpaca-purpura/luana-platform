@@ -44,11 +44,8 @@ import { useIcp } from "../../hooks/use-icps";
 import { useBuyers } from "../../hooks/use-buyers";
 import { useCreateBuyer } from "../../hooks/use-buyer-mutations";
 
-import { EntityWorkspaceLayout } from "@/components/shared/shell-organism/EntityWorkspaceLayout";
-import type {
-  EntitySubNavLeaf,
-  EntitySubNavEntity,
-} from "@/components/shared/shell-organism/EntitySubNavBar";
+import { EntityWorkspaceLayout } from "@luana/ui-kit";
+import type { EntitySubNavLeaf, EntitySubNavEntity } from "@luana/ui-kit";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

@@ -9,6 +9,7 @@ story_introduced: nicolify-r0-dev-stack
 release: R0
 map_box: plataforma-tecnica       # paradigma 3 zonas (ADR-nicolify-002) · runtime foundation (BE+FE+auth)
 user_visible: false               # zona Infraestructura → no en el mapa de valor principal
+functional_area: plataforma-tecnica.platform   # G6 — resuelve a la caja Infraestructura→plataforma-tecnica (sufijo libre)
 package_version: "0.1.0"
 package_path: nicolify/backend + nicolify/frontend
 license: proprietary

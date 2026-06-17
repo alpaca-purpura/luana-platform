@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240" role="img" aria-label="Avatar Sara (placeholder)">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F59E0B"/>
+      <stop offset="1" stop-color="#7C3A00"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="0.5" cy="0.42" r="0.5">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.30"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="240" height="240" rx="34" fill="url(#bg)"/>
+  <rect width="240" height="240" rx="34" fill="url(#halo)"/>
+  <!-- bust (hombros + cabeza) -->
+  <path d="M44 214 Q44 150 120 150 Q196 150 196 214 Z" fill="#FFF7EC"/>
+  <circle cx="120" cy="104" r="42" fill="#FFF7EC"/>
+  <!-- cara amistosa -->
+  <circle cx="106" cy="100" r="4.6" fill="#B45309"/>
+  <circle cx="134" cy="100" r="4.6" fill="#B45309"/>
+  <path d="M104 116 Q120 130 136 116" fill="none" stroke="#B45309" stroke-width="4.2" stroke-linecap="round"/>
+  <!-- inicial sutil en el pecho -->
+  <text x="120" y="196" text-anchor="middle" font-family="League Spartan, Inter, system-ui, sans-serif" font-weight="700" font-size="34" fill="#B45309" opacity="0.85">S</text>
+  <!-- chip glifo del rol (clipboard · jefa de proyectos) -->
+  <circle cx="190" cy="190" r="26" fill="#ffffff"/>
+  <circle cx="190" cy="190" r="26" fill="none" stroke="#B45309" stroke-opacity="0.18" stroke-width="2"/>
+  <g transform="translate(178,176)"><rect x="6" y="4" width="16" height="20" rx="3" fill="none" stroke="#B45309" stroke-width="2.4"/><rect x="10" y="1.5" width="8" height="5" rx="1.6" fill="#B45309"/><line x1="9.5" y1="11" x2="18.5" y2="11" stroke="#B45309" stroke-width="2" stroke-linecap="round"/><line x1="9.5" y1="16" x2="16" y2="16" stroke="#B45309" stroke-width="2" stroke-linecap="round"/></g>
+</svg>

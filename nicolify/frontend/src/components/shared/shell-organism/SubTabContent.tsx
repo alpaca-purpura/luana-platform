@@ -43,8 +43,7 @@ import { useParams } from "next/navigation";
 import { IcpMasterListView } from "@/features/abel/components/icp/IcpMasterListView";
 import { AGENT_SUBTABS } from "@/lib/routing/shell-routes";
 
-import { EmptyState } from "./EmptyState";
-import { EntitySubNavBar, type EntitySubNavLeaf } from "./EntitySubNavBar";
+import { ShellEmptyState, EntitySubNavBar, type EntitySubNavLeaf } from "@luana/ui-kit";
 
 import type { RibbonTabSlug } from "@/lib/routing/shell-routes";
 
@@ -290,7 +289,6 @@ function IcpMasterWithNavBar({ testId }: { testId: string }) {
         entity={null}
         leaves={EMPTY_LEAVES}
         activeLeaf={null}
-        agentSlug="abel"
       />
       {/* ICP master list — content below the permanent bar */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
@@ -339,7 +337,7 @@ export function SubTabContent({ agent, subtab, subsubtab }: SubTabContentProps) 
 
   return (
     <div className="flex-1 overflow-auto p-6" data-testid={testId}>
-      <EmptyState
+      <ShellEmptyState
         icon={content.icon}
         title={content.title}
         description={content.description}
