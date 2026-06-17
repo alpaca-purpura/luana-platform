@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Plataforma — Ribbon platform tab (no agente) — neutral slate #64748B placeholder -->
+  <circle cx="32" cy="32" r="32" fill="#64748B"/>
+  <text x="32" y="40" text-anchor="middle" font-family="Inter, sans-serif" font-size="26" font-weight="600" fill="white">P</text>
+</svg>

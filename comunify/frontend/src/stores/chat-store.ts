@@ -105,7 +105,7 @@ export const useChatStore = create<ChatStoreState>((set, get) => ({
   // Initial state
   messages: [],
   conversations: [],
-  activeAgent: "valeria", // default supervisor slug; overridden by setActiveAgent
+  activeAgent: "luana", // comunify supervisor slug (sidebar orchestrator); overridden by setActiveAgent on agent-workspace routes
   status: "idle",
 
   // SsrSafeHydration stub — chat state is ephemeral, no persistence needed

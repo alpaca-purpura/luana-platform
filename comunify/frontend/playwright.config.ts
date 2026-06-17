@@ -1,4 +1,11 @@
 import { defineConfig, devices } from "@playwright/test";
+import dotenv from "dotenv";
+import path from "path";
+
+// Playwright corre como proceso Node separado — no lee .env automáticamente.
+// Sin esto, clerk.setup.ts ve E2E_CLERK_USER_EMAIL=undefined.
+dotenv.config({ path: path.resolve(__dirname, "../.env.dev") });
+dotenv.config({ path: path.resolve(__dirname, ".env.e2e"), override: true });
 
 export default defineConfig({
   testDir: "./e2e",
@@ -8,10 +15,27 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
   use: {
-    baseURL: process.env.E2E_BASE_URL || "http://localhost:3000",
+    baseURL: process.env.E2E_BASE_URL || "http://localhost:3003",
     trace: "on-first-retry",
   },
   projects: [
+    // Setup — clerk.setup.ts (serial). Genera playwright/.clerk/user.json (storageState).
+    {
+      name: "setup",
+      testMatch: /.*\.setup\.ts/,
+      retries: 1,
+      timeout: 180_000,
+    },
+    // Shell-organism — specs autenticados (pre-auth vía storageState). Depende de setup.
+    {
+      name: "shell-organism",
+      testMatch: /e2e\/shell-organism\/.*\.spec\.ts/,
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: "playwright/.clerk/user.json",
+      },
+      dependencies: ["setup"],
+    },
     // Smoke project — all *.smoke.spec.ts on Desktop Chrome
     {
       name: "smoke",

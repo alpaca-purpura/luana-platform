@@ -2,21 +2,26 @@
 brand: comunify
 story_id: comunify-shell-organism
 module: platform
-state: developing
-phase: CHAT_LIVE_VERIFIED  # 2026-06-17: chat funciona END-TO-END live (DoD #37 ✓ — Nina respondió coherente vía kimi/kimi-k2, persistió tenant-scoped). Falta: follow-ups no-fatales (prompt_versions persona · agent:'valeria' stale) + T-e2e formal + auditor + merge
+state: developed
+phase: DEVELOPED_RECONCILED  # 2026-06-17 (autonomous_mode → G exento): chat LIVE-VERIFIED por e2e automatizado real-backend + reconciled. Listo para /auditor.
+reconciled: true             # R · /pm-comunify 2026-06-17 — 04-validators § reconciliation (scope real vs ideal, deferred SC, bugs fixed, engine debt → /pm-luana)
 dod_live_verified: true
-dod_env: "dev-app.comunifyagents.com (Chrome DevTools MCP, lane D) · Clerk sign-in-token hola@alpacapurpura.lat · gateway luana_litellm_dev:4000"
+dod_env: "localhost:3003 (Playwright @clerk/testing ticket+storageState) + dev-app.comunifyagents.com (Chrome DevTools MCP, lane D) · usuario hola@alpacapurpura.lat · gateway luana_litellm_dev:4000"
 dod_evidence:
   - action: "Login (Clerk sign-in token) → shell /comunify-demo/nina/marca → enviar mensaje a Nina ('¿qué es una escalera de valor?')"
     observed: "Nina respondió coherente + on-topic en español neutro ('Una escalera de valor es la secuencia de ofertas…'), streamed en la burbuja"
     backend_log: "POST /api/v1/comunify/copilot/chat 200 OK · Bearer + X-Tenant-ID enviados · sin traceback fatal · DB tenant-scoped: copilot_llm_call=3 (kimi/kimi-k2), copilot_trace_event=11, copilot_conversations=6"
+  - action: "T-e2e automatizado headless (shell-chat-ok.spec.ts · @clerk/testing ticket strategy + storageState) — login→tenant + write real al engine /chat (NO mock)"
+    observed: "4 passed (25.9s): clerk setup + authenticate + login→tenant (authed, composer montado) + SC-chat-ok (≥2 burbujas + bot stream contenido real >20 chars vía gateway kimi). Gate anti-burbuja (base.ts) verde."
+    backend_log: "DB tenant-scoped tras las corridas: copilot_trace_event 11→20, copilot_llm_call 3→7, copilot_conversations 6→7. Cero /api 4xx-5xx tragados."
+    bugs_found_and_fixed: "(1) next.config.ts SIN async rewrites() → todo /api/* relativo 404 fuera del túnel (chat + todos los hooks); portado patrón vitalia/nicolify. (2) /agents/plataforma/avatar.svg 500 → placeholder SVG agregado."
 verified_at: 2026-06-17
 story_type: ui-mixed          # FE shell + AGENTIC copilot mount + HYGIENE(config)
 created: 2026-06-15
 last_updated: 2026-06-17
 parallel_safe: true
 owner: /architect
-next_handoff: /dev-team comunify — RESUME T-agentic v2 (thin-mount, engine unblocked) → iam-adoption (login→tenant) → seed tenant → T-e2e → auditor → merge  (T-0/T-tokens/T-shell/T-chat-store ya ✅)
+next_handoff: /auditor comunify comunify-shell-organism — state developed + reconciled:true + autonomous_mode:true (live-verify sustituye demo G). APPROVED → /pm-comunify merge (07-merge + archive + capability comunify/shell-organism)
 surface: [frontend, agentic, hygiene]
 estimated_size: L
 cap_target: comunify/shell-organism
@@ -138,6 +143,37 @@ foundation (migración 003 + iam router + seed + Clerk bind, tenant `9cf1ef9b`) 
 - `AI_MODEL_*`/legacy Settings viven en el compose (dev). DEUDA /pm-luana: engine hace esos campos Optional.
 
 **Próximo:** T-e2e formal (15 SC) con @clerk/testing + fixes de los follow-ups (persona) → auditor → merge.
+
+---
+
+## ✅ T-e2e LIVE + RECONCILED (R · /pm-comunify · 2026-06-17 · autonomous_mode → G exento)
+
+**SC-chat-ok ahora live-verificado por e2e AUTOMATIZADO real-backend** (no sólo Chrome MCP manual):
+`comunify/frontend/e2e/shell-organism/shell-chat-ok.spec.ts` + `e2e/setup/clerk.setup.ts` (@clerk/testing
+ticket + storageState) + `e2e/fixtures/base.ts` (gate anti-burbuja). `make dev-comunify` + gateway →
+**4 passed (25.9s)**: clerk setup ×2 + login→tenant + SC-chat-ok (write real → stream LLM). DB:
+trace_event 11→20, llm_call 3→7, conversations 6→7. Project `shell-organism` + dotenv en `playwright.config.ts`.
+
+**2 bugs cazados por la live-verify (verde-pero-roto) + arreglados:**
+1. **`next.config.ts` sin `async rewrites()`** — todo `fetch("/api/v1/…")` relativo daba **404 de Next**
+   salvo vía el túnel (cloudflared rutea /api→BE). El chat **y todos los hooks de datos** sólo andaban
+   detrás del túnel. Fix: portado el rewrite `/api`+`/public` → BE (patrón vitalia/nicolify). Bug de marca
+   entera, no del chat. → e2e 404→401→200.
+2. **`/agents/plataforma/avatar.svg` 500** (placeholder faltante) → SVG placeholder agregado.
+
+**Follow-up #1 (persona) RE-DIAGNOSTICADO — NO se construye acá:** la voz comunify del copilot **NO** sale
+de `prompt_versions` (verificado: esa tabla la lee SÓLO el sales_agent; el copilot chat nunca la consulta →
+una migración 006 sería **dead code**). La palanca real = `_BASE_IDENTITY` del engine (hoy hardcodeado
+"Nicolify", cross-brand) hecho brand-aware → **engine work `/pm-luana`**. Voz genérica = no-fatal, no bloquea.
+Capturado: `comunify/docs/learnings/2026-06-17-engine-deuda-surfaced-by-shell-organism.md` (promotable).
+
+**Follow-up #2 (agent default):** `chat-store.ts` default `activeAgent` "valeria"→**"luana"** (slug comunify) ✓.
+
+**Scope reconciliado:** `04-validators.yaml § reconciliation` — live_verified [SC-chat-ok, login-tenant-nav,
+SC-happy] · deferred (must_pass:false, HB-79) [SSE behaviors = unit-cubiertos · shell polish = R-shell+1..N].
+Gates verdes: FE tsc + eslint + vitest 129/129. BE sin cambios (arch 144 / ruff intactos).
+
+**Próximo real:** `/auditor` (autonomous → ejerce ≥1 write live + dod_evidence) → `/pm-comunify` merge.
 
 ---
 
