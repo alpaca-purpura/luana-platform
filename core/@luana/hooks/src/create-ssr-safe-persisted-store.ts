@@ -31,7 +31,11 @@
  *   persist pattern applies to all future brand frontends — see ADR-vitalia-006 § 5).
  */
 
-import { create, type StateCreator } from "zustand";
+// `create` desde zustand/react (no el index `zustand`): turbopack no resuelve el `export *`
+// del index (re-export transitivo de named exports) → `create` undefined. El subpath directo
+// (con el patch zustand que vuelve relativos sus self-refs) sí resuelve. (HB-78)
+import { create } from "zustand/react";
+import type { StateCreator } from "zustand";
 import {
   persist,
   createJSONStorage,

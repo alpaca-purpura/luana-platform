@@ -4,7 +4,7 @@
 // This store owns the SSE lifecycle for POST /api/v1/comunify/copilot/chat.
 // agentic-no-domain-write: ONLY calls /copilot/chat — never domain endpoints.
 
-import { create } from "zustand";
+import { create } from "zustand/react"; // index export* falla en turbopack (HB-78)
 import type {
   ShellChatMessage,
   ShellChatStatus,
