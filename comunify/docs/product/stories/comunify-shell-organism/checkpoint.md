@@ -3,7 +3,7 @@ brand: comunify
 story_id: comunify-shell-organism
 module: platform
 state: developing
-phase: RESUME_T_AGENTIC_V2    # engine Settings-lazy fix landed+validated 2026-06-17 (proposal accepted, e9f16d06) → boot-brick RESUELTO; T-agentic vuelve a su thin-mount original
+phase: AWAIT_LIVE_INFRA       # T-agentic v2 ✅ DONE+verified 2026-06-17 (de6b9e9d · mount live, 4-pass test, boot 200). Resto (write real SC-chat-ok + iam-adoption live-verify + T-e2e) GATEADO por infra de Chris: LiteLLM gateway+keys (deploy/litellm/.env ausente) + tenant comunify seedeado/bound
 story_type: ui-mixed          # FE shell + AGENTIC copilot mount + HYGIENE(config)
 created: 2026-06-15
 last_updated: 2026-06-17
@@ -105,8 +105,14 @@ El engine fix elegido por Chris (dir B — **Settings lazy** en `luana_core_plat
 - **Validado live (native import test, env multibrand SIN POSTGRES_*/WHATSAPP_*/QDRANT_URL legacy):** `import luana_core_copilot.api.chat` + `rate_limit` + `database` → **boot clean, cero `pydantic ValidationError`**. El boot-brick de T-agentic está RESUELTO en el engine.
 - Sync: wip/comunify 0 detrás / 66 adelante de origin/main. arch suite comunify **144 GREEN**, ruff src limpio (24 F401/I001 residuales en tests/scripts/alembic = deuda pre-existente auto-fixable, no regresión del merge).
 
-**Lo que falta para el done (resume /dev-team, autonomous):**
-1. **T-agentic v2** = el thin-mount ORIGINAL del 06-tickets (ya NO necesita re-architect): `NEW comunify/.../copilot/api/__init__.py` reexport `from luana_core_copilot.api.chat import router as copilot_router` + deps `pyproject.toml` + re-habilitar mount en `main.py` (el guard try/except ya está; falta que el reexport exista) + verify trace scoped.
+**Progreso 2026-06-17 (/dev-team autonomous):**
+- ✅ **T-agentic v2 DONE** (`de6b9e9d`): el thin-mount ya estaba committeado (`3b6670ba`); el engine fix lo desbricó. Verificado: `copilot_router` monta (`/api/v1/comunify/copilot/chat` presente), `test_chat_mount.py` **4-pass** (200 SSE / 401), BE arch+ruff green, boot live 200. Comentario stale `BLOCKED` en main.py corregido (guard mantenido). NO se agregaron deps a backend/pyproject (resolución workspace, patrón vitalia/nicolify). Detalle: `T-agentic-v2-result.md`.
+- ⛔ **Muro de infra (gateado por Chris)** para cerrar el `done`:
+  - **LiteLLM gateway** `luana_litellm_dev` **Exited 11 días** + `deploy/litellm/.env` (LLM keys) **ausente en este worktree** (gitignored per-worktree) → el write real SC-chat-ok (mensaje a Luana → stream LLM) no puede correr.
+  - **Tenant comunify** seedeado + bound a un Clerk user de prueba (`seed_fixture_creators.py` existe pero el binding iam↔Clerk es el gap 🟡 conocido) → sin esto ni el chat real ni el login→tenant live-verifican.
+
+**Lo que falta para el done (resume /dev-team cuando la infra esté):**
+1. ✅ ~~T-agentic v2~~ — DONE (ver arriba). Falta sólo el scenario 200-SSE write real (gateado por infra).
 2. **iam-adoption** (login→tenant): root `/` resuelve tenant vía IAM API (`GET /api/v1/iam/users/me/tenants`, patrón vitalia/nicolify) — desbloqueado por la misma Settings-lazy.
 3. **Seed tenant comunify en iam** + LiteLLM gateway corriendo (precond del write real SC-chat-ok). 🟡 gap conocido — si falta al cerrar `developed`, la live-verify del write se cubre con auditor live + `dod_evidence` (autonomous_mode: true → G exento).
 4. **T-e2e** (15 SC) + DoD #37 → auditor → merge.
