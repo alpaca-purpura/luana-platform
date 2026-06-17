@@ -2,14 +2,14 @@
 brand: comunify
 story_id: comunify-shell-organism
 module: platform
-state: developing            # ← normalizado de `blocked` (no-v4) en integration-checkpoint 2026-06-16; el bloqueo real lo documenta `phase`. /pm-comunify: reconciliar (developing|parked) al retomar
-phase: BLOCKED_T_AGENTIC_LIVE_VERIFY
+state: developing
+phase: RESUME_T_AGENTIC_V2    # engine Settings-lazy fix landed+validated 2026-06-17 (proposal accepted, e9f16d06) → boot-brick RESUELTO; T-agentic vuelve a su thin-mount original
 story_type: ui-mixed          # FE shell + AGENTIC copilot mount + HYGIENE(config)
 created: 2026-06-15
-last_updated: 2026-06-16
+last_updated: 2026-06-17
 parallel_safe: true
 owner: /architect
-next_handoff: /dev-team comunify T-0 (hygiene) → T-agentic (flagship) → T-tokens/T-shell/T-chat-store → T-e2e
+next_handoff: /dev-team comunify — RESUME T-agentic v2 (thin-mount, engine unblocked) → iam-adoption (login→tenant) → seed tenant → T-e2e → auditor → merge  (T-0/T-tokens/T-shell/T-chat-store ya ✅)
 surface: [frontend, agentic, hygiene]
 estimated_size: L
 cap_target: comunify/shell-organism
@@ -97,7 +97,25 @@ Sidebar: **Luana** (supervisora+orquestadora+onboarding). Ribbon: **Nina** (estr
 **Tomás** (atraer) · **Sofía** (vender) · **Bruno** (operar) · **Lucía** (retener) + tab **Plataforma**.
 Mapeo 1:1 a cadena de valor canónica (vitalia/nicolify). Detalle: `ADR-comunify-001-agentes-cast.md`.
 
-## Next action — ⛔ BLOQUEADA (decisión de Chris)
+## ✅ DESBLOQUEADA 2026-06-17 (/pm-comunify reconcile · engine fix landed+validated)
+
+El engine fix elegido por Chris (dir B — **Settings lazy** en `luana_core_platform`) **aterrizó en main y se mergeó a wip/comunify**:
+- Commit engine: `e9f16d06 feat(core): /chat brand-mountable — lazy get_settings() en copilot+platform (semver minor)` · proposal `2026-06-16-copilot-chat-brand-mountable` = `accepted` (07-merge stamped) · expand `6b722105` (iam = 2º consumer).
+- `core/luana-core-platform/.../core/config.py` ahora expone `@lru_cache get_settings()` (lazy) + el global `settings` quedó deprecado. `rate_limit.py` ya no instancia Settings a import-time.
+- **Validado live (native import test, env multibrand SIN POSTGRES_*/WHATSAPP_*/QDRANT_URL legacy):** `import luana_core_copilot.api.chat` + `rate_limit` + `database` → **boot clean, cero `pydantic ValidationError`**. El boot-brick de T-agentic está RESUELTO en el engine.
+- Sync: wip/comunify 0 detrás / 66 adelante de origin/main. arch suite comunify **144 GREEN**, ruff src limpio (24 F401/I001 residuales en tests/scripts/alembic = deuda pre-existente auto-fixable, no regresión del merge).
+
+**Lo que falta para el done (resume /dev-team, autonomous):**
+1. **T-agentic v2** = el thin-mount ORIGINAL del 06-tickets (ya NO necesita re-architect): `NEW comunify/.../copilot/api/__init__.py` reexport `from luana_core_copilot.api.chat import router as copilot_router` + deps `pyproject.toml` + re-habilitar mount en `main.py` (el guard try/except ya está; falta que el reexport exista) + verify trace scoped.
+2. **iam-adoption** (login→tenant): root `/` resuelve tenant vía IAM API (`GET /api/v1/iam/users/me/tenants`, patrón vitalia/nicolify) — desbloqueado por la misma Settings-lazy.
+3. **Seed tenant comunify en iam** + LiteLLM gateway corriendo (precond del write real SC-chat-ok). 🟡 gap conocido — si falta al cerrar `developed`, la live-verify del write se cubre con auditor live + `dod_evidence` (autonomous_mode: true → G exento).
+4. **T-e2e** (15 SC) + DoD #37 → auditor → merge.
+
+> ⚠️ Para el live-verify dentro de docker: el contenedor `comunify_backend_dev` usa venv en volumen (`comunify_backend_venv`) — asegurar que tenga el core actualizado (rebuild/sync) antes de probar el mount (memoria `dev-infra-triple` / engine-edits-invisible-to-venv).
+
+---
+
+## Histórico — Next action ⛔ BLOQUEADA (pre-2026-06-17, resuelto arriba)
 
 **Build autónomo corrió T-0→T-shell GREEN; se BLOQUEÓ en la live-verify de T-agentic (DoD #37).**
 
