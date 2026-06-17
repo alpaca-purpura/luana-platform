@@ -165,4 +165,45 @@ export const test = base.extend<RuntimeErrorFixtures>({
   },
 });
 
+/**
+ * Gate de render-sanity (HB-68): aserta que el SHELL montó con contenido REAL
+ * antes de correr axe / `toHaveScreenshot` / aserciones de contraste.
+ *
+ * El bug origen: varios runs "verdes" del hardening escaneaban un shell COLGADO
+ * (DOM "Cargando" casi vacío por el flake next16-softnav) → axe reportaba
+ * 0-violations sobre nada + asserts imposibles pasaban PASS sobre un DOM
+ * desmontado. Un `axe` verde sobre un shell vacío es un FALSO NEGATIVO.
+ *
+ * Llamá `assertShellMounted(page)` INMEDIATAMENTE antes de cualquier axe/visual:
+ *   await page.goto(ruta);
+ *   await assertShellMounted(page);   // ← gate
+ *   const a = await new AxeBuilder({ page }).analyze();
+ *
+ * Falla RUIDOSO (no silencioso) si: el root del shell no existe · el área de
+ * contenido no tiene hijos · sigue visible el estado "Cargando".
+ */
+export async function assertShellMounted(page: Page): Promise<void> {
+  // 1. El root del shell DEBE existir (AppShell: aria-label="Interfaz principal Vitalia")
+  await expect(
+    page.locator('div[aria-label="Interfaz principal Vitalia"]'),
+    "Shell no montado — el root del AppShell no está en el DOM (¿shell colgado?)",
+  ).toHaveCount(1);
+
+  // 2. El área de contenido (#main-content) DEBE existir con ≥1 hijo real
+  const main = page.locator("main#main-content");
+  await expect(main, "#main-content no está en el DOM").toHaveCount(1);
+  await expect(
+    main.locator("> *").first(),
+    "#main-content sin hijos — shell colgado/vacío, axe/visual escanearían la nada",
+  ).toBeAttached();
+
+  // 3. El estado "Cargando" NO debe estar visible (sino el shell sigue cargando)
+  const loading = page.locator("text=/Cargando/i").first();
+  const stillLoading = await loading.isVisible().catch(() => false);
+  expect(
+    stillLoading,
+    'Shell aún en estado "Cargando" — esperá el contenido real antes de axe/visual',
+  ).toBe(false);
+}
+
 export { expect };
