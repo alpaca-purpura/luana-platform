@@ -131,6 +131,11 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
         bubble: "var(--radius-bubble)",
         pill: "var(--radius-pill)",
+        /* ── Control atom radius (RN-7 lift) ────────────────────────────── */
+        /* Brand-overridable via --radius-control in globals.css. Falls back  */
+        /* to vitalia's md = calc(var(--radius) - 2px) so an omitted token   */
+        /* also renders at 8px (identical to pre-lift rounded-md behaviour). */
+        control: "var(--radius-control, calc(var(--radius) - 2px))",
       },
     },
   },

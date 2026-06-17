@@ -4,10 +4,13 @@
  *
  * Carries the NAMES only. The rem VALUE per tier is PER-BRAND (lives in each
  * brand's globals.css `--radius*`). Never merge brand radius values here.
- *  - sm / md / lg — surface scale (cards, inputs, sheets)
- *  - bubble       — chat bubble radius (agent surfaces)
- *  - pill         — fully-rounded chips / toggles
+ *  - sm / md / lg  — surface scale (cards, inputs, sheets)
+ *  - bubble        — chat bubble radius (agent surfaces)
+ *  - pill          — fully-rounded chips / toggles
+ *  - control       — brand-overridable control-atom radius (Button/Input/Select/Textarea).
+ *                    Each brand sets `--radius-control` in globals.css. Brands that omit
+ *                    the token fall back to `var(--radius)` (= current md behaviour, RN-7).
  */
-export const RADIUS_NAMES = Object.freeze(["sm", "md", "lg", "bubble", "pill"] as const);
+export const RADIUS_NAMES = Object.freeze(["sm", "md", "lg", "bubble", "pill", "control"] as const);
 
 export type RadiusName = (typeof RADIUS_NAMES)[number];

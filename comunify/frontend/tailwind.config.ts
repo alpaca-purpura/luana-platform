@@ -49,6 +49,10 @@ const config: Config = {
       borderRadius: {
         DEFAULT: "var(--radius)",
         lg: "var(--radius-lg)",
+        /* RN-7: control-atom radius — brand-overridable via @luana/ui-kit rounded-control.
+         * Falls back to 0.375rem (Tailwind v4 --radius-md default) so an omitted token
+         * renders identically to pre-lift rounded-md (6px, zero visual change). */
+        control: "var(--radius-control, 0.375rem)",
       },
     },
   },

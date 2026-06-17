@@ -168,6 +168,12 @@
   --radius-lg: 0.875rem; /* 14px — cards grandes, modals */
   --radius-bubble: 1.125rem; /* 18px — chat message bubbles */
   --radius-pill: 999px; /* badges, chips */
+  /* RN-7: control-atom radius — brand-overridable via @luana/ui-kit rounded-control.
+   * Set to calc(var(--radius) - 2px) = vitalia's md value (≈ 8px at --radius 0.625rem).
+   * This matches the pre-lift rounded-md behaviour so Button/Input/Select/Textarea
+   * render at exactly the same pixel radius as before (zero visual change).
+   * Nicolify overrides this to 9999px (pill) on its own branch. */
+  --radius-control: calc(var(--radius) - 2px);
 
   /* ─── Gradients (literal — no HSL, contain HEX refs for gradient stops) ─── */
   /* Nota: gradients usan HEX literales en este archivo por limitación CSS.     */
