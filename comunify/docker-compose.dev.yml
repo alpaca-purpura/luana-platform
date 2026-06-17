@@ -31,6 +31,14 @@ services:
       # runtime (uvicorn, sqlalchemy, asyncpg, alembic, luana_core_*).
       # Espejo vitalia compose (receta 07-merge.md paso 3).
       UV_PROJECT_ENVIRONMENT: "/workspace/.venv"
+      # LITELLM gateway = shared cross-brand proxy `luana_litellm_dev` en luana_dev_net.
+      # `.env.dev` trae localhost:4000 (valor host-native); dentro del container eso es su PROPIO
+      # loopback → Connection refused. comunify es la PRIMERA marca que cablea el /chat real al
+      # gateway (vitalia/nicolify mockean el chat-store) → este path container→gateway nunca se
+      # ejerció. Apuntar al nombre de servicio docker (resuelve por DNS en luana_dev_net). El
+      # master key usa el default del engine `sk-litellm-master-dev` (coincide con el del gateway).
+      LITELLM_BASE_URL: "http://luana_litellm_dev:4000/v1"
+      LITELLM_PROXY_URL: "http://luana_litellm_dev:4000"
     volumes:
       - .:/workspace:rw  # bind mount monorepo completo (hot-reload)
       # Named volume protege el venv del container en la ruta donde el Dockerfile lo crea
