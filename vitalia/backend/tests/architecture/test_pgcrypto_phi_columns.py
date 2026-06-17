@@ -246,7 +246,9 @@ class TestPgcryptoPhiColumns:
             # \b word-boundary: match the bare PHI column `notes`, NOT compound
             # non-PHI columns like `bio_inputs_notes` (staff bio, table vitalia_lisa_staff)
             # which legitimately use TEXT and are not patient PHI.
-            (r"(?<![\w])notes\s+TEXT", "treatment_plans.notes defined as TEXT instead of BYTEA"),
+            # `'` in the lookbehind excludes PROSE matches like the migration-038 meta-comment
+            # `(NOT 'notes TEXT')` (HB-70 false-positive — DDL never quotes the bare column name).
+            (r"(?<![\w'])notes\s+TEXT", "treatment_plans.notes defined as TEXT instead of BYTEA"),
             (r"payload_phi\s+TEXT", "re_engagement_events.payload_phi defined as TEXT"),
             (r"payload_phi\s+VARCHAR", "re_engagement_events.payload_phi defined as VARCHAR"),
             (r"oauth_token_encrypted\s+TEXT", "channel_sync_state.oauth_token_encrypted as TEXT"),
