@@ -29,6 +29,11 @@ RUN --mount=type=cache,id=pnpm-vitalia,target=/pnpm/store \
 
 WORKDIR /app/vitalia/frontend
 EXPOSE 3002
+# HB-78: bump Node heap so the Next webpack dev-server doesn't hit the memory
+# threshold + enter a restart loop (→ ERR_SOCKET_NOT_CONNECTED + stale-cache
+# masking) when compiling large new routes. 3GB heap sits under the 4G container
+# limit (docker-compose.dev.yml). Takes effect on next `make dev-vitalia` rebuild.
+ENV NODE_OPTIONS="--max-old-space-size=3072"
 CMD ["pnpm", "dev", "--port", "3002"]
 
 # ── builder target ──
