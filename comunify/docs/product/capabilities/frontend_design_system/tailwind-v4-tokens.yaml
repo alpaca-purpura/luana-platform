@@ -1,0 +1,64 @@
+---
+capability_id: comunify-tailwind-v4-tokens
+module: frontend_design_system
+slug: tailwind-v4-tokens
+status: live
+date_introduced: 2026-05-18
+story_introduced: comunify-design-system-tailwind-v4-tokens
+package_version: 0.2.1
+package_path: comunify/frontend
+license: proprietary
+---
+
+# comunify-tailwind-v4-tokens
+
+Hot-fix de cementado design-system: activación runtime de utilidades Tailwind v4 (`.bg-comunify-*` / `.text-comunify-*` / `.font-*` / `.rounded-*`) que `comunify-design-system-cement` shipped en `globals.css @theme` block pero **NUNCA se generaban** en el bundle CSS (CSS bundle pre-fix: 467 líneas con solo `:root` vars; post-fix: 1673 líneas con utilities + vars).
+
+## Root cause
+
+Tailwind v4 requiere `@tailwindcss/postcss` plugin + `postcss.config.*` para que el `@theme` block emita utility classes. Comunify nunca tuvo PostCSS configurado — `tailwindcss ^4.1.0` declarado en `package.json` pero sin pipeline PostCSS. El bundle CSS solo contenía las CSS variables del `:root` pero NO las utilities `.bg-comunify-bg { background-color: var(--color-comunify-bg); }` que Tailwind genera del `@theme`.
+
+## Surface
+
+- **PostCSS plugin (NEW):** `comunify/frontend/postcss.config.mjs` (7 líneas) — declara `@tailwindcss/postcss` como único plugin. Mirror de patrón nicolify por convención v4 (promotable `_pm-brand-template/`).
+- **PostCSS plugin devDep:** `comunify/frontend/package.json` — `+@tailwindcss/postcss ^4.1.0` en `devDependencies`.
+- **Lockfile sync:** `pnpm-lock.yaml` — 10 packages tree expansion (Tailwind v4 PostCSS plugin + transitive deps).
+- **CSS bundle:** post-fix runtime emite `.bg-comunify-{primary,bg,surface,text,accent,...}`, `.text-comunify-{primary,text,muted,...}`, `.font-{satoshi,manrope,inter}`, `.rounded-{default,lg}`, `.bg-comunify-gradient` — todos los slots declarados en `globals.css @theme`.
+- **Smoke spec fixes:** `comunify/frontend/e2e/specs/smoke/design-system.smoke.spec.ts` — 2 assertion corrections aplicadas verbatim del `01-spec.md`:
+  - SC-03: cambiar `htmlClassName.toMatch(/--font-satoshi/)` (rompía porque Next/font emite class names hashed) → `getComputedStyle(documentElement).getPropertyValue('--font-satoshi')` matches `/Plus Jakarta Sans/`
+  - Adversarial probe (l. 89): `c.startsWith("comunify-")` → `c.includes("comunify-")` (utilities son `bg-comunify-X`, no bare `comunify-X`); también agregar `document.body` al elementList scan.
+
+## Test coverage
+
+- T-1 result: foundation tokens + PostCSS wiring + smoke assertion fixes — 9/9 validators GREEN (val-be-1 + val-fe-1 + val-fe-2 + val-fe-3 + val-arch-1 + val-typecheck-1)
+- Phase D gherkin matrix: 7/7 PASS (SC-01..SC-07)
+- CHECKPOINTS DoD: 27/27 ✅ · 1 WARN non-blocking (postcss.config mirror promotable cross-brand)
+
+## Verification
+
+```bash
+WS=$(git rev-parse --show-toplevel)
+# CSS bundle physical proof
+CSS_URL=$(curl -sS http://127.0.0.1:3003/sign-in | grep -oE '/_next/static/chunks/[^"]+\.css' | head -1)
+curl -sS "http://127.0.0.1:3003${CSS_URL}" | grep -qE '\.bg-comunify-bg\s*\{' && echo "OK utilities emitted"
+# Runtime computed style
+cd ${WS}/comunify/frontend && E2E_BASE_URL=http://localhost:3003 npx playwright test --project=smoke e2e/specs/smoke/design-system.smoke.spec.ts
+```
+
+## Dependencies
+
+- `tailwindcss ^4.1.0` (cement)
+- `@tailwindcss/postcss ^4.1.0` (NEW — hot-fix devDep)
+- PostCSS infrastructure (transitive via Next.js 16 build pipeline)
+
+## Cross-brand status
+
+**Vitalia** tiene **mismo gap latente** — `tailwindcss ^4.1.0` declared, sin `postcss.config.*` ni `@tailwindcss/postcss` plugin. Vitalia probablemente sirve CSS bundle sin utilities también (no live-verificado esta story).
+**Promotable:** `_pm-brand-template/` debería cementar PostCSS scaffold para evitar gap en brands futuras (saasora/inmoflow/retailly/fixia/guestly/fitflow).
+Ping a `/pm-luana` para evaluación lift `_pm-brand-template/` audit.
+
+## KPIs
+
+- CSS bundle size: 467 → 1673 lines post-fix
+- Utility classes emitted: 0 → 50+ (`.bg-comunify-*` × 16 + `.text-comunify-*` × 16 + `.font-*` × 3 + `.rounded-*` × 2 + variants)
+- Smoke test pass rate: 5/26 → 8/26 (3 design-system tests unlocked)

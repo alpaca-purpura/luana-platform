@@ -1,0 +1,113 @@
+---
+capability_id: comunify-a11y-contrast-cement
+module: frontend_design_system
+slug: a11y-contrast-cement
+status: live
+date_introduced: 2026-05-20
+story_introduced: comunify-design-system-a11y-contrast-cement
+package_version: 0.3.0
+package_path: comunify/frontend
+license: proprietary
+---
+
+# comunify-a11y-contrast-cement
+
+Cementación de accesibilidad WCAG AA en design system Comunify: 5 tokens nuevos `*-text` para foreground sobre light bg, Camino B universal (outline pattern) en botones moderation card + dunning banner, arch fitness ratchet híbrido (opción C) que bloquea 6 patterns HARD prohibidos. HSL principales del brandbook preservados intactos. Tercera capability del módulo `frontend_design_system` (cement v0.2.0 → tailwind-v4-tokens v0.2.1 → a11y-contrast-cement v0.3.0).
+
+## Origin
+
+Auditor `auditor-frontend` flagged 1 WARN en `comunify-design-system-cement` (`text-white` sobre `bg-comunify-warning` 1.80:1). Audit comprehensive ejecutado por `/po-ux` reveló 10 pares WCAG AA failed (6 críticos + 4 marginales). Chris ratificó scope expandido + auditar TODAS las parejas.
+
+## Surface
+
+- **Token system SSoT:** `comunify/frontend/src/app/globals.css` — 5 nuevos `--comunify-{warning,stable,accent,critical,blue}-text` en `@theme` + `:root`
+- **Tailwind config:** `comunify/frontend/tailwind.config.ts` — 5 nuevos slots colors mapping `hsl(var(--comunify-{X}-text))`
+- **Design system doc:** `comunify/docs/architecture/design-system.md` — § 1.5 NEW tokens table + § 6 NEW Camino B recipes
+- **Arch fitness test:** `comunify/frontend/src/__tests__/architecture/test-no-low-contrast-pairs.test.ts` — 4 vitest scenarios, 6 HARD-blocked patterns
+- **Allowlist:** `comunify/frontend/src/__tests__/architecture/_low-contrast-allowlist.json` — `[]` baseline (clean slate ratchet)
+- **Camino B sweep (7 archivos):**
+  - `community-moderation-card.tsx` (3 botones outline + 3 status pills `-text`)
+  - `dunning-active-banner.tsx` (h3/p `-text` + button Camino B)
+  - `voice-samples-uploader.tsx` (3 badges `-text`)
+  - `voice-distilled-preview.tsx` (1 badge `-text`)
+  - `cohort-broadcast-composer.tsx` (2 error labels `-text`)
+  - `authority-vault-editor.tsx` (2 badges `-text`)
+  - `format-engagement-bucket.ts` (2 keys `-text`)
+- **Playwright regression project (NEW):** `comunify/frontend/e2e/regression/comunify-design-system-a11y-contrast-cement/` — 3 specs + `_helpers.ts` + `@axe-core/playwright` devDep + `regression` project en playwright.config.ts
+
+## Tokens cementados
+
+| Slot | HSL | HEX | Contraste sobre bg-comunify-bg |
+|---|---|---|---|
+| `--comunify-warning-text` | `45 100% 28%` | `#8E6B00` | 4.72:1 ✅ AA |
+| `--comunify-stable-text` | `152 80% 28%` | `#0E804B` | 4.77:1 ✅ AA |
+| `--comunify-accent-text` | `355 100% 45%` | `#E50013` | 4.62:1 ✅ AA |
+| `--comunify-critical-text` | `0 84% 49%` | `#E51313` | 4.53:1 ✅ AA |
+| `--comunify-blue-text` | `217 95% 52%` | `#1069F8` | 4.56:1 ✅ AA |
+
+## Pares canónicos (cementados en design-system.md § 6)
+
+| Use case | Background | Foreground | Ratio |
+|---|---|---|---|
+| Botón primary CTA | `bg-comunify-primary` o `bg-comunify-gradient` | `text-comunify-primary-foreground` (white) | 5.85:1 ✅ |
+| Botón outline semantic (Camino B) | `bg-comunify-{X}/10 border border-comunify-{X}` | `text-comunify-{X}-text` | 4.5-9.7:1 ✅ |
+| Badge / status pill | `bg-comunify-{X}/10` | `text-comunify-{X}-text` | idem ✅ |
+| Alert banner sólido | `bg-comunify-{X}` | `text-comunify-text` (oscuro) | 5-10:1 ✅ |
+| Error label inline | (transparente) | `text-comunify-critical-text` | 4.53:1 ✅ |
+
+## Arch fitness híbrido (opción C ratificada)
+
+**HARD blocked patterns (6):**
+- `bg-comunify-warning text-white` (1.80:1)
+- `bg-comunify-stable text-white` (2.20:1)
+- `bg-comunify-accent text-white` (2.95:1)
+- `text-comunify-warning bg-comunify-bg` (1.72:1)
+- `text-comunify-stable bg-comunify-bg` (2.10:1)
+- `text-comunify-accent bg-comunify-bg` (2.82:1)
+
+**NO blocked (responsabilidad dev — UI/large only acceptable):**
+- `bg-comunify-critical text-white` (3.76:1 OK como UI/large)
+- `bg-comunify-blue text-white` (3.81:1 OK como UI/large)
+
+**Magic comment escape:** `// a11y-allow: <reason>` permite excepciones documentadas (allowlist `[]` baseline mantenido — 0 excepciones post-sweep).
+
+## Test coverage
+
+- **Vitest arch fitness:** 4/4 PASS (test-no-low-contrast-pairs.test.ts)
+- **Vitest stock-palette regression:** 3/3 PASS (baseline preserved)
+- **Vitest full suite:** 49/49 PASS
+- **Playwright regression:** 9 tests authored (3 specs × 3 tests), live execution deferred a Chris staging gate per `e2e-testing.md` escalation path
+- **TypeScript:** 0 errors
+- **ESLint:** 0 errors
+
+## Scenarios live
+
+- Developer agrega botón warning outline siguiendo recipe Camino B → contrast ≥ 4.5:1 verificado en computed style + arch fitness GREEN
+- Developer escribe `bg-comunify-warning text-white` → arch fitness FALLA build con cite path + line + suggestion
+- Developer agrega badge nuevo con `bg-comunify-warning/10 text-comunify-warning` (sin `-text` sufijo) → arch fitness FALLA legacy ratchet
+- Moderation card renderiza 3 botones outline (verde/amarillo/rojo) — semantic color preserved, contrast 4.5-9.7:1 AA per pair
+
+## Dependencies
+
+- `tailwindcss ^4.1.0` (cement v0.2.0)
+- `@tailwindcss/postcss ^4.1.0` (tailwind-v4-tokens v0.2.1)
+- `@axe-core/playwright ^4.11.3` (NEW — a11y-contrast-cement v0.3.0)
+
+## Limitations (deferred / out-of-scope)
+
+- **Live E2E execution:** dev stack offline durante audit phase. Comandos reproducibles documentados en 07-merge.md § 5. Auditor explícitamente APPROVED-WITH-CAVEAT non-blocking.
+- **Cross-brand lift:** Camino B pattern + arch fitness anti-low-contrast son PROMOTABLE candidates a `_pm-brand-template/` scaffold + `core/luana-core-platform/design-tokens/` cuando 2+ brands lo necesiten. Pingear `/pm-luana` post-merge.
+- **chrome-devtools-verify deprecated Linux:** 4to ciclo consecutivo sin alternativa live verification — PROMOTABLE outcome platform `linux-live-verification-replacement`.
+- **Dark mode:** out of scope (ADR separado futuro)
+- **Audit otras brands (vitalia/nicolify/lupulo):** PROMOTABLE candidate, no en scope story
+
+## KPIs
+
+- Pares WCAG AA failed: 10 → 0 (en componentes shipped)
+- Arch fitness violations: 13 → 0
+- Tokens nuevos `*-text`: 0 → 5
+- Componentes nuevos: 0 (solo migración classes)
+- Componentes migrados: 7
+- HSL principales del brandbook: 0 cambios (paleta logo preservada)
+- LOC delta: ~190 added / ~25 modified
+- Capability count módulo `frontend_design_system`: 2 → 3

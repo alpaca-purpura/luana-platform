@@ -17,18 +17,26 @@
   "dependencies": {
     "@clerk/nextjs": "^6.36.8",
     "@hookform/resolvers": "^5.2.2",
+    "@luana/design-tokens": "workspace:*",
+    "@luana/ui-kit": "workspace:*",
     "@tanstack/react-query": "^5.100.10",
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "lucide-react": "^0.562.0",
     "next": "^16.2.3",
+    "next-themes": "^0.4.6",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-hook-form": "^7.75.0",
     "tailwind-merge": "^3.6.0",
-    "zod": "^4.3.6"
+    "zod": "^4.3.6",
+    "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.3",
     "@eslint/js": "^9.29.0",
     "@playwright/test": "^1.59.1",
+    "@tailwindcss/postcss": "^4.1.0",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
     "@types/node": "^25.0.9",

@@ -29,12 +29,20 @@ test.describe("Comunify design system cement smoke", () => {
     // Wait for layout to apply font className
     await page.waitForLoadState("domcontentloaded");
 
-    const htmlClassName = await page.evaluate(
-      () => document.documentElement.className
+    const satoshiVar = await page.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue('--font-satoshi').trim()
     );
-    expect(htmlClassName).toMatch(/--font-satoshi/);
-    expect(htmlClassName).toMatch(/--font-manrope/);
-    expect(htmlClassName).toMatch(/--font-inter/);
+    expect(satoshiVar).toMatch(/Plus Jakarta Sans/);
+
+    const manropeVar = await page.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue('--font-manrope').trim()
+    );
+    expect(manropeVar.length).toBeGreaterThan(0);
+
+    const interVar = await page.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue('--font-inter').trim()
+    );
+    expect(interVar.length).toBeGreaterThan(0);
 
     // Computed body font-family resolves to Inter (via Tailwind font-inter)
     const bodyFontFamily = await page.evaluate(() =>
@@ -84,9 +92,11 @@ test.describe("Comunify design system cement smoke", () => {
     // probe a computed style of a known element if present (e.g., main wrapper)
     // — fallback to body itself if no such marker exists.
     const hasComunifyClasses = await page.evaluate(() => {
-      const all = Array.from(document.body.querySelectorAll("*"));
+      const all = [document.body, ...Array.from(document.body.querySelectorAll("*"))];
       return all.some((el) =>
-        Array.from(el.classList).some((c) => c.startsWith("comunify-"))
+        Array.from(el.classList).some((c) =>
+          c.includes("comunify-")  // matches bg-comunify-bg, text-comunify-text, border-comunify-border, etc.
+        )
       );
     });
     expect(hasComunifyClasses).toBe(true);

@@ -3,7 +3,10 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cn } from "@/lib/cn";
-import { broadcastComposeSchema, type BroadcastComposeInput } from "../schemas/broadcast-compose-schema";
+import {
+  broadcastComposeSchema,
+  type BroadcastComposeInput,
+} from "../schemas/broadcast-compose-schema";
 import type { CohortBroadcast } from "../types/cohort.types";
 
 interface CohortBroadcastComposerProps {
@@ -63,7 +66,10 @@ export function CohortBroadcastComposer({
           </legend>
           <div className="flex gap-2">
             {CHANNEL_OPTIONS.map((opt) => (
-              <label key={opt.value} className="flex items-center gap-1.5 text-sm">
+              <label
+                key={opt.value}
+                className="flex items-center gap-1.5 text-sm"
+              >
                 <input
                   type="radio"
                   value={opt.value}
@@ -78,7 +84,10 @@ export function CohortBroadcastComposer({
 
         {/* Subject */}
         <div>
-          <label htmlFor="broadcast-subject" className="mb-1 block text-xs font-semibold text-muted-foreground">
+          <label
+            htmlFor="broadcast-subject"
+            className="mb-1 block text-xs font-semibold text-muted-foreground"
+          >
             Asunto
           </label>
           <input
@@ -86,18 +95,26 @@ export function CohortBroadcastComposer({
             {...register("subject")}
             className={cn(
               "w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary",
-              errors.subject && "border-comunify-critical"
+              errors.subject && "border-comunify-critical",
             )}
             placeholder="Título de tu mensaje"
           />
           {errors.subject && (
-            <p className="mt-1 text-xs text-comunify-critical" role="alert">{errors.subject.message}</p>
+            <p
+              className="mt-1 text-xs text-comunify-critical-text"
+              role="alert"
+            >
+              {errors.subject.message}
+            </p>
           )}
         </div>
 
         {/* Body */}
         <div>
-          <label htmlFor="broadcast-body" className="mb-1 block text-xs font-semibold text-muted-foreground">
+          <label
+            htmlFor="broadcast-body"
+            className="mb-1 block text-xs font-semibold text-muted-foreground"
+          >
             Mensaje
           </label>
           <textarea
@@ -106,18 +123,26 @@ export function CohortBroadcastComposer({
             rows={4}
             className={cn(
               "w-full resize-none rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary",
-              errors.body && "border-comunify-critical"
+              errors.body && "border-comunify-critical",
             )}
             placeholder="Escribe tu mensaje aquí..."
           />
           {errors.body && (
-            <p className="mt-1 text-xs text-comunify-critical" role="alert">{errors.body.message}</p>
+            <p
+              className="mt-1 text-xs text-comunify-critical-text"
+              role="alert"
+            >
+              {errors.body.message}
+            </p>
           )}
         </div>
 
         {/* Audience */}
         <div>
-          <label htmlFor="broadcast-audience" className="mb-1 block text-xs font-semibold text-muted-foreground">
+          <label
+            htmlFor="broadcast-audience"
+            className="mb-1 block text-xs font-semibold text-muted-foreground"
+          >
             Audiencia
           </label>
           <select
@@ -139,7 +164,7 @@ export function CohortBroadcastComposer({
           className={cn(
             "rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground",
             "hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-            "disabled:cursor-not-allowed disabled:opacity-50"
+            "disabled:cursor-not-allowed disabled:opacity-50",
           )}
           aria-busy={isSending}
         >
@@ -150,10 +175,15 @@ export function CohortBroadcastComposer({
       {/* History */}
       {previousBroadcasts.length > 0 && (
         <div>
-          <h4 className="mb-2 text-sm font-semibold text-muted-foreground">Historial</h4>
+          <h4 className="mb-2 text-sm font-semibold text-muted-foreground">
+            Historial
+          </h4>
           <ul className="flex flex-col gap-2">
             {previousBroadcasts.map((b) => (
-              <li key={b.id} className="flex items-center justify-between rounded-lg border bg-card px-3 py-2 text-sm">
+              <li
+                key={b.id}
+                className="flex items-center justify-between rounded-lg border bg-card px-3 py-2 text-sm"
+              >
                 <div>
                   <p className="font-medium">{b.subject}</p>
                   <p className="text-xs text-muted-foreground">
@@ -161,7 +191,9 @@ export function CohortBroadcastComposer({
                   </p>
                 </div>
                 <span className="text-xs text-muted-foreground">
-                  {new Intl.DateTimeFormat("es-419", { dateStyle: "short" }).format(new Date(b.sent_at))}
+                  {new Intl.DateTimeFormat("es-419", {
+                    dateStyle: "short",
+                  }).format(new Date(b.sent_at))}
                 </span>
               </li>
             ))}

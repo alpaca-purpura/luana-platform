@@ -2,15 +2,24 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/cn";
-import type { AuthorityVault, AuthorityCredential, AuthorityCaseStudy, AuthorityPressMention } from "../types/authority-vault.types";
+import type {
+  AuthorityVault,
+  AuthorityCredential,
+  AuthorityCaseStudy,
+  AuthorityPressMention,
+} from "../types/authority-vault.types";
 
 type VaultTab = "credentials" | "case_studies" | "press_mentions";
 
 interface AuthorityVaultEditorProps {
   vault?: AuthorityVault;
-  onAddCredential: (data: Omit<AuthorityCredential, "id" | "url_status">) => void;
+  onAddCredential: (
+    data: Omit<AuthorityCredential, "id" | "url_status">,
+  ) => void;
   onAddCaseStudy: (data: Omit<AuthorityCaseStudy, "id" | "url_status">) => void;
-  onAddPressMention: (data: Omit<AuthorityPressMention, "id" | "url_status">) => void;
+  onAddPressMention: (
+    data: Omit<AuthorityPressMention, "id" | "url_status">,
+  ) => void;
   isLoading?: boolean;
   className?: string;
 }
@@ -23,8 +32,8 @@ const TAB_LABELS: Record<VaultTab, string> = {
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
-    valid: "bg-comunify-stable/10 text-comunify-stable",
-    invalid: "bg-comunify-critical/10 text-comunify-critical",
+    valid: "bg-comunify-stable/10 text-comunify-stable-text",
+    invalid: "bg-comunify-critical/10 text-comunify-critical-text",
     unverified: "bg-comunify-bg text-comunify-text-muted",
   };
   const labels: Record<string, string> = {
@@ -33,7 +42,12 @@ function StatusBadge({ status }: { status: string }) {
     unverified: "Sin verificar",
   };
   return (
-    <span className={cn("rounded-full px-2 py-0.5 text-xs", map[status] ?? map.unverified)}>
+    <span
+      className={cn(
+        "rounded-full px-2 py-0.5 text-xs",
+        map[status] ?? map.unverified,
+      )}
+    >
       {labels[status] ?? status}
     </span>
   );
@@ -51,7 +65,11 @@ export function AuthorityVaultEditor({
 
   if (isLoading) {
     return (
-      <div className={cn("flex flex-col gap-4", className)} aria-busy="true" aria-label="Cargando bóveda de autoridad">
+      <div
+        className={cn("flex flex-col gap-4", className)}
+        aria-busy="true"
+        aria-label="Cargando bóveda de autoridad"
+      >
         <div className="h-10 animate-pulse rounded-lg bg-muted" />
         <div className="h-40 animate-pulse rounded-lg bg-muted" />
       </div>
@@ -64,7 +82,9 @@ export function AuthorityVaultEditor({
       {vault && (
         <div className="flex items-center justify-between rounded-xl border bg-card p-4">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Puntuación de autoridad</p>
+            <p className="text-sm font-medium text-muted-foreground">
+              Puntuación de autoridad
+            </p>
             <p className="text-3xl font-bold">{vault.total_score}</p>
           </div>
           <div className="text-right text-sm text-muted-foreground">
@@ -88,7 +108,7 @@ export function AuthorityVaultEditor({
               "flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-all",
               activeTab === tab
                 ? "bg-background shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             {TAB_LABELS[tab]}
@@ -105,7 +125,10 @@ export function AuthorityVaultEditor({
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <p className="font-medium">{c.title}</p>
-                  <p className="text-xs text-muted-foreground">{c.issuer}{c.issued_year ? ` · ${c.issued_year}` : ""}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {c.issuer}
+                    {c.issued_year ? ` · ${c.issued_year}` : ""}
+                  </p>
                 </div>
                 <StatusBadge status={c.url_status} />
               </div>
@@ -120,7 +143,9 @@ export function AuthorityVaultEditor({
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <p className="font-medium">{c.title}</p>
-                  <p className="text-xs text-muted-foreground">{c.client_name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {c.client_name}
+                  </p>
                   <p className="mt-1 text-xs">{c.result_summary}</p>
                 </div>
                 <StatusBadge status={c.url_status} />
@@ -136,7 +161,10 @@ export function AuthorityVaultEditor({
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <p className="font-medium">{m.headline}</p>
-                  <p className="text-xs text-muted-foreground">{m.publication}{m.published_at ? ` · ${m.published_at.slice(0, 10)}` : ""}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {m.publication}
+                    {m.published_at ? ` · ${m.published_at.slice(0, 10)}` : ""}
+                  </p>
                 </div>
                 <StatusBadge status={m.url_status} />
               </div>
@@ -155,7 +183,10 @@ export function AuthorityVaultEditor({
  */
 export function AuthorityVaultClient() {
   return (
-    <div className="flex flex-col gap-6 p-6" data-testid="authority-vault-client">
+    <div
+      className="flex flex-col gap-6 p-6"
+      data-testid="authority-vault-client"
+    >
       <h1 className="text-2xl font-bold">Bóveda de autoridad</h1>
       <AuthorityVaultEditor
         onAddCredential={() => undefined}

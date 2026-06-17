@@ -7,9 +7,9 @@ const BUCKET_LABELS: Record<EngagementBucket, string> = {
 };
 
 const BUCKET_COLORS: Record<EngagementBucket, string> = {
-  high: "bg-comunify-stable/10 text-comunify-stable",
-  medium: "bg-comunify-warning/10 text-comunify-warning",
-  low: "bg-comunify-primary/10 text-comunify-blue",
+  high: "bg-comunify-stable/10 text-comunify-stable-text",
+  medium: "bg-comunify-warning/10 text-comunify-warning-text",
+  low: "bg-comunify-primary/10 text-comunify-blue-text",
 };
 
 export function formatEngagementBucket(bucket: EngagementBucket): string {

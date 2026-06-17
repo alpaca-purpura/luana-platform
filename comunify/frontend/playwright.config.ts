@@ -49,5 +49,11 @@ export default defineConfig({
       testMatch: /.*\/a11y\/.*\.smoke\.spec\.ts/,
       use: { ...devices["Desktop Chrome"] },
     },
+    // Regression project — design system + a11y contrast regression specs
+    {
+      name: "regression",
+      testMatch: /.*\/regression\/.*\.spec\.ts/,
+      use: { ...devices["Desktop Chrome"] },
+    },
   ],
 });

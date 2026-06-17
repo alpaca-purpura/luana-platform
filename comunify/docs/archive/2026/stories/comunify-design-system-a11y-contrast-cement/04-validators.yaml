@@ -1,0 +1,204 @@
+---
+brand: comunify
+story_id: comunify-design-system-a11y-contrast-cement
+schema_version: v4.1
+ssot_owner: /architect
+last_updated: 2026-05-20
+surface: frontend-only
+all_must_pass: true
+---
+
+# 5 categorías validator (v4.1 schema)
+# Cada validator: must_pass: true · ejecutable post-build · referenced en 06-tickets.gherkin_coverage
+
+validators:
+  # ──────────────────────────────────────────────────────────────
+  # CATEGORÍA 1 — NON-FUNCTIONAL (lint + tsc + format)
+  # ──────────────────────────────────────────────────────────────
+  - id: val-nf-1
+    category: non_functional
+    name: typescript_strict_no_errors
+    must_pass: true
+    command: "cd ${WS}/comunify/frontend && npx tsc --noEmit"
+    expected: "exit_code=0, zero TS errors"
+    rationale: "FE strict typecheck — new tokens added to tailwind.config.ts must compile clean"
+
+  - id: val-nf-2
+    category: non_functional
+    name: eslint_zero_errors
+    must_pass: true
+    command: "cd ${WS}/comunify/frontend && npx eslint src/ --cache"
+    expected: "exit_code=0, zero ESLint errors"
+    rationale: "Lint must stay clean; no // eslint-disable inserted in migrated components"
+
+  - id: val-nf-3
+    category: non_functional
+    name: prettier_format_clean
+    must_pass: true
+    command: "cd ${WS}/comunify/frontend && npx prettier --check 'src/**/*.{ts,tsx,css}'"
+    expected: "All matched files use Prettier code style"
+    rationale: "Format consistency; CSS vars + new test file must be properly formatted"
+
+  # ──────────────────────────────────────────────────────────────
+  # CATEGORÍA 2 — FUNCTIONAL (vitest unit + E2E Playwright SC-01..04)
+  # ──────────────────────────────────────────────────────────────
+  - id: val-fn-1
+    category: functional
+    name: vitest_full_suite_passing
+    must_pass: true
+    command: "cd ${WS}/comunify/frontend && npx vitest run"
+    expected: "exit_code=0, all tests pass, coverage ≥ 20% (existing threshold)"
+    rationale: "Component tests for moderation card + dunning banner + voice components must still pass post class migration"
+
+  - id: val-fn-2
+    category: functional
+    name: e2e_sc01_camino_b_buttons_pass_aa
+    must_pass: true
+    command: |
+      cd ${WS}/comunify/frontend && E2E_BASE_URL=http://localhost:3003 \
+        npx playwright test e2e/regression/comunify-design-system-a11y-contrast-cement/design-system-pairs.spec.ts
+    expected: "SC-01 + SC-01-utility-emission PASS — computed contrast ≥ 4.5:1 on Camino B buttons; .text-comunify-{warning,stable,accent,critical,blue}-text utility classes present in bundle"
+    gherkin_scenario: "SC-01"
+    rationale: "Happy path — pares canónicos del recipe aplican y rinden AA"
+
+  - id: val-fn-3
+    category: functional
+    name: e2e_sc03_moderation_card_semantic_preserved
+    must_pass: true
+    command: |
+      cd ${WS}/comunify/frontend && E2E_BASE_URL=http://localhost:3003 \
+        npx playwright test e2e/regression/comunify-design-system-a11y-contrast-cement/moderation-card.spec.ts
+    expected: "SC-03 PASS — 3 buttons render with semantic color identifiable (verde/amarillo/rojo) + outline pattern + focus ring + axe wcag2aa zero violations on /dashboard/community"
+    gherkin_scenario: "SC-03"
+    rationale: "Edge — Camino B preserva semántica color + axe pasa"
+
+  - id: val-fn-4
+    category: functional
+    name: e2e_sc04_badges_tints_verified
+    must_pass: true
+    command: |
+      cd ${WS}/comunify/frontend && E2E_BASE_URL=http://localhost:3003 \
+        npx playwright test e2e/regression/comunify-design-system-a11y-contrast-cement/badges-tints.spec.ts
+    expected: "SC-04 PASS — badges tint computed contrast ≥ 4.5:1; legacy pattern grep ratchet zero matches"
+    gherkin_scenario: "SC-04"
+    rationale: "Adversarial — tints sobre light bg verificados + legacy ratchet enforce"
+
+  # ──────────────────────────────────────────────────────────────
+  # CATEGORÍA 3 — VISUAL (axe wcag2aa)
+  # ──────────────────────────────────────────────────────────────
+  - id: val-vis-1
+    category: visual
+    name: axe_wcag2aa_dashboard_community
+    must_pass: true
+    command: |
+      cd ${WS}/comunify/frontend && E2E_BASE_URL=http://localhost:3003 \
+        npx playwright test e2e/regression/comunify-design-system-a11y-contrast-cement/moderation-card.spec.ts \
+        --grep "axe-wcag2aa-zero-violations"
+    expected: "axe-core results.violations = [] on /dashboard/community (moderation card surface)"
+    gherkin_scenario: "SC-03 + SC-a11y"
+    rationale: "Visual a11y gate — ruleset wcag2aa zero color-contrast violations sobre componentes migrados"
+
+  - id: val-vis-2
+    category: visual
+    name: axe_wcag2aa_dashboard_membership
+    must_pass: true
+    command: |
+      cd ${WS}/comunify/frontend && E2E_BASE_URL=http://localhost:3003 \
+        npx playwright test e2e/regression/comunify-design-system-a11y-contrast-cement/design-system-pairs.spec.ts \
+        --grep "axe-wcag2aa-membership"
+    expected: "axe-core results.violations = [] on /dashboard/membership (dunning banner surface)"
+    gherkin_scenario: "SC-a11y"
+    rationale: "Visual a11y gate — dunning banner WCAG AA verified live"
+
+  # ──────────────────────────────────────────────────────────────
+  # CATEGORÍA 4 — ARCHITECTURAL VALIDATION (arch fitness)
+  # ──────────────────────────────────────────────────────────────
+  - id: val-arch-1
+    category: architectural_validation
+    name: arch_no_low_contrast_pairs
+    must_pass: true
+    command: |
+      cd ${WS}/comunify/frontend && npx vitest run src/__tests__/architecture/test-no-low-contrast-pairs.test.ts
+    expected: "exit_code=0 — zero matches of 6 HARD-blocked patterns across src/; allowlist baseline = [] (clean slate)"
+    gherkin_scenario: "SC-02 + SC-04 ratchet"
+    rationale: "Arch fitness ratchet — bloquea 6 patrones HARD low-contrast; permite critical+blue marginal (opción C híbrida)"
+
+  - id: val-arch-2
+    category: architectural_validation
+    name: arch_no_stock_palette_still_green
+    must_pass: true
+    command: |
+      cd ${WS}/comunify/frontend && npx vitest run src/__tests__/architecture/test-no-stock-palette.test.ts
+    expected: "exit_code=0 — pre-existing gate continues passing post token additions"
+    rationale: "Regression guard — new -text tokens MUST NOT trigger stock palette detection regex"
+
+  - id: val-arch-3
+    category: architectural_validation
+    name: arch_allowlist_is_empty_baseline
+    must_pass: true
+    command: |
+      test "$(cat ${WS}/comunify/frontend/src/__tests__/architecture/_low-contrast-allowlist.json)" = "[]"
+    expected: "_low-contrast-allowlist.json content equals exact string `[]` (clean slate baseline)"
+    gherkin_scenario: "SC-02 line 145"
+    rationale: "Spec § SC-02 cementa baseline allowlist `[]` — future violations require justified entry o magic comment"
+
+  - id: val-arch-4
+    category: architectural_validation
+    name: arch_design_tokens_in_globals_css
+    must_pass: true
+    command: |
+      cd ${WS}/comunify/frontend && \
+        grep -E '^\s*--color-comunify-(warning|stable|accent|critical|blue)-text:' src/app/globals.css | wc -l | xargs -I{} test {} -eq 5
+    expected: "exactly 5 new --color-comunify-{X}-text tokens declared in @theme block of globals.css"
+    rationale: "SSoT enforcement — 5 tokens defined or test fails"
+
+  - id: val-arch-5
+    category: architectural_validation
+    name: arch_design_tokens_in_tailwind_config
+    must_pass: true
+    command: |
+      cd ${WS}/comunify/frontend && \
+        grep -E '"comunify-(warning|stable|accent|critical|blue)-text":' tailwind.config.ts | wc -l | xargs -I{} test {} -eq 5
+    expected: "exactly 5 new comunify-{X}-text slots declared in tailwind.config.ts colors block"
+    rationale: "SSoT enforcement — config mirror of @theme tokens"
+
+  # ──────────────────────────────────────────────────────────────
+  # CATEGORÍA 5 — AGENTIC EVAL
+  # ──────────────────────────────────────────────────────────────
+  - id: val-ag-1
+    category: agentic_eval
+    name: not_applicable_pure_frontend
+    must_pass: true
+    command: 'true  # skipped — story is pure FE CSS/Tailwind; no agentic surface touched'
+    expected: "category declared N/A — no copilot/sales_agent code modified"
+    rationale: "Story is CSS-only design tokens + arch fitness + Playwright a11y. Zero LLM call paths, zero prompt slots, zero personas, zero goldens involved."
+    not_applicable_reason: "Pure FE story per 01-spec.md § Componentes (0 nuevos) + § Data flow (CSS-only — no toca data + no toca prompts)"
+
+# ──────────────────────────────────────────────────────────────
+# Aggregate verification block — order matters (RED-first per layer)
+# ──────────────────────────────────────────────────────────────
+verification_order:
+  - phase: "T-1 foundation"
+    runs: [val-nf-1, val-nf-2, val-nf-3, val-arch-4, val-arch-5, val-arch-2]
+  - phase: "T-2 RED baseline arch"
+    runs: [val-arch-1]  # expected FAIL with ~13 violations
+  - phase: "T-3 sweep migration"
+    runs: [val-fn-1, val-arch-1, val-arch-2, val-arch-3]  # val-arch-1 turns GREEN
+  - phase: "T-4 validators bundle"
+    runs: [val-fn-2, val-fn-3, val-fn-4, val-vis-1, val-vis-2]
+
+verification_summary:
+  total_validators: 14
+  by_category:
+    non_functional: 3
+    functional: 4
+    visual: 2
+    architectural_validation: 5
+    agentic_eval: 1 (N/A)
+  must_pass_count: 14
+  gherkin_coverage_validators:
+    sc-01: [val-fn-2, val-arch-4, val-arch-5]
+    sc-02: [val-arch-1, val-arch-3]
+    sc-03: [val-fn-3, val-vis-1]
+    sc-04: [val-fn-4, val-arch-1]
+    sc-a11y: [val-vis-1, val-vis-2, val-fn-3]

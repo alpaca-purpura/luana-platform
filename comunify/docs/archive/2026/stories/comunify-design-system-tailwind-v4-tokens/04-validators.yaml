@@ -1,0 +1,79 @@
+# 04-validators — Comunify Design System Tailwind v4 token activation
+#
+# Hot-fix scope. Minimal validator set (3 visual smoke + 1 CSS bundle assertion).
+# All `must_pass: true` — RED current state, GREEN expected post-fix.
+
+validators:
+  - id: val-be-1
+    category: non_functional
+    description: "Backend /health endpoint stays 200 (no regression — sanity check)"
+    must_pass: true
+    command: "curl -sS http://127.0.0.1:8003/health | grep -q '\"status\":\"ok\"'"
+    expected_exit_code: 0
+    blocks_release: false
+
+  - id: val-fe-1
+    category: visual
+    description: "CSS bundle generates .bg-comunify-bg utility class rule"
+    must_pass: true
+    command: |
+      curl -sS "$(curl -sS http://127.0.0.1:3003/sign-in | grep -oE '/_next/static/chunks/[^\"]+\.css' | head -1 | sed 's|^|http://127.0.0.1:3003|')" | grep -qE '\.bg-comunify-bg\s*\{'
+    expected_exit_code: 0
+    rationale: "Direct CSS bundle assertion — fastest signal that @theme block generated utilities."
+    blocks_release: true
+
+  - id: val-fe-2
+    category: visual
+    description: "Playwright design-system smoke 3/3 PASS"
+    must_pass: true
+    command: |
+      cd ${WS}/comunify/frontend && \
+      E2E_BASE_URL=http://localhost:3003 \
+      COMUNIFY_BE_URL=http://127.0.0.1:8003 \
+      npx playwright test --project=smoke e2e/specs/smoke/design-system.smoke.spec.ts --reporter=list
+    expected_exit_code: 0
+    rationale: "Full runtime computed style + variable accessibility verification (covers SC-01..04 + SC-06)."
+    blocks_release: true
+    requires_setup: |
+      Stack live (containers luana-dev-comunify_*_dev up).
+      Verify: `docker ps | grep luana-dev-comunify`. Si no corren: `make dev-comunify` desde principal worktree.
+
+  - id: val-fe-3
+    category: visual
+    description: "Smoke regression: 5 baseline passing tests still pass + 3 design-system added"
+    must_pass: true
+    command: |
+      cd ${WS}/comunify/frontend && \
+      E2E_BASE_URL=http://localhost:3003 \
+      npx playwright test --project=smoke --reporter=list 2>&1 | tail -3
+    expected_pattern: "(?:[8-9]|[1-9][0-9]+) passed"
+    rationale: |
+      Baseline (pre-fix): 5 pass / 21 fail (18 Clerk env pre-existing + 3 design-system).
+      Post-fix expected: ≥8 pass (5 baseline + 3 design-system unlocked).
+      Clerk-blocked tests remain failing (separate story, out of scope here).
+    blocks_release: true
+
+  - id: val-arch-1
+    category: non_functional
+    description: "Arch fitness ratchet still clean — no stock palette violations introduced"
+    must_pass: true
+    command: |
+      cd ${WS}/comunify/frontend && \
+      npx vitest run src/__tests__/architecture/ --reporter=default 2>&1 | tail -10
+    expected_exit_code: 0
+    rationale: "Ensure @theme block addition doesn't break ratchet allowlist (currently `[]` clean)."
+    blocks_release: true
+
+  - id: val-typecheck-1
+    category: non_functional
+    description: "TSC strict still 0 errors post-test corrections"
+    must_pass: true
+    command: "cd ${WS}/comunify/frontend && npx tsc --noEmit 2>&1 | tail -5"
+    expected_exit_code: 0
+    blocks_release: false
+
+env_setup_notes: |
+  - Variable ${WS} = `/home/chalreme/Proyectos/luana-comunify` (canónico) o `/home/chalreme/Proyectos/luana-platform` (principal) — ambos comparten archivos via git worktree.
+  - Stack debe estar live antes de val-fe-*. Containers actuales (luana-dev-comunify_*_dev) up 23h en principal — verifican OK.
+  - Si CSS bundle hash cambia post-fix: val-fe-1 obtiene el hash actual dinámicamente via curl + grep + sed (no hard-coded).
+  - Si Next.js HMR no refrescó tras edit globals.css: forzar `docker restart luana-dev-comunify_frontend_dev-1` antes re-run validators.
