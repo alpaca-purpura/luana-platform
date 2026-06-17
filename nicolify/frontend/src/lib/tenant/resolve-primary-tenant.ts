@@ -17,11 +17,21 @@
 import { auth, clerkClient } from "@clerk/nextjs/server";
 
 /** Fallback dev tenant (coincide con el seed `agencia-demo`). */
-const DEV_FALLBACK_TENANT = "agencia-demo";
+export const DEV_FALLBACK_TENANT = "agencia-demo";
 
-interface TenantMetadata {
+export interface TenantMetadata {
   tenant_slug?: string;
   tenant_id?: string;
+}
+
+/**
+ * Extrae el tenant slug de un blob de metadata Clerk (sessionClaims o publicMetadata).
+ * Pure — sin I/O. Reusado por resolvePrimaryTenantId (server component) y por el
+ * proxy edge (resolución del root `/` sin redirect() in-render — ver proxy.ts).
+ */
+export function pickTenantSlug(meta: TenantMetadata | undefined | null): string | undefined {
+  const slug = meta?.tenant_slug ?? meta?.tenant_id;
+  return slug && typeof slug === "string" ? slug : undefined;
 }
 
 /**
@@ -38,11 +48,10 @@ export async function resolvePrimaryTenantId(): Promise<string> {
   const { userId, sessionClaims } = await auth();
 
   // 1. Fast path: claim en el session JWT (si el template lo incluye).
-  const claimMeta = (sessionClaims?.metadata ?? sessionClaims?.publicMetadata) as
-    | TenantMetadata
-    | undefined;
-  const claimSlug = claimMeta?.tenant_slug ?? claimMeta?.tenant_id;
-  if (claimSlug && typeof claimSlug === "string") {
+  const claimSlug = pickTenantSlug(
+    (sessionClaims?.metadata ?? sessionClaims?.publicMetadata) as TenantMetadata | undefined,
+  );
+  if (claimSlug) {
     return claimSlug;
   }
 
@@ -51,9 +60,8 @@ export async function resolvePrimaryTenantId(): Promise<string> {
     try {
       const client = await clerkClient();
       const user = await client.users.getUser(userId);
-      const meta = user.publicMetadata as TenantMetadata;
-      const slug = meta?.tenant_slug ?? meta?.tenant_id;
-      if (slug && typeof slug === "string") {
+      const slug = pickTenantSlug(user.publicMetadata);
+      if (slug) {
         return slug;
       }
     } catch (err) {

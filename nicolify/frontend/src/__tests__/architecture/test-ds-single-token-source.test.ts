@@ -144,3 +144,31 @@ describe("DS dark-mode wiring (ds-adoption G round-1 regression)", () => {
     );
   });
 });
+
+describe("DS dark-mode toggle wiring (ds-adoption G round-3 regression)", () => {
+  // BUG round-3: TWO mechanisms wrote the theme onto <html> — the anti-FOUC script
+  // (layout.tsx) added the `.dark` CLASS, and next-themes managed `data-theme`. next-themes
+  // (attribute="data-theme") flips data-theme on toggle but never removes the leftover `.dark`
+  // class → globals overrides keyed on `.dark` stay → theme stuck dark forever (proven live:
+  // toggling to light flipped data-theme=light but body stayed dark with class="dark").
+  // Fix: data-theme is the SINGLE theme axis. The anti-FOUC must NOT add the `.dark` class.
+  const PROVIDERS = resolve(__dirname, "../../app/providers.tsx");
+  const providers = readFileSync(PROVIDERS, "utf8");
+  const LAYOUT = resolve(__dirname, "../../app/layout.tsx");
+  const layout = readFileSync(LAYOUT, "utf8");
+
+  it("anti-FOUC script does NOT add the .dark class (data-theme is the single axis)", () => {
+    expect(
+      layout,
+      "anti-FOUC re-adds the .dark class — dual-write bug: next-themes flips data-theme but never removes this class → dark sticks",
+    ).not.toMatch(/classList\.add\(\s*["']dark["']\s*\)/);
+  });
+
+  it("anti-FOUC script seeds data-theme (so first paint matches stored theme)", () => {
+    expect(layout).toMatch(/setAttribute\(\s*["']data-theme["']\s*,\s*["']dark["']\s*\)/);
+  });
+
+  it('ThemeProvider uses attribute="data-theme"', () => {
+    expect(providers).toMatch(/attribute=["']data-theme["']/);
+  });
+});

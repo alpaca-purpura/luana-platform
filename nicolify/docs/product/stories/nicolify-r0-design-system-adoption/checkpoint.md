@@ -41,7 +41,7 @@ dod_caveats:
   - "FE dev-server (webpack, ~83% de 3GiB) reinicia en loop → cold-compile de /abel/icp (~20s) puede dejar 'Cargando' >15s o resetear socket → golden flaky (cae en el HB-68 guard, NO falso-verde). Dev-infra footgun, NO bug de adopción (BE 200/201/PATCH-200). Harness-issue capturado (dev-stack memory + CLERK_TESTING_TOKEN ausente)."
 chris_verify:
   required: true
-  signoff: null                      # AWAIT CHRIS — round-1 (dark) + round-2 (pill radius) FIXED + live-verified. Pausa-y-ofrece: Chris re-ejerce demo #37 (dark toggle + controles pill) + firma.
+  signoff: null                      # AWAIT CHRIS — round-1 (dark CSS, INSUFICIENTE) + round-2 (pill) + round-3 (dark toggle REAL + login redirect) FIXED + live-verified. Pausa-y-ofrece: Chris re-ejerce demo #37 (toggle dark + controles pill + login) + firma.
   rounds:
     - date: 2026-06-16
       by: Chris
@@ -67,7 +67,7 @@ chris_verify:
       gate_gap: "El arch test verificaba que la var estuviera DECLARADA, no que la UTILIDAD se generara (verde-fantasma HB-79) → pasó verde con el pill roto. El fix endurece el gate (+test: la var vive en @theme)."
       resolution: fixed-pending-chris-reverify
       fix:
-        commits: [PENDING-pathspec-commit]
+        commits: [7411c862]
         changes:
           - "globals.css: `--radius-control: var(--radius-pill)` movido de :root a @theme (genera `.rounded-control{border-radius:var(--radius-control)}` = 9999px) + borrado bloque :root stale."
           - "test-ds-single-token-source.test.ts: +1 regression test (--radius-control vive en @theme, no solo declarado)."
@@ -76,6 +76,40 @@ chris_verify:
         live_verify: "Chrome DevTools MCP /abel/icp autenticado (owner.demo, tenant 7f464ab7): --radius-control=9999px; 4 control atoms border-radius 9999px (allPill=true); 'Nuevo ICP' pill (screenshot). CSS compilado del dev server tiene `.rounded-control{border-radius:var(--radius-control)}` (antes 0). BE GET/POST /api/v1/abel/icp 200."
         gates: "tsc 0 · arch suite 181/181 (+1) · eslint 0 · golden atoms.png ✅ pill"
       core_followup: "PENDIENTE /pm-luana — el kit shippea `rounded-control` asumiendo que el consumer registra `--radius-control` en @theme; cláusula en SHELL-DESIGN-CONTRACT / kit doc + arch-test consumer (junto al dark-contract de round-1)."
+    - date: 2026-06-17
+      by: Chris (re-ejerció dark toggle + reportó login redirect roto)
+      finding: "Dark/light toggle SIGUE sin funcionar (round-1 no lo arregló) + el login no redirecciona al shell tras autenticar."
+      root_cause: >
+        DOS bugs, ambos cazados por live-verify real (no por el verde). (1) DARK TOGGLE: el round-1 solo
+        tocó CSS (@custom-variant) — nunca el MECANISMO del toggle. El script anti-FOUC (layout.tsx) agrega
+        la CLASE .dark al <html>; next-themes con attribute="data-theme" maneja SOLO el atributo data-theme
+        y NUNCA remueve esa clase .dark. Live-verify (click real del botón): al pasar a claro data-theme→light
+        pero class="dark" QUEDA → overrides de globals keyean en .dark → tema trabado en oscuro para siempre.
+        (2) LOGIN REDIRECT: NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/ → Clerk soft-nav a `/` tras sign-in →
+        app/page.tsx (Server Component) hace redirect() in-render hacia el shell (dynamic ssr:false) → flaky
+        "Rendered more hooks" de Next 16 (learning 2026-06-03) → el login no redirecciona. Mi login previo
+        funcionaba sólo porque usaba redirect_url=deep-link, saltándose RootPage.
+      scope: "EN SCOPE (homologación = el tema y el shell deben funcionar). Ambos fix brand-local, cero engine."
+      gate_gap: "El dark se declaró 'live-verified' en round-1 testeando la RESOLUCIÓN del variant (evaluate_script seteando atributos), NO el botón real → falso verde. round-3 ejerce el click real. Login nunca se ejerció desde el path afterSignIn=/ (sólo con redirect_url)."
+      resolution: fixed-pending-chris-reverify
+      fix:
+        commits: [PENDING-pathspec-commit]
+        changes:
+          - "providers.tsx: attribute='data-theme' (eje ÚNICO) — eliminada la dualidad .dark/data-theme."
+          - "layout.tsx: script anti-FOUC setea SOLO data-theme='dark' (ya NO classList.add('dark')) → nada deja la clase .dark pegada."
+          - "proxy.ts: redirect del root `/` movido al EDGE (307 antes de render, mismo patrón que isBareTenantRoute) → mata el redirect() in-render de RootPage en soft-nav. Resuelve tenant vía pickTenantSlug (fast-path JWT + fallback clerkClient)."
+          - "resolve-primary-tenant.ts: extraído pickTenantSlug + exportado DEV_FALLBACK_TENANT/TenantMetadata (reuso proxy↔server, anti-dup)."
+          - "test-ds-single-token-source.test.ts: +3 regression (anti-FOUC sin classList.add dark · seedea data-theme · providers attribute=data-theme)."
+        live_verify: >
+          Chrome DevTools MCP /abel/icp autenticado (owner.demo, tenant 7f464ab7). DARK (escenario del bug,
+          arranque dark): click real del toggle ×3 — data-theme dark→light→dark, bodyBg rgb(18,18,28)↔rgb(255,255,255)
+          en CADA dirección, hasDarkClass=false siempre (cls=''). Screenshots round3-dark-fix-{light,dark}.png =
+          shell completo (Ribbon+Luana+cards+logo-swap+toggle-icon) fiel en ambos modos. LOGIN: fresh isolated
+          context (sin cookies) → / → /sign-in?redirect_url=/ → sign-in → aterrizó en el shell
+          /7f464ab7-.../christian/pipeline (FE log: `GET / 307 ... proxy.ts`). Console 0 'Rendered more hooks',
+          0 hook errors (sólo 500 conocido de avatar/favicon placeholder).
+        gates: "tsc 0 · eslint 0 errors · arch suite test-ds 47/47 (+3 round-3) · vitest FE 542/542 (incl. los 2 ex-reds R0 ya verdes) · 0 regresiones"
+      core_followup: "PENDIENTE /pm-luana — proposals del kit (dark-contract round-1 + rounded-control round-2) siguen; round-3 fue cableado brand-local (anti-FOUC dual-write + afterSignIn root redirect) — candidato a cláusula en SHELL-DESIGN-CONTRACT/ADR-nicolify (single-axis theme + edge-redirect del root)."
 reconciled: false                    # /pm-nicolify pone true en R (tras signoff) antes del /auditor
 build_status:                        # /dev-team 2026-06-15 — 5/5 tickets pushed, green native
   T-1: { commit: cb8de344, status: tests-passing, note: "globals↔design-tokens + --radius-control + arch-test (39/39)" }

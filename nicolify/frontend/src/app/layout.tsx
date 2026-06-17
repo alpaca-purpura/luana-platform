@@ -6,8 +6,8 @@
  * T-1 additions (nicolify-r0-shell tokens/theme):
  * - Google Fonts preconnect + preload (League Spartan + Bree Serif)
  * - SSR anti-FOUC inline script en <head> (lee "nicolify-theme" de localStorage
- *   y aplica class "dark" antes del primer render — evita flash of unstyled content)
- * - suppressHydrationWarning en <html> (necesario cuando next-themes maneja la clase)
+ *   y aplica data-theme="dark" antes del primer render — evita flash of unstyled content)
+ * - suppressHydrationWarning en <html> (necesario cuando next-themes maneja data-theme)
  *
  * Mounts Providers (ThemeProvider + ClerkProvider + QueryClientProvider).
  *
@@ -26,8 +26,13 @@ export const metadata: Metadata = {
 
 /**
  * SSR anti-FOUC script: lee "nicolify-theme" de localStorage en el cliente
- * ANTES del hydration y aplica la clase "dark" en <html> si corresponde.
+ * ANTES del hydration y aplica data-theme="dark" en <html> si corresponde.
  * Evita el parpadeo (flash of unstyled content) en modo oscuro.
+ *
+ * data-theme es el ÚNICO eje del tema (next-themes attribute="data-theme"). NO se
+ * agrega la clase .dark: dos mecanismos escribiendo el <html> dejaban .dark pegada
+ * al pasar a claro → tema trabado en oscuro (round-3 ds-adoption). Todo el dark
+ * keyea en [data-theme="dark"] (globals.css + @custom-variant).
  *
  * MUST be rendered as dangerouslySetInnerHTML (no JSX — evita escape de strings).
  * suppressHydrationWarning en <html> cubre la diferencia server/client del atributo data-theme.
@@ -38,7 +43,6 @@ const themeScript = `
     var theme = localStorage.getItem('nicolify-theme');
     var isDark = theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
     if (isDark) {
-      document.documentElement.classList.add('dark');
       document.documentElement.setAttribute('data-theme', 'dark');
     }
   } catch (e) {}

@@ -6,7 +6,10 @@
  * Providers — Nicolify root providers wrapper.
  *
  * Wraps the app with:
- *   1. ThemeProvider (next-themes) — attribute="data-theme", dark mode .dark class
+ *   1. ThemeProvider (next-themes) — attribute="data-theme" (ÚNICO eje del tema).
+ *      Dark mode keyea SOLO en [data-theme="dark"] (globals.css overrides + @custom-variant).
+ *      NO se usa la clase .dark: dos mecanismos escribiendo el <html> (anti-FOUC + next-themes)
+ *      dejaban la clase .dark pegada al pasar a claro → tema trabado en oscuro (round-3 ds-adoption).
  *   2. ClerkProvider — Clerk authentication (Clerk auth delegada 100%)
  *   3. QueryClientProvider — React Query (data fetching)
  *

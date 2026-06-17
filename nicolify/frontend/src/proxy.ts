@@ -30,6 +30,11 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 import { DEFAULT_LANDING } from "@/lib/routing/shell-routes";
+import {
+  DEV_FALLBACK_TENANT,
+  pickTenantSlug,
+  type TenantMetadata,
+} from "@/lib/tenant/resolve-primary-tenant";
 
 const isPublicRoute = createRouteMatcher([
   "/sign-in(.*)",
@@ -50,7 +55,32 @@ const isBareTenantRoute = createRouteMatcher(["/:tenantId"]);
 
 export const proxy = clerkMiddleware(async (auth, request) => {
   if (!isPublicRoute(request)) {
-    await auth.protect();
+    const { userId, sessionClaims } = await auth.protect();
+
+    // Root `/` post-login (NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/): Clerk hace soft-nav
+    // a `/` tras el sign-in. Si dejamos que app/page.tsx (Server Component) haga el
+    // redirect() in-render hacia el shell (dynamic ssr:false), dispara el flaky
+    // "Rendered more hooks" de Next 16 y el login NO redirecciona (round-3 ds-adoption).
+    // Lo resolvemos en el edge (mismo patrón que isBareTenantRoute) → 307 antes de render.
+    if (request.nextUrl.pathname === "/") {
+      let tenant = pickTenantSlug(
+        (sessionClaims?.metadata ?? sessionClaims?.publicMetadata) as TenantMetadata | undefined,
+      );
+      if (!tenant && userId) {
+        try {
+          const { clerkClient } = await import("@clerk/nextjs/server");
+          const user = await (await clerkClient()).users.getUser(userId);
+          tenant = pickTenantSlug(user.publicMetadata);
+        } catch {
+          // edge fetch falló → cae al fallback dev (no rompe el login)
+        }
+      }
+      const dest = new URL(
+        `/${tenant ?? DEV_FALLBACK_TENANT}/${DEFAULT_LANDING.agent}/${DEFAULT_LANDING.subtab}`,
+        request.url,
+      );
+      return NextResponse.redirect(dest);
+    }
 
     if (isBareTenantRoute(request)) {
       const tenantId = request.nextUrl.pathname.slice(1); // strip leading "/"
