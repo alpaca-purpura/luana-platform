@@ -1,10 +1,14 @@
 ---
 proposal_id: 2026-06-16-ui-kit-dark-contract
-state: accepted                # ★ Chris GO 2026-06-16 — /pm-luana ejecuta el lift en worktree core efímero (M13: NO desde worktree de marca)
+state: migrated                # ★ lift ejecutado 2026-06-16 — rerouteado a wip/vitalia (contrato+gate) + wip/comunify (fix), NO temp worktree (decisión Chris)
 opened_date: 2026-06-16
 opened_by: /pm-luana
 ratified_by: chris
 ratified_date: 2026-06-16
+migrated_date: 2026-06-16
+migrated_commits:
+  - "5ded7a1c wip/vitalia — canon §2.10 + §6.8 + ADR-014 enforcement-row + §7 ref + vitalia arch-test (mechanism-agnostic)"
+  - "c17bb36b wip/comunify — mount <ThemeProvider attribute=data-theme> + @custom-variant + CSS-var override widen .dark→[data-theme] + comunify arch-test"
 
 # Origen
 origin_story: nicolify/docs/product/stories/nicolify-r0-design-system-adoption   # G round-1 dark-mode fix (commit b09bc9dc)
@@ -20,7 +24,7 @@ target_files:
 brands_affected: [nicolify, vitalia, comunify, lupulo]   # todas consumen componentes del kit con dark: variants
 
 # Impact assessment
-semver_bump: minor             # kit agrega un asset/snippet opcional; consumers opt-in
+semver_bump: none              # pieza-3 (asset importable) descartada en migración → ui-kit/src NO tocado, kit queda 0.4.1; el contrato vive en canon + arch-test + el globals.css de cada consumer
 breaking_change: false
 brands_at_risk_regression: [vitalia, comunify]   # tienen dark wiring propio — la homologación no debe romperlo
 ---
@@ -83,6 +87,12 @@ Todas las brands consumen componentes del kit con `dark:` variants. El contrato 
 
 - 2026-06-16: opened by /pm-luana. Origen: nicolify ds-adoption G round-1 (dark fix `b09bc9dc`). Scan cross-brand confirma sistémico (comunify roto, 3 mecanismos divergentes, kit sin contrato).
 - 2026-06-16: Chris ratifica APPROVED → state proposed → accepted. Lift pendiente en worktree core efímero.
+- 2026-06-16: **lift ejecutado → state accepted → migrated.** Chris decidió NO temp worktree core; el lift viajó en 2 lanes de marca:
+  - **wip/vitalia `5ded7a1c`** — pieza 1 (canon `§2.10 Dark-mode wiring` + `§6.8` snippet) + nota enforcement en ADR-014 + pieza 2 para vitalia (arch-test `test-ds-single-token-source.test.ts` bloque dark-wiring, **mechanism-agnostic**: acepta el `@config` legacy de vitalia, asserta el EFECTO no el mecanismo). Gates: tsc 0 · FE arch 30 files/190 tests verde.
+  - **wip/comunify `c17bb36b`** — fix comunify **rerouteado a su propio lane** (NO wip/vitalia como decía el plan original): la base de comunify había divergido +5 commits vs main (143 líneas, `@source` ya presente, `attribute=data-theme`); editarla desde el worktree de vitalia con la base stale (31 líneas) habría clobbeado la sesión activa de shell-adoption. Decisión Chris (2026-06-16). Pieza 2 comunify = arch-test `test-ds-dark-wiring.test.ts`.
+  - **Hallazgo no previsto:** comunify NO tenía `<ThemeProvider>` montado en ningún lado (toggle muerto, no solo los `dark:` del kit). Chris ratificó montarlo en este lift (mirror nicolify, storageKey `comunify-theme`). Live-verify real en dev :3003 (Chrome DevTools MCP, tras limpiar `.next` cache de Turbopack): provider setea `data-theme=dark`, token swap conmuta (`--bg 240 20% 99% ↔ 240 18% 8%`), kit `dark:` utils scoped a `[data-theme=dark]`, prefers-color-scheme variant rules = 0, console sin errores de dark.
+  - **Pieza 3 (asset importable del kit): DESCARTADA.** Verificado: Tailwind v4 `@custom-variant`/`@source` son directivas del CSS entry del consumer (resuelven relativo a su `globals.css`), no re-exportables útilmente desde el paquete TS. Piezas 1+2 cierran el gap sin tocar `ui-kit/src` → **sin bump del kit (queda 0.4.1)**. El snippet canónico quedó documentado en canon §6.8.
+  - **nicolify:** sin cambios (su fix `b09bc9dc` ya estaba hecho; out of scope). **lupulo:** n/a (placeholder sin `globals.css`).
 
 ## 8. Cross-references
 
