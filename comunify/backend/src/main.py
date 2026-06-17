@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import structlog
 from fastapi import FastAPI
+from luana_core_iam.api.routers import auth_router as iam_users
 from pydantic import BaseModel
 
 from src.modules.comunify.api.routes import offer_router
@@ -65,6 +66,15 @@ async def health() -> HealthResponse:
 app.include_router(comunify_router)
 # offer_router: /api/v1/offers/* (per 03-arch-be.md § 6.4 — no /comunify prefix)
 app.include_router(offer_router)
+# IAM router: /api/v1/iam/users/* (engine luana-core-iam — REUSE, no local /me stub).
+# Enables GET /api/v1/iam/users/me/tenants used by the FE shell login→tenant resolution
+# (useTenantId hook, mirrors vitalia/nicolify pattern). Unblocked 2026-06-17 by the
+# engine Settings-lazy fix (proposal 2026-06-16-copilot-chat-brand-mountable, e9f16d06).
+app.include_router(
+    iam_users.router,
+    prefix="/api/v1/iam/users",
+    tags=["IAM - Users"],
+)
 # webhook_router: /api/v1/comunify/webhooks/* (T-be-9 — unauthenticated by Clerk, HMAC only)
 app.include_router(webhook_router)
 # copilot_router: /api/v1/comunify/copilot/chat (comunify-shell-organism T-agentic —

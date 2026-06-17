@@ -39,6 +39,33 @@ services:
       # master key usa el default del engine `sk-litellm-master-dev` (coincide con el del gateway).
       LITELLM_BASE_URL: "http://luana_litellm_dev:4000/v1"
       LITELLM_PROXY_URL: "http://luana_litellm_dev:4000"
+      # Legacy monolithic Settings (luana_core_platform "Visionarias Brain") fields. El engine los
+      # exige a request-time (get_settings()): el fix Settings-lazy desbloqueó el IMPORT pero la
+      # validación de estos campos persiste cuando un request real instancia Settings (DB/auth/rate).
+      # comunify es la 1ra marca que ejerce un request engine real (chat/iam) → choca. Paridad con
+      # vitalia (que los provee en su .env.dev). NON-SECRET dev infra: WHATSAPP=stubs, POSTGRES=*
+      # apuntan al postgres compartido (mismo dev password que DATABASE_URL arriba), QDRANT/API=URLs de
+      # servicio. POSTGRES_DB=comunify_dev → el engine arma database_url de POSTGRES_* hacia la DB correcta.
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_DB: "comunify_dev"
+      POSTGRES_HOST: "luana_postgres_dev"
+      POSTGRES_PORT: "5432"
+      QDRANT_URL: "http://luana_qdrant_dev:6333"
+      API_URL: "http://localhost:8003"
+      WHATSAPP_API_TOKEN: "stub-not-used-comunify"
+      WHATSAPP_PHONE_NUMBER_ID: "stub-not-used-comunify"
+      WHATSAPP_VERIFY_TOKEN: "stub-not-used-comunify"
+      # Resto de campos required del Settings legacy (lista autoritativa: Settings.model_fields
+      # required). Todos DEV-only non-prod. OPENAI_API_KEY = placeholder: el chat real llama al LLM
+      # vía el gateway LiteLLM (LITELLM_MASTER_KEY), no OpenAI directo. TRAEFIK_NETWORK/DOMAIN_NAME =
+      # prod-routing, no usados en dev. ★ DEUDA: completar el fix engine (hacer estos campos Optional
+      # en luana_core_platform.Settings) vía /pm-luana → las marcas multibrand dejarían de proveerlos.
+      LOG_LEVEL: "INFO"
+      DOMAIN_NAME: "localhost"
+      TRAEFIK_NETWORK: "luana_dev_net"
+      API_SECRET_KEY: "comunify-dev-secret-not-prod"
+      OPENAI_API_KEY: "sk-dummy-gateway-handles-llm"
     volumes:
       - .:/workspace:rw  # bind mount monorepo completo (hot-reload)
       # Named volume protege el venv del container en la ruta donde el Dockerfile lo crea
