@@ -104,25 +104,35 @@ fi
 # Verificar que NO hay stories en state developing/developed/reviewing sin defer_audit
 # SSoT: .claude/rules/story-closure-gate.md
 # Toggle override: CLEANUP_SKIP_STORY_GATE=1 (solo emergencias documentadas)
+#
+# SCOPE FIX (2026-06-16): el sweep cubre SOLO la marca PROPIA del worktree (de
+# .session.yaml::brand, fallback al prefijo del arg). Antes barría TODAS las marcas
+# presentes en el filesystem — pero un worktree es checkout del monorepo entero, así que
+# un worktree core/protocol veía las copias incidentales de {brand}/docs/product/stories
+# (snapshots de main, no trabajo en curso) y se bloqueaba por stories ajenas. Core/protocol/
+# platform NO ownan brand-stories → sin sweep.
 if [[ "${CLEANUP_SKIP_STORY_GATE:-0}" != "1" ]]; then
+  # Marca propia del worktree: manifest autoritativo, fallback al prefijo del arg.
+  WT_BRAND=""
+  if [[ -f "${WORKTREE_DIR}/.session.yaml" ]]; then
+    WT_BRAND="$(grep -E '^brand: ' "${WORKTREE_DIR}/.session.yaml" | head -1 | awk '{print $2}')"
+  fi
+  [[ -z "${WT_BRAND}" ]] && WT_BRAND="${ARG%%-*}"
+
   OPEN_STORIES=""
-  # Brand enum from the seam (project.config.yaml · harness_config.py) — no hardcoded list
-  # (charter §3 DIP · W5b). Loud-degrade to empty (config ships with the kit).
-  _HC_WS="$(git rev-parse --show-toplevel 2>/dev/null)"
-  CLEANUP_BRANDS="$("${_HC_WS}/.venv/bin/python" "${_HC_WS}/scripts/harness_config.py" brands.loop_order 2>/dev/null | tr '\n' ' ')"
-  [ -z "${CLEANUP_BRANDS}" ] && echo "WARN: project.config.yaml brands.loop_order unreadable — story-gate brand sweep degraded" >&2
-  for B in ${CLEANUP_BRANDS}; do
-    [ -d "${WORKTREE_DIR}/${B}/docs/product/stories" ] || continue
-    for cp in "${WORKTREE_DIR}/${B}/docs/product/stories/"*/checkpoint.md; do
+  # Core/protocol/platform no ownan brand-stories → sin sweep (evita falso-positivo cross-brand).
+  if [[ "${WT_BRAND}" != "core" && "${WT_BRAND}" != "protocol" && "${WT_BRAND}" != "platform" \
+        && -d "${WORKTREE_DIR}/${WT_BRAND}/docs/product/stories" ]]; then
+    for cp in "${WORKTREE_DIR}/${WT_BRAND}/docs/product/stories/"*/checkpoint.md; do
       [ -f "$cp" ] || continue
       STORY_ID=$(basename "$(dirname "$cp")")
       STATE=$(grep -E "^state:" "$cp" 2>/dev/null | head -1 | awk '{print $2}' || echo "")
       DEFER=$(grep -E "^defer_audit:" "$cp" 2>/dev/null | awk '{print $2}' || echo "")
       if [[ "$STATE" =~ ^(developing|developed|reviewing)$ ]] && [[ "$DEFER" != "true" ]]; then
-        OPEN_STORIES+="  - ${B}/${STORY_ID} (state=${STATE})"$'\n'
+        OPEN_STORIES+="  - ${WT_BRAND}/${STORY_ID} (state=${STATE})"$'\n'
       fi
     done
-  done
+  fi
 
   if [[ -n "${OPEN_STORIES}" ]]; then
     echo "::error::Story closure gate (Layer 5): no se puede cleanup worktree con stories open."
@@ -135,7 +145,7 @@ if [[ "${CLEANUP_SKIP_STORY_GATE:-0}" != "1" ]]; then
     echo "  - O ratificar defer_audit:true en checkpoint con razon documentada"
     echo "SSoT: .claude/rules/story-closure-gate.md"
     echo ""
-    echo "Override (emergencias): CLEANUP_SKIP_STORY_GATE=1 scripts/git/cleanup-session.sh ${SLUG}"
+    echo "Override (emergencias): CLEANUP_SKIP_STORY_GATE=1 scripts/git/cleanup-session.sh ${ARG}"
     exit 2
   fi
 fi
