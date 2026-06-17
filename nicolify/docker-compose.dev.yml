@@ -64,13 +64,14 @@ services:
       dockerfile: nicolify/frontend/Dockerfile
       target: dev
     restart: unless-stopped
-    # NOTA turbopack (HB-78, intentado 2026-06-17): `pnpm dev:turbo` baja la RAM ~30%
-    # (2.37→1.6GiB) PERO rompe la resolución de `lucide-react` (y otras deps) que el kit
-    # montado `/app/core/@luana/*:ro` importa — webpack camina hasta el node_modules del FE,
-    # turbopack no, en este setup bind-mount. Por eso `pnpm dev` = `next dev --webpack`.
-    # Para migrar a turbopack: resolver las deps del kit montado (hoist a /app/node_modules
-    # o turbopack resolveAlias). Hasta entonces NO usar dev:turbo (app 500). El fix del
-    # @import de globals.css (CSS spec) YA está aplicado y sirve para cuando se intente.
+    # NOTA turbopack (HB-78, intentos 2026-06-17): `pnpm dev:turbo` baja RAM ~30%
+    # (2.37→1.6GiB) PERO turbopack NO resuelve módulos en este setup pnpm-workspace+Docker
+    # bind-mount — falla hasta con deps DIRECTAS del FE (next-themes, sonner, tailwind-merge,
+    # lucide-react). `transpilePackages` no alcanza: el problema es la resolución pnpm
+    # non-hoisted + la inferencia de `root` de turbopack en el monorepo montado.
+    # Fix real = migrar a `node-linker=hoisted` (root .npmrc) + reinstall + rebuild de las
+    # 3 imágenes + barrido de regresión (relajar la estrictez pnpm puede destapar phantom-deps).
+    # Tarea dedicada en worktree protocol — NO en el hub de marca. Mantener `pnpm dev` (--webpack).
     env_file:
       - path: nicolify/.env.dev
         required: false
