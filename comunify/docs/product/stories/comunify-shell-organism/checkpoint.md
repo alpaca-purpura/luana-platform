@@ -3,7 +3,7 @@ brand: comunify
 story_id: comunify-shell-organism
 module: platform
 state: developing
-phase: AWAIT_LIVE_INFRA       # T-agentic v2 ✅ DONE+verified 2026-06-17 (de6b9e9d · mount live, 4-pass test, boot 200). Resto (write real SC-chat-ok + iam-adoption live-verify + T-e2e) GATEADO por infra de Chris: LiteLLM gateway+keys (deploy/litellm/.env ausente) + tenant comunify seedeado/bound
+phase: AWAIT_FE_AND_AUTH_VERIFY  # 2026-06-17 sesión larga: BE chain COMPLETO + wired + 401-verified (gateway+iam-foundation+seed+Clerk-bind). Falta: FE root→tenant resolve (iam-adoption FE) + authenticated live-verify (Chrome contended por sesión paralela) + T-e2e + auditor + merge
 story_type: ui-mixed          # FE shell + AGENTIC copilot mount + HYGIENE(config)
 created: 2026-06-15
 last_updated: 2026-06-17
@@ -96,6 +96,27 @@ las tabs como shell/placeholder.
 Sidebar: **Luana** (supervisora+orquestadora+onboarding). Ribbon: **Nina** (estratega) ·
 **Tomás** (atraer) · **Sofía** (vender) · **Bruno** (operar) · **Lucía** (retener) + tab **Plataforma**.
 Mapeo 1:1 a cadena de valor canónica (vitalia/nicolify). Detalle: `ADR-comunify-001-agentes-cast.md`.
+
+## 🔧 Sesión 2026-06-17 (tarde · provisión + build autónomo · Chris "hazlo tú mismo")
+
+Chris autorizó provisionar la infra + construir. Se hizo TODO el BE + infra; el chain quedó wired + 401-verified live (era 500/404). Falta sólo FE + verify autenticado.
+
+**✅ Hecho + verificado live (commits `de6b9e9d` · `65ffe9c6` · `e6…iam`):**
+1. **Gateway LiteLLM** — estaba caído (Exited 11d). `docker start luana_litellm_dev` (keys baked) → Up :4000, sirve deepseek/kimi. Backend comunify lo alcanzaba por `localhost:4000` (= su propio loopback → refused); fix: compose `environment` apunta a `luana_litellm_dev:4000` (service-name en `luana_dev_net`). comunify es la 1ª marca que ejerce el `/chat` real (vitalia/nicolify mockean). Verificado: backend container → gateway `/v1/models` OK.
+2. **Engine-IAM foundation** (builder-backend · `T-iam-be-result.md`) — comunify_dev NO tenía NINGUNA tabla iam (Story 12 las difirió). Port de vitalia: migración `003` (tenants/users/user_tenants idempotente) + mount `iam auth_router` en main.py `/api/v1/iam/users` + `seed_test_users_link.py`. Tests 2/2, arch 144, migración aplicada+idempotente.
+3. **Legacy Settings env** — el fix Settings-lazy desbricó el IMPORT pero a request-time el Settings monolítico aún valida 16 campos required (POSTGRES_*/WHATSAPP_*/QDRANT_URL/API_*/DOMAIN_NAME/LOG_LEVEL/TRAEFIK_NETWORK/OPENAI_API_KEY). comunify no los proveía → 500 en cada request engine. Provistos en compose (dev-only, paridad vitalia). **★ DEUDA /pm-luana:** completar el fix engine = hacerlos Optional (las marcas dejarían de proveerlos).
+4. **Seed + Clerk bind** (`--clerk-sync`) — tenant `9cf1ef9b-958e-55b0-8b4f-ff603ba23095` + user hola@alpacapurpura.lat (clerk `user_3EaMO75tzdSqRrnne71Nr08Hbl3`) + user_tenants link. publicMetadata.{role=owner,tenant_id} seteado.
+
+**Verify live (curl, sin auth):** health 200 · `GET /api/v1/iam/users/me/tenants` → **401** (era 500) · `POST /api/v1/comunify/copilot/chat` → **401** (era 500). El chain entero resuelve; sólo falta el token real para 401→200.
+
+**⛔ Falta para `done` (NO se hizo · razón):**
+- **FE iam-adoption** (root `/` → tenant resolve, patrón vitalia) — NO construido. Construirlo a ciegas sin poder live-verificarlo repite el anti-patrón "verde pero roto"; conviene build+verify juntos.
+- **Authenticated live-verify (DoD #37 · SC-chat-ok real write)** — necesita sesión Clerk real (JWKS, sin bypass dev) vía Chrome MCP. **Chrome contendido** por una sesión claude paralela (pid 7829, default userDataDir → riesgo SingletonLock). Correr cuando Chrome esté libre, o vía T-e2e headless (@clerk/testing).
+- **T-e2e** (15 SC) + **auditor** (autonomous → live-verify sustituye demo G) + **merge**.
+
+> Próximo paso recomendado: (a) liberar Chrome (cerrar sesión paralela / lane propio) → build FE root-resolve + browser live-verify del chat (SC-chat-ok) + login→tenant juntos, o (b) construir T-e2e con @clerk/testing para el authenticated flow headless. Luego auditor + merge.
+
+---
 
 ## ✅ DESBLOQUEADA 2026-06-17 (/pm-comunify reconcile · engine fix landed+validated)
 
