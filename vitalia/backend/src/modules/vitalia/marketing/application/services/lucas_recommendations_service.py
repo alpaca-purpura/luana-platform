@@ -32,15 +32,15 @@ from uuid import UUID
 
 import structlog
 
+from src.modules.vitalia.infrastructure.models.lucas_recommendation_model import (
+    LucasRecommendationModel,
+)
 from src.modules.vitalia.marketing.domain.entities.lucas_recommendation import LucasRecommendation
 from src.modules.vitalia.marketing.domain.enums import BowtieStage, RecommendationStatus, RejectReason
 from src.modules.vitalia.marketing.domain.events import (
     LucasRecommendationApproved,
     LucasRecommendationRejected,
     LucasRecommendationUndone,
-)
-from src.modules.vitalia.marketing.infrastructure.models.lucas_recommendation_model import (
-    LucasRecommendationModel,
 )
 
 # Outbox adapter_bus per anti-duplication.md — use core engine, never reimplement

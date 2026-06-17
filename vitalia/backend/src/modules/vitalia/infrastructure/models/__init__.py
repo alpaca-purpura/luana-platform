@@ -14,10 +14,6 @@ Usage:
 
 from __future__ import annotations
 
-# Lucas agentic model (T-be-migrations-1) — imported to register table in Base.metadata
-from src.modules.vitalia.agentic.lucas.persistence.models.stage_recommendation import (  # noqa: F401
-    LucasStageRecommendationModel,
-)
 from src.modules.vitalia.infrastructure.models.adherence_record_model import (
     VitaliaAdherenceRecordModel,
 )
@@ -29,6 +25,11 @@ from src.modules.vitalia.infrastructure.models.consent_record_model import (
 )
 from src.modules.vitalia.infrastructure.models.doctor_extension_model import (
     VitaliaDoctorExtensionModel,
+)
+
+# Lucas agentic model (T-be-migrations-1) — imported to register table in Base.metadata
+from src.modules.vitalia.infrastructure.models.lucas_recommendation_model import (  # noqa: F401
+    LucasRecommendationModel,
 )
 from src.modules.vitalia.infrastructure.models.medical_audit_log_model import (
     VitaliaMedicalAuditLogModel,
@@ -51,7 +52,7 @@ from src.modules.vitalia.infrastructure.models.treatment_followup_model import (
 )
 
 __all__ = [
-    "LucasStageRecommendationModel",
+    "LucasRecommendationModel",
     "VitaliaBookingModel",
     "VitaliaTreatmentFollowupModel",
     "VitaliaConsentRecordModel",

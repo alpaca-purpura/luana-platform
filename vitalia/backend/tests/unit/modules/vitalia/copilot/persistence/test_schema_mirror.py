@@ -340,42 +340,42 @@ def test_lead_screening_event_soft_delete_present() -> None:
 
 
 def test_stage_recommendation_model_importable() -> None:
-    """LucasStageRecommendationModel must be importable."""
+    """LucasRecommendationModel must be importable."""
     model = _import_model(
-        "src.modules.vitalia.agentic.lucas.persistence.models.stage_recommendation",
-        "LucasStageRecommendationModel",
+        "src.modules.vitalia.infrastructure.models.lucas_recommendation_model",
+        "LucasRecommendationModel",
     )
     assert model is not None
 
 
 def test_stage_recommendation_tablename() -> None:
-    """LucasStageRecommendationModel must map to 'vitalia_lucas_recommendations'."""
+    """LucasRecommendationModel must map to 'vitalia_lucas_recommendations'."""
     model = _import_model(
-        "src.modules.vitalia.agentic.lucas.persistence.models.stage_recommendation",
-        "LucasStageRecommendationModel",
+        "src.modules.vitalia.infrastructure.models.lucas_recommendation_model",
+        "LucasRecommendationModel",
     )
     assert model.__tablename__ == "vitalia_lucas_recommendations"
 
 
 def test_stage_recommendation_uses_mapped_column() -> None:
-    """LucasStageRecommendationModel must use SA 2.0 mapped_column syntax."""
+    """LucasRecommendationModel must use SA 2.0 mapped_column syntax."""
     model = _import_model(
-        "src.modules.vitalia.agentic.lucas.persistence.models.stage_recommendation",
-        "LucasStageRecommendationModel",
+        "src.modules.vitalia.infrastructure.models.lucas_recommendation_model",
+        "LucasRecommendationModel",
     )
     assert _has_mapped_column(model)
 
 
 def test_stage_recommendation_required_columns() -> None:
-    """LucasStageRecommendationModel must have all required columns."""
+    """LucasRecommendationModel must have all required columns."""
     model = _import_model(
-        "src.modules.vitalia.agentic.lucas.persistence.models.stage_recommendation",
-        "LucasStageRecommendationModel",
+        "src.modules.vitalia.infrastructure.models.lucas_recommendation_model",
+        "LucasRecommendationModel",
     )
     cols = _get_column_names(model)
     required = {"id", "tenant_id", "clinic_id", "stage", "deleted_at", "created_at"}
     for col in required:
-        assert col in cols, f"LucasStageRecommendationModel missing: {col}"
+        assert col in cols, f"LucasRecommendationModel missing: {col}"
 
 
 # ─────────────────────────────────────────────────────────────────────────────

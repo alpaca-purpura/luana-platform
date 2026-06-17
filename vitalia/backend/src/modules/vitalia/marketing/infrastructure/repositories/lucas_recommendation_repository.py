@@ -22,10 +22,10 @@ from luana_core_platform.repositories.compound_scope_repository import CompoundS
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.modules.vitalia.marketing.domain.enums import BowtieStage, RecommendationStatus
-from src.modules.vitalia.marketing.infrastructure.models.lucas_recommendation_model import (
+from src.modules.vitalia.infrastructure.models.lucas_recommendation_model import (
     LucasRecommendationModel,
 )
+from src.modules.vitalia.marketing.domain.enums import BowtieStage, RecommendationStatus
 
 logger = structlog.get_logger()
 

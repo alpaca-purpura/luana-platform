@@ -26,6 +26,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from src.modules.vitalia.infrastructure.models.lucas_recommendation_model import (
+    LucasRecommendationModel,
+)
 from src.modules.vitalia.marketing.domain.enums import (
     BowtieStage,
     RecommendationStatus,
@@ -34,9 +37,6 @@ from src.modules.vitalia.marketing.domain.enums import (
 from src.modules.vitalia.marketing.domain.exceptions import (
     InvalidStateTransitionError,
     UndoWindowExpiredError,
-)
-from src.modules.vitalia.marketing.infrastructure.models.lucas_recommendation_model import (
-    LucasRecommendationModel,
 )
 
 # ---------------------------------------------------------------------------
