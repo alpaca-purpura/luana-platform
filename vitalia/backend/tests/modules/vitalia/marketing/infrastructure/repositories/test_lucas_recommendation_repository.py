@@ -13,11 +13,12 @@ import uuid
 from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock
 
-# These imports will fail until infrastructure is implemented — RED phase
-from src.modules.vitalia.marketing.domain.enums import BowtieStage
-from src.modules.vitalia.marketing.infrastructure.models.lucas_recommendation_model import (
+from src.modules.vitalia.infrastructure.models.lucas_recommendation_model import (
     LucasRecommendationModel,
 )
+
+# These imports will fail until infrastructure is implemented — RED phase
+from src.modules.vitalia.marketing.domain.enums import BowtieStage
 from src.modules.vitalia.marketing.infrastructure.repositories.lucas_recommendation_repository import (
     LucasRecommendationRepository,
 )
