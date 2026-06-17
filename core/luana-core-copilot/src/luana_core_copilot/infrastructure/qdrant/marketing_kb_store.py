@@ -33,7 +33,7 @@ from typing import TYPE_CHECKING, Any
 
 import httpx
 import structlog
-from luana_core_platform.core.config import settings
+from luana_core_platform.core.config import get_settings
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
 from qdrant_client.http.exceptions import UnexpectedResponse
@@ -197,8 +197,8 @@ class MarketingKbStore:
         """
         if self._client is None:
             self._client = QdrantClient(
-                url=settings.QDRANT_URL,
-                api_key=settings.QDRANT_API_KEY or None,
+                url=get_settings().QDRANT_URL,
+                api_key=get_settings().QDRANT_API_KEY or None,
             )
         return self._client
 
@@ -329,9 +329,11 @@ class MarketingKbStore:
                 ],
             }
         headers = (
-            {"api-key": settings.QDRANT_API_KEY} if settings.QDRANT_API_KEY else {}
+            {"api-key": get_settings().QDRANT_API_KEY}
+            if get_settings().QDRANT_API_KEY
+            else {}
         )
-        url = f"{settings.QDRANT_URL.rstrip('/')}/collections/{self.COLLECTION}/points/search"
+        url = f"{get_settings().QDRANT_URL.rstrip('/')}/collections/{self.COLLECTION}/points/search"
         resp = httpx.post(url, json=body, headers=headers, timeout=30.0)
         resp.raise_for_status()
         return [_rest_point_to_dict(point) for point in resp.json().get("result", [])]

@@ -134,10 +134,10 @@ def get_active_connections_by_type(db: Session, channel_type: str) -> list:
     Returns list of connection model instances.
     Lazy-imports ChannelConnectionModel from connections.
     """
-    from sqlalchemy import and_, select
     from luana_core_connections.infrastructure.models.channel_connection_model import (
         ChannelConnectionModel,
     )
+    from sqlalchemy import and_, select
 
     result = db.execute(
         select(ChannelConnectionModel).where(

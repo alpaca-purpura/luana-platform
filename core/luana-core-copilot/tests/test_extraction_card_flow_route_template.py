@@ -39,7 +39,9 @@ class TestNavPillRouteTemplate:
 
         appended, repo_mock = self._make_appender()
         with (
-            patch("luana_core_platform.core.database.redis_client", None),
+            patch(
+                "luana_core_platform.core.database.get_redis_client", return_value=None
+            ),
             patch(
                 "luana_core_copilot.application.extraction_card_flow.ConversationRepository",
                 return_value=repo_mock,
@@ -89,7 +91,9 @@ class TestNavPillRouteTemplate:
 
         appended, repo_mock = self._make_appender()
         with (
-            patch("luana_core_platform.core.database.redis_client", None),
+            patch(
+                "luana_core_platform.core.database.get_redis_client", return_value=None
+            ),
             patch(
                 "luana_core_copilot.application.extraction_card_flow.ConversationRepository",
                 return_value=repo_mock,
@@ -125,7 +129,9 @@ class TestNavPillRouteTemplate:
 
         appended, repo_mock = self._make_appender()
         with (
-            patch("luana_core_platform.core.database.redis_client", None),
+            patch(
+                "luana_core_platform.core.database.get_redis_client", return_value=None
+            ),
             patch(
                 "luana_core_copilot.application.extraction_card_flow.ConversationRepository",
                 return_value=repo_mock,
@@ -173,7 +179,9 @@ class TestSummaryCardNoBrandStudioFallback:
         appended, repo_mock = self._make_appender()
         unique_job = str(uuid.uuid4())
         with (
-            patch("luana_core_platform.core.database.redis_client", None),
+            patch(
+                "luana_core_platform.core.database.get_redis_client", return_value=None
+            ),
             patch(
                 "luana_core_copilot.application.extraction_card_flow.ConversationRepository",
                 return_value=repo_mock,
@@ -216,7 +224,9 @@ class TestSummaryCardNoBrandStudioFallback:
         appended, repo_mock = self._make_appender()
         unique_job = str(uuid.uuid4())
         with (
-            patch("luana_core_platform.core.database.redis_client", None),
+            patch(
+                "luana_core_platform.core.database.get_redis_client", return_value=None
+            ),
             patch(
                 "luana_core_copilot.application.extraction_card_flow.ConversationRepository",
                 return_value=repo_mock,

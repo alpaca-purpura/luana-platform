@@ -66,3 +66,39 @@ describe("R-1SRC — legacy --vitalia-* brand colors alias Shadcn tokens", () =>
     });
   }
 });
+
+// ── DS dark-mode wiring contract (canon §2.10 · lift 2026-06-16) ─────────────
+// Every @luana/ui-kit consumer must wire dark: so the kit's dark: variants honor
+// the next-themes data-theme/.dark toggle (NOT @media prefers-color-scheme), and
+// @source must scan the whole ui-kit/src (kit molecules outside organism/shell get
+// purged silently otherwise — tsc green, visual broken). Mechanism-agnostic: the
+// gate asserts the EFFECT, not the exact mechanism. vitalia uses the accepted-legacy
+// @config + tailwind.config darkMode; nicolify/comunify use @custom-variant (v4-pure).
+const TW_CONFIG = resolve(__dirname, "../../../tailwind.config.ts");
+const twConfig = readFileSync(TW_CONFIG, "utf8");
+
+describe("DS dark-mode wiring (canon §2.10 — kit dark: honors the theme toggle)", () => {
+  it("dark variant targets [data-theme=dark]/.dark (not only prefers-color-scheme)", () => {
+    // EITHER v4-pure @custom-variant in globals.css…
+    const customVariant = /@custom-variant\s+dark\s*\([^)]*\[data-theme="dark"\][^)]*\)/.test(css);
+    // …OR the accepted-legacy @config + tailwind.config darkMode targeting the attribute.
+    const legacyConfig =
+      /@config\s+"[^"]*tailwind\.config\.ts"/.test(css) && /\[data-theme="dark"\]/.test(twConfig);
+    expect(
+      customVariant || legacyConfig,
+      "dark: won't honor the data-theme toggle — add @custom-variant dark OR @config + darkMode targeting [data-theme=dark]",
+    ).toBe(true);
+  });
+
+  it("dark wiring also covers the .dark class", () => {
+    const customVariant = /@custom-variant\s+dark\s*\([^)]*\.dark[^)]*\)/.test(css);
+    const legacyClass = /darkMode\s*:\s*\[[^\]]*"class"/.test(twConfig);
+    expect(customVariant || legacyClass, "dark wiring must also match the .dark class").toBe(true);
+  });
+
+  it('@source scans the whole @luana/ui-kit/src (not only "organism/shell")', () => {
+    expect(css, "@source too narrow — kit dark:/arbitrary classes get purged silently").toMatch(
+      /@source\s+"[^"]*@luana\/ui-kit\/src"\s*;/,
+    );
+  });
+});

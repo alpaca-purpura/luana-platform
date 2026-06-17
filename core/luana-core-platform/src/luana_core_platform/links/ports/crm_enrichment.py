@@ -24,9 +24,9 @@ def get_recent_manychat_subscriber_ids(
     cutoff: datetime,
 ) -> list[str]:
     """Return distinct ManyChat subscriber IDs from recent journey_events."""
+    from luana_core_crm.infrastructure.models.customer_model import JourneyEventModel
     from sqlalchemy import func as sa_func
     from sqlalchemy import select
-    from luana_core_crm.infrastructure.models.customer_model import JourneyEventModel
 
     stmt = (
         select(
@@ -54,9 +54,9 @@ def enrich_customer_with_manychat_data(
     """Update CRM customer_profile.traits with ManyChat subscriber data."""
     from datetime import UTC, datetime
 
+    from luana_core_crm.infrastructure.models.customer_model import CustomerProfileModel
     from sqlalchemy import select
     from sqlalchemy.orm.attributes import flag_modified
-    from luana_core_crm.infrastructure.models.customer_model import CustomerProfileModel
 
     email = mc_data.get("email")
     if not email:
@@ -97,12 +97,12 @@ def sync_mailerlite_email_activities(
 
     Returns number of new events created.
     """
-    from sqlalchemy import and_, select
     from luana_core_crm.application.services.lifecycle_service import LifecycleService
     from luana_core_crm.infrastructure.models.customer_model import (
         CustomerProfileModel,
         JourneyEventModel,
     )
+    from sqlalchemy import and_, select
 
     lifecycle_svc = LifecycleService(db)
     synced = 0

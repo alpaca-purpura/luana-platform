@@ -5,6 +5,20 @@ All notable changes to this package are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] — 2026-06-16
+
+### Changed
+
+- **`/chat` brand-mountable (additive, semver minor).** Migrated the copilot
+  orchestrator + tools import-path from the module-level `luana_core_platform.core.config.settings`
+  global to lazy `get_settings()` inside functions, so importing
+  `luana_core_copilot.api.chat` no longer instantiates the legacy "Visionarias Brain"
+  `Settings` monolith at import-time. A brand backend with only multibrand env
+  (`DATABASE_URL` / `LITELLM_*`) can now mount the engine `/chat` router without the
+  legacy `POSTGRES_*`/`WHATSAPP_*`/`QDRANT_URL` vars. Proposal
+  `2026-06-16-copilot-chat-brand-mountable` (approach C, ratified Chris). Back-compat
+  shim preserves the deprecated `settings` global during transition. No behaviour change.
+
 ## [0.2.0] — 2026-05-19
 
 ### Changed

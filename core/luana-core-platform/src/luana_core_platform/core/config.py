@@ -1,5 +1,10 @@
 """Application configuration via pydantic-settings."""
 
+from __future__ import annotations
+
+import warnings
+from functools import lru_cache
+
 from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
@@ -314,4 +319,41 @@ class Settings(BaseSettings):
         extra = "ignore"
 
 
-settings = Settings()
+@lru_cache
+def get_settings() -> Settings:
+    """Return the singleton Settings instance (lazy, created on first call).
+
+    Use this instead of the module-level ``settings`` global.  The @lru_cache
+    ensures only one Settings object is ever constructed, identical to the old
+    eager singleton — but deferred to first call so that importing this module
+    does NOT trigger pydantic-settings env validation at import time.
+
+    This is the T-1 core fix for the brand-mountable copilot unblock.
+    """
+    return Settings()
+
+
+def __getattr__(name: str) -> object:
+    """Module-level PEP 562 __getattr__ — back-compat shim for legacy callers.
+
+    Callers using ``from luana_core_platform.core.config import settings``
+    or ``import luana_core_platform.core.config; config.settings`` continue to
+    work but receive a DeprecationWarning.  Migrate to ``get_settings()``
+    (T-4 off-path migration).
+
+    NOTE: this shim is intentionally NOT used in the import-path of chat.py
+    (those modules are migrated in T-2 to call get_settings() inside functions).
+    The shim only saves off-path consumers that run in envs where legacy env
+    vars ARE present.
+    """
+    if name == "settings":
+        warnings.warn(
+            "luana_core_platform.core.config.settings is deprecated — "
+            "usa get_settings() en vez del global `settings`. "
+            "Migra los call-sites a get_settings() (T-4 off-path).",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return get_settings()
+    msg = f"module {__name__!r} has no attribute {name!r}"
+    raise AttributeError(msg)

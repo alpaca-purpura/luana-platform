@@ -2,7 +2,7 @@
 brand: comunify
 story_id: comunify-shell-organism
 module: platform
-state: blocked
+state: developing            # ← normalizado de `blocked` (no-v4) en integration-checkpoint 2026-06-16; el bloqueo real lo documenta `phase`. /pm-comunify: reconciliar (developing|parked) al retomar
 phase: BLOCKED_T_AGENTIC_LIVE_VERIFY
 story_type: ui-mixed          # FE shell + AGENTIC copilot mount + HYGIENE(config)
 created: 2026-06-15

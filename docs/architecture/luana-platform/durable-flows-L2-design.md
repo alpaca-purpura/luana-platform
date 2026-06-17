@@ -2,21 +2,28 @@
 doc_type: architecture-design            # SSoT vivo del diseño L2 (NO una user-story)
 title: Durable flows engine — L2 design (FlowCompiler / FlowDefinition / EP-19)
 home: docs/architecture/luana-platform/
-status: design-ready                      # diseño DONE · build = story siguiente (deferred-next-story)
+status: SUPERSEDED                        # dirección estática reemplazada por late-bound saga (ADR-015 · 2026-06-16)
+superseded_by: docs/architecture/luana-platform/saga-runtime-design.md
 package: core/luana-core-flows
 depends_on_l1: migrated (proposal 2026-06-02-durable-flows-engine)
 adr: ADR-013-empleados-ia-auto-extension (D2 — flujo durable de 1ª clase)
 graduated_from: docs/archive/2026/stories/empleados-ia-auto-extension/03-arch.md § L2   # story archivada 2026-06-02
-last_modified: 2026-06-02
+last_modified: 2026-06-16
 ---
 
-# Durable flows engine — L2 design (deferred-next-story)
+# Durable flows engine — L2 design (⛔ SUPERSEDED)
+
+> **⛔ SUPERSEDED (2026-06-16 · ADR-015).** Este diseño asumía **flujos pre-declarados estáticos**
+> (`FlowDefinition` declarativo por marca + `FlowCompiler`). Chris + el estado del arte (junio 2026)
+> ratificaron el modelo **dinámico** (*late-bound saga*: planner LLM compone el plan al vuelo sobre
+> tools, plan-como-dato, compensaciones). El `FlowCompiler` declarativo **NO se construye**. EP-19 se
+> **redefine** (de `durable_flow_register` → `saga_tool_register`). **SSoT vigente:**
+> `docs/architecture/luana-platform/saga-runtime-design.md`. **L1 sigue intacto** (substrate durable
+> reusado por el saga runtime). Este doc se conserva por historia + para entender qué se descartó y por qué.
 
 > **★ Graduación SSoT (2026-06-02).** El diseño L2 nació como `§ L2` del `03-arch.md` de la story
 > `empleados-ia-auto-extension`. Al archivar la story (una user-story no debe ser SSoT), el diseño se
-> graduó a este doc de arquitectura — es el **SSoT del que arranca la próxima `/architect`
-> ready-package** del compositor declarativo. **NO se construye todavía** (`build_status:
-> deferred-next-story`). L1 (el provider durable + wiring de 5 grafos) está **migrated + live-verified**
+> graduó a este doc. L1 (el provider durable + wiring de 5 grafos) está **migrated + live-verified**
 > (ver `docs/core-modules/flows.md` + `CHANGELOG.md`).
 
 ## Contexto

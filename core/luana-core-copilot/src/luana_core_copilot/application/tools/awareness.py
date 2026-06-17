@@ -11,9 +11,8 @@ from uuid import UUID
 import structlog
 from langchain_core.tools import tool
 from luana_core_platform.core.context import get_tenant_id
-from luana_core_platform.core.database import SessionLocal
 from sqlalchemy import text
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, sessionmaker
 
 from luana_core_copilot.domain.module_registry import (
     ModuleDescriptor,
@@ -199,7 +198,11 @@ def get_module_completion_status(module: str | None = None) -> str:
         return "Error: No se pudo determinar el tenant. Asegúrate de estar autenticado."
 
     registry = get_module_registry()
-    db = SessionLocal()
+    from luana_core_platform.core.database import (
+        get_engine,
+    )  # lazy — avoid eager Settings() at import time (T-2)
+
+    db = sessionmaker(autocommit=False, autoflush=False, bind=get_engine())()
     try:
         # Determine which modules to check
         checkable_modules = ["brand", "offer", "connections", "landing", "crm"]

@@ -5,6 +5,21 @@ All notable changes to this package are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] — 2026-06-16
+
+### Changed
+
+- **Lazy settings + DB/redis init (additive, semver minor).** `core/config.py`:
+  added `@lru_cache get_settings()`; the module-level `settings = Settings()` eager
+  instantiation is replaced by a PEP 562 `__getattr__` back-compat shim (deprecated).
+  `core/database.py`: the eager module-load engine/redis init (sync engine, async
+  engine, `redis_client`) is deferred to `@lru_cache get_engine()` / `get_async_engine()`
+  / `get_redis_client()` (graceful-degrade preserved). Importing any engine module no
+  longer instantiates the legacy `Settings` monolith → enables brand-mountable routers.
+  `prompts/base`, `model_registry`, `links/ports/*`, `workers/*` migrated to
+  `get_settings()`. Proposal `2026-06-16-copilot-chat-brand-mountable` (approach C).
+  No behaviour change; deployments validate their own env on first access.
+
 ## [0.4.0] — 2026-05-20
 
 ### Added

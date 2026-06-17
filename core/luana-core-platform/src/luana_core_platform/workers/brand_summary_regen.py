@@ -128,7 +128,6 @@ def regen_brand_summary_sync(
     """
     import json
 
-    from luana_core_llm.factory import LLMFactory
     from luana_core_brand_studio.infrastructure.repositories.brand_repository import (
         BrandRepository,
     )
@@ -136,6 +135,7 @@ def regen_brand_summary_sync(
         BrandSummaryRepository,
     )
     from luana_core_copilot.infrastructure.prompts.base import prompt_loader
+    from luana_core_llm.factory import LLMFactory
 
     from luana_core_platform.core.enums import ModelRole
 

@@ -16,13 +16,26 @@
 @import "tailwindcss";
 
 /*
- * @source directive — Tailwind v4 JIT: scan @luana/ui-kit organism/shell for
- * classes not reachable from src/ (e.g. grid-cols-[minmax(...)], arbitrary
- * breakpoint variants used inside kit chrome atoms).
- * Without this, JIT purges those classes silently (tsc green but visual broken).
- * Lesson from T-V1 (vitalia): always add @source after consuming kit organism.
+ * Dark variant wiring — Tailwind v4 (ds-adoption G round-1 fix, 2026-06-16).
+ * next-themes (providers.tsx) usa attribute="data-theme" → pone <html data-theme="dark">.
+ * Por default v4, dark: cae a @media (prefers-color-scheme) e IGNORA ese atributo →
+ * los dark: variants del kit (AutosaveBadge/alert/chart/FloatingAutosaveIndicator) +
+ * propios (badge/dropdown/input) no conmutaban con el toggle. Re-apuntamos dark: al
+ * mismo selector que los overrides de CSS-var (.dark, [data-theme="dark"]) en este archivo.
+ * Idiom v4-puro (1 línea, sin tailwind.config) en vez del @config de vitalia — mismo efecto
+ * (dark: responde al toggle), menos superficie. Decisión: homologar el EFECTO, no el mecanismo.
  */
-@source "../../../../../core/@luana/ui-kit/src/organism/shell";
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
+/*
+ * @source directive — Tailwind v4 JIT: scan TODO @luana/ui-kit/src for classes not
+ * reachable from nicolify src/ (kit molecules — EntityWorkspaceLayout, EntitySubNavBar,
+ * Group, AutosaveBadge — viven en src/ raíz, FUERA de organism/shell; sus clases dark:/
+ * arbitrary se purgaban silenciosas con el scan angosto = dark roto + visual incompleto).
+ * Widened de organism/shell → src completo (= vitalia) en ds-adoption G round-1 (2026-06-16).
+ * Without this, JIT purges those classes silently (tsc green but visual broken).
+ */
+@source "../../../../core/@luana/ui-kit/src";
 
 /* ─── Tailwind v4 @theme — tokens que generan utilidades ─────────────────── */
 @theme {
@@ -68,7 +81,40 @@
   --color-agent-config: hsl(var(--agent-config));
   --color-agent-config-soft: hsl(var(--agent-config-soft));
 
-  /* Radius */
+  /* ── Shared scale: SPACING (@luana/design-tokens SPACING) ────────────────
+   * Values mirror @luana/design-tokens — arch-test V1 asserts no-drift.
+   * Tailwind v4 reads --spacing-{key} to generate spacing utilities.
+   */
+  --spacing-0: 0;
+  --spacing-1: .25rem;
+  --spacing-2: .5rem;
+  --spacing-3: .75rem;
+  --spacing-4: 1rem;
+  --spacing-5: 1.25rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-10: 2.5rem;
+  --spacing-12: 3rem;
+  --spacing-16: 4rem;
+
+  /* ── Shared scale: RADIUS NAMES (@luana/design-tokens RADIUS_NAMES) ──────
+   * Names: sm/md/lg/bubble/pill. Rem values are BRAND-OWNED (nicolify: fully-rounded pill brand).
+   */
+  --radius-sm: .25rem;
+  --radius-md: .5rem;
+  --radius-lg: .75rem;
+  --radius-bubble: 1.25rem;
+  --radius-pill: 9999px;
+
+  /* ── Shared scale: TYPOGRAPHY TIERS (@luana/design-tokens TYPOGRAPHY_TIERS)
+   * Tier names: display/heading/body/caption. Sizes are BRAND-OWNED (nicolify scale).
+   */
+  --text-display: 2.5rem;
+  --text-heading: 1.5rem;
+  --text-body: 1rem;
+  --text-caption: .75rem;
+
+  /* Radius (Shadcn base) */
   --radius: 0.625rem;
 }
 
@@ -116,6 +162,14 @@
 
     /* Radius */
     --radius: 0.625rem;
+
+    /* ── Brand-scoped control radius (RN-7 DECOUPLED) ───────────────────────
+     * Nicolify: controls (button/input/select) = fully-rounded (pill).
+     * @luana/ui-kit Button/Input/Select hardcode rounded-md until kit-radius-control-lift
+     * lands via /pm-luana (external_dependency). Token ready for the lift.
+     */
+    --radius-pill: 9999px;
+    --radius-control: var(--radius-pill);
 
     /* ── Agent tokens — nicolify.com palette ────────────────────────────── */
     /* Luana orquestadora — indigo primario #635BFF */

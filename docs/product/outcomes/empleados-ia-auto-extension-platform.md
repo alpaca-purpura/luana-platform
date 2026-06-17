@@ -33,7 +33,8 @@ Luana = sistema operativo de **empleados-IA vendidos por puesto** (cadena de val
 | Pieza | Estado |
 |---|---|
 | **L1 — motor de flujos durables** (`core/luana-core-flows`) | ✅ **DONE + migrated + live-verified** (persist+resume real en Postgres). **EN PAUSA y está bien:** NO es huérfana (la consumen por import 5 grafos scaffold), pero **todavía no tiene un consumidor de producto real** — fue inversión deliberada de cornerstone (research: "flujo durable = T2"). |
-| **L2 — `FlowCompiler`/`FlowDefinition`/EP-19** | 🎨 **DISEÑADO, build deferred.** SSoT: `durable-flows-L2-design.md`. No se construye sin un primer ejemplo concreto (ver § Insight). |
+| **L2 — `FlowCompiler`/`FlowDefinition`/EP-19** (estático) | ⛔ **SUPERSEDED 2026-06-16 (ADR-015).** Reemplazado por **late-bound saga runtime** (planner LLM dinámico + plan-como-dato + compensaciones). SSoT vigente: `saga-runtime-design.md`. El compilador declarativo NO se construye; L1 se reusa intacto. |
+| **Saga runtime** (dinámico, late-bound) | 🎨 **DISEÑADO 2026-06-16, build deferred.** SSoT: `saga-runtime-design.md` + `ADR-015`. Precondición de build: ≥2-3 tools de un dominio `live` + 1er saga hand-rolled (NO generalizar sin ejemplo — § Insight). |
 
 **Vitalia — madurez por dominio (la barra de "sólido" = capability `status: live` + acción de negocio ejercida live, NO líneas de código).** El backend tiene mucho código transplantado del monolito original; LOC alto ≠ acción sólida. Caps `live` totales: 31/73 — pero se concentran en el **substrate** (plataforma/shell), no en acciones-de-agente.
 
@@ -83,8 +84,9 @@ Disparador: un dominio X de Vitalia (Lisa, Adrián, Camila, Lucas, Mateo…)
    ├─ 5. /dev-team → /auditor           → build + QA.
    └─ 6. live-verify DoD #37            → persist+resume real en Postgres, acción ejercida.
 
-Después de 1-2 capstones hand-rolled concretos → recién ahí: revisar si L2 (FlowCompiler/EP-19)
-gana su keep (generalizar UN patrón observado, no inventar uno).
+Después de 1-2 capstones hand-rolled concretos → recién ahí: generalizar el **saga runtime**
+(`saga-runtime-design.md` / ADR-015 — late-bound dinámico, NO el L2 estático descartado) sobre el
+patrón observado, no inventado.
 ```
 
 Mientras tanto: **Chris sigue construyendo Vitalia a su ritmo**; el hilo empleados-IA queda **mapeado + parqueado** (la claridad vive en el repo, no en la memoria de la IA que se resetea). El roadmap empleados-IA **no avanza por su cuenta** — avanza cuando un dominio madura.
@@ -95,7 +97,8 @@ Mientras tanto: **Chris sigue construyendo Vitalia a su ritmo**; el hilo emplead
 |---|---|---|---|
 | 1 | **Spike: motor de flujos durables** → recomendación LangGraph durable + Temporal escape + Cloudflare descartado | `/architect` (platform) | ✅ **DONE** 2026-06-02 (`docs/archive/2026/stories/empleados-ia-auto-extension/spike-durable-flows.md`, ratificado Chris; diseño L2 graduado a `docs/architecture/luana-platform/durable-flows-L2-design.md`) |
 | 1b | **L1 — motor durable real (un-defer):** lift checkpointer provider a `core/luana-core-flows` + instalar `langgraph-checkpoint-postgres` + cablear 5 grafos (vitalia ×3, comunify ×2) + migraciones + downstream regression + live-verify. Proposal `2026-06-02-durable-flows-engine` (migrated). | `/architect` → `/dev-team` → `/auditor` | ✅ **DONE** 2026-06-02 (T-flows-1..5 wip/vitalia `c8551ed7..335ed390`; proposal migrated; downstream verde 463+182; live-verify DoD #37: persist+resume real en Postgres — vitalia 3 filas, comunify 8 filas; `07-merge.md` + `REVIEW-agentic.md`) |
-| 1c | **L2 — `FlowCompiler`/`FlowDefinition`/EP-19** (compositor declarativo): diseño ready-package esta conversación, **build siguiente** | `/architect` (diseño) → `/dev-team` (build futuro) | ✅ diseño DONE · SSoT vivo: `docs/architecture/luana-platform/durable-flows-L2-design.md` (graduado de la story archivada) · build = story siguiente |
+| 1c | ~~**L2 — `FlowCompiler`/`FlowDefinition`/EP-19** (compositor declarativo estático)~~ | — | ⛔ **SUPERSEDED 2026-06-16 (ADR-015)** — dirección estática descartada. Ver 1d. |
+| 1d | **Saga runtime** (late-bound dinámico): planner LLM + plan-como-dato + ledger + compensaciones + contingencias, sobre L1. Diseño técnico cementado esta sesión. | `/architect` (diseño DONE) → `/dev-team` (build futuro) | 🎨 **diseño DONE** 2026-06-16 · SSoT: `docs/architecture/luana-platform/saga-runtime-design.md` + `ADR-015` · build = user-story futura (precondición: piso de tools `live` + 1er saga hand-rolled) |
 | 2 | Story derivada vitalia: primer **flujo durable capstone** sobre un dominio sólido (hand-rolled sobre L1) | `/pm-vitalia` | pendiente · **esperando dominio sólido** (NO post-L2 — ver § Protocolo de retoma). Hoy solo Valeria·Agenda es sólido; falta ≥2 acciones que amarrar |
 | 3 | Story derivada nicolify: instanciar sobre su roster (Abel/Brenda/Christian/Sara/Norvil + Luana) | `/pm-nicolify` | pendiente |
 | 4 | Read-models publicados por dominio (requisito del read/write split, caso borde 1) | `/architect` + builders | pendiente |
@@ -114,3 +117,4 @@ Mientras tanto: **Chris sigue construyendo Vitalia a su ritmo**; el hilo emplead
 
 - 2026-06-01 — /pm-luana creó el outcome desde ADR-013 (ratificado Chris). Stories derivadas quedan como handoffs a brand PMs + spike a /architect.
 - 2026-06-02 — retoma empleados-IA (sesión limpia, desde wip/vitalia). Pasada **read-only** `/pm-vitalia` mapeó la madurez real por dominio (evidencia: story states + cap `status` + grafos). Se enriqueció el roadmap con **§ Estado-ahora** (foto honesta: L1 done-en-pausa / L2 diseñado-deferred / Vitalia = 1 acción sólida [Valeria·Agenda] + resto scaffold) + **§ Insight capstone** (flujo durable = coronación de dominio sólido, no próxima story) + **§ Protocolo de retoma** (disparador = dominio con ≥2 acciones live → capstone hand-rolled sobre L1). NO se construyó L2, NO se forzó flujo sobre scaffold. El handoff `docs/architecture/luana-platform/empleados-ia-HANDOFF-next-session.md` se pliega aquí (cumplido).
+- 2026-06-16 — **pivote de dirección del motor de flujos** (sesión de diseño, ratificado Chris). El diseño L2 estático (`FlowDefinition`/`FlowCompiler` pre-declarado por marca) **se supersede** por **late-bound saga runtime** (planner LLM dinámico compone el plan al vuelo sobre tools, plan-como-dato, compensaciones backward + contingencias forward). Disparador: Chris pidió el modelo Claude-Code (acciones=tools, el modelo entrega el plan, se guarda la "orden" multi-paso async hasta terminar, con riesgos+acciones en el propio plan). Validado contra SOTA junio-2026 (Late-Bound Sagas / SagaLLM / ALAS — patrón con nombre publicado). Cementado: **ADR-015** + **`saga-runtime-design.md`** (diseño técnico profundo: data structures, planner loop 3-nodos, reparto core/marca, determinismo en replay, ejemplo Adrián, EP-19 redefinido `saga_tool_register`, open questions, validators, build-readiness). L1 se reusa intacto. **Cero código** — build = user-story futura (precondición: piso de tools `live` + 1er saga hand-rolled). Sin nuevo estado ni eje; el roadmap empleados-IA sigue parqueado avanzando por madurez de dominio.

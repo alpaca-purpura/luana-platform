@@ -147,6 +147,8 @@ const N3_DEFAULT_LEAF: ReadonlyArray<readonly [RegExp, string]> = [
   [new RegExp(`^/(${UUID_SEG})/adrian/embudo/(${UUID_SEG})/?$`, "i"), "resumen"],
   // T-1 vitalia-fase2-config-cuenta — config.cuenta N3-static default leaf
   [new RegExp(`^/(${UUID_SEG})/config/cuenta/?$`, "i"), "datos"],
+  // T-6 vitalia-fase2-lisa-servicios — lisa.servicios N3-static default leaf
+  [new RegExp(`^/(${UUID_SEG})/lisa/servicios/?$`, "i"), "catalogo"],
 ];
 
 /** Agente bare (`/{uuid}/{agent}`) → su defaultSubtab (espejo de [agent]/page.tsx). */
@@ -203,6 +205,7 @@ export interface SubSubTabMeta {
  *
  * Current entries:
  *   - lisa.marca → 3 sub-sub-tabs: identidad · voz-y-tono · presencia (T-4 F2-S7)
+ *   - lisa.servicios → 2 sub-sub-tabs: catalogo · escalera (T-6 lisa-servicios)
  *   - config.cuenta → 3 sub-sub-tabs: datos · preferencias · responsable (T-1 config-cuenta)
  */
 export const AGENT_SUBSUBTABS: Partial<
@@ -212,6 +215,11 @@ export const AGENT_SUBSUBTABS: Partial<
     { id: "identidad", label: "Identidad", icon: "🏥" },
     { id: "voz-y-tono", label: "Voz y tono", icon: "🎙️" },
     { id: "presencia", label: "Presencia", icon: "📍" },
+  ],
+  // T-6 vitalia-fase2-lisa-servicios — Servicios N3-static sub-sub-tabs
+  "lisa.servicios": [
+    { id: "catalogo", label: "Catálogo", icon: "📋" },
+    { id: "escalera", label: "Escalera", icon: "🪜" },
   ],
   // T-1 vitalia-fase2-config-cuenta — Mi cuenta N3-static sub-sub-tabs
   "config.cuenta": [

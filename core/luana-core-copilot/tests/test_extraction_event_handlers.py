@@ -321,7 +321,10 @@ class TestEmitterFunctions:
         )
 
         with (
-            patch("luana_core_platform.core.database.redis_client", None),
+            patch(
+                "luana_core_copilot.application.extraction_card_flow._get_redis_client",
+                return_value=None,
+            ),
             patch(
                 "luana_core_copilot.application.extraction_card_flow.ConversationRepository",
                 return_value=conv_repo_mock,
@@ -359,7 +362,10 @@ class TestEmitterFunctions:
 
         unique_job_id = str(uuid.uuid4())
         with (
-            patch("luana_core_platform.core.database.redis_client", None),
+            patch(
+                "luana_core_copilot.application.extraction_card_flow._get_redis_client",
+                return_value=None,
+            ),
             patch(
                 "luana_core_copilot.application.extraction_card_flow.ConversationRepository",
                 return_value=conv_repo_mock,
@@ -401,8 +407,8 @@ class TestEmitterFunctions:
 
         with (
             patch(
-                "luana_core_copilot.application.extraction_card_flow.redis_client",
-                redis_mock,
+                "luana_core_copilot.application.extraction_card_flow._get_redis_client",
+                return_value=redis_mock,
             ),
             patch(
                 "luana_core_copilot.application.extraction_card_flow.ConversationRepository",

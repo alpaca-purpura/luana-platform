@@ -36,6 +36,11 @@ os.environ.setdefault("POSTGRES_HOST", "localhost")
 os.environ.setdefault("POSTGRES_PORT", "5432")
 os.environ.setdefault("API_URL", "http://localhost:8000")
 os.environ.setdefault("DASHBOARD_DOMAIN", "http://localhost:3000")
+# FRONTEND_URL + COPILOT_TELEGRAM_BOT_USERNAME: CI test defaults (no `.env` in fresh
+# worktrees). The telegram channel-context fragment failfasts on empty values
+# (proposal 2026-05-19-purge-nicolify-defaults); provide them like the other CI dummies.
+os.environ.setdefault("FRONTEND_URL", "http://localhost:3000")
+os.environ.setdefault("COPILOT_TELEGRAM_BOT_USERNAME", "luana_ci_bot")
 os.environ.setdefault("PROMPT_SOURCE", "file")
 os.environ.setdefault("AI_PROVIDER", "openai")
 os.environ.setdefault("AI_MODEL_NANO", "gpt-4o-mini")
@@ -58,6 +63,7 @@ os.environ.setdefault("DASHSCOPE_API_KEY", "ci-dummy-key")
 for mod_name in ("passlib", "passlib.context", "passlib.hash"):
     if mod_name not in sys.modules:
         sys.modules[mod_name] = MagicMock()
+
 
 # --- Monkeypatch PostgreSQL Types for SQLite (Story 5 baseline pattern) ---
 from sqlalchemy.dialects import postgresql  # noqa: E402

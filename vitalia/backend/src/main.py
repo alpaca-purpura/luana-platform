@@ -38,6 +38,7 @@ from src.modules.vitalia.fidelizacion.api.router import fidelizacion_router
 from src.modules.vitalia.fiscal.api.emit_router import router as emit_router
 from src.modules.vitalia.inbox.api.router import router as inbox_router
 from src.modules.vitalia.marketing.api.routes import router as marketing_router
+from src.modules.vitalia.offer.api.servicios_router import router as servicios_router
 from src.modules.vitalia.payments.api.charge_router import router as charge_router
 from src.modules.vitalia.scheduling.api.agenda_router import router as agenda_router
 from src.modules.vitalia.scheduling.api.notify_router import router as notify_router
@@ -90,6 +91,8 @@ app.include_router(charge_router, prefix="/api/v1/payments")
 app.include_router(emit_router, prefix="/api/v1/fiscal")
 # T-2 F2-S7: Brand Studio marca router — 21 endpoints Lisa > Marca sub-tab
 app.include_router(marca_router, prefix="/api/v1/lisa/marca", tags=["brand_studio"])
+# T-2 vitalia-fase2-lisa-servicios: Offer service catalog router — 16 endpoints Lisa > Servicios
+app.include_router(servicios_router, prefix="/api/v1/offer", tags=["offer"])
 # T-BE-5 F2-S8: Public doctors router — unauthenticated, allow-list channel guard
 app.include_router(public_doctors_router, prefix="/api/public/clinic", tags=["public"])
 # T-BE-6 F2-S8: Assets proxy upload router — consume luana-core-assets AssetsService (D-3)

@@ -40,8 +40,8 @@ describe("@luana/design-tokens — spacing scale (RN-4, D1)", () => {
 });
 
 describe("@luana/design-tokens — radius NAME contract (RN-5)", () => {
-  it("exports the shared tier names (sm/md/lg/bubble/pill), NOT per-brand values", () => {
-    const expected: RadiusName[] = ["sm", "md", "lg", "bubble", "pill"];
+  it("exports the shared tier names (sm/md/lg/bubble/pill/control), NOT per-brand values", () => {
+    const expected: RadiusName[] = ["sm", "md", "lg", "bubble", "pill", "control"];
     expect([...RADIUS_NAMES]).toEqual(expected);
     // contract carries NAMES only — no hex / rem brand values leaked here.
     for (const name of RADIUS_NAMES) {

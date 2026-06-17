@@ -51,8 +51,8 @@ def mock_arq_pool(monkeypatch: pytest.MonkeyPatch) -> MagicMock:
         lambda: pool,
     )
     monkeypatch.setattr(
-        "luana_core_copilot.application.tools.extraction_tools.redis_client",
-        MagicMock(setex=MagicMock()),
+        "luana_core_copilot.application.tools.extraction_tools._get_redis_client_fn",
+        lambda: MagicMock(setex=MagicMock()),
     )
     return pool
 

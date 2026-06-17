@@ -1,7 +1,7 @@
 ---
 story_id: nicolify-r1-abel-icp-buyer
 created_at: 2026-06-03T14:17:36-05:00
-last_modified: 2026-06-03T14:17:36-05:00
+last_modified: 2026-06-11T15:45:00-05:00
 notes_count: 0
 refs_count: 1
 conversation_count: 1
@@ -174,3 +174,17 @@ Audit 3 superficies: **BE APPROVED** (2 WARN no-bloqueantes), **AGENTIC PASS**, 
 
 ### 2026-06-03T22:35 · 🤖 claude · `/auditor` · ⚠️ DUDA
 **PARO en el GATE DoD #37 (te necesito para la demo).** El código está APPROVED pero la story NO pasa a `done` sin live-verify real contra el stack + tu `demo_signoff`. El stack nicolify está stale (12h pre-abel: BE :8001 health vacío, FE :3001 → 500, migración 002 sin aplicar) y el Chrome MCP se desconectó. Para cerrar necesito: (1) refrescar el stack (`make dev-nicolify` + migrar 002), (2) reconectar Chrome MCP, (3) ejercer los writes reales (extract→borrador · patch→persist · mark-ready→422 · cross-tenant→404) + capturar visual baselines, (4) tu firma `demo_signoff: APPROVED` sobre `demo-script.md`. **¿Avanzamos con la demo ahora, o lo dejamos para una próxima sesión con el stack levantado?** También quedan 2 WARN para tu ratificación (W1 auth app-layer en rutas abel · W2 lift GrowthStudioEmitter) — no bloquean el demo.
+
+### 2026-06-11 15:45 · 🤖 claude · `/pm-nicolify` · ✓ APLICADO
+Chris reportó bug live post-convergencia del shell-kit: (1) http no redirige a https, (2) post-login pantalla en blanco + login parpadea esquina sup-izq, (3) "todo feo". Investigué live (sync main→hub + Playwright auth + CSS compilado).
+
+**Causa raíz #3 ("todo feo") — FIX aplicado (commit 28c57827):** el lift `platform-lift-shell-chrome-ui-kit` (T-N1, d3bb2148) metió un `@source` en `globals.css` con **5 niveles `../`** → resolvía fuera del repo → Tailwind v4 JIT NO escaneaba `core/@luana/ui-kit/src/organism/shell` → la utility `lg:grid` (que usa `SupervisorSidebar`, `hidden ... lg:grid`) nunca se generaba → el sidebar de Luana quedaba `display:none` en TODO viewport → hueco blanco + ribbon corrido. Fix: 5 `../` → 4 `../`. Live-verify (viewport 1440, auth): ANTES aside `display:none` → DESPUÉS `display:grid w=429px`, panel Luana/Abel + ribbon completo renderiza. Gates: tsc clean · arch 117/117 · 514 FE sin impacto.
+
+**#2 (blanco después de login) — RESUELTO por dos vías:** (a) el tunnel estaba CAÍDO cuando probaste (`connection refused :3001` — mi `make dev-nicolify` recreó el container FE y cloudflared cacheó la IP vieja) → reinicié cloudflared, tunnel reconectado (307 OK). (b) lo "feo/blanco" del shell era el mismo bug del @source, ya fixed. El redirect en sí funciona: root → `/{tenantId}/christian/pipeline` verificado en e2e. El "parpadea esquina sup-izq" = `<SignIn>` de Clerk durante hidratación (snap a centro) — el sign-in renderiza centrado y estilado, confirmado por screenshot.
+
+### 2026-06-11 15:45 · 🤖 claude · `/pm-nicolify` · 💡 PROPONE
+**#1 (http→https) NO es código — es toggle de dashboard Cloudflare.** Los configs de tunnel nicolify y vitalia son equivalentes; el http→https lo da el setting de zona **"Always Use HTTPS"** (SSL/TLS → Edge Certificates) de la zona `nicolify.com`. Vitalia (`vitalialat.com`) lo tiene activado; `nicolify.com` no. Acción tuya: activar "Always Use HTTPS" en el dashboard CF de la zona nicolify.com.
+
+**Flag cross-brand (riesgo latente vitalia):** vitalia tiene el MISMO `@source` mal (3 `../`, debería ser 4) pero FUNCIONA por casualidad — su propio source usa `lg:grid` pelado (`lisa/marca/voz-y-tono`, `FidelizacionKPIsHero`) → Tailwind lo genera igual. Si vitalia alguna vez quita esos usos, su sidebar rompe igual que nicolify. Candidato a corregir + learning vía `/pm-luana` (no toqué vitalia, fuera de scope).
+
+**Menor (no bloqueante):** 500 en `/agents/config/avatar.svg` — el pseudo-agente "Configurar" (engranaje) no tiene dir de avatar; el fallback a inicial "C" funciona. Cosmético, pre-existente.
