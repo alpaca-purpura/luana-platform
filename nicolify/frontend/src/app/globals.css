@@ -14,6 +14,10 @@
  */
 
 @import "tailwindcss";
+/* Google Fonts — League Spartan + Bree Serif. DEBE ir junto al resto de @import
+ * (arriba de toda otra regla): Tailwind/webpack lo toleraban más abajo, pero
+ * turbopack respeta la spec CSS (@import antes que cualquier regla) o falla el parse. */
+@import url("https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800&family=Bree+Serif&display=swap");
 
 /*
  * Dark variant wiring — Tailwind v4 (ds-adoption G round-1 fix, 2026-06-16).
@@ -317,11 +321,9 @@
   }
 }
 
-/* ─── Google Fonts import — League Spartan + Bree Serif ────────────────────
- * Loaded via <head> preconnect + preload in layout.tsx (Server Component).
- * @font-face declaration aquí sirve como fallback.
- */
-@import url("https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800&family=Bree+Serif&display=swap");
+/* ─── Google Fonts (League Spartan + Bree Serif) movido arriba junto a @import
+ * "tailwindcss" — la spec CSS exige @import antes de toda regla (turbopack lo
+ * enforce). Preconnect/preload viven en layout.tsx. ─────────────────────── */
 
 /* ─── Typing indicator animation (LuanaChat — TypingIndicator) ─────────── */
 @keyframes typing-dot {
