@@ -183,7 +183,15 @@ redirect in-render). Detalle builder-actionable + root-cause: **`T-shell-livefix
 Cosméticos nuevos (fuera A/B/C, follow-up, no bloquean): LogoMark aspect-ratio warning · `agents/plataforma/avatar.svg`
 500 (placeholder faltante, fallback "P" OK) · favicon 500. Infra dev: 4 usuarios Clerk + túnel comunify (runtime, no-commit).
 
-**Story sigue `blocked`** hasta que aterrice engine B → T-agentic v2 → seed tenant iam → T-e2e → auditor → merge.
+### Login → tenant (redirect post-login) — diagnóstico 2026-06-16
+Chris reportó "logueo desde `/` y no redirecciona". **Reproducido en vivo** (login fresco → queda clavado en `/`).
+- Causa: sign-out/entrar a `/` mete `?redirect_url=/`; Clerk v6 lo obedece sobre `AFTER_SIGN_IN_URL` (que es solo *fallback*); y el root `/` no resuelve usuario→shell. El "login fix" previo (`AFTER_SIGN_IN_URL` env) solo cubría el path ya-logueado (sin `redirect_url`).
+- **Opción 2 (la real, ratificada Chris):** root `/` resuelve el tenant vía IAM API (`GET /api/v1/iam/users/me/tenants`, patrón vitalia/nicolify) → redirect a `/{tenant}/nina/marca`.
+- **BLOQUEADA por la MISMA raíz que el copilot (defecto D):** montar el `auth_router` iam usa `luana_core_platform.core.database.get_db` → instancia el `Settings` legacy eager (exige 15 env POSTGRES_*/QDRANT/WHATSAPP/... + arma `database_url` de POSTGRES_*, ignora `DATABASE_URL`). comunify multibrand no los provee → boot crash. Acoplar (opción C) = rechazado.
+- **Decisión Chris (2026-06-16):** **expandir proposal B → "Settings lazy" en `luana_core_platform`** (raíz). Desbloquea copilot `/chat` **e** iam de un saque. Es engine work (worktree core + `/architect`), NO inline desde este hub. SSoT: `docs/promotion-protocol/proposals/2026-06-16-copilot-chat-brand-mountable.md` § 3bis + bitácora.
+- Provisional mientras B no aterrice: login dead-end en `/` (o Opción 1 `SIGN_IN_FORCE_REDIRECT_URL` al slug demo si se quiere chrome navegable post-login).
+
+**Story sigue `blocked`** — un solo engine fix (proposal B expandida, Settings lazy) destraba: T-agentic v2 (copilot mount) **+** iam-adoption (login→tenant) → seed tenant iam → T-e2e → auditor → merge.
 
 ---
 

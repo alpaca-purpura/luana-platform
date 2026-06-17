@@ -29,6 +29,8 @@ arch_test_downstream_required: true
 migration_notes_required: false
 ---
 
+> **★ SCOPE EXPANDIDO (2026-06-16, ratificado Chris):** la causa raíz NO es del router copilot — es **`luana_core_platform.core.config.settings` instanciado EAGER** y consumido por todo módulo core que toca DB (`luana_core_platform.core.{database,rate_limit}`). Un SEGUNDO consumer independiente lo confirmó: montar el **router iam del engine** (`luana_core_iam.api.routers.auth_router` vía `get_db`) en comunify rompe el boot por la MISMA razón (el `Settings` exige 15 campos legacy — POSTGRES_*/QDRANT/WHATSAPP/TRAEFIK/DOMAIN/API_SECRET — y arma su `database_url` de `POSTGRES_*`, ignorando el `DATABASE_URL` multibrand de la marca). Por eso el approach correcto es **#1 Settings lazy** (abajo), que desbloquea a TODOS los routers core brand-mountables (copilot `/chat` **e** iam **y** cualquier consumer de `get_db`), NO el **#2 chat-router factory** (que arregla solo el chat y deja iam roto). Evidencia iam: [[comunify-shell-organism]] § Option-2 login→tenant + checkpoint § Blocker login-redirect. Ver § 3bis.
+
 ## 1. Patrón a promover (engine FIX — no lift de brand)
 
 El motor copilot (`core/luana-core-copilot`) expone un endpoint SSE `/chat` (`api/chat.py`) que **no es brand-mountable**: importar su `router` arrastra, vía `luana_core_platform.core.rate_limit`, la **instanciación EAGER (a import-time) del Settings monolítico legacy** `luana_core_platform.core.config.Settings` ("Visionarias Brain", pre-multibrand). Ese Settings exige `POSTGRES_HOST/PORT/USER/PASSWORD/DB`, `WHATSAPP_API_TOKEN/PHONE_NUMBER_ID/VERIFY_TOKEN`, `TRAEFIK_NETWORK`, `DOMAIN_NAME`, `API_SECRET_KEY`, `QDRANT_URL`. Los brands multibrand se configuran con `DATABASE_URL` / `QDRANT_HOST`+`PORT` / `LITELLM_*` y **no proveen** esas vars → `pydantic ValidationError` en el boot del app del brand.
@@ -64,12 +66,18 @@ brand/main.py
                   → el brand no los provee → pydantic ValidationError en import → boot crash
 ```
 
+### 3bis. Segundo consumer (iam) — por qué el fix es del platform, no del chat
+
+comunify quiso cablear el **login → tenant** real (root `/` resuelve el tenant del usuario vía `GET /api/v1/iam/users/me/tenants`, patrón vitalia/nicolify). Eso exige montar `luana_core_iam.api.routers.auth_router` en el BE de la marca. Ese router usa `luana_core_platform.core.database.get_db` → que importa `luana_core_platform.core.config.settings` (EAGER) → mismo `ValidationError`/crash que el `/chat`. Es decir: **dos routers core distintos (copilot, iam), una sola causa raíz** (el `settings` global eager del platform). vitalia monta ambos solo porque su env trae los **15** campos legacy completos; las marcas multibrand limpias (comunify: `DATABASE_URL`+`REDIS_URL`+`OPENAI_API_KEY`) no.
+
+Corolario de diseño: el **factory por-router (#2)** NO escala — habría que factorizar `chat`, `iam`, y cada futuro router core uno por uno. El **Settings lazy (#1)** ataca la raíz una vez y los libera a todos.
+
 ### Opciones a evaluar en /architect (engine-scoped)
 
-1. **Settings lazy** — diferir la instanciación de `luana_core_platform.core.config.Settings` (no a import-time de `rate_limit`/`config`; usar `@lru_cache get_settings()` invocado dentro de las funciones, no en el módulo). Mínimo blast-radius si se hace bien; el riesgo es que muchos módulos del engine asuman el `settings` global eager.
-2. **Chat-router factory** — `create_chat_router(*, get_db, rate_limiter, ...)` que recibe sus deps por DI (la config del brand) en vez de leer el global monolítico. El brand cablea sus propias deps multibrand. Más explícito, más cambio de superficie.
+1. **Settings lazy (★ DIRECCIÓN RATIFICADA 2026-06-16)** — diferir la instanciación de `luana_core_platform.core.config.Settings` (no a import-time de `rate_limit`/`database`/`config`; usar `@lru_cache get_settings()` invocado dentro de las funciones, no en el módulo). Desbloquea **todos** los routers core brand-mountables (chat + iam + futuros) de un saque. Riesgo: muchos módulos del engine asumen el `settings` global eager → `/architect` mapea el blast-radius + R3 4 brands + app standalone. Es el approach que cubre el 2º consumer (iam) sin trabajo extra.
+2. **Chat-router factory** — `create_chat_router(*, get_db, rate_limiter, ...)` por DI. **Descartado como solución general** (§3bis): arregla solo el chat, deja iam y cada router futuro rotos. Solo viable si además se hace lazy o factory para iam por separado (más superficie, no escala).
 
-`/architect` (WT5 technical-story lane) decide el approach + el contract-spec (interface + consumers + invariante + verificación-por-efecto = el `/chat` montado en un brand multibrand bootea + responde 401/200 sin la env legacy).
+`/architect` (WT5 technical-story lane, **worktree core efímero** — NO desde el hub de una marca) decide el detalle del approach #1 + el contract-spec (interface + consumers {copilot chat, iam} + invariante + verificación-por-efecto = ambos routers montados en una marca multibrand bootean + responden 401/200 sin la env legacy) + el semver. Chris ve la blast-radius del cambio a `luana_core_platform` antes de commitear core.
 
 ### Risk assessment
 
@@ -93,7 +101,8 @@ brand/main.py
 - R3 arch test downstream en los 4 brands + el app standalone del engine.
 
 ### Post-lift
-- comunify: T-agentic **v2** — re-mount limpio del router brand-mountable (quita el guard) → desbloquea `comunify-shell-organism` → T-e2e + DoD #37 + auditor + merge.
+- comunify: T-agentic **v2** — re-mount limpio del router copilot brand-mountable (quita el guard) → desbloquea `comunify-shell-organism` → T-e2e + DoD #37 + auditor + merge.
+- comunify: **iam-adoption** (login→tenant real, Option 2) — ahora desbloqueado por el mismo fix: montar `auth_router` iam con la config multibrand + migración iam idempotente (mirror vitalia 022: `tenants`/`users`/`user_tenants`) + seed tenant comunify + bind usuario + FE (`lib/iam/api.ts` + root `page.tsx` resolver). Mientras B no aterrice, el login queda con redirect provisional (Opción 1 force-redirect al slug demo) o dead-end.
 - vitalia/nicolify: opt-in al cablear su sidebar (reemplazan su MOCK por el chat-store real, ver lift candidate `chat-store` de comunify).
 
 ## 5. Decisión
@@ -105,6 +114,7 @@ brand/main.py
 ## 6. Bitácora
 - 2026-06-16: opened by /pm-luana (engine-fix desde blocker live comunify-shell-organism).
 - 2026-06-16: Chris ratifica dirección B (AskUserQuestion) → state: accepted. Approach concreto → /architect.
+- 2026-06-16 (tarde): **scope expandido** (Chris, AskUserQuestion "expandir proposal B / engine lazy"). 2º consumer descubierto en vivo: el router **iam** (`auth_router` vía `get_db`) choca con la MISMA raíz al intentar el login→tenant real de comunify (Option 2). Confirma que la causa es el `settings` eager de `luana_core_platform`, no el chat → **approach #1 (Settings lazy) queda como dirección ratificada** (cubre chat + iam + futuros); #2 factory descartado como solución general (§3bis). `brands_affected_consumers` sin cambio (los 4). Próximo paso sin cambio: `/architect` engine-scoped en worktree core efímero.
 
 ## 7. Cross-references
 - Origin blocker: `comunify/docs/product/stories/comunify-shell-organism/checkpoint.md § Blocker` + `chris-input.md` (2026-06-16).
