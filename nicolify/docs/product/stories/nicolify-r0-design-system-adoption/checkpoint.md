@@ -28,17 +28,20 @@ dod_evidence:
     observed: "autosave disparó; refetch del detalle tras guardar"
     backend_log: "PATCH /api/v1/abel/icp/82aa34d1 200 OK · GET .../82aa34d1 200 (persistencia confirmada)"
   - console: "1 error pre-existente (GET /agents/config/avatar.svg 500 = avatar placeholder de config, NO regresión de adopción — shell cap E4 'avatar fallback'); 0 errores de adopción, sin burbuja de hidratación, /abel/icp todo 200/201"
+  - action: "PILL controls live-verify (G round-2, Chrome DevTools MCP /abel/icp autenticado, 2026-06-16)"
+    observed: "getComputedStyle(documentElement)['--radius-control'] = 9999px; 4 control atoms con clase rounded-control → border-radius 9999px (allPill=true); botón 'Nuevo ICP' pill (screenshot). Shell homologado render OK."
+    backend_log: "GET/POST /api/v1/abel/icp 200; CSS compilado del dev server `.rounded-control{border-radius:var(--radius-control)}` (antes del fix: 0 ocurrencias). 500s = avatar.svg placeholder conocido + PG-restart transitorio, NO adopción."
   - action: "Toggle dark/light en /christian/pipeline (DARK MODE — G round-1 fix, Chrome DevTools MCP, 2026-06-16)"
     observed: "body bg conmuta white(rgb255,255,255)↔deep-indigo(rgb18,18,28); dark:hidden (logo swap) display block→none conmuta=true (dark: variant honra el toggle data-theme); todo el shell (Ribbon + Luana sidebar + EmptyState + kit molecules) renderiza dark correcto. Screenshots dark-fix-{light,dark}.png"
     backend_log: "compiled CSS vivo: media_prefers dark rules=0 (dark: ya NO usa @media prefers-color-scheme); console solo warns CSS-preload + 1 WebSocket-HMR reset (dev-infra footgun), 0 errores de dark"
 verified_at: 2026-06-16
 dod_caveats:
-  - "PILL controls (RN-7) NO verificado — kit hardcodea rounded-md hasta el kit-lift /pm-luana (gated). Controles renderizan rounded-md (esperado). Golden atoms.png + demo #37 full-fidelity completan post kit-lift."
-  - "Visual goldens NO capturados live (FE dev-server memory-restart loop inestable + requiere run Playwright estable). Fidelidad estructural confirmada por snapshot a11y + screenshot empty-state. Captura de baselines = follow-up con stack estable."
-  - "FE dev-server (webpack, memory threshold) reinicia en loop → drops de socket transitorios (ERR_SOCKET_NOT_CONNECTED) durante compiles. Dev-infra footgun, NO bug de adopción (BE 200/201/PATCH-200 confirman). Candidato harness-issue (dev-stack memory)."
+  - "PILL controls (RN-7) ✅ VERIFICADO live (G round-2, 2026-06-16) — kit-lift aterrizó (@luana/ui-kit 0.6.0, control atoms usan `rounded-control`). Live-verify Chrome DevTools MCP /abel/icp autenticado: `--radius-control` resuelve 9999px; 4 control atoms render pill (border-radius 9999px, allPill=true); botón 'Nuevo ICP' pill. Golden atoms.png capturado (pill real, no skeleton)."
+  - "Goldens A/C1/C2/D (tokens-swatch/master/detail/states) AÚN sin baseline — pre-existente (round-1 deferred por inestabilidad de stack), NO introducido en round-2. Follow-up con stack estable (C2 detail además requiere seed ICP válido)."
+  - "FE dev-server (webpack, ~83% de 3GiB) reinicia en loop → cold-compile de /abel/icp (~20s) puede dejar 'Cargando' >15s o resetear socket → golden flaky (cae en el HB-68 guard, NO falso-verde). Dev-infra footgun, NO bug de adopción (BE 200/201/PATCH-200). Harness-issue capturado (dev-stack memory + CLERK_TESTING_TOKEN ausente)."
 chris_verify:
   required: true
-  signoff: null                      # BLOQUEADO round-1 — dark mode roto. No firmable hasta fix + re-verify del toggle dark.
+  signoff: null                      # AWAIT CHRIS — round-1 (dark) + round-2 (pill radius) FIXED + live-verified. Pausa-y-ofrece: Chris re-ejerce demo #37 (dark toggle + controles pill) + firma.
   rounds:
     - date: 2026-06-16
       by: Chris
@@ -56,6 +59,23 @@ chris_verify:
         live_verify: "Chrome DevTools MCP en /christian/pipeline (sesión autenticada). dark:hidden (logo swap) display block(light)→none(dark) conmuta=true; body bg white↔rgb(18,18,28); compiled CSS media_prefers=0 (dark: ya NO usa media query). Screenshots dark-fix-{light,dark}.png. Console: solo warns CSS-preload + 1 WebSocket-HMR reset (dev-infra footgun conocido), 0 errores de dark."
         gates: "tsc 0 · arch suite 179/179 (+3) · eslint 0"
       core_followup: "PENDIENTE /pm-luana — proposal dark-contract del kit (NO en esta story)."
+    - date: 2026-06-16
+      by: Claude (live-verify G round-2 · directive /pm-nicolify de Chris)
+      finding: "Controles del kit (Button/Input/Select/Textarea) renderizan CUADRADOS, no pill, tras aterrizar el kit-lift."
+      root_cause: "El kit-lift (@luana/ui-kit 0.6.0) cambió los control atoms a la clase `rounded-control`. nicolify declaró `--radius-control: var(--radius-pill)` en `:root` (no en `@theme`). En Tailwind v4 la utilidad `rounded-control` SOLO se genera desde una var de `@theme` → la clase quedaba INERTE (0 ocurrencias en el CSS compilado) → border-radius 0 (cuadrado). Análogo de radius del bug-B de round-1 (token presente pero no cableado al mecanismo que lo consume)."
+      scope: "EN SCOPE (homologación = controles honran el token pill compartido). Fix brand: mover `--radius-control` a `@theme` (1 línea) + regression test + des-gatear golden."
+      gate_gap: "El arch test verificaba que la var estuviera DECLARADA, no que la UTILIDAD se generara (verde-fantasma HB-79) → pasó verde con el pill roto. El fix endurece el gate (+test: la var vive en @theme)."
+      resolution: fixed-pending-chris-reverify
+      fix:
+        commits: [PENDING-pathspec-commit]
+        changes:
+          - "globals.css: `--radius-control: var(--radius-pill)` movido de :root a @theme (genera `.rounded-control{border-radius:var(--radius-control)}` = 9999px) + borrado bloque :root stale."
+          - "test-ds-single-token-source.test.ts: +1 regression test (--radius-control vive en @theme, no solo declarado)."
+          - "abel-icp-fidelity.spec.ts: des-gateado bloque B (atoms.png) + guard HB-68 (espera control atom montado antes del visual)."
+          - "Golden capturado: abel-icp-fidelity.spec.ts-snapshots/atoms-regression-linux.png (pill real, no skeleton)."
+        live_verify: "Chrome DevTools MCP /abel/icp autenticado (owner.demo, tenant 7f464ab7): --radius-control=9999px; 4 control atoms border-radius 9999px (allPill=true); 'Nuevo ICP' pill (screenshot). CSS compilado del dev server tiene `.rounded-control{border-radius:var(--radius-control)}` (antes 0). BE GET/POST /api/v1/abel/icp 200."
+        gates: "tsc 0 · arch suite 181/181 (+1) · eslint 0 · golden atoms.png ✅ pill"
+      core_followup: "PENDIENTE /pm-luana — el kit shippea `rounded-control` asumiendo que el consumer registra `--radius-control` en @theme; cláusula en SHELL-DESIGN-CONTRACT / kit doc + arch-test consumer (junto al dark-contract de round-1)."
 reconciled: false                    # /pm-nicolify pone true en R (tras signoff) antes del /auditor
 build_status:                        # /dev-team 2026-06-15 — 5/5 tickets pushed, green native
   T-1: { commit: cb8de344, status: tests-passing, note: "globals↔design-tokens + --radius-control + arch-test (39/39)" }
@@ -63,12 +83,11 @@ build_status:                        # /dev-team 2026-06-15 — 5/5 tickets push
   T-3: { commit: 4baa816e, status: tests-passing, note: "abel/icp + shell re-expresado vía primitivas/archetypes (241/241)" }
   T-4: { commit: 45052deb, status: tests-passing, note: "no-arbitrary lock ON @ zero baseline; 2 text-[10px] vía ds-lock-allow (Bif-2) + FLAG /pm-luana 10px tier (16/16)" }
   T-5: { commit: 52dd47d3, status: tests-passing, note: "goldens (pill/accent gated kit-lift) + a11y-subnav + demo-script + SHELL-DESIGN-CONTRACT §7 (arch 176/176); live-verify PENDING G" }
-blocked_on:
-  - kit-radius-control-lift          # /pm-luana (proposal accepted 2026-06-15) — pill controls + golden atoms.png + demo #37 full fidelity
-next_step_at_G:                      # boundary G (Chris-verify) — converge 3 cosas:
-  - "Live-verify dod_evidence (ejercer abel/icp + autosave write en dev-app + logs)"
-  - "Kit-lift RN-7 aterriza (/pm-luana core worktree) → controls pill → golden atoms.png + accent"
-  - "Chris ejerce demo #37 (Abel convergence) sobre el FE homologado + firma chris_verify.signoff"
+blocked_on: []                       # RESUELTO — kit-radius-control-lift migrated (proposal 2026-06-15, lift ad492254 en main, synced wip/nicolify 28b0d456). Pill live-verified G round-2.
+next_step_at_G:                      # boundary G (Chris-verify) — estado 2026-06-16 (round-2):
+  - "✅ Live-verify dod_evidence (abel/icp render + CREATE 201 + autosave PATCH 200 + logs)"
+  - "✅ Kit-lift RN-7 aterrizó → controles pill live-verified (9999px) + golden atoms.png capturado"
+  - "⬜ Chris ejerce demo #37 (Abel convergence: dark toggle + controles pill) + firma chris_verify.signoff → cierra G"
 input_spec_signed: true             # ✍ FIRMA 1 (RONDA 1 funcional) — Chris 2026-06-15
 mockup_final_signed: true           # ✍ FIRMA 2 (mockup ds-base.html) — Chris 2026-06-15 · colores verificados vs nicolify.com live
 ratified_by_chris: true
@@ -81,7 +100,7 @@ mockup_decisions:
   control_radius: "fully-rounded (pill) vía token --radius-control brand-overridable (RN-7) — flag /architect: kit Input/Button/Select debe exponerlo"
 mockup_base_set: true               # _shared.css + ADR-nicolify-003 + rule shell-mockup-per-component.md (mirror vitalia)
 last_artifact: 06-tickets.yaml
-next_action: "EN G (AWAIT_CHRIS_VERIFY). Build code-complete + live-verify estructural OK (dod_evidence: POST 201 + PATCH 200 + logs + render homologado). Falta: (1) Chris ejerce demo-script.md live + firma chris_verify.signoff · (2) kit-lift RN-7 aterriza (/pm-luana worktree core) → controles pill → golden atoms.png + demo #37 full-fidelity. Tras signoff → R (reconcile /pm-nicolify, reconciled: true) → /auditor → merge. El demo #37 (Abel convergence) completa cuando el kit-lift aterrice."
+next_action: "EN G (AWAIT_CHRIS_VERIFY). Round-2 (pill radius) found+fixed+live-verified (controles render pill 9999px · golden atoms.png capturado · arch 181/181 · tsc 0). Round-1 (dark) ya fixed. ÚNICO pendiente: Chris re-ejerce demo #37 (dark toggle + controles pill sobre el FE homologado) + firma chris_verify.signoff. Tras signoff → R (reconcile /pm-nicolify, reconciled: true) → /auditor → merge."
 ready_package:                       # /architect 2026-06-16 — paquete completo FE-only
   - 03-arch.md                       # consolidado FE (= 03-arch-fe; cero BE/agentic)
   - 03-arch-fe.md                    # quick-ref builder-frontend

@@ -107,6 +107,17 @@ describe("DS single-token-source — radius-control + radius-pill", () => {
   it("--radius-control points to var(--radius-pill)", () => {
     expect(css).toMatch(/--radius-control\s*:\s*var\(--radius-pill\)/);
   });
+
+  // G round-2 regression: --radius-control MUST live in @theme (not just :root) so
+  // Tailwind v4 generates the .rounded-control utility the kit control atoms use.
+  // Declared only in :root → utility never generates → controls render square, not pill.
+  it("--radius-control is declared inside @theme (so .rounded-control generates)", () => {
+    const themeBlock = css.slice(css.indexOf("@theme"), css.indexOf("@layer base"));
+    expect(
+      themeBlock,
+      "--radius-control not in @theme — .rounded-control utility won't generate, controls render square",
+    ).toMatch(/--radius-control\s*:\s*var\(--radius-pill\)/);
+  });
 });
 
 describe("DS dark-mode wiring (ds-adoption G round-1 regression)", () => {

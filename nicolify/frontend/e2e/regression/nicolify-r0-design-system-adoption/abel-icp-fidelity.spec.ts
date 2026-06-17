@@ -78,23 +78,23 @@ test.describe("A – tokens-swatch golden", () => {
  *   docs/promotion-protocol/proposals/2026-06-15-ui-kit-radius-control-token.md
  */
 test.describe("B – atoms golden", () => {
-  test.skip(
-    true,
-    [
-      "blocked_on: kit-radius-control-lift",
-      "Pill/control radius on kit primitives (Button, Input, Select, Textarea)",
-      "requires engine lift via /pm-luana.",
-      "Ungate after: proposal 2026-06-15-ui-kit-radius-control-token.md accepted + shipped.",
-    ].join(" — "),
-  );
-
-  // Intentionally empty — test body is unreachable (test.skip with condition=true)
+  // UNGATED 2026-06-16 (G round-2) — kit-radius-control-lift landed: @luana/ui-kit 0.6.0
+  // control atoms use `rounded-control`; nicolify globals.css @theme maps --radius-control →
+  // var(--radius-pill) = 9999px. Live-verified: 4 control atoms render pill (border-radius 9999px).
   test("control-radius pill golden captures atoms block", async ({
     page,
     tenantId,
   }) => {
     await page.goto(masterRoute(tenantId));
     await page.waitForLoadState("networkidle");
+
+    // HB-68: assert a real kit control atom is mounted before the visual (no shell skeleton).
+    // "Nuevo ICP" is a kit Button (rounded-control = pill); empty-state CTA is the fallback.
+    await expect(
+      page
+        .getByRole("button", { name: /Nuevo ICP/i })
+        .or(page.locator('[data-testid="empty-state"]')),
+    ).toBeVisible({ timeout: 15_000 });
 
     await expect(page).toHaveScreenshot("atoms.png", {
       ...DIFF_OPTIONS,

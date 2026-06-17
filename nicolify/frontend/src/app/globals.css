@@ -105,6 +105,10 @@
   --radius-lg: .75rem;
   --radius-bubble: 1.25rem;
   --radius-pill: 9999px;
+  /* Control radius (RN-7): kit control atoms (button/input/select/textarea) use
+   * `rounded-control`. MUST live in @theme (not :root) so Tailwind v4 generates the
+   * .rounded-control utility — otherwise the class is inert and controls render square. */
+  --radius-control: var(--radius-pill);
 
   /* ── Shared scale: TYPOGRAPHY TIERS (@luana/design-tokens TYPOGRAPHY_TIERS)
    * Tier names: display/heading/body/caption. Sizes are BRAND-OWNED (nicolify scale).
@@ -162,14 +166,6 @@
 
     /* Radius */
     --radius: 0.625rem;
-
-    /* ── Brand-scoped control radius (RN-7 DECOUPLED) ───────────────────────
-     * Nicolify: controls (button/input/select) = fully-rounded (pill).
-     * @luana/ui-kit Button/Input/Select hardcode rounded-md until kit-radius-control-lift
-     * lands via /pm-luana (external_dependency). Token ready for the lift.
-     */
-    --radius-pill: 9999px;
-    --radius-control: var(--radius-pill);
 
     /* ── Agent tokens — nicolify.com palette ────────────────────────────── */
     /* Luana orquestadora — indigo primario #635BFF */
