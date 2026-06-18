@@ -41,7 +41,7 @@ function resetStore() {
     messages: [],
     conversations: [],
     status: "idle",
-    activeAgent: "valeria",
+    activeAgent: "luana",
     _authContext: null,
     _hasHydrated: true,
   });

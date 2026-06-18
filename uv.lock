@@ -2583,7 +2583,7 @@ requires-dist = [
 
 [[package]]
 name = "luana-core-copilot"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "core/luana-core-copilot" }
 dependencies = [
     { name = "arq" },
@@ -2918,7 +2918,7 @@ requires-dist = [
 
 [[package]]
 name = "luana-core-platform"
-version = "0.4.0"
+version = "0.5.0"
 source = { editable = "core/luana-core-platform" }
 dependencies = [
     { name = "aiofiles" },

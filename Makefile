@@ -22,7 +22,7 @@ PYTHON := $(shell test -x $(WS)/.venv/bin/python && echo $(WS)/.venv/bin/python 
 # ════════════════════════════════════════════════════════════════
 BRANDS := nicolify vitalia comunify lupulo
 
-.PHONY: dev-nicolify dev-vitalia dev-comunify dev-lupulo
+.PHONY: dev-nicolify dev-vitalia dev-comunify dev-lupulo dev-which
 .PHONY: dev-vitalia-admin dev-vitalia-admin-down
 .PHONY: dev-nicolify-tunnel dev-vitalia-tunnel dev-comunify-tunnel dev-lupulo-tunnel
 .PHONY: dev-app-vitalia
@@ -32,7 +32,7 @@ BRANDS := nicolify vitalia comunify lupulo
 .PHONY: infra-matrix portfolio portfolio-check scan-promotables
 .PHONY: ci-parity $(BRANDS:%=ci-parity-%) ci-parity-be ci-parity-fe
 .PHONY: releases-vitalia capability-ledger-check migrate-vitalia-schema cockpit-up cockpit-down cockpit-status cockpit-restart
-.PHONY: install-hooks help
+.PHONY: install-hooks help sync-all sync-check promote-to-main
 
 COMPOSE_BASE := docker compose -f docker-compose.dev.yml
 
@@ -53,6 +53,38 @@ dev-comunify:
 dev-lupulo:
 	@bash scripts/dev-lock-check.sh lupulo
 	$(COMPOSE_BASE) -f lupulo/docker-compose.dev.yml up -d
+
+# dev-which: read-only — qué worktree sirve cada stack de marca (cazar mismatch)
+dev-which:
+	@bash scripts/dev-lock-check.sh --which
+
+# ── cross-worktree sync (core/harness) ───────────────────────────────────────
+# Doctrina HB-86: cambio compartido = commit aislado brand-free → promote-to-main
+# (cherry-pick del SHA, NO squash del branch) → sync-all (FF en cada worktree).
+sync-all:                ## Poné al día TODAS las worktrees wip/* con main (FF-safe)
+	@bash scripts/git/sync-all.sh
+sync-check:              ## Preview: cuánto está atrás de main cada worktree (read-only)
+	@bash scripts/git/sync-all.sh --check
+promote-to-main:         ## Lift un commit compartido a main: make promote-to-main SHA="<sha> [<sha2>]"
+	@test -n "$(SHA)" || { echo 'Uso: make promote-to-main SHA="<sha> [<sha2> ...]"'; exit 1; }
+	@bash scripts/git/promote-to-main.sh $(SHA)
+
+# ── dev-active: trabajar en UNA marca, liberar la RAM de las otras ────────────
+# RAM: cada dev server FE (el bundler) pesa ~1.7-2.5GB. Cuando trabajás en una
+# sola marca, el dev-active detiene los FE de las demás (libera ~2.5GB c/u) y
+# deja sus backends vivos (livianos, ~30MB) por si necesitás sus APIs.
+# Uso: make dev-active BRAND=vitalia   (→ ~2.7GB total en vez de ~4.6GB)
+# Para volver a las 3 en dev simultáneo: make dev-all
+dev-active:
+	@test -n "$(BRAND)" || { echo "Uso: make dev-active BRAND=<nicolify|vitalia|comunify|lupulo>"; exit 1; }
+	@echo "→ dev-active: solo $(BRAND) en dev; deteniendo FE de las otras marcas para liberar RAM"
+	@for b in nicolify vitalia comunify lupulo; do \
+	  if [ "$$b" != "$(BRAND)" ]; then \
+	    docker stop luana-dev-$${b}_frontend_dev-1 >/dev/null 2>&1 && echo "  ⏹  $${b} FE detenido" || true; \
+	  fi; \
+	done
+	$(COMPOSE_BASE) -f $(BRAND)/docker-compose.dev.yml up -d
+	@echo "✓ $(BRAND) en dev. FE de las otras marcas detenido (backends siguen vivos). make dev-all para volver a las 3."
 
 # ── vitalia admin panel (Streamlit port 8502) ───────────────────────────────
 # Requires VITALIA_ADMIN_PASSWORD in vitalia/.env.dev
@@ -321,6 +353,10 @@ help:
 	@echo ""
 	@echo "  Dev environment:"
 	@echo "  make dev-{brand}              Start {brand} dev environment (brand=nicolify|vitalia|comunify|lupulo)"
+	@echo "  make dev-which                Show which worktree each running brand stack binds (cazar mismatch)"
+	@echo "  make sync-all                 Put ALL wip/* worktrees up-to-date with main (FF-safe)"
+	@echo "  make sync-check               Preview how far behind main each worktree is (read-only)"
+	@echo "  make promote-to-main SHA=...  Lift a shared (core/harness) commit to main via cherry-pick"
 	@echo "  make dev-{brand}-tunnel       Start {brand} + cloudflared tunnel (profile=tunnel)"
 	@echo "  make dev-app-vitalia          Start stack + tunnel + VERIFY dev-app ready for live-verify"
 	@echo "  make dev-all                  Start all 4 brands simultaneously"
