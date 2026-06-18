@@ -80,9 +80,10 @@ MERGE_BASE="$(git merge-base HEAD origin/main)"
 BEHIND_COUNT="$(git rev-list --count HEAD..origin/main)"
 AHEAD_COUNT="$(git rev-list --count origin/main..HEAD)"
 
-# Tree clean?
+# Tree dirty? = SOLO archivos tracked modificados. Los untracked (cruft tipo
+# tools/, .clone/) NO bloquean un merge — git los preserva → no deben frenar el sync.
 TREE_DIRTY=0
-if [[ -n "$(git status --porcelain 2>/dev/null)" ]]; then
+if ! git diff --quiet 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
   TREE_DIRTY=1
 fi
 
