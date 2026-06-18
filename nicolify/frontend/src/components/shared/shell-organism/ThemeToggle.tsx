@@ -26,8 +26,11 @@ import { Button } from "@/components/ui/button";
  * Accesible: aria-label en español neutro + aria-pressed.
  */
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
-  const isDark = theme === "dark";
+  // resolvedTheme (no theme): con defaultTheme="system"+enableSystem, `theme` vale "system"
+  // y NO refleja el modo real. `theme === "dark"` daba false en system-oscuro → el toggle
+  // hacía setTheme("dark") y se quedaba oscuro (bug ds-adoption: "marco claro sigue oscuro").
+  const { resolvedTheme, setTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   const handleToggle = useCallback(() => {
     setTheme(isDark ? "light" : "dark");

@@ -5,9 +5,8 @@
  *
  * T-1 additions (nicolify-r0-shell tokens/theme):
  * - Google Fonts preconnect + preload (League Spartan + Bree Serif)
- * - SSR anti-FOUC inline script en <head> (lee "nicolify-theme" de localStorage
- *   y aplica data-theme="dark" antes del primer render — evita flash of unstyled content)
  * - suppressHydrationWarning en <html> (necesario cuando next-themes maneja data-theme)
+ *   Anti-FOUC delegado al script propio de next-themes (igual que vitalia; sin script custom).
  *
  * Mounts Providers (ThemeProvider + ClerkProvider + QueryClientProvider).
  *
@@ -25,35 +24,12 @@ export const metadata: Metadata = {
 };
 
 /**
- * SSR anti-FOUC script: lee "nicolify-theme" de localStorage en el cliente
- * ANTES del hydration y aplica data-theme="dark" en <html> si corresponde.
- * Evita el parpadeo (flash of unstyled content) en modo oscuro.
+ * Root layout — wraps app with Providers.
  *
- * data-theme es el ÚNICO eje del tema (next-themes attribute="data-theme"). NO se
- * agrega la clase .dark: dos mecanismos escribiendo el <html> dejaban .dark pegada
- * al pasar a claro → tema trabado en oscuro (round-3 ds-adoption). Todo el dark
- * keyea en [data-theme="dark"] (globals.css + @custom-variant).
- *
- * MUST be rendered as dangerouslySetInnerHTML (no JSX — evita escape de strings).
- * suppressHydrationWarning en <html> cubre la diferencia server/client del atributo data-theme.
- */
-const themeScript = `
-(function() {
-  try {
-    var theme = localStorage.getItem('nicolify-theme');
-    var isDark = theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    if (isDark) {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    }
-  } catch (e) {}
-})();
-`;
-
-/** Extracted to satisfy react-perf/jsx-no-new-object-as-prop — stable reference */
-const themeScriptInnerHtml = { __html: themeScript } as const;
-
-/**
- * Root layout — wraps app with anti-FOUC script + Providers.
+ * Anti-FOUC: lo maneja el script propio de next-themes (ThemeProvider en providers.tsx,
+ * attribute="data-theme" + defaultTheme="light"). NO se usa un script custom — igual que
+ * vitalia. El script custom anterior agregaba `.dark` al <html> y, como next-themes solo
+ * gestiona data-theme, la clase quedaba pegada → tema trabado en oscuro (bug ds-adoption).
  */
 export default function RootLayout({
   children,
@@ -66,8 +42,6 @@ export default function RootLayout({
         {/* Google Fonts preconnect — DNS + TLS hints (fonts cargadas vía globals.css @import) */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        {/* SSR anti-FOUC: aplica dark class antes del primer render */}
-        <script dangerouslySetInnerHTML={themeScriptInnerHtml} />
       </head>
       <body className="min-h-screen bg-background font-sans antialiased">
         <Providers>{children}</Providers>

@@ -48,8 +48,8 @@ export function Providers({ children }: ProvidersProps) {
   return (
     <ThemeProvider
       attribute="data-theme"
-      defaultTheme="system"
-      enableSystem
+      defaultTheme="light"
+      enableSystem={false}
       storageKey="nicolify-theme"
       disableTransitionOnChange
     >
