@@ -94,6 +94,28 @@ http_healthy() {
 
 # ── Acciones ────────────────────────────────────────────────────────────────────
 
+# Version pin: avisa (NO bloquea) si el repo alpaca local difiere de la release que probó luana.
+# ponytail: alpaca no expone -version → uso el git tag del repo alpaca como proxy. Si el binario no
+# vive en un repo git (cliente con binario distribuido) → skip silencioso. Pin en project.config.yaml.
+# Boundary doctrine: .claude/rules/cockpit-alpaca-boundary.md
+check_cockpit_version() {
+  local pin repo have oldest
+  pin="$(grep -oP 'cockpit_min_version:\s*"?\K[0-9]+\.[0-9]+\.[0-9]+' "$WS/project.config.yaml" 2>/dev/null | head -1)"
+  [[ -z "$pin" ]] && return 0
+  repo="$(cd "$(dirname "$ALPACA_BIN")" 2>/dev/null && git rev-parse --show-toplevel 2>/dev/null || true)"
+  [[ -z "$repo" ]] && return 0
+  have="$(git -C "$repo" describe --tags --abbrev=0 2>/dev/null | sed 's/^v//')"
+  [[ -z "$have" ]] && return 0
+  [[ "$have" == "$pin" ]] && return 0
+  oldest="$(printf '%s\n%s\n' "$have" "$pin" | sort -V | head -1)"
+  if [[ "$oldest" == "$have" ]]; then
+    echo "⚠️  alpaca v$have < pin v$pin (luana probó contra v$pin). Rebuild alpaca o ajustá el pin tras testear." >&2
+  else
+    echo "ℹ️  alpaca v$have > pin v$pin. Si validaste, subí cockpit_min_version en project.config.yaml." >&2
+  fi
+  echo "    (boundary: .claude/rules/cockpit-alpaca-boundary.md)" >&2
+}
+
 do_start() {
   # Idempotente: si ya corre sano, no-op.
   if pidfile_alive && listener_present; then
@@ -110,6 +132,7 @@ do_start() {
     exit 1
   fi
 
+  check_cockpit_version
   echo "🚀 Arrancando Luana Cockpit (alpaca · daemon) · $WORKTREE_NAME · brand=$BRAND · :$PORT"
   # TRUE detach: setsid = nueva sesión (PID == PGID) → kill del grupo entero después.
   # </dev/null + nohup + redirect = sin tty, sobrevive cierre de terminal y reaping.
