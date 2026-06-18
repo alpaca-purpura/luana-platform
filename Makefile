@@ -345,6 +345,7 @@ install-hooks:
 	 mkdir -p "$$HOOKS_DIR"; \
 	 ln -sf "$$CANONICAL/scripts/git-hooks/pre-commit" "$$HOOKS_DIR/pre-commit"; \
 	 [ -f "$$CANONICAL/scripts/git-hooks/pre-push" ] && ln -sf "$$CANONICAL/scripts/git-hooks/pre-push" "$$HOOKS_DIR/pre-push" || true; \
+	 [ -f "$$CANONICAL/scripts/git-hooks/post-commit" ] && ln -sf "$$CANONICAL/scripts/git-hooks/post-commit" "$$HOOKS_DIR/post-commit" || true; \
 	 echo "git hooks installed to $$HOOKS_DIR from canonical worktree $$CANONICAL (deterministic · D2)"
 
 # ── help ─────────────────────────────────────────────────────────────────────
