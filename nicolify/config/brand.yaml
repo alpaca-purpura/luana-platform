@@ -57,3 +57,17 @@ infra:
     domain: app.nicolify.com
     server: tbd
     cloudflared_tunnel: nicolify-prod
+
+# ── Pilot B (2026-06-16 · config split) ──────────────────────────────────────
+# Config NO-SECRETA que el runtime consume vía src/config_bootstrap.py (la inyecta a
+# os.environ antes de que el engine Settings la lea). Migrada del .env.dev para matar la
+# triplicación .env/brand.yaml/project.config.yaml. SOLO no-secreta — los SECRETS (claves
+# Clerk/OpenAI, API_SECRET_KEY, KEK, passwords) siguen exclusivamente en .env.dev.
+# Keys = nombres EXACTOS que espera el engine Settings (config.py). Valores = los que tenía
+# .env.dev (no se cambia comportamiento, solo la fuente).
+runtime_env:
+  dev:
+    LOG_LEVEL: INFO
+    DOMAIN_NAME: localhost
+    TRAEFIK_NETWORK: luana_default
+    FRONTEND_URL: https://app.nicolify.com

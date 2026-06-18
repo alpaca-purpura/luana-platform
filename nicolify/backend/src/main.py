@@ -17,6 +17,11 @@ from fastapi import FastAPI
 from luana_core_iam.api.routers import auth_router as iam_users
 from pydantic import BaseModel
 
+# Pilot B (config split) — hidrata config no-secreta de brand.yaml a os.environ.
+# Side-effect import; el engine get_settings() es lazy, así que basta con cargarlo aquí
+# antes del primer request. Ver src/config_bootstrap.py.
+import src.config_bootstrap  # noqa: F401
+
 # R1 T-BE-1: Abel module (ICP + Buyer + draft-first extraction stubs)
 from src.modules.nicolify.abel.api.router import router as abel_router
 
