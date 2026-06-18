@@ -154,7 +154,8 @@ fi
 # Sub-case 2b: tree clean + merge real → attempt merge
 [[ ${QUIET} -eq 0 ]] && echo "→ Merging origin/main into ${CURRENT_BRANCH} (real merge, ${SUMMARY})..."
 if git merge origin/main --no-edit 2>&1 | tail -5; then
-  if [[ -z "$(git status --porcelain 2>/dev/null)" ]] && [[ -z "$(git ls-files -u 2>/dev/null)" ]]; then
+  # Merge OK = sin archivos unmerged (untracked no cuenta — ver TREE_DIRTY arriba)
+  if [[ -z "$(git ls-files -u 2>/dev/null)" ]]; then
     [[ ${QUIET} -eq 0 ]] && echo "✓ Auto-merge OK"
     [[ ${CORE_TOUCHED} -eq 1 ]] && echo "  ⚠ CORE touched — verify nothing broke"
     exit 0
