@@ -332,6 +332,12 @@ cockpit-status:  ## Estado del cockpit (proceso + listener + health HTTP)
 cockpit-restart:  ## Reiniciar el cockpit daemon (tras pull/edits del cockpit)
 	@bash scripts/cockpit-daemon.sh restart
 
+cockpit-multi:  ## Cockpit UNIFICADO (multi-workspace): un cockpit, el dropdown ve TODOS los worktrees del registry ~/.cockpit/cockpit.yaml en vivo · :4000
+	@COCKPIT_MULTI=1 bash scripts/cockpit-daemon.sh start
+
+cockpit-multi-down:  ## Detener el cockpit multi-workspace (:4000)
+	@COCKPIT_MULTI=1 bash scripts/cockpit-daemon.sh stop
+
 # ── hooks ────────────────────────────────────────────────────────────────────
 # D2 (W7, 2026-06-09): source-DETERMINISTIC. The shared .git/hooks/ (common-git-dir) must
 # resolve from a STABLE canonical worktree, NOT $TOP (the invoking worktree → last-writer-wins
