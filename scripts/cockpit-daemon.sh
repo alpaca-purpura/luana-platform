@@ -48,6 +48,16 @@ case "$WORKTREE_NAME" in
   *)                         BRAND="cross-brand"; DEFAULT_PORT=4000 ;;
 esac
 
+# Multi-workspace mode: UN cockpit ve TODOS los worktrees del registry ~/.cockpit/cockpit.yaml
+# (el dropdown de marca se vuelve selector global {proyecto}/{brand}, cada uno leyendo SU worktree
+# vivo). Se activa con `COCKPIT_MULTI=1` (target `make cockpit-multi`). Puerto fijo 4000.
+# Doctrina del límite: el binario es alpaca · .claude/rules/cockpit-alpaca-boundary.md
+MULTI="${COCKPIT_MULTI:-0}"
+if [[ "$MULTI" == "1" ]]; then
+  BRAND="multi"
+  DEFAULT_PORT=4000
+fi
+
 PORT="${PORT:-$DEFAULT_PORT}"
 RUNDIR="$WS/.cockpit"
 mkdir -p "$RUNDIR"
@@ -136,8 +146,14 @@ do_start() {
   echo "🚀 Arrancando Luana Cockpit (alpaca · daemon) · $WORKTREE_NAME · brand=$BRAND · :$PORT"
   # TRUE detach: setsid = nueva sesión (PID == PGID) → kill del grupo entero después.
   # </dev/null + nohup + redirect = sin tty, sobrevive cierre de terminal y reaping.
-  WORKSPACE_ROOT="$WS" DEFAULT_BRAND="$BRAND" \
-    setsid nohup "$ALPACA_BIN" -workspace "$WS" -port "$PORT" >"$LOGFILE" 2>&1 </dev/null &
+  if [[ "$MULTI" == "1" ]]; then
+    # Multi: SIN -workspace y SIN WORKSPACE_ROOT → serve() entra en multi-mode (lee el registry).
+    # `env -u` garantiza que no se herede un WORKSPACE_ROOT del entorno (forzaría single-mode).
+    env -u WORKSPACE_ROOT setsid nohup "$ALPACA_BIN" -port "$PORT" >"$LOGFILE" 2>&1 </dev/null &
+  else
+    WORKSPACE_ROOT="$WS" DEFAULT_BRAND="$BRAND" \
+      setsid nohup "$ALPACA_BIN" -workspace "$WS" -port "$PORT" >"$LOGFILE" 2>&1 </dev/null &
+  fi
   local pid=$!
   echo "$pid" >"$PIDFILE"
   disown "$pid" 2>/dev/null || true
