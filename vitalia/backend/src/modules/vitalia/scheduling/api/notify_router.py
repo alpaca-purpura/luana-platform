@@ -32,7 +32,7 @@ import structlog
 from fastapi import APIRouter, Depends, Header, HTTPException, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.db import get_async_session
+from src.db import get_async_session_committing
 from src.modules.vitalia._shared.telemetry.growth_studio_emitter import GrowthStudioEmitter
 from src.modules.vitalia.audit.audit_writer import AsyncAuditWriter
 from src.modules.vitalia.compliance.application.compliance_service_adapter import (
@@ -107,7 +107,8 @@ async def send_appointment_reminder(
     clinic_id: str = Header(alias="X-Clinic-ID"),
     user_id: str = Header(alias="X-User-ID"),
     user_role: str = Header(alias="X-User-Role", default=""),
-    session: AsyncSession = Depends(get_async_session),
+    # HB-80: committing session — send_notification writes a sync HIPAA-lite audit row.
+    session: AsyncSession = Depends(get_async_session_committing),
 ) -> NotificationSentResponse:
     """POST /api/v1/scheduling/appointments/{appointment_id}/notify.
 

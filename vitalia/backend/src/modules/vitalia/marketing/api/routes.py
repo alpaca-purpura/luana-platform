@@ -41,7 +41,7 @@ import structlog
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.db import get_async_session
+from src.db import get_async_session, get_async_session_committing
 from src.modules.vitalia.audit.audit_writer import AsyncAuditWriter
 from src.modules.vitalia.iam.application.services.clinic_resolver import (
     ClinicContext,
@@ -672,7 +672,8 @@ async def approve_recommendation(
     authorization: AuthorizationHeader,
     tenant_id: TenantIdHeader,
     clinic_id: ClinicIdHeader,
-    session: Annotated[AsyncSession, Depends(get_async_session)],
+    # HB-80: committing session — approve mutates status + writes a sync audit row.
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
     idempotency_key: IdempotencyKeyHeader = None,
 ) -> LucasRecommendationResponse:
     """Approve a Lucas marketing recommendation (OPEN → APPROVED).
@@ -717,7 +718,8 @@ async def reject_recommendation(
     authorization: AuthorizationHeader,
     tenant_id: TenantIdHeader,
     clinic_id: ClinicIdHeader,
-    session: Annotated[AsyncSession, Depends(get_async_session)],
+    # HB-80: committing session — reject mutates status + writes a sync audit row.
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
     idempotency_key: IdempotencyKeyHeader = None,
 ) -> LucasRecommendationResponse:
     """Reject a Lucas marketing recommendation (OPEN → REJECTED).
@@ -758,7 +760,8 @@ async def undo_recommendation(
     authorization: AuthorizationHeader,
     tenant_id: TenantIdHeader,
     clinic_id: ClinicIdHeader,
-    session: Annotated[AsyncSession, Depends(get_async_session)],
+    # HB-80: committing session — undo mutates status (APPROVED → OPEN) + audit row.
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
     idempotency_key: IdempotencyKeyHeader = None,
 ) -> LucasRecommendationResponse:
     """Undo a recent recommendation approval (APPROVED → OPEN).

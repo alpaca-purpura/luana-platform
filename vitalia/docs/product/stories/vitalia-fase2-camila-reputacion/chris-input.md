@@ -1,10 +1,10 @@
 ---
 story_id: vitalia-fase2-camila-reputacion
 created_at: 2026-05-27T18:25:23-05:00
-last_modified: 2026-05-27T18:25:23-05:00
+last_modified: 2026-06-18T19:45:00-05:00
 notes_count: 0
 refs_count: 0
-conversation_count: 1
+conversation_count: 2
 ---
 
 # chris-input.md · vitalia-fase2-camila-reputacion
@@ -49,3 +49,6 @@ Sin notas todavía · Chris escribe aquí.
 Story migrada al schema v2: `release=F2`, `cap_target=camila.reputacion`, `cap_change_type=new`. Legacy `outcome` + `phase` preservados durante deprecation gradual.
 
 Cuando estés listo para refinar, llena 💭 Notas + 📎 Referencias arriba e invoca `/po-ux vitalia vitalia-fase2-camila-reputacion` (o `/po` si es service story, o `/ux-agentico` si es agentic).
+
+### 2026-06-18 · 🤖 claude · /pm-vitalia diagnóstico HB-82 · 💡 PROPONE
+Inyecté un `§ Contexto heredado` corto al `checkpoint.md`: el único cruce de esta story con el diagnóstico re-engagement es **NPS**. El NPS ya tiene BE vivo en `fidelizacion` (`nps/summary` + `nps/submit`) → NO reconstruirlo acá si reputación lo necesita (consumir, anti-dup). Las reseñas externas (Google/IG/TikTok = el objetivo real) siguen sin BE → NEW. Las 5 mutations re-engagement NO viven acá — van a `vitalia-fase2-camila-reactivar`.

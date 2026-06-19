@@ -79,11 +79,13 @@ vi.mock("@luana/ui-kit", () => ({
   ),
 }));
 
+const mockSearchParamsGet = vi.fn(() => null as string | null);
 vi.mock("next/navigation", () => ({
   useRouter: vi.fn(() => ({ push: vi.fn() })),
   usePathname: vi.fn(
     () => "/00000000-0000-0000-0000-000000000001/lisa/servicios/off-a/resumen",
   ),
+  useSearchParams: vi.fn(() => ({ get: mockSearchParamsGet })),
 }));
 
 vi.mock("@clerk/nextjs", () => ({
@@ -192,13 +194,24 @@ describe("ServicioWorkspaceShell", () => {
     );
   }
 
-  it("renders the EntityWorkspaceLayout with rootLabel 'Servicios'", () => {
+  it("G2-F10: back-pill defaults to Catálogo (from absent) → catalogo href", () => {
+    mockSearchParamsGet.mockReturnValue(null);
     renderShell();
     expect(screen.getByTestId("entity-workspace-layout")).toBeInTheDocument();
-    expect(screen.getByTestId("root-label")).toHaveTextContent("Servicios");
+    expect(screen.getByTestId("root-label")).toHaveTextContent("Catálogo");
     expect(screen.getByTestId("root-href")).toHaveTextContent(
-      "/00000000-0000-0000-0000-000000000001/lisa/servicios",
+      "/00000000-0000-0000-0000-000000000001/lisa/servicios/catalogo",
     );
+  });
+
+  it("G2-F10: back-pill reflects origin Escalera when ?from=escalera", () => {
+    mockSearchParamsGet.mockReturnValue("escalera");
+    renderShell();
+    expect(screen.getByTestId("root-label")).toHaveTextContent("Escalera");
+    expect(screen.getByTestId("root-href")).toHaveTextContent(
+      "/00000000-0000-0000-0000-000000000001/lisa/servicios/escalera",
+    );
+    mockSearchParamsGet.mockReturnValue(null);
   });
 
   it("renders the 5 workspace leaves in order", () => {

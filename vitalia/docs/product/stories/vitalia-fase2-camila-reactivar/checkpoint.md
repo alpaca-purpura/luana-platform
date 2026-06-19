@@ -46,6 +46,34 @@ Sub-tab Reactivar de Camila: **audience = pacientes existentes post-revenue** (c
 4. `propuesta-sin-firmar` — Propuesta sent > 7d no firma (consume F2-S6 trigger)
 5. `detractor-nps-pendiente` — NPS detractor sin plan recuperación activa (consume F2-S11)
 
+## Notas a considerar — diagnóstico fidelización re-engagement (2026-06-18)
+
+> **Contexto, NO mandato.** Inyectado por /pm-vitalia tras diagnóstico LIVE de HB-82 (`docs/process/harness-backlog.md` = SSoT del análisis + los 9 gaps restantes). La story contenedor que originó esto fue BORRADA (Chris, 2026-06-18); el detalle re-engagement vive acá. El refinamiento decide qué tomar; nada acá obliga el diseño. **Regla anti-código-muerto:** lo que el rediseño NO reuse, BORRARLO en la misma story (no dejar el scaffold huérfano acumulándose).
+
+**Notas (cosas que ya existen y conviene mirar antes de refinar):**
+
+- **El motor BE de re-engagement ya está construido, cableado y vivo** — `vitalia/backend/src/modules/vitalia/fidelizacion/` (router `main.py:81`, `prefix=/api/v1/vitalia/fidelizacion`). 10 rutas live (openapi-verificado): `POST /re-engagement/{pause,mark-external,mark-no-continue,manual-call,send-proactive}` + `GET /re-engagement/patterns` + `GET /summary` + `GET /activity-stream` + `POST nps/submit` + `GET nps/summary`. Servicios (`re_engagement_service · manual_call_service · proactive_outbound_service · pause_patient_service · opt_out_service`) + repos + models + 3 workers + DTOs (`application/dtos/re_engagement_dtos.py`).
+  - 💡 A considerar: el módulo se llama **`fidelizacion`**, no `reengagement`. Los Deliverables de abajo listan `modules/vitalia/reengagement/...` NEW → posible mirror si se crea aparte. Vale evaluar CONSUMIR `fidelizacion` existente. Lo que falta BE serían las 5 queries de listas dinámicas.
+
+- **Existe un FE de las 5 mutations, pero es scaffold huérfano** (OCULTA — nunca cableado, contrato imaginado): `vitalia/frontend/src/features/fidelizacion/` (FidelizacionLayout + tabs Absence/FollowUp/Maintenance/MultiSession/NPSResumen + ReEngagementCard + ReEngagementContactSidebar + modales PausePatientModal/ManualCallLoggedModal/ConfirmTemplateModal/SuggestSlotsModal + 10 hooks + store + Storybook). Cero ruta/nav lo monta. Cap `fidelizacion.re-engagement` = `planned`; hooks tagueados a cap `patients.nps-tracking` (DEPRECATED). Origen: slice viejo `vitalia-slice-1-fidelizacion`.
+  - 💡 A considerar: la IA del scaffold (tabs) ≠ la IA de reactivar (5 listas) → probable rediseño de estructura. Los modales + ReEngagementCard + ContactSidebar podrían ser salvables (wirean las 5 mutations); los 10 hooks tienen URL+body+headers imaginados (candidatos a reemplazar). **El refinamiento decide qué cosechar.**
+  - 🧹 **Si NO se reusa:** borrar `features/fidelizacion/` (+ Storybook + store + hooks) en esta story, eliminar la cap deprecada `patients.nps-tracking`, y dropear las entradas de `KNOWN_CONTRACT_GAPS` que correspondan. No dejar el huérfano vivo.
+
+- **Contrato BE real de las 5 mutations** (referencia si se reusan/reconstruyen · todos POST a `…/fidelizacion/re-engagement/`):
+  - Headers (los 3, hoy faltan en el scaffold): `X-Clinic-ID` (`useClinicId`) + `X-User-ID` + `X-User-Role` (`useActorHeaders`) — patrón canónico `features/mateo/api/notify.ts`. Sin ellos → 422.
+  - Body snake_case, `patient_id`+`clinic_id` SIEMPRE en body (no en path):
+    - `pause`: `{patient_id, clinic_id, pause_until(datetime), pause_reason?, paused_by_user_id?}`
+    - `mark-external`: `{patient_id, clinic_id, event_id?, comment?, converted_to_appointment_id?, recorded_by_user_id?}`
+    - `mark-no-continue`: `{patient_id, clinic_id, event_id?, reason?, recorded_by_user_id?}`
+    - `manual-call` (201): `{patient_id, clinic_id, outcome(ReEngagementOutcome), notes_plain?, called_by_user_id(req), converted_to_appointment_id?}`
+    - `send-proactive`: `{patient_id, clinic_id, patient_phone, patient_name, template_id, pattern, channel="whatsapp", idempotency_key?, throttle_days}`
+
+- **2 decisiones de diseño (si se construye la pieza)** — recomendación /pm-vitalia, no vinculante:
+  1. `manual-call` — outcome de la llamada (reached/voicemail/no_answer) ≠ `ReEngagementOutcome` clínico {sent,responded,rescheduled,declined,not_responsive,opted_out,failed_sending}. Sugerencia: enum telefónico propio `call_result {reached,voicemail,no_answer}` + `call_duration_seconds` + `outcome` clínico OPCIONAL (no sobrecargar el enum clínico — mapearlo es lossy).
+  2. `send-proactive` — exige `patient_phone`+`patient_name` (PHI) que el FE no tiene. Sugerencia: que el BE los resuelva por `patient_id`+`clinic_id` (sacar del DTO `ProactiveReminderRequest`; hipaa-lite — no PHI en el wire desde el cliente).
+
+- **Reads de la misma feature huérfana:** `GET summary` (BE `items`/snake vs FE `events`/camel) · `GET activity-stream` · NPS: BE tiene `nps/summary`+`nps/submit`; el FE inventó `nps/responses` (no existe). La lista `detractor-nps-pendiente` consumiría el NPS real (`nps/summary`). Mismo criterio anti-código-muerto: lo que no se use, se borra.
+
 ## Anti-objetivos
 
 - NO mezclar con audience leads (Adrián territory · per Punto 1 paradigma 2026-05-21)

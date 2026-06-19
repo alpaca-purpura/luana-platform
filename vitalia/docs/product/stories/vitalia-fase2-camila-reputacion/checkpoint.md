@@ -41,6 +41,14 @@ Sub-tab Reputación de Camila: **status scaffold-MVP** (planned per navigation-t
 
 MVP = visualización solamente. Sin response auto (delegate F2-S11 voz signals → response manual humano).
 
+## Notas a considerar — NPS vive en fidelización (diagnóstico 2026-06-18)
+
+> **Contexto, NO mandato.** Inyectado por /pm-vitalia (HB-82). Reputación = reseñas externas (Google/IG/TikTok) — NO toca las 5 mutations de re-engagement (esas → `vitalia-fase2-camila-reactivar`). Único cruce posible: NPS.
+
+- 💡 A considerar: el NPS ya tiene **BE vivo** en `fidelizacion` (`GET .../fidelizacion/nps/summary` + `POST .../nps/submit`, openapi-verificado). Si reputación necesita NPS, conviene consumir esos endpoints en vez de reconstruirlo (anti-duplication).
+- Existe FE huérfano `features/fidelizacion/components/tabs/NPSResumenTab` + `use-nps-responses.ts` (este llama `nps/responses`, que NO existe en BE — hook imaginado). Cap `patients.nps-tracking` = DEPRECATED. 🧹 **Si esta story no lo reusa, dejarlo para que `camila-reactivar` lo borre** (es el dueño del scaffold) — no duplicar la limpieza.
+- Las reseñas externas (objetivo real de esta story) NO tienen BE aún → siguen NEW per Deliverables.
+
 ## Anti-objetivos
 
 - NO implementar response automation Google/IG (requiere OAuth + Meta/Google APIs · story future dedicada)

@@ -18,6 +18,7 @@ import {
   bareTenantLandingRedirect,
   isAuthedRootPath,
   rootLandingRedirect,
+  shellInRenderRedirectTarget,
 } from "./shell-routes";
 import { isValidAgent, SHIPPED_STATIC_SUBTABS } from "./agent-catalog";
 
@@ -123,5 +124,40 @@ describe("rootLandingRedirect — root '/' → primer tenant landing en el edge 
   it("retorna null para un tenant no-UUID (no confiamos un claim arbitrario en el edge)", () => {
     expect(rootLandingRedirect("not-a-uuid")).toBeNull();
     expect(rootLandingRedirect("org_3DzUI3clerkOrgId")).toBeNull();
+  });
+});
+
+describe("shellInRenderRedirectTarget — edge-redirect de redirects in-render del shell (Next 16 soft-nav)", () => {
+  const T = "e69a691d-070e-5caf-a053-6e74642ec100";
+  const OFFER = "83f6b6db-1111-2222-3333-444455556666";
+
+  // G2-F5 vitalia-fase2-lisa-servicios: bare [offer-id] → resumen en el edge.
+  it("bare [offer-id] del workspace de servicios → resumen (G2-F5)", () => {
+    expect(shellInRenderRedirectTarget(`/${T}/lisa/servicios/${OFFER}`)).toBe(
+      `/${T}/lisa/servicios/${OFFER}/resumen`,
+    );
+  });
+
+  it("tolera trailing slash en el bare [offer-id]", () => {
+    expect(shellInRenderRedirectTarget(`/${T}/lisa/servicios/${OFFER}/`)).toBe(
+      `/${T}/lisa/servicios/${OFFER}/resumen`,
+    );
+  });
+
+  it("NO redirige cuando ya hay leaf (/{offer}/resumen) — evita loop", () => {
+    expect(
+      shellInRenderRedirectTarget(`/${T}/lisa/servicios/${OFFER}/resumen`),
+    ).toBeNull();
+  });
+
+  it("NO confunde los sub-sub-tabs estáticos (catalogo/escalera no son UUID)", () => {
+    expect(shellInRenderRedirectTarget(`/${T}/lisa/servicios/catalogo`)).toBeNull();
+    expect(shellInRenderRedirectTarget(`/${T}/lisa/servicios/escalera`)).toBeNull();
+  });
+
+  it("bare /lisa/servicios → catalogo (precedente que sigue funcionando)", () => {
+    expect(shellInRenderRedirectTarget(`/${T}/lisa/servicios`)).toBe(
+      `/${T}/lisa/servicios/catalogo`,
+    );
   });
 });

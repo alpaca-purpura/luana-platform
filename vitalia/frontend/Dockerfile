@@ -30,11 +30,12 @@ RUN --mount=type=cache,id=pnpm-vitalia,target=/pnpm/store \
 
 WORKDIR /app/vitalia/frontend
 EXPOSE 3002
-# HB-78: bump Node heap so the Next webpack dev-server doesn't hit the memory
-# threshold + enter a restart loop (→ ERR_SOCKET_NOT_CONNECTED + stale-cache
-# masking) when compiling large new routes. 3GB heap sits under the 4G container
-# limit (docker-compose.dev.yml). Takes effect on next `make dev-vitalia` rebuild.
-ENV NODE_OPTIONS="--max-old-space-size=3072"
+# HB-78: Node heap cap for the Next dev-server. Post-turbopack migration the FE
+# footprint dropped (~2.37GiB webpack → ~1.5GiB turbopack) so 2GB is enough and
+# matches nicolify/comunify. The prior 3GB cap made vitalia the host OOM-killer's
+# first victim mid-compile under global RAM pressure (14GB box, 3 stacks + swap)
+# → restart loop. 2GB sits under the 4G container limit. Rebuild to take effect.
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 CMD ["pnpm", "dev", "--port", "3002"]
 
 # ── builder target ──

@@ -1,0 +1,441 @@
+<!--
+  Mockup vitalia-fase2-lisa-servicios · Crear servicio (★ Chris 2026-06-07 #1)
+  Crear = entrar al MISMO workspace que un servicio existente, pero VACÍO para llenar.
+  + Arranque por documento: cargar material → "Procesar con Lisa" → autocompleta los campos (extracción, editable).
+  NO es un Sheet/form aparte. Shell wrapper VERBATIM + EntitySubNavBar (patrón staff).
+-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nuevo servicio · Workspace vacío — shell</title>
+<link rel="stylesheet" href="_shared.css" />
+<style>
+  .leaf-pane { display:none; }
+  .leaf-pane.active { display:block; }
+  .dropzone { border:1.5px dashed hsl(var(--agent-lisa) / .55); background:hsl(var(--agent-lisa-soft) / .35); border-radius:var(--radius); padding:1rem; display:flex; flex-direction:column; gap:.625rem; }
+  .doc-chip { display:inline-flex; align-items:center; gap:.375rem; padding:.25rem .625rem; border-radius:.5rem; background:hsl(var(--card)); border:1px solid hsl(var(--border)); font-size:.75rem; }
+  .empty-leaf { text-align:center; color:hsl(var(--muted-foreground)); padding:2.5rem 1rem; font-size:.8125rem; }
+  .group-h { font-size:.6875rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:hsl(var(--muted-foreground)); margin:.25rem 0 .5rem; }
+</style>
+</head>
+<body>
+<div class="shell-root">
+
+  <header class="topbar">
+    <div class="topbar-left"><div class="topbar-logo"><div class="topbar-logo-mark">V</div><span>Vitalia</span></div><span class="topbar-breadcrumb">› Lisa · Servicios · Nuevo</span></div>
+    <div class="topbar-right">
+      <div class="splitter-control"><button class="splitter-btn" data-state="chat-collapsed">◧</button><button class="splitter-btn" data-state="chat-narrow">◨</button><button class="splitter-btn" data-state="50-50" data-active="true">⬓</button></div>
+      <button class="topbar-icon-btn" id="theme-toggle" title="Tema">🌓</button>
+      <button class="tenant-chip"><span class="tenant-chip-avatar">SP</span><span>Sonrisa Plena</span><span style="color:hsl(var(--muted-foreground));font-size:.625rem;">▾</span></button>
+      <div class="avatar bg-agent-valeria" style="width:28px;height:28px;font-size:.6875rem;">CL</div>
+    </div>
+  </header>
+
+  <div class="shell-body" data-splitter-state="50-50" id="shell-body">
+    <aside class="chat-side">
+      <div class="chat-rail-only"><div class="rail-btn active">💬</div><div class="rail-btn">📜</div><div class="rail-btn">＋</div></div>
+      <div class="chat-content">
+        <header class="chat-header"><div class="chat-avatar-wrap"><div class="chat-avatar">V</div><span class="chat-status-dot"></span></div><div class="chat-meta"><span class="chat-name">Valeria</span><span class="chat-role">En línea · Tu secretaria virtual</span></div><span class="chat-mode-pill">🤖 Modo agente</span></header>
+        <div class="chat-history-strip">📜 Hoy 09:10 · Adrián cerró a Sofía Mendoza</div>
+        <div class="chat-messages"><div class="msg-row" data-role="bot"><div class="msg-bubble">¿Tienes un folleto, lista de precios o protocolo del servicio? <strong>Cárgalo arriba</strong> y te autocompleto los campos. Después solo revisas y ajustas. También puedo escribir las descripciones en tu voz.</div><span class="msg-time">Valeria · 09:15</span></div></div>
+        <footer class="chat-composer"><div class="composer-row"><div class="composer-adornos"><button class="composer-adorno-btn">📎</button><button class="composer-adorno-btn">🎙️</button><button class="composer-adorno-btn">⚡</button></div><textarea class="composer-textarea" rows="1" placeholder="Escribe a Valeria…"></textarea><button class="composer-send">Enviar</button></div><p class="composer-hint"><span class="kbd">Cmd</span> + <span class="kbd">K</span> enfoca el composer.</p></footer>
+      </div>
+    </aside>
+
+    <main class="panel-side">
+      <nav class="ribbon" aria-label="Agentes">
+        <button class="ribbon-tab" data-active="true" data-color="lisa"><span class="ribbon-tab-avatar bg-agent-lisa" data-color="lisa">L</span><span>Lisa <span style="font-size:.625rem;color:hsl(var(--muted-foreground));font-weight:400;">· Servicios</span></span></button>
+        <button class="ribbon-tab" data-color="lucas"><span class="ribbon-tab-avatar bg-agent-lucas" data-color="lucas">Lc</span><span>Lucas</span></button>
+        <button class="ribbon-tab" data-color="adrian"><span class="ribbon-tab-avatar bg-agent-adrian" data-color="adrian">A</span><span>Adrián</span></button>
+        <button class="ribbon-tab" data-color="valeria"><span class="ribbon-tab-avatar bg-agent-valeria" data-color="valeria">V</span><span>Valeria</span></button>
+        <button class="ribbon-tab" data-color="camila"><span class="ribbon-tab-avatar bg-agent-camila" data-color="camila">Ca</span><span>Camila</span></button>
+        <button class="ribbon-tab" data-color="config"><span class="ribbon-tab-avatar" data-color="config" style="background:hsl(var(--muted));color:hsl(var(--muted-foreground));">⚙</span><span>Configurar</span></button>
+      </nav>
+      <nav class="subtabs-bar">
+        <button class="subtab-btn" data-color="lisa">Marca</button>
+        <button class="subtab-btn" data-color="lisa">Especialistas</button>
+        <button class="subtab-btn" data-active="true" data-color="lisa">Servicios</button>
+        <button class="subtab-btn" data-color="lisa">Compliance</button>
+      </nav>
+
+      <!-- EntitySubNavBar canon (§2.2 full-bleed · sticky · border-radius:0) -->
+      <div class="entity-subnav" role="navigation" aria-label="Servicio nuevo">
+        <a class="entity-back" href="catalogo.html">‹ Servicios</a>
+        <!-- EntityPicker: "Nuevo servicio (borrador)" — no cambia a otra entidad aún -->
+        <div class="entity-picker" id="new-picker">
+          <button class="entity-picker-trigger" onclick="document.getElementById('new-picker-panel').classList.toggle('open')" aria-haspopup="listbox" aria-expanded="false">
+            <span class="ep-avatar">L</span>
+            <span style="font-size:.8125rem;font-weight:500;">Nuevo servicio</span>
+            <span class="chip" style="margin-left:.25rem;font-size:.6rem;">borrador</span>
+            <span class="ep-chevron">▾</span>
+          </button>
+          <div class="entity-picker-panel" id="new-picker-panel" role="listbox">
+            <div class="entity-picker-search"><input placeholder="Buscar servicio…" aria-label="Buscar servicio" oninput="filterPicker(this.value,'new-picker-panel')"></div>
+            <div class="entity-picker-list">
+              <div class="entity-picker-option" role="option" data-active="true"><span class="ep-opt-avatar">L</span>Nuevo servicio</div>
+            </div>
+            <div class="entity-picker-footer">Mostrando 1 de 1</div>
+          </div>
+        </div>
+        <div class="entity-leaves" role="tablist">
+          <button class="entity-leaf" data-active="true" data-leaf="resumen">Resumen</button>
+          <button class="entity-leaf" data-leaf="adrian">⭐ Para Adrián</button>
+          <button class="entity-leaf" data-leaf="doctores">Especialistas</button>
+          <button class="entity-leaf" data-leaf="pago">Plan de pago</button>
+          <button class="entity-leaf" data-leaf="social">Prueba social</button>
+        </div>
+      </div>
+
+      <div class="panel-content" style="position:relative;">
+        <!-- ★★ BibliotecaPicker Modal (RN-25 · AC-18 · estado inicial "nuevo servicio") -->
+        <div class="biblio-overlay" id="biblio-overlay">
+          <div class="biblio-modal" role="dialog" aria-modal="true" aria-labelledby="biblio-title">
+            <div class="biblio-head">
+              <div>
+                <h2 id="biblio-title">¿Qué servicio quieres agregar?</h2>
+                <p class="hint" style="margin:.125rem 0 0;">Busca en la biblioteca estándar — ya tiene ficha clínica completa — o crea uno personalizado.</p>
+              </div>
+              <button class="topbar-icon-btn" onclick="closeBiblio()" aria-label="Cerrar">✕</button>
+            </div>
+            <div class="biblio-search">
+              <div class="biblio-search-wrap">
+                <span class="biblio-search-ico">🔍</span>
+                <input id="biblio-input" placeholder="Buscar por nombre o sinónimo (ej: carillas, fundas, botox…)" aria-label="Buscar en la biblioteca" oninput="filterBiblio(this.value)">
+              </div>
+            </div>
+            <div class="biblio-results" id="biblio-results">
+              <!-- resultados -->
+              <div class="biblio-result" data-selected="false" onclick="selectBiblio(this,'Limpieza dental','Odontología general','Primera visita')">
+                <span class="br-icon">🦷</span>
+                <div class="br-body">
+                  <div class="br-name">Limpieza dental</div>
+                  <div class="br-meta">
+                    <span class="chip chip-lisa" style="font-size:.625rem;padding:.0625rem .375rem;">Odontología general</span>
+                    <span class="rung-badge rung-primera" style="font-size:.6875rem;">Primera visita</span>
+                    <span class="hint" style="margin:0;">Sinónimos: profilaxis, limpieza de sarro</span>
+                  </div>
+                </div>
+                <div class="br-action"><button class="btn btn-primary" style="font-size:.75rem;white-space:nowrap;" onclick="event.stopPropagation();useBiblio('Limpieza dental','Primera visita')">Usar plantilla</button></div>
+              </div>
+              <div class="biblio-result" data-selected="false" onclick="selectBiblio(this,'Diseño de sonrisa','Estética dental','Tratamiento principal')">
+                <span class="br-icon">✨</span>
+                <div class="br-body">
+                  <div class="br-name">Diseño de sonrisa</div>
+                  <div class="br-meta">
+                    <span class="chip chip-lisa" style="font-size:.625rem;padding:.0625rem .375rem;">Estética dental</span>
+                    <span class="rung-badge rung-principal" style="font-size:.6875rem;">Tratamiento principal</span>
+                    <span class="hint" style="margin:0;">Sinónimos: carillas, fundas, smile makeover</span>
+                  </div>
+                </div>
+                <div class="br-action"><button class="btn btn-primary" style="font-size:.75rem;white-space:nowrap;" onclick="event.stopPropagation();useBiblio('Diseño de sonrisa','Tratamiento principal')">Usar plantilla</button></div>
+              </div>
+              <div class="biblio-result" data-selected="false" onclick="selectBiblio(this,'Implante dental','Implantología','Tratamiento principal')">
+                <span class="br-icon">🦴</span>
+                <div class="br-body">
+                  <div class="br-name">Implante dental</div>
+                  <div class="br-meta">
+                    <span class="chip chip-lisa" style="font-size:.625rem;padding:.0625rem .375rem;">Implantología</span>
+                    <span class="rung-badge rung-principal" style="font-size:.6875rem;">Tratamiento principal</span>
+                    <span class="hint" style="margin:0;">Sinónimos: tornillo dental, diente fijo</span>
+                  </div>
+                </div>
+                <div class="br-action"><button class="btn btn-primary" style="font-size:.75rem;white-space:nowrap;" onclick="event.stopPropagation();useBiblio('Implante dental','Tratamiento principal')">Usar plantilla</button></div>
+              </div>
+              <div class="biblio-result" data-selected="false" onclick="selectBiblio(this,'Carillas de porcelana','Estética dental','Premium')">
+                <span class="br-icon">💎</span>
+                <div class="br-body">
+                  <div class="br-name">Carillas de porcelana</div>
+                  <div class="br-meta">
+                    <span class="chip chip-lisa" style="font-size:.625rem;padding:.0625rem .375rem;">Estética dental</span>
+                    <span class="rung-badge rung-premium" style="font-size:.6875rem;">Premium</span>
+                    <span class="hint" style="margin:0;">Sinónimos: lentes de contacto dental, chapas</span>
+                  </div>
+                </div>
+                <div class="br-action"><button class="btn btn-primary" style="font-size:.75rem;white-space:nowrap;" onclick="event.stopPropagation();useBiblio('Carillas de porcelana','Premium')">Usar plantilla</button></div>
+              </div>
+              <div class="biblio-result" data-selected="false" onclick="selectBiblio(this,'Botox facial','Medicina estética','Tratamiento principal')">
+                <span class="br-icon">💉</span>
+                <div class="br-body">
+                  <div class="br-name">Botox facial</div>
+                  <div class="br-meta">
+                    <span class="chip chip-lisa" style="font-size:.625rem;padding:.0625rem .375rem;">Medicina estética</span>
+                    <span class="rung-badge rung-principal" style="font-size:.6875rem;">Tratamiento principal</span>
+                    <span class="hint" style="margin:0;">Sinónimos: toxina botulínica, botulínica, arrugas</span>
+                  </div>
+                </div>
+                <div class="br-action"><button class="btn btn-primary" style="font-size:.75rem;white-space:nowrap;" onclick="event.stopPropagation();useBiblio('Botox facial','Tratamiento principal')">Usar plantilla</button></div>
+              </div>
+              <div class="biblio-result" data-selected="false" onclick="selectBiblio(this,'Plan de mantenimiento anual','Odontología general','Plan / convenio')">
+                <span class="br-icon">📋</span>
+                <div class="br-body">
+                  <div class="br-name">Plan de mantenimiento anual</div>
+                  <div class="br-meta">
+                    <span class="chip chip-lisa" style="font-size:.625rem;padding:.0625rem .375rem;">Odontología general</span>
+                    <span class="rung-badge rung-plan" style="font-size:.6875rem;">Plan / convenio</span>
+                    <span class="hint" style="margin:0;">Sinónimos: membresía dental, plan preventivo</span>
+                  </div>
+                </div>
+                <div class="br-action"><button class="btn btn-primary" style="font-size:.75rem;white-space:nowrap;" onclick="event.stopPropagation();useBiblio('Plan de mantenimiento anual','Plan / convenio')">Usar plantilla</button></div>
+              </div>
+            </div>
+            <div class="biblio-footer">
+              <span class="hint" style="margin:0;">Mostrando 6 de 24 servicios en la biblioteca</span>
+              <button class="btn btn-ghost" style="font-size:.8125rem;" onclick="closeBiblio()">Crear servicio personalizado</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-inner">
+
+          <!-- strip: borrador + activar (off) -->
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
+            <span class="chip">📝 Borrador — se guarda solo mientras lo llenas. Actívalo cuando esté listo y Adrián lo conocerá.</span>
+            <span class="switch-label" style="color:hsl(var(--foreground));font-size:.8125rem;"><span class="switch"><input type="checkbox"><span class="track"></span></span> Activar</span>
+          </div>
+
+          <!-- ★ PANEL CONOCIMIENTO (idéntico a editar · persiste + colapsable · abierto en vacío) -->
+          <details class="kpanel" open>
+            <summary>📚 Fuentes &amp; conocimiento <span class="chip chip-lisa" style="margin-left:.25rem;">empieza por aquí ✨</span></summary>
+            <div class="kpanel-body">
+              <p class="hint" style="margin:0;">¿Tienes material del servicio? Cárgalo una vez. Lisa <strong>(1)</strong> autocompleta los campos de abajo (los revisas) y <strong>(2)</strong> lo deja disponible para que Adrián responda preguntas del paciente. Así no llenas un formulario enorme a mano.</p>
+              <div class="dropzone">
+                <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;"><span style="font-size:1.25rem;">📄</span><div style="flex:1;min-width:12rem;"><div style="font-weight:600;font-size:.8125rem;">Arrastra o <span class="text-agent-lisa" style="cursor:pointer;text-decoration:underline;">elige archivos</span></div><div class="hint" style="margin:0;">folleto · lista de precios · protocolo · ficha técnica · enlace web</div></div><button class="btn btn-primary" style="font-size:.75rem;"><span>✨</span> Procesar con Lisa</button></div>
+              </div>
+              <p class="hint" style="margin:0;">🔒 El precio siempre sale del campo (no del documento) para no quedar viejo. Lo clínico que Adrián consulte se limita a lo comercial + escala al doctor.</p>
+            </div>
+          </details>
+
+          <!-- ★ tipo de clínica → orienta placeholders/ejemplos (#3) -->
+          <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.875rem;font-size:.75rem;padding:.5rem .75rem;border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--muted) / .4);">
+            <span style="font-weight:600;">Ejemplos orientados a tu clínica:</span>
+            <span class="chip tip" id="tipo-chip" title="Tu tipo de clínica se define en el Onboarding y se edita en Lisa → Marca. Orienta los placeholders/ejemplos en todo Servicios.">🦷 Odontología</span>
+            <span class="hint" style="margin:0;">— probar (demo):</span>
+            <button class="btn btn-ghost" style="font-size:.6875rem;padding:.1875rem .5rem;" onclick="setTipo('dental')">🦷 Odontología</button>
+            <button class="btn btn-ghost" style="font-size:.6875rem;padding:.1875rem .5rem;" onclick="setTipo('estetica')">💉 Estética</button>
+          </div>
+
+          <!-- ===== RESUMEN (vacío) ===== -->
+          <div class="leaf-pane active" data-pane="resumen">
+            <div class="section-header"><div><h1 class="section-title">Resumen</h1><p class="section-subtitle">Qué es y qué se lleva el paciente. Empieza por el nombre y el peldaño — o cárgalo con un documento arriba.</p></div></div>
+            <div class="cards-stack">
+              <section class="card">
+                <h2 class="card-title">📋 Identidad</h2>
+                <div class="field-row"><div><label class="label">Nombre del servicio</label><input id="f-nombre" placeholder="Ej: Diseño de sonrisa"></div><div><label class="label"><span class="tip" title="Las opciones salen del TIPO DE CLÍNICA (Onboarding · editable en Lisa → Marca). Acá eliges la del servicio.">Especialidad / categoría</span></label><select id="f-esp"><option>Elige…</option><option>Odontología general</option><option>Ortodoncia</option><option>Estética dental</option></select></div></div>
+
+                <label class="label" style="margin-top:.75rem;"><span class="tip" title="En qué momento del recorrido del paciente entra: gancho gratuito → primera visita → tratamiento principal → premium → plan.">¿En qué momento del paciente entra?</span> <span class="hint" style="display:inline;font-weight:400;">(elige un peldaño)</span></label>
+                <div class="rung-picker">
+                  <div class="rung-opt"><div>🔎</div>Gancho<br>gratuito</div>
+                  <div class="rung-opt"><div>🦷</div>Primera<br>visita</div>
+                  <div class="rung-opt" data-sel="true"><div>✨</div>Tratamiento<br>principal</div>
+                  <div class="rung-opt"><div>💎</div>Premium</div>
+                  <div class="rung-opt"><div>📋</div>Plan /<br>convenio</div>
+                </div>
+                <div class="rung-empty-hint" style="margin-top:.5rem;"><strong style="color:hsl(var(--rung-principal));">Tratamiento principal</strong> — el grueso de tu ingreso, la transformación central.<br>Suelen ir aquí: diseño de sonrisa, implante dental, ortodoncia, botox.</div>
+
+                <label class="label" style="margin-top:.75rem;">Descripción (lenguaje paciente) <span class="chip chip-lisa" style="margin-left:.25rem;cursor:pointer;">✨ Lisa la escribe en tu voz</span></label>
+                <textarea id="f-desc" rows="2" placeholder="Describe brevemente el servicio… o deja que Lisa lo redacte."></textarea>
+              </section>
+              <section class="card">
+                <h2 class="card-title">📦 Qué incluye · ⏱️ Duración</h2>
+                <div class="cards-grid" style="grid-template-columns:1fr 1fr;">
+                  <div><label class="label">Qué incluye</label><textarea id="f-incluye" rows="3" placeholder="Diagnóstico, sesiones, materiales…"></textarea></div>
+                  <div><label class="label">Tipo / duración</label><select><option>Sesión única</option><option selected>Paquete (varias sesiones)</option></select><div style="display:flex;gap:.5rem;margin-top:.5rem;"><input type="number" placeholder="N° sesiones" style="max-width:120px;"><input type="number" placeholder="min c/u" style="max-width:100px;"></div></div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <!-- ===== otros leaves: vacíos, se completan luego ===== -->
+          <div class="leaf-pane" data-pane="adrian"><div class="empty-leaf">⭐ <strong>Para Adrián</strong> (argumentario) se completa después de crear el servicio — o lo autocompleta el documento. Candidatura · objeciones · FAQ · palabras clave.</div></div>
+          <div class="leaf-pane" data-pane="doctores"><div class="empty-leaf">Vincula los especialistas que realizan este servicio desde tu roster (Lisa → Especialistas). Disponible al activar el borrador.</div></div>
+          <div class="leaf-pane" data-pane="pago"><div class="empty-leaf">Configura precio · reserva · anticipo · cuotas. Disponible al activar el borrador.</div></div>
+          <div class="leaf-pane" data-pane="social"><div class="empty-leaf">Sube fotos antes/después y testimonios cuando los tengas.</div></div>
+
+        </div>
+      </div>
+      <div class="footer-meta"><span>💾 Borrador · se guarda solo mientras escribes (sin botón Guardar)</span><span><button class="btn btn-ghost" style="font-size:.75rem;" onclick="location.href='catalogo.html'">Descartar borrador</button></span></div>
+    </main>
+  </div>
+</div>
+
+<!-- FloatingAutosaveIndicator (§2.6 canon · UNA pill por página · fixed bottom-center) -->
+<div class="floating-autosave" data-state="saved" id="floating-autosave" style="display:none;">
+  <span class="fa-dot"></span> Guardado
+</div>
+
+<script>
+  const shellBody = document.getElementById('shell-body');
+  document.querySelectorAll('.splitter-btn').forEach(btn => btn.addEventListener('click', () => { document.querySelectorAll('.splitter-btn').forEach(b => b.removeAttribute('data-active')); btn.setAttribute('data-active','true'); shellBody.setAttribute('data-splitter-state', btn.dataset.state); }));
+  document.getElementById('theme-toggle').addEventListener('click', () => document.documentElement.classList.toggle('dark'));
+  document.querySelectorAll('.entity-leaf').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.entity-leaf').forEach(x=>x.removeAttribute('data-active')); b.setAttribute('data-active','true');
+    document.querySelectorAll('.leaf-pane').forEach(p=>p.classList.remove('active'));
+    document.querySelector(`[data-pane="${b.dataset.leaf}"]`).classList.add('active');
+  }));
+  // rung picker autoexplicativo
+  const EXPLAIN = {
+    'Gancho': ['Gancho gratuito','capta prospectos; algo gratis que abre la conversación.','evaluación gratuita, diagnóstico inicial, primera consulta','--rung-magnet'],
+    'Primera': ['Primera visita','convierte; primer "sí" de bajo riesgo y precio accesible.','limpieza dental, consulta de valoración, primera sesión','--rung-primera'],
+    'Tratamiento': ['Tratamiento principal','el grueso de tu ingreso, la transformación central.','diseño de sonrisa, implante dental, ortodoncia, botox','--rung-principal'],
+    'Premium': ['Premium','sube el ticket; tu opción de mayor valor.','carillas de porcelana, ortodoncia invisible, rehabilitación oral','--rung-premium'],
+    'Plan': ['Plan / convenio','recurrente o B2B; mantiene al paciente en el tiempo.','plan de mantenimiento anual, membresía familiar, convenio empresa','--rung-plan']
+  };
+  document.querySelectorAll('.rung-opt').forEach(opt => opt.addEventListener('click', () => {
+    document.querySelectorAll('.rung-opt').forEach(o => o.removeAttribute('data-sel'));
+    opt.setAttribute('data-sel','true');
+    const key = opt.textContent.trim().split(/\s|\//)[0];
+    const e = EXPLAIN[key]; if(!e) return;
+    opt.closest('.panel-inner').querySelector('.rung-empty-hint').innerHTML =
+      `<strong style="color:hsl(var(${e[3]}));">${e[0]}</strong> — ${e[1]}<br>Suelen ir aquí: ${e[2]}.`;
+  }));
+
+  // ★ tipo de clínica → orienta placeholders + ejemplos + especialidades (#3 · demo)
+  const TIPOS = {
+    dental: {
+      chip: '🦷 Odontología',
+      nombre: 'Ej: Diseño de sonrisa',
+      desc: 'Ej: Transformamos tu sonrisa con carillas y un plan integral…',
+      incluye: 'Ej: Diagnóstico · mockup digital · carillas · ajustes',
+      esp: ['Odontología general','Ortodoncia','Estética dental','Implantología'],
+      rungEjemplos: 'diseño de sonrisa, implante dental, ortodoncia'
+    },
+    estetica: {
+      chip: '💉 Estética',
+      nombre: 'Ej: Botox preventivo',
+      desc: 'Ej: Suavizamos líneas de expresión con un protocolo natural…',
+      incluye: 'Ej: Valoración · aplicación · control a los 15 días',
+      esp: ['Medicina estética','Dermatología','Cosmiatría','Cirugía estética'],
+      rungEjemplos: 'botox, rellenos, peeling, paquete facial'
+    }
+  };
+  function setTipo(t){
+    const c = TIPOS[t]; if(!c) return;
+    document.getElementById('tipo-chip').textContent = c.chip;
+    document.getElementById('f-nombre').placeholder = c.nombre;
+    document.getElementById('f-desc').placeholder = c.desc;
+    document.getElementById('f-incluye').placeholder = c.incluye;
+    const esp = document.getElementById('f-esp');
+    esp.innerHTML = '<option>Elige…</option>' + c.esp.map(o=>`<option>${o}</option>`).join('');
+    // ejemplos del peldaño activo
+    const sel = document.querySelector('.rung-opt[data-sel="true"]');
+    const key = sel ? sel.textContent.trim().split(/\s|\//)[0] : 'Tratamiento';
+    const e = EXPLAIN[key];
+    if(e) document.querySelector('.rung-empty-hint').innerHTML =
+      `<strong style="color:hsl(var(${e[3]}));">${e[0]}</strong> — ${e[1]}<br>Suelen ir aquí: ${c.rungEjemplos}.`;
+  }
+
+  // ★ BibliotecaPicker (RN-25 · AC-18)
+  // Datos biblioteca con sinónimos para búsqueda typeahead
+  const BIBLIOTECA = [
+    { nombre:'Limpieza dental', cat:'Odontología general', peldano:'Primera visita', icono:'🦷', sinonimos:['profilaxis','sarro','limpieza'] },
+    { nombre:'Diseño de sonrisa', cat:'Estética dental', peldano:'Tratamiento principal', icono:'✨', sinonimos:['carillas','fundas','smile makeover','porcelana'] },
+    { nombre:'Implante dental', cat:'Implantología', peldano:'Tratamiento principal', icono:'🦴', sinonimos:['tornillo dental','diente fijo','implante'] },
+    { nombre:'Carillas de porcelana', cat:'Estética dental', peldano:'Premium', icono:'💎', sinonimos:['lentes de contacto dental','chapas','carillas'] },
+    { nombre:'Botox facial', cat:'Medicina estética', peldano:'Tratamiento principal', icono:'💉', sinonimos:['toxina botulínica','botulínica','arrugas','bótox'] },
+    { nombre:'Plan de mantenimiento anual', cat:'Odontología general', peldano:'Plan / convenio', icono:'📋', sinonimos:['membresía dental','plan preventivo','mantenimiento'] }
+  ];
+
+  function filterBiblio(q) {
+    const ql = q.toLowerCase().trim();
+    const results = document.getElementById('biblio-results');
+    const items = results.querySelectorAll('.biblio-result');
+    let visible = 0;
+    items.forEach(item => {
+      const nombre = item.querySelector('.br-name').textContent.toLowerCase();
+      const meta = item.querySelector('.br-meta') ? item.querySelector('.br-meta').textContent.toLowerCase() : '';
+      const match = !ql || nombre.includes(ql) || meta.includes(ql);
+      item.style.display = match ? '' : 'none';
+      if (match) visible++;
+    });
+    const footer = document.querySelector('.biblio-footer .hint');
+    if (footer) footer.textContent = `Mostrando ${visible} de ${items.length} servicios en la biblioteca`;
+    // mostrar empty state si no hay resultados
+    let emptyEl = results.querySelector('.biblio-empty');
+    if (!emptyEl) {
+      emptyEl = document.createElement('div');
+      emptyEl.className = 'biblio-empty';
+      emptyEl.textContent = 'No hay resultados para "' + q + '". Prueba con otro nombre o sinónimo.';
+      results.appendChild(emptyEl);
+    }
+    emptyEl.style.display = visible === 0 ? '' : 'none';
+  }
+
+  function selectBiblio(el, nombre, cat, peldano) {
+    document.querySelectorAll('.biblio-result').forEach(r => r.removeAttribute('data-selected'));
+    el.setAttribute('data-selected', 'true');
+  }
+
+  function useBiblio(nombre, peldano) {
+    // Cerrar picker
+    closeBiblio();
+    // Pre-llenar campos con field-sparkle badges (RN-25)
+    const fNombre = document.getElementById('f-nombre');
+    if (fNombre) { fNombre.value = nombre; markSparkle(fNombre); }
+    const fDesc = document.getElementById('f-desc');
+    if (fDesc) { fDesc.value = 'Descripción oficial de "' + nombre + '" desde la biblioteca estándar. Revisa y personaliza con tu voz.'; markSparkle(fDesc); }
+    const fIncluye = document.getElementById('f-incluye');
+    if (fIncluye) { fIncluye.value = 'Consulta inicial · procedimiento · seguimiento'; markSparkle(fIncluye); }
+    // Seleccionar peldaño matching
+    document.querySelectorAll('.rung-opt').forEach(o => {
+      o.removeAttribute('data-sel');
+      if (o.textContent.includes(peldano.split(' ')[0])) o.setAttribute('data-sel','true');
+    });
+    // Actualizar breadcrumb con nombre elegido
+    const entityId = document.querySelector('.entity-subnav [style*="muted-foreground"]');
+    if (entityId) { entityId.innerHTML = '📚 ' + nombre + ' <span class="chip" style="margin-left:.25rem;">desde biblioteca · borrador</span>'; }
+    // Activar FloatingAutosave
+    showAutosave('saved');
+  }
+
+  function closeBiblio() {
+    const overlay = document.getElementById('biblio-overlay');
+    if (overlay) overlay.style.display = 'none';
+    // Mostrar FloatingAutosave al cerrar
+    const fa = document.getElementById('floating-autosave');
+    if (fa) fa.style.display = '';
+  }
+
+  function markSparkle(field) {
+    // Agregar badge sparkle junto al label del campo
+    const label = field.closest('.form-group')?.querySelector('label') ||
+                  field.previousElementSibling;
+    if (label && !label.querySelector('.field-sparkle')) {
+      const sp = document.createElement('span');
+      sp.className = 'field-sparkle';
+      sp.title = 'Pre-llenado desde la biblioteca — revísalo';
+      sp.textContent = '✨ biblioteca';
+      label.appendChild(sp);
+    }
+  }
+
+  // FloatingAutosave: simular estados al editar campos
+  let autosaveTimer;
+  function showAutosave(state) {
+    const fa = document.getElementById('floating-autosave');
+    if (!fa) return;
+    fa.style.display = '';
+    if (state === 'saving') { fa.setAttribute('data-state','saving'); fa.innerHTML = '<span class="fa-dot"></span> Guardando…'; }
+    else { fa.setAttribute('data-state','saved'); fa.innerHTML = '<span class="fa-dot"></span> Guardado'; }
+  }
+  document.addEventListener('input', e => {
+    if (e.target.closest('#biblio-overlay')) return; // no disparar dentro del picker
+    showAutosave('saving');
+    clearTimeout(autosaveTimer);
+    autosaveTimer = setTimeout(() => showAutosave('saved'), 900);
+  });
+
+  // Cerrar picker con Esc
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeBiblio();
+  });
+
+  // Focus automático en el input del picker al abrir
+  window.addEventListener('DOMContentLoaded', () => {
+    const inp = document.getElementById('biblio-input');
+    if (inp) setTimeout(() => inp.focus(), 100);
+  });
+</script>
+</body>
+</html>

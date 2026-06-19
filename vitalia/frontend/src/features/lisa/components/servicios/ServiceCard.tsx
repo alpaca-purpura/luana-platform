@@ -100,7 +100,9 @@ export function ServiceCard({
 }: ServiceCardProps) {
   const router = useRouter();
   const origen = deriveOrigen(item);
-  const workspaceHref = `/${tenantId}/lisa/servicios/${item.offer_id}`;
+  // G2-F10: go straight to /resumen?from=catalogo so the origin survives (the bare
+  // edge-redirect would strip the query) → the workspace back-pill reads "Catálogo".
+  const workspaceHref = `/${tenantId}/lisa/servicios/${item.offer_id}/resumen?from=catalogo`;
   const isDraft = item.status === "draft";
 
   const goWorkspace = () => router.push(workspaceHref);

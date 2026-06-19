@@ -17,11 +17,21 @@ from typing import Optional
 from uuid import UUID, uuid4
 
 import structlog
+from sqlalchemy.exc import IntegrityError
 
 from src.modules.vitalia.copilot.domain.entities.onboarding_draft import OnboardingDraft
 from src.modules.vitalia.copilot.domain.entities.wizard_slot import WizardSlot
 
 logger = structlog.get_logger()
+
+
+class DraftAlreadyExistsError(Exception):
+    """A draft already exists for this (tenant_id, user_id).
+
+    The DB enforces one onboarding draft per tenant+user
+    (uq_vitalia_onboarding_progress_tenant_user). Raised instead of leaking a
+    raw IntegrityError → the route maps it to 409, not 500 (HB-88).
+    """
 
 
 def _utc_now() -> datetime:
@@ -110,7 +120,17 @@ class OnboardingDraftService:
             deleted_at=None,
             completed_at=None,
         )
-        saved = await self._draft_repo.save(draft)
+        try:
+            saved = await self._draft_repo.save(draft)
+        except IntegrityError as exc:
+            # uq_vitalia_onboarding_progress_tenant_user — one draft per tenant+user.
+            # DB constraint is the source of truth (handles the check-then-insert race).
+            logger.info(
+                "onboarding_draft_already_exists",
+                tenant_id=str(tenant_id),
+                user_id=str(user_id),
+            )
+            raise DraftAlreadyExistsError(f"Ya existe un borrador de onboarding para tenant {tenant_id}.") from exc
         logger.info(
             "onboarding_draft_created",
             draft_id=str(draft.id),

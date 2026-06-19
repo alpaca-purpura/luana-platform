@@ -22,6 +22,7 @@ from uuid import UUID
 import structlog
 
 from src.modules.vitalia.offer.domain.sales_brief import SalesBrief
+from src.modules.vitalia.offer.infrastructure.serializers import faq_from_list, objections_from_list
 
 logger = structlog.get_logger()
 
@@ -76,5 +77,10 @@ class SalesBriefService:
 
 def _apply(brief: SalesBrief, fields: dict[str, Any]) -> None:
     for key, value in fields.items():
-        if key in _EDITABLE:
-            setattr(brief, key, value)
+        if key not in _EDITABLE:
+            continue
+        if key == "faq":
+            value = faq_from_list(value)
+        elif key == "objections":
+            value = objections_from_list(value)
+        setattr(brief, key, value)

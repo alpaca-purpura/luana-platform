@@ -5,6 +5,26 @@ All notable changes to this package are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] — 2026-06-16
+
+### Changed
+
+- **Multibrand-instantiable `Settings` + `DATABASE_URL`-first DB resolution (additive,
+  backward-compatible).** Completes `2026-06-16-copilot-chat-brand-mountable`: 0.5.0 made the
+  *import* path lazy; 0.5.1 makes `Settings()` *instantiable* under a minimal multibrand env so
+  brands can also *exercise* (not just mount) core routers (copilot `/chat`, iam `auth_router`).
+  - The legacy "Visionarias Brain"-only required fields (`POSTGRES_*`, `WHATSAPP_*`, `QDRANT_URL`,
+    `TRAEFIK_NETWORK`, `DOMAIN_NAME`, `API_SECRET_KEY`, `LOG_LEVEL`, `API_URL`, `OPENAI_API_KEY`,
+    `REDIS_URL`) are now optional with benign defaults. Existing standalone envs that set them are
+    unaffected (loosening required→optional is backward-compatible).
+  - New `DATABASE_URL` field; `settings.database_url` resolves `DATABASE_URL` first (normalized to
+    the sync `postgresql://` scheme — async consumers re-add `+asyncpg`), composing from
+    `POSTGRES_*` only as legacy fallback, and raising a loud `RuntimeError` if neither is set
+    (at point-of-use, never a blanket import/instantiation crash). Aligns the engine with each
+    brand's own `db.py` (already `DATABASE_URL`-first).
+  - `core/security.py::get_encryption_key()` migrated to `get_settings()` and now fails loud if
+    `API_SECRET_KEY` is empty — no silent deterministic weak key under the new optional default.
+
 ## [0.5.0] — 2026-06-16
 
 ### Changed

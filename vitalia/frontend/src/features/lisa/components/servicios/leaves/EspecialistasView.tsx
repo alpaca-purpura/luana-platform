@@ -71,7 +71,7 @@ export function EspecialistasView({ offerId }: EspecialistasViewProps) {
           </p>
           {tenantId && (
             <Link
-              href={`/${tenantId}/lisa/doctores`}
+              href={`/${tenantId}/lisa/staff`}
               className="text-xs text-primary underline-offset-2 hover:underline mt-2 inline-block"
             >
               Agrega especialistas en Lisa → Especialistas ↗
@@ -80,24 +80,39 @@ export function EspecialistasView({ offerId }: EspecialistasViewProps) {
         </div>
       ) : (
         <ul className="space-y-2">
-          {specialists.map((s) => (
+          {specialists.map((s) => {
+            const name = s.display_name ?? null;
+            const initials = name
+              ? name
+                  .trim()
+                  .split(/\s+/)
+                  .slice(0, 2)
+                  .map((w) => w[0]?.toUpperCase() ?? "")
+                  .join("")
+              : "E";
+            const shortId = s.doctor_id.slice(0, 8);
+            return (
             <li
               key={s.id}
               className="flex items-center justify-between rounded-lg border border-border p-3"
             >
               <div className="flex items-center gap-3">
                 <Avatar className="h-9 w-9">
-                  <AvatarFallback className="text-xs">E</AvatarFallback>
+                  <AvatarFallback className="text-xs">{initials}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="text-sm font-medium">Especialista</p>
-                  <p className="text-xs text-muted-foreground">Doctor ID: {s.doctor_id}</p>
+                  <p className="text-sm font-medium">
+                    {name ?? "Especialista"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {s.specialty ?? shortId}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 {tenantId && (
                   <Link
-                    href={`/${tenantId}/lisa/doctores/${s.doctor_id}`}
+                    href={`/${tenantId}/lisa/staff/${s.doctor_id}`}
                     className="text-xs text-muted-foreground hover:text-foreground"
                   >
                     Ver detalle ↗
@@ -114,7 +129,8 @@ export function EspecialistasView({ offerId }: EspecialistasViewProps) {
                 </Button>
               </div>
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
 

@@ -152,7 +152,7 @@ async def test_owner_allowed_on_notify_router() -> None:
     async def _fake_session():  # noqa: ANN202
         yield MagicMock()
 
-    test_app.dependency_overrides[nr_module.get_async_session] = _fake_session
+    test_app.dependency_overrides[nr_module.get_async_session_committing] = _fake_session
 
     notify_svc = MagicMock()
     notify_svc.send_notification = AsyncMock(return_value=None)

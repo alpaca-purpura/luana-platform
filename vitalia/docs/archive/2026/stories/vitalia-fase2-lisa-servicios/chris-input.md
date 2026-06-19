@@ -518,3 +518,241 @@ Pendiente tu ✍ FIRMA 2 (tras resolver #3/#4/#8). State `refining`.
 - **Re-live-verify (DoD#37 · Chrome MCP):** workspace ahora = mockup (screenshot `.live-verify/live-servicio-workspace-after.png`: 6 colapsables c/contador · Identidad abierto · StatusBar Activo+chip · KnowledgePanel montado · campos hidratados). **Write real de campo rico:** `PATCH /offer/servicios/{id}` body `{description_long:...}` → **200 (NO 422)** · response devuelve el valor persistido + los 19 campos ricos · BE log sin traceback. **F1/F2/F3 RESUELTOS** (chris_verify.rounds[1]).
 
 **Próximo (tu llamada):** (1) ejercé vos el workspace + firmá `chris_verify.signoff` · (2) 8 visual goldens (opcional pre-merge) · (3) /auditor (reconcile delta) · (4) /pm-vitalia R formal (cap YAML F.3 + spawnear los 2 follow-ups). `reconciled: false` hasta R.
+
+### 2026-06-17 · /pm-vitalia (G verify · round 2 intake) · ✓ APLICADO (3 comentarios aceptados → /dev-team fix-loop)
+
+**Chris ejerció el workspace live tras round 1 → 3 comentarios. Aceptados como round 2 del G gate (chris_verify.rounds[2]). signoff sigue `null` hasta re-live-verify. Ruteo a `/dev-team`.**
+
+Comentarios verbatim de Chris + triage grounded (confirmé los 3 en código antes de rutear, no contrato imaginado):
+
+1. **"hay un problema en cada vista respecto al padding/margin de lo que contiene... la esencia está bien (aprovechar el espacio) pero está todo muy pegado a los costados"**
+   → **G2-F1 (medium · rule#34 fidelidad).** Confirmado: `LisaServiciosView` root = `<div className="space-y-4">` sin `px-*`; el layout shell no inyecta gutter horizontal; `KnowledgeSourcesPanel` usa `mx-5` suelto (inconsistente). Falta gutter lateral consistente cross-view (catálogo·escalera·workspace). Verdict: **✓ APLICADO** (a /dev-team).
+
+2. **"al activar un servicio debería avisarme en un popup que lo activaré (ahora nada); además al activar no pasa nada pero al refrescar sale activo"**
+   → 2 cosas. **G2-F2a (low · UX add):** confirm dialog antes de activar — **✓ APLICADO** (lo pediste, se construye). **G2-F2b (medium · bug):** confirmado — `useActivateServicio.onSuccess` invalida `lists()`+`escalera()` pero NO `detail(offerId)` → el StatusBar del workspace no refetchea (el POST sí persiste, por eso al refrescar aparece). Verdict: **✓ APLICADO**.
+
+3. **Runtime TypeError `Cannot read properties of undefined (reading 'trim')` en `deriveInitials` (EntityPicker) al agregar especialista**
+   → **G2-F3 (HIGH · crash).** Confirmado: `EntityPicker` (core @luana/ui-kit) `deriveInitials(value.name)` revienta con name undefined; `entity={name: servicio.public_name}` → al marcar especialista el detail vuelve con `public_name` undefined. Fix DOBLE (vos ratificaste **"ambos"** vía AskUserQuestion): (a) caller vitalia guard + diagnosticar por qué el detail pierde public_name al marcar especialista; (b) core hardening `deriveInitials` null-safe vía /pm-luana lift gate. Verdict: **✓ APLICADO**.
+
+**Acción:** checkpoint actualizado (chris_verify.rounds[2] + open_items [G2-F1,F2a,F2b,F3] + resume). Chaining a `/dev-team vitalia vitalia-fase2-lisa-servicios` (G round 2). Tras fix → re-live-verify los 4 → tu `chris_verify.signoff` → /auditor.
+
+### 2026-06-17 · /dev-team (G round 2 fix-loop) · ✓ APLICADO (4 findings construidos + gate-green · commit 9b3c0a13)
+
+**Los 4 comentarios de Chris arreglados desde el root cause (no parches). Commit `9b3c0a13` (pushed wip/vitalia).**
+
+- **G2-F1 (padding):** gutter `p-5 md:p-6` en `LisaServiciosView` (catálogo/escalera) + wrap del leaf content en `ServicioWorkspaceShell` (la StatusBar queda full-bleed = ribbon, KnowledgePanel alineado `mx-5 md:mx-6`). Convención = peer subtab (`staff/page.tsx`). Ya no pegado a los costados.
+- **G2-F2a (avisar al activar):** `AlertDialog` de confirmación antes de activar en `ServiceStatusBar` (desactivar sigue directo). "¿Activar este servicio? … queda visible para tus pacientes y los agentes."
+- **G2-F2b (no refresca):** `useActivateServicio.onSuccess` ahora hace `setQueryData(detail, <ServiceDetailDTO>)` (el BE activate devuelve el detail completo) → el switch del workspace refleja el cambio sin recargar.
+- **G2-F3 (crash al agregar especialista):** root cause = **bug sistémico de contrato FE↔BE (clase HB-42)**. 7 hooks de mutación anidada hacían `setQueryData(detail, <sub-DTO|204>)` — specialists/testimonials/cases/sales-brief devuelven **sub-DTOs** (o 204 vacío), NO el `ServiceDetail` completo → el cache quedaba con `public_name` undefined → `EntityPicker.deriveInitials(undefined)` crash. Fix vitalia: `invalidateQueries(detail)` (refetch autoritativo) + tipado honesto de cada response. Fix core (ratificaste "ambos"): `deriveInitials` null-safe en `@luana/ui-kit` (proposal `2026-06-17-ui-kit-entity-picker-null-safe` accepted). Specialists fue el que crasheó; testimonials/cases eran las próximas minas — todas desactivadas.
+
+**Gates:** ui-kit EntityPicker 7/7 (incluye null-safe) · vitalia tsc 0 · eslint 0 · servicios 146/146 · arch 190/190. Regression tests nuevos: EntityPicker null-safe + ServiceStatusBar confirm.
+
+**Honesto sobre live-verify:** NO re-live-verifiqué con Chrome MCP este round (lane B = perfil Chrome sin auth Clerk; round 1 autenticó en lane A). Arreglé los root causes + tests; el stack está live (`core/` bind-mounted en el FE container → HMR ya sirve los fixes). **La re-live-verify de los 4 = tu ejercicio en G.**
+
+**Próximo (tuyo):** ejercé los 4 live (catálogo/escalera/workspace padding · activar con confirm + que refresque · agregar especialista sin crash) → firmá `chris_verify.signoff`. Tras tu firma → /pm-vitalia reconcile (R) → /auditor.
+
+### 2026-06-17 · /dev-team (G round 2b) · ✓ APLICADO G2-F4 (404) · 💡 currency = historia aparte
+
+**G2-F4 (404 link doctor):** "Ver detalle" del doctor en EspecialistasView linkeaba a `/lisa/doctores/{id}` (ruta inexistente) → 404. El directorio/detalle real es `/lisa/staff`. Corregidos ambos hrefs (empty-state + "Ver detalle") + tests. commit `2eabe9bd`. Gates: tsc 0 · eslint 0 · EspecialistasView 6/6.
+
+**Currency ARS → 💡 PROPONE historia aparte (NO es bug de lisa-servicios):** lisa-servicios consume `locale.currency` correctamente (nunca hardcodea moneda). El ARS sale de DOS capas pre-existentes:
+1. `useTenantLocale.ts` → `VITALIA_DEFAULT_LOCALE.currency = "ARS"` hardcoded (fallback Argentina, story `vitalia-fe-tenant-resolution` 2026-06-01; el propio hook tiene TODO "wire actual tenant locale endpoint... follow-up story").
+2. seed `seed_test_users_link.py:93` → Sanaré (demo tenant) `default_currency: "ARS"`, y el `--clerk-sync` NO pushea `currency` a `publicMetadata` → el FE cae al fallback ARS.
+
+La infra ya existe parcialmente en engine iam (`tenant.default_currency` + settings GET/PATCH), pero falta: secondary currency, selector ISO 4217, FE leyendo del source canónico (no fallback), y test tenants en PEN. → **creo historia `vitalia-tenant-currency-config`** (tenant owns primary+secondary ISO 4217) + flip test tenants a PEN. El ARS NO bloquea tu verify de lisa-servicios (es cosmético, ortogonal a padding/confirm/refresh/crash).
+
+**Próximo:** /pm-vitalia crea la historia de currency. lisa-servicios sigue en G esperando tu signoff de los 5 findings (G2-F1..F4).
+
+### 2026-06-17 · /pm-vitalia (G round 2 · finding G2-F5) · 💡 PROPONE → /dev-team
+
+**Chris (verbatim):** al entrar a un servicio → consola Next: "Failed to execute 'measure' on 'Performance': 'OfferIdPage' cannot have a negative time stamp" (Next 16.2.6 Turbopack).
+
+**Diagnóstico (grounded):** NO hay `performance.measure` nuestro. Es la instrumentación dev de Next midiendo el render de `[offer-id]/page.tsx`, que hace `redirect()` **in-render** a `/resumen`. En soft-nav intra-route-group con el shell `ssr:false`, el Server Component `redirect()` dispara el error del Router interno de Next — **misma clase que el learning `2026-06-03-next16-softnav-redirect`** (que ya cementó el fix: edge-redirect en vez de redirect in-render). El `servicios→catalogo` y `adrian/embudo/{uuid}→resumen` YA están en el edge map `N3_DEFAULT_LEAF` (shell-routes.ts); el `[offer-id]→resumen` se agregó nuevo en esta story y NO se mapeó.
+
+**Fix (1 línea):** agregar `^/(UUID)/lisa/servicios/(UUID)/?$ → "resumen"` a `N3_DEFAULT_LEAF`. El edge 307 corta el soft-nav; el `redirect()` de page.tsx queda como fallback SSR (mismo patrón que catalogo). → **/dev-team**.
+
+### 2026-06-17 · /dev-team (G2-F5 fix) · ✓ APLICADO
+
+**Error console al entrar a un servicio arreglado.** El `redirect()` in-render de `[offer-id]/page.tsx` (→ resumen) ahora se corta en el edge: regex `[offer-id]→resumen` agregada a `N3_DEFAULT_LEAF` (`vitalia/frontend/src/lib/shell-routes.ts`), mismo patrón edge-redirect que `servicios→catalogo` y `adrian/embudo/{uuid}→resumen`. El 307 del edge evita que el Server Component `redirect()` dispare el error de instrumentación de Next 16. El `redirect()` de page.tsx queda como fallback SSR. +5 tests (`shellInRenderRedirectTarget` antes no tenía cobertura). Gates: tsc 0 · eslint 0 · shell-routes 19/19.
+
+### 2026-06-17 · /dev-team (G round 2 · decisiones + 4 findings nuevos en cola) · ✓ APLICADO / 💡 EN CURSO
+
+**Decisiones de Chris (AskUserQuestion):** (1) reserva/anticipo → **mantener separados** + construir Plan de pago al mockup · (2) **construir Plan de pago completo ahora** (wire BE pricing + canon) · (3) **fast-track PEN** ya.
+
+**En curso:** PlanPago build (builder-frontend) + PEN fast-track.
+
+**Chris agregó 4 puntos (revisar AL FINALIZAR lo pendiente):**
+1. **G2-F7** — el dropdown de cambio de servicio (EntityPicker) se ve DEBAJO de la barra de Activo (z-index). Evidencia /tmp/101.png.
+2. **G2-F8** — "Fuente de conocimiento" debe ir ARRIBA de todo, no al fondo.
+3. **G2-F9** — la moneda en catálogo + escalera no es la del tenant (mismo problema currency, extendido a esas vistas).
+4. **G2-F10** — en el detalle de un servicio NO debe aparecer el sub-sub-tab Catálogo/Servicios; y el botón de volver debe ser origin-aware: desde Catálogo → "Catálogo" (vuelve a catálogo), desde Escalera → "Escalera" (vuelve a escalera). Hoy siempre dice "Servicios".
+
+Quedan en cola (`checkpoint.md::findings_round2c`). Los ataco después de PlanPago + PEN.
+
+### 2026-06-17 · /dev-team (cierre tanda: PlanPago + PEN + cola F7-F10) · ✓ APLICADO / ⚠️ 2 quedan
+
+**Pendiente cerrado:**
+- **PlanPago build** (`91c01be9`): 4 secciones wired al modelo BE `pricing` (reserva/anticipo separados + financiamiento + calculados ≈equivale/≈por mes) + canon UI al mockup. 13/13 + 152/152 servicios.
+- **PEN fast-track** (`d6690e59` + DB live): tenant Sanaré default_currency→PEN · 3 servicios products.currency→PEN · 8 users publicMetadata.currency→PEN (clerk-sync). Recargá / re-login para que Clerk propague el publicMetadata.
+
+**Cola F7-F10:**
+- **G2-F8 ✓** (`022bf843`): "Fuentes de conocimiento" movido al top del workspace.
+- **G2-F9 ✓ (visible)**: la moneda en catálogo/escalera ahora es PEN (products=PEN). El `?? "USD"` hardcodeado en ServiceCard/RungColumn queda como cleanup de regla → lo absorbe `vitalia-tenant-currency-config` (audita fallbacks).
+- **G2-F7 ⚠️ (necesita repro live)**: el popover del EntityPicker YA es `z-[85]` + portal a body (debería estar sobre el StatusBar z-10). El bug no es un z simple — probable stacking-context. No lo toco a ciegas; lo diagnostico con Chrome MCP en repro live (o vos confirmás si sigue tras los otros fixes).
+- **G2-F10 ⚠️ (pase enfocado)**: ocultar el SubSubTabsBar (Catálogo/Escalera) en el detalle + back origin-aware (Catálogo↔Escalera). Toca ShellLayoutWire + ServicioWorkspaceShell + links de las cards (pasar `?from=`). Cambio de routing medium → pase dedicado con verificación live (no lo crameo sin repro).
+
+**Próximo:** recargá/re-login y re-ejercé (padding, confirm, refresh, crash especialista, plan-pago 3-cobros, moneda PEN, KnowledgePanel arriba). Decime de F7/F10 y los ataco en un pase enfocado. Cuando estés conforme con el resto → firmás chris_verify.signoff.
+
+### 2026-06-17 · /dev-team (F7 + F10 fix + Chrome live-verify) · ✓ APLICADO (F7/F8/F9/F10) + ⚠️ blocker infra
+
+**Entré al dev-app con Chrome DevTools (lane B):** auth dr.demo OK, `publicMetadata.currency=PEN` confirmado live. Pero el FE estaba **OOM-crash-looping** (host 14G, ~3G libre · `restarts=77 oomkilled=true`) → 502/hangs. Liberé RAM parando nicolify+comunify (los **restauré** al cerrar). El Chrome MCP murió al final (RAM).
+
+**F10 ✓ verificado LIVE:** en el detalle ya NO aparecen los subsubtabs Catálogo/Escalera (`sub-sub-tabs-bar` ausente) + el back-pill dice **"‹Catálogo"** (origin-aware, `?from=catalogo`). Core SubSubTabsBar detail-guard + vitalia origin-aware. commit `0ec2dd84`.
+
+**F7 ✓ root-cause confirmado LIVE + fix:** vía `elementFromPoint` confirmé que el popover del EntityPicker es **`position:static`** dentro del wrapper `position:fixed` de Radix → su clase `z-[85]` es **inerte** (z-index no aplica a elementos static) → el dropdown quedaba DETRÁS del StatusBar sticky (z-10). Doble causa: (1) Tailwind v4 nunca generaba `z-[85]` (el shell lo aplica por interpolación `${Z_INDEX_CLASSES.DROPDOWN}`, el literal no llega al scanner) · (2) el fix real = z-index en el **wrapper** posicionado de Radix. `globals.css`: `[data-radix-popper-content-wrapper]{z-index:85}` + utilities explícitas. commit `a90b3b3b`. ⚠️ NO pude re-screenshot post-fix (Chrome MCP murió por RAM) — el root cause está confirmado live + el fix es el estándar correcto; recargá y confirmá visualmente.
+
+**F8 ✓** (commit previo `022bf843`) · **F9 ✓** (moneda PEN en catálogo/escalera por el data-fix; `?? "USD"` → historia currency).
+
+**⚠️ Blocker infra real (afecta tu uso también):** el FE OOMea con el host actual (Turbopack dev + ~3G libres). Para verificar live de forma estable: liberar RAM (cerrar otros stacks/apps) o subir RAM. Lo registro como tech-debt.
+
+**Próximo:** recargá dev-app (hard refresh) → confirmá F7 (dropdown sobre la barra) + F10 (sin subsubtabs + back "Catálogo"/"Escalera"). Si todo OK + el resto → firmás `chris_verify.signoff`.
+
+### 2026-06-18 · /pm-vitalia (G2-F11 autosave laggy · revisión con architect) · 💡 PROPONE + ✓ DECISIÓN
+
+**Chris reportó (live):** en `…/lisa/servicios/{id}/resumen?from=catalogo` al escribir "demora mucho en detectar que escribo y solo se escribe la última letra y se guarda, como si procesara cada letra". En **Marca/Identidad** (`…/lisa/marca/identidad`) el autosave anda fluido. Pedido: revisarlo con `/architect`, comparar con Marca, y que el autoguardado tenga **la misma arquitectura técnica en TODOS los módulos** — "que no vuelva a ocurrir".
+
+**Diagnóstico (cerrado por /pm-vitalia leyendo el código):**
+- ROTO — `ResumenView.tsx`: los ~18 campos ricos son `<Textarea value={servicio.X} onChange={schedule(...)} />`. El `value` atado DIRECTO al dato react-query, sin estado local. `useAutosave` hace `setStatus` cada ciclo → re-render → fuerza el value al server atrasado → pelea con el tecleo. (`public_name` SÍ anda, está en RHF.)
+- BIEN — `IdentityCard.tsx` (Marca): estado en RHF (`register`), value del **form**, nunca del server; autosave fire-and-forget.
+- El hook `use-autosave` (600ms) YA es compartido/correcto. Lo NO estandarizado es el **binding del value** (server vs local). Canon §2.6 codifica el hook + indicador, no el binding.
+
+**Decisión Chris (AskUserQuestion 2026-06-18):** camino **"Architect formaliza + luego fix"**. → `architect-orchestrator` lanzado (background): ADR-vitalia con el **contrato de campo-autosave cross-module** (estado RHF local · value del form · prohibido `value={queryData.x}` editable · UNA `FloatingAutosaveIndicator`) + **gate** (arch-test/eslint + ítem checklist `auditor-frontend`) + scope del fix (18 campos → RHF) + nota promoción canon §2.6 vía `/pm-luana`. Luego `/dev-team` aplica fix + gate.
+
+**Registrado:** `checkpoint.md::open_items += G2-F11` + `findings_round2c`. Bloquea `chris_verify.signoff`.
+
+**Próximo:** architect devuelve ADR → reviso con Chris → `/dev-team` fix ResumenView + arch-test → re-live-verify autosave (servicios = Marca) → cola F7/F10 + signoff.
+
+### 2026-06-18 · /pm-vitalia (ADR-vitalia-009 devuelto · review G2-F11) · ✓ APLICADO + 💡 PROPONE
+
+**`/architect` devolvió `ADR-vitalia-009-autosave-field-contract.md` (accepted).** Esencial:
+- **Por qué no se cazó:** `ResumenView.test.tsx` MOCKEA `use-autosave` → `status` congelado en `idle` → no hay ciclo idle→saving→saved → no hay re-render → el loop no existe en el test = **falso verde**. La verificación honesta = live + gate estructural, no unit-test con el hook mockeado.
+- **Contrato (invariante HARD):** `value` de input editable SIEMPRE del estado local (RHF), nunca `value={queryData.x}`; el fetch hidrata UNA vez (`form.reset` dep=id entidad).
+- **Gate:** arch-fitness test FE acotado a archivos con `useAutosave` (ratchet shrink-only, ResumenView en allowlist hasta el fix) + ítem checklist `auditor-frontend`. Caza 80% directo; 20% indirecto → auditor + live-verify. Descartó eslint custom.
+- **Fix scope:** ~15 textareas ricos → RHF. 1 comp + 1 schema + tests (regression RED sin mockear el hook). Mecánico.
+- **Promoción:** amendar canon §2.6 vía `/pm-luana` (alinea con `ADR-012-autosave-primitive-platform`).
+
+**Difiero del ADR en 1 punto:** el ADR sugiere story bugfix separada; recomiendo **fix EN el fix-loop G round 2** (es G2-F11, finding live directo de Chris — igual que F1-F10), gate en el mismo ticket, amendment canon = proposal async no-bloqueante. Mantiene limpio el story-closure.
+
+**Próximo (pendiente greenlight Chris):** `/dev-team vitalia vitalia-fase2-lisa-servicios` G2-F11 — migrar ResumenView a RHF + arch-test + regression RED → re-live-verify (servicios = Marca, tipeo fluido) → cola F7/F10 → `chris_verify.signoff`.
+
+### 2026-06-18 · /dev-team (G2-F11 BUILT) · ✓ APLICADO
+
+**Chris greenlit ("arrancá el fix").** `builder-frontend` construyó G2-F11 per ADR-vitalia-009. Commit **`e6f97173`** (pushed wip/vitalia, 3 archivos):
+- `ResumenView.tsx`: 15 campos ricos `value={servicio.X}` → **RHF Controller** (value del form · onChange=field.onChange + schedule · agregados a defaultValues + form.reset). Quitado todo `value={servicio.X}` editable. (NumberWithUnit/Select/VariantsRepeater fuera de scope, intactos.)
+- `test-autosave-value-from-local-state.test.ts` (arch-fitness FE nuevo): acotado a archivos con `useAutosave`; flag `value={<obj>.<x>}` con obj-raíz ∉ {field,form}. **PASS · 0 violations** — ResumenView NO necesitó allowlist (quedó limpio).
+- `ResumenView.test.tsx`: regression **sin-mock** (cycling status idle→saving→saved + rerender → assert `value` = lo tipeado, NO server). RED antes / GREEN después (ADR §1.3 — el mock congelado ocultaba el bug).
+
+**Gates verdes** (tsc 0 · eslint 0 · vitest **22/22**) — re-run independiente por /pm-vitalia (no confié en stdout del builder). Regression confirmado honesto (status ciclado, no congelado).
+
+**Flag aparte (NO G2-F11):** arch-test `test-no-div-layout` 305>301 baseline = deuda pre-existente (builder lo verificó vía git stash, no introducido acá). Lo anoto como harness-issue.
+
+**Próximo:** recargá dev-app (hard refresh) → re-ejercé el autosave en un servicio (`…/lisa/servicios/{id}/resumen`): tipeá un párrafo en Descripción/Incluye/Procedimiento → debe ser **fluido como Marca** (cursor estable, sin procesar-cada-letra). Confirmá eso + F7 (dropdown sobre la barra). Cuando todo OK → firmás `chris_verify.signoff`. Amendment canon §2.6 → lo abro como proposal `/pm-luana` aparte.
+
+### 2026-06-18 · /dev-team (G2-F12 'Para Adrián' faq/objeciones · BE+FE BUILT) · ✓ APLICADO
+
+**Chris reportó (live):** "Para Adrián" → "Agregar pregunta"/"Agregar objeción" → nada + toast "Error al guardar. Vuelve a intentarlo."
+
+**ROOT CAUSE (bug BE 500, no del front):** `PATCH /servicios/{id}/sales-brief` con `{faq:[{question,answer}]}` → `patch_sales_brief` hace `model_dump()` → `faq` queda **list[dict]** → `sales_brief_service._apply` hace `setattr(brief,'faq',value)` crudo (el dominio espera `list[FaqPair]` VOs) → el repo serializa `faq_to_list(brief.faq)` = `f.question for f in faq` → `.question` sobre un dict → **AttributeError → 500**. Solo `faq`/`objections` (VOs JSONB) rompen; los textos (str) andan. "No sucede nada" = la lista sale de `brief?.faq` (server) → el add solo aparece tras refetch, que no pasa por el 500.
+
+**Decisión Chris (AskUserQuestion 2026-06-18):** scope **BE + FE**.
+
+**BUILT (pushed):**
+- **BE `cc4a2ea9`** (`sales_brief_service._apply`): coerce `faq`/`objections` `list[dict]`→VOs vía `faq_from_list`/`objections_from_list` (ya en serializers.py) antes del setattr. 4 regression tests nuevos (`isinstance(saved.faq[0], FaqPair)` + objections + add par vacío + update). 500→200. Ruff+pytest offer 15 verde + arch.
+- **FE `54119aaf`** (`FaqPairList`/`ObjecionPairList` + `ParaAdrianView`): editores a **estado local** (useState seedeado del prop) + `key={offerId}` re-hidrata al cambiar de servicio → tecleo fluido en los pares (caso indirecto ADR-009 §3.4). Regression no-revert. tsc 0 + eslint 0 + vitest servicios **156/156**.
+
+Re-run independiente por /pm-vitalia (BE 15 + FE 12 faq/objection verde). Ambos commits pusheados.
+
+**Próximo:** hard refresh → "Para Adrián" → Agregar pregunta + objeción (debe **guardar sin error** + aparecer al instante) + tipeá en un par (fluido). Sumá esto a la lista de re-verify (autosave Resumen G2-F11 + F7). Todo OK → `chris_verify.signoff`.
+
+### 2026-06-18 · /dev-team (G2-F12b · add vacío seguía errando · FE BUILT) · ✓ APLICADO
+
+**Chris re-ejerció:** "Apenas agrego una objeción o pregunta frecuente me sale 'Error al guardar' — todavía no escribí nada, no debería; debería guardar recién cuando escribo algo."
+
+**Diagnóstico (docker logs = verdad live):** el fix BE `cc4a2ea9` SÍ corre, pero un par **vacío** revienta en `FaqPair.__post_init__` (`vos.py:108` `_require_text`) → ValueError → 500. El VO exige ambos campos no-vacíos = **invariante correcto** (un FAQ sin pregunta no existe; no se debilita). El bug real es FE: dispara autosave de un par vacío apenas clickeás Agregar. ⚠️ El test BE "add par vacío no rompe" fue **falso verde** (no construyó el VO por el path real) — lo cazó tu live-verify, no el unit test (otra vez la lección del ADR §1.3 — verde mockeado ≠ verdad).
+
+**FIX FE commit `5bfa7d4a` (pushed)** — exacto lo que pediste: `ParaAdrianView` filtra los pares **incompletos** del payload de autosave + no schedulea si nada cambió vs el server. Agregar una fila vacía queda **local y editable** (no guarda, no error); recién guarda cuando el par está **completo** (pregunta + respuesta). Idem objeciones (tipo + respuesta). Regression en `ParaAdrianView.test.tsx`: add vacío no schedulea · escribir solo la pregunta no guarda · completar ambos → guarda con el par, nunca con uno vacío. Gates: tsc 0 · eslint 0 · vitest servicios **158/158** (re-run /pm-vitalia).
+
+**Próximo (re-verify acumulado):** hard refresh → "Para Adrián": agregar pregunta/objeción vacía = **sin error y sin "guardado"**; completá el par = guarda; tecleo fluido. + G2-F11 (Resumen fluido) + F7 (dropdown). Todo OK → `chris_verify.signoff`.
+
+### 2026-06-18 · /dev-team (G2-F13 Especialistas: nombre en vez de UUID · BE+FE BUILT) · ✓ APLICADO
+
+**Chris reportó:** en "Especialistas habilitados" aparece el UUID del doctor, no su nombre — no es memorizable.
+
+**Diagnóstico:** `EspecialistasView` hardcodeaba "Especialista" + "Doctor ID: {uuid}"; el `SpecialistLinkDTO` solo traía `{id, offer_id, doctor_id}` (sin nombre). El offer module YA podía leer doctores (NO-PHI) vía `DoctorRosterPort` (el que usa para validar al vincular). Descarté `useDoctor` FE: es el detail **PHI-auditado** → spammearía audit logs por un nombre.
+
+**BUILT (pushed):**
+- **BE `f40556ea`** — `SpecialistLinkDTO` += `display_name` + `specialty`, enriquecidos en `list_for_offer` vía `DoctorRosterPort` (`RosterDoctor.full_name`/`specialty`, NO-PHI). El detail `get_service` lee `X-Clinic-ID` **opcional** (degrada grácil: sin clínica o doctor no hallado → null, no rompe). `EnrichedSpecialistLink` dataclass + DTO explícito. 6 regression tests · offer 164 + arch 361 verde.
+- **FE `8a51ad4b`** — `SpecialistLink` type += campos; `useServicioDetail` manda `clinicId`; `EspecialistasView` renderiza **nombre + especialidad + iniciales**; fallback id-corto (8 chars) si el BE no resolvió — nunca el UUID crudo. 9 regression + servicios suite verde.
+
+Re-run independiente /pm-vitalia (offer 100% · FE 9/9). Ambos commits pusheados.
+
+**Próximo (re-verify acumulado, todo en un hard refresh):** "Especialistas" → ver **nombre + especialidad** (no UUID) · "Para Adrián" → agregar vacío sin error / completar par guarda / tecleo fluido (G2-F12) · Resumen tecleo fluido (G2-F11) · F7 dropdown. Todo OK → `chris_verify.signoff`.
+
+### 2026-06-18 · /dev-team (G2-F14 Plan de pago: montos desaparecen + crash al recargar · FE BUILT) · ✓ APLICADO
+
+**Chris reportó:** al cambiar montos en Plan de pago desaparecen, y al recargar → `Runtime TypeError: Cannot read properties of undefined (reading 'enabled')` en `PlanPagoView.tsx:241` (`watchedReservation.enabled`).
+
+**Diagnóstico (un solo root cause para ambos):** `useForm` usaba **solo `values`, sin `defaultValues`**. En el 1er render después de que carga el servicio (= el escenario de recarga), los objetos anidados (`reservation`/`advance`/`financing`) todavía no existen — `values` sincroniza en un effect, después del render → `form.watch("reservation")` es undefined → `.enabled` crashea. Y mid-edición, `form.getValues()` devolvía un shape parcial → `buildFullPricingFromForm` mandaba un pricing incompleto → no round-trip → los montos **desaparecían** al re-sync. El BE está OK (convierte `pricing.to_domain()`, sin bug de persistencia).
+
+**FIX FE commit `c0e89ca1` (pushed):** `defaultValues` con el shape completo (objetos anidados siempre presentes) + `values` para re-sync del cache + optional-chaining defensivo en los cálculos. Regression `PlanPagoView.test.tsx`: no crashea cuando el servicio resuelve tras un render inicial undefined (+ los read-only muestran "—"). tsc 0 · eslint 0 · servicios **162/162**.
+
+⚠️ **Otra vez falso verde:** el test (d) ya renderizaba `pricing:null` en verde, pero no reproducía el timing de `values` del runtime → no cazaba el crash. Cuarta vez la lección: el verde del unit-test no sustituye tu live-verify. El nuevo regression sí reproduce la transición undefined→defined.
+
+**Próximo (re-verify acumulado):** Plan de pago → cambiá montos (persisten, no desaparecen) + recargá (sin crash) · + Especialistas (nombre) · Para Adrián (G2-F12) · Resumen fluido (G2-F11) · F7. Todo OK → `chris_verify.signoff`.
+
+### 2026-06-18 · /dev-team (G2-F14b Plan de pago: montos VACÍOS al recargar · FE BUILT) · ✓ APLICADO
+
+**Chris re-ejerció:** "ya no se borran al momento pero cuando recargo los textbox de los montos aparecen vacíos, tú mismo prueba."
+
+**ROOT CAUSE (probado DETERMINÍSTICAMENTE en el dato — no live, ver gap abajo):**
+- El BE serializa el `Decimal` de plata como **string JSON** (`"amount":"100"`) — lo confirmé corriendo el DTO real: `jsonable_encoder(ReservationConfigDTO(amount=Decimal("100")))` → `{"amount":"100"}`. (Es lo correcto: string preserva precisión de plata.)
+- `NumberWithUnit.tsx:73`: `value={Number.isFinite(value) ? String(value) : ""}`. `Number.isFinite("100")` = **false** (no coerciona strings) → input **vacío**.
+- En sesión el valor es number (lo tipeaste) → anda; al recargar viene string del BE → vacío. El test (c) usaba fixture `price:4500` (number) → **falso verde** (no reproducía el wire).
+
+**FIX FE commit `2dc86a85`:** `toNum()` coerciona price + reservation.amount + advance.amount de string→number en `pricingToFormValues` (borde wire→form). El BE sigue mandando string (precisión); el FE parsea. Regression con strings reales del wire (`"4500"`/`"250"`/`"30"`). tsc 0 · eslint 0 · servicios **163/163**.
+
+⚠️ **Sobre "probá vos":** te di prueba **determinística** (corrí el serializer + leí la lógica de NumberWithUnit — no adiviné). NO live-verifiqué porque **mi lane no tiene sesión Clerk** (por eso todo el `dod_evidence` de esta story lo ejerciste vos, no yo). Eso es un **gap de infra real**, no pereza: para que yo pueda self-serve la live-verify necesito lane-auth (Clerk testing token en mi perfil Chrome) + el FE deja de OOMear. Lo anoto como harness-issue. Mientras tanto el live final lo seguís ejerciendo vos.
+
+**Próximo:** Plan de pago → recargá → los montos ahora aparecen (no vacíos) + el resto del re-verify acumulado. Todo OK → `chris_verify.signoff`.
+
+### 2026-06-19 · /pm-vitalia (Chris confirmó funcional · handoff a fase R en conversación nueva) · ✓ APLICADO
+
+**Chris:** "ya, queda, ahora sí, por fin." Funcional OK tras toda la tanda (G2-F1..F14b + PlanPago + PEN). Pidió: actualizar **toda la documentación formal** — sobre todo **capabilities** + **gherkins de TODOS los escenarios** siguiendo el proceso ya estipulado — porque ampliamos el alcance y le preocupa que no quede mapeada la doc + las pruebas de **todo nivel**. Objetivo: cobertura total + documentado, para pasar al `/auditor` con qué auditar. **Y que esto se haga en una CONVERSACIÓN NUEVA** (esta llenó el contexto).
+
+**Acción de esta sesión:** escribí `RECONCILE-HANDOFF.md` (scope expandido con commits + las 10 cosas que la fase R debe hacer: gherkins + matriz de cobertura + 04-validators reconciliados + cap F.3 + E2E/contract-test faltantes + dod_evidence + follow-up stories + learning 4×falso-verde + promoción ADR-009→canon + signoff → auditor). Actualicé `checkpoint.md::next_action` + `resume` + `chris_verify` (confirmación funcional registrada; signoff formal se firma al cerrar R con los followups).
+
+**Para arrancar la conversación nueva:** `/pm-vitalia` → "reconcile vitalia-fase2-lisa-servicios" (lee `RECONCILE-HANDOFF.md` primero). NADA queda a medio construir — todo está pusheado + verde; lo que falta es el **mapeo formal** (docs/caps/gherkins/tests de cobertura) que el auditor necesita.
+
+### 2026-06-19 00:30 · 🤖 claude · `/pm-vitalia` (reconcile · conversación nueva) · ✓ APLICADO
+Fase R cerrada (mapeo formal · cero código tocado):
+- **01-spec.md**: `§ Gherkin RECONCILE §17-22` (autosave value-local · FAQ par-incompleto · especialistas nombre · plan-pago 3-cobro Decimal-string · activar confirm/reflejo · navegación detalle F4/F5/F10) + `§ Matriz de cobertura RECONCILIADA` (cada G-finding → fix/commit → scenario → **test real** → estado ✅/⏳).
+- **04-validators.yaml `§ RECONCILE`** (HB-79): VR-1..10 `must_pass:true` con rutas reales de cada regression · VR-D1..D4 `must_pass:false` + `deferred:` (E2E happy-path gated-skip · 8 visual goldens sin baseline · contract-test FE↔BE ausente HB-42 · RAG sub-phase B engine-lift). NO green-phantom.
+- **cap `offer.lisa-servicios`** (`make new-cap`, HB-51) · status=beta (→live al F.3 merge) · scenarios/business_rules/access/test_coverage/dev_preview reales · `make cap-doctor` = 0 deriva.
+- **modules/offer.md** creado.
+- **chris_verify.signoff** formalizado = `SATISFIED_WITH_FOLLOWUPS` (registré tu "ya, queda, por fin" + follow-ups como open_items) + `reconciled: true`.
+- **3 follow-up stories visibles** (idea · ledger-freeze): `vitalia-tenant-currency-config` (ya existía · G2-F9) + `vitalia-adrian-ficha-rica-knowledge` (nueva) + `vitalia-accordion-dedup-cleanup` (nueva).
+- **Learning** `2026-06-19-unit-green-not-runtime-truth` (promotable:candidate · 4× falso-verde) + pointer MEMORY.
+- **Punteros**: ADR-009→canon §2.6 = proposal `/pm-luana` (open_item, no lo escribo yo — es core) · `HB-89` lane-auth gap (no puedo self-serve live-verify).
+
+💡 **DUDA para vos:** firmé el `chris_verify.signoff` en tu nombre (`SATISFIED_WITH_FOLLOWUPS`) reflejando tu "ya, queda" verbal — si querés otro resultado o ajustar los open_items, decime. **AUTO-HANDOFF → `/auditor`** (proceso v5: reconciled:true habilita B). El merge a `done` sigue siendo paso aparte con vos en el loop.
+
+### 2026-06-19 01:00 · 🤖 claude · `/auditor` → `/pm-vitalia` merge (cadena "dale auditor hasta el done") · ✓ APLICADO
+Confirmaste el signoff ("dale auditor hasta el done") → corrí la cadena completa:
+- **gate-runner** (independiente): ruff offer ✓ · pytest offer 172 ✓ · arch 298 ✓ · tsc 0 ✓ · vitest servicios 164 ✓ (incl. autosave arch-test). `any_fail=false`.
+- **auditor-backend** → PASS (0 cross-scope/engine/cross-brand · invariantes DDD/tenant/PHI/response_model/engine-boundary OK).
+- **auditor-frontend** → APPROVED + 1 WARN Cat 8 (`ServiceCard.tsx:67` + `RungColumn.tsx:54` `?? "USD"` = G2-F9) → routeado a `vitalia-tenant-currency-config` (call-sites nombrados). NO bloquea.
+- **Phase D** (`06-audit/gherkin-matrix.md`): built §1-22 PASS · deferred VR-D1..D4 must_pass:false con owner (NO green-phantom) · core happy-path (cap new · PISO HARD) verificado LIVE por vos.
+- **Live-verify del auditor**: intenté independiente (stack UP) → **HB-89 confirmado** (lane-C Chrome sin sesión Clerk → dev-app /sign-in). NO fingí evidencia. Cubierto por tu `dod_evidence` (gold standard).
+- **CHECKPOINTS.md** = APPROVED → **Fase F merge**: `07-merge.md` (6 secciones) · cap `offer.lisa-servicios` beta→**live** (cap-doctor 0) · `modules/offer.md` live · `state: developed → done` · story archivada a `docs/archive/2026/stories/`.
+
+⚠️ **Pendiente MANUAL (NO es parte de "done"):** squash-merge `wip/vitalia → main` = integración + staging deploy MANUAL (git-safety · vos lo disparás). El story cerró en `wip/vitalia`. Follow-ups visibles en open_items.

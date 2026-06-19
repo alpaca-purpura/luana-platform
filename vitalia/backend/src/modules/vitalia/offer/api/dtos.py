@@ -187,13 +187,21 @@ class ServiceListResponse(BaseModel):
 
 
 class SpecialistLinkDTO(BaseModel):
-    """A doctor linked to a service."""
+    """A doctor linked to a service.
+
+    ``display_name`` and ``specialty`` are populated when the detail endpoint
+    receives ``X-Clinic-ID`` and the doctor is found in the roster (G2-F13-BE).
+    Both are ``None`` when the header is absent or the doctor is no longer in
+    the roster — backward-compatible, never breaks the detail response.
+    """
 
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
     offer_id: UUID
     doctor_id: UUID
+    display_name: str | None = None
+    specialty: str | None = None
 
 
 class CaseDTO(BaseModel):

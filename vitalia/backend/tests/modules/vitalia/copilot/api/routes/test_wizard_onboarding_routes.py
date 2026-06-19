@@ -280,6 +280,34 @@ async def test_create_draft_happy(client_a: AsyncClient, draft_a: OnboardingDraf
 
 
 @pytest.mark.asyncio
+async def test_create_draft_duplicate_returns_409(draft_a: OnboardingDraft) -> None:
+    """POST /drafts — a draft already exists for tenant+user → 409, not 500 (HB-88).
+
+    Regression: start_draft used to leak the repo's IntegrityError as a raw 500
+    (uq_vitalia_onboarding_progress_tenant_user). The service now maps it to
+    DraftAlreadyExistsError and the route to 409.
+    """
+    from src.modules.vitalia.copilot.application.services.onboarding_draft_service import (
+        DraftAlreadyExistsError,
+        OnboardingDraftService,
+    )
+
+    svc = MagicMock(spec=OnboardingDraftService)
+    svc.create_draft = AsyncMock(side_effect=DraftAlreadyExistsError("dup"))
+    app.dependency_overrides[get_onboarding_draft_service] = lambda: svc
+    try:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url=BASE_URL,
+            headers={"X-Tenant-ID": str(TENANT_A)},
+        ) as ac:
+            resp = await ac.post(f"{ONBOARDING_PREFIX}/drafts", json={"mode": "libre"})
+        assert resp.status_code == 409, resp.text
+    finally:
+        app.dependency_overrides.pop(get_onboarding_draft_service, None)
+
+
+@pytest.mark.asyncio
 async def test_get_draft_happy(client_a: AsyncClient, draft_a: OnboardingDraft) -> None:
     """GET /drafts/{draft_id} — 200 + DraftResponse shape."""
     resp = await client_a.get(f"{ONBOARDING_PREFIX}/drafts/{draft_a.id}")

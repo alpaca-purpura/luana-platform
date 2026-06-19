@@ -3,12 +3,16 @@
 /**
  * EspecialistasView.test.tsx — Leaf 3 unit tests.
  *
- * Covers:
+ * G2-F13 regression coverage (bugfix — specialist name not displayed):
+ *   (a) With display_name + specialty → renders name + specialty (NOT UUID)
+ *   (b) Without display_name (null) → renders "Especialista" + id short (NOT UUID crudo)
+ *
+ * Existing coverage:
  *   - Loading skeleton while data loads
- *   - Linked specialists list renders (doctor_id visible)
  *   - Empty specialists state: dashed placeholder + link to lisa/doctores (RN-9)
  *   - "Vincular especialista" button opens the EspecialistaLinkPicker
  *   - "Desvincular" calls useUnlinkSpecialist
+ *   - "Ver detalle" link points to /lisa/staff/{doctor_id}
  *
  * spec_anchor: 01-spec.md §Workspace Pestaña 3 · 03-arch-fe.md §8 Tests
  */
@@ -24,6 +28,10 @@ vi.mock("@clerk/nextjs", () => ({
 
 vi.mock("@/hooks/useTenantId", () => ({
   useTenantId: () => "tenant-abc",
+}));
+
+vi.mock("@/hooks/useClinicId", () => ({
+  useClinicId: () => "clinic-xyz",
 }));
 
 vi.mock("next/link", () => ({
@@ -92,7 +100,7 @@ describe("EspecialistasView", () => {
     expect(pulses.length).toBeGreaterThanOrEqual(3);
   });
 
-  it("renders empty state with warning and link to lisa/doctores when no specialists (RN-9)", () => {
+  it("renders empty state with warning and link to lisa/staff when no specialists (RN-9)", () => {
     mockUseServicioDetail.mockReturnValue({
       data: makeServiceDetail({ specialists: [] }),
     });
@@ -102,30 +110,126 @@ describe("EspecialistasView", () => {
       screen.getByText(/Vincúlalos para que Adrián pueda asignar el especialista correcto/)
     ).toBeInTheDocument();
     const link = screen.getByRole("link", { name: /Agrega especialistas en Lisa → Especialistas/ });
-    expect(link).toHaveAttribute("href", "/tenant-abc/lisa/doctores");
+    expect(link).toHaveAttribute("href", "/tenant-abc/lisa/staff");
   });
 
-  it("renders linked specialist list with doctor_id and Desvincular button", () => {
+  // ── G2-F13 regression: display_name + specialty ─────────────────────────────────
+
+  it("[G2-F13] renders display_name and specialty when BE enriches the DTO", () => {
     mockUseServicioDetail.mockReturnValue({
       data: makeServiceDetail({
         specialists: [
-          { id: "link-1", offer_id: "offer-123", doctor_id: "doc-uuid-1" },
-          { id: "link-2", offer_id: "offer-123", doctor_id: "doc-uuid-2" },
+          {
+            id: "link-1",
+            offer_id: "offer-123",
+            doctor_id: "doc-uuid-1",
+            display_name: "Dra. María López",
+            specialty: "Odontología estética",
+          },
         ],
       }),
     });
     render(<EspecialistasView offerId="offer-123" />);
-    expect(screen.getByText("Doctor ID: doc-uuid-1")).toBeInTheDocument();
-    expect(screen.getByText("Doctor ID: doc-uuid-2")).toBeInTheDocument();
+    // Name rendered — NOT the UUID
+    expect(screen.getByText("Dra. María López")).toBeInTheDocument();
+    // Specialty rendered as secondary line
+    expect(screen.getByText("Odontología estética")).toBeInTheDocument();
+    // UUID must NOT appear as the primary label
+    expect(screen.queryByText("Doctor ID: doc-uuid-1")).not.toBeInTheDocument();
+    expect(screen.queryByText("doc-uuid-1")).not.toBeInTheDocument();
+  });
+
+  it("[G2-F13] renders initials from display_name in AvatarFallback", () => {
+    mockUseServicioDetail.mockReturnValue({
+      data: makeServiceDetail({
+        specialists: [
+          {
+            id: "link-1",
+            offer_id: "offer-123",
+            doctor_id: "doc-uuid-1",
+            display_name: "Carlos Pérez",
+            specialty: "Nutrición clínica",
+          },
+        ],
+      }),
+    });
+    const { container } = render(<EspecialistasView offerId="offer-123" />);
+    // AvatarFallback should display "CP" (first letters of both words)
+    const fallback = container.querySelector(".text-xs");
+    expect(fallback?.textContent).toBe("CP");
+  });
+
+  it("[G2-F13] fallback to 'Especialista' + short id when display_name is null", () => {
+    mockUseServicioDetail.mockReturnValue({
+      data: makeServiceDetail({
+        specialists: [
+          {
+            id: "link-1",
+            offer_id: "offer-123",
+            doctor_id: "doc-uuid-ABCDEFGH-extra",
+            display_name: null,
+            specialty: null,
+          },
+        ],
+      }),
+    });
+    render(<EspecialistasView offerId="offer-123" />);
+    // Graceful fallback: "Especialista" as name
+    expect(screen.getByText("Especialista")).toBeInTheDocument();
+    // Short id (first 8 chars) shown as secondary line — NOT full UUID
+    expect(screen.getByText("doc-uuid")).toBeInTheDocument();
+    // Full UUID should NOT appear
+    expect(screen.queryByText("doc-uuid-ABCDEFGH-extra")).not.toBeInTheDocument();
+    // "Doctor ID: ..." raw pattern must be gone
+    expect(screen.queryByText(/Doctor ID:/)).not.toBeInTheDocument();
+  });
+
+  it("[G2-F13] multiple specialists: each renders its own name or fallback", () => {
+    mockUseServicioDetail.mockReturnValue({
+      data: makeServiceDetail({
+        specialists: [
+          {
+            id: "link-1",
+            offer_id: "offer-123",
+            doctor_id: "doc-uuid-1",
+            display_name: "Ana Torres",
+            specialty: "Dermatología",
+          },
+          {
+            id: "link-2",
+            offer_id: "offer-123",
+            doctor_id: "doc-uuid-2",
+            display_name: null,
+            specialty: null,
+          },
+        ],
+      }),
+    });
+    render(<EspecialistasView offerId="offer-123" />);
+    expect(screen.getByText("Ana Torres")).toBeInTheDocument();
+    expect(screen.getByText("Dermatología")).toBeInTheDocument();
+    // Second specialist has fallback
+    expect(screen.getByText("Especialista")).toBeInTheDocument();
+    expect(screen.getByText("doc-uuid")).toBeInTheDocument();
     const unlinkButtons = screen.getAllByRole("button", { name: "Desvincular" });
     expect(unlinkButtons).toHaveLength(2);
   });
+
+  // ── Existing interaction tests (kept, adapted) ────────────────────────────────
 
   it("calls useUnlinkSpecialist mutate with doctor_id when Desvincular clicked", async () => {
     const user = userEvent.setup();
     mockUseServicioDetail.mockReturnValue({
       data: makeServiceDetail({
-        specialists: [{ id: "link-1", offer_id: "offer-123", doctor_id: "doc-uuid-1" }],
+        specialists: [
+          {
+            id: "link-1",
+            offer_id: "offer-123",
+            doctor_id: "doc-uuid-1",
+            display_name: "Ana Torres",
+            specialty: "Dermatología",
+          },
+        ],
       }),
     });
     render(<EspecialistasView offerId="offer-123" />);
@@ -147,11 +251,19 @@ describe("EspecialistasView", () => {
   it("includes 'Ver detalle' link for each specialist pointing to doctor workspace", () => {
     mockUseServicioDetail.mockReturnValue({
       data: makeServiceDetail({
-        specialists: [{ id: "link-1", offer_id: "offer-123", doctor_id: "doc-uuid-1" }],
+        specialists: [
+          {
+            id: "link-1",
+            offer_id: "offer-123",
+            doctor_id: "doc-uuid-1",
+            display_name: "Ana Torres",
+            specialty: "Dermatología",
+          },
+        ],
       }),
     });
     render(<EspecialistasView offerId="offer-123" />);
     const detailLink = screen.getByRole("link", { name: "Ver detalle ↗" });
-    expect(detailLink).toHaveAttribute("href", "/tenant-abc/lisa/doctores/doc-uuid-1");
+    expect(detailLink).toHaveAttribute("href", "/tenant-abc/lisa/staff/doc-uuid-1");
   });
 });

@@ -5,8 +5,14 @@
 // base ("pares editables → KB del agente"). Controlled array editor: question
 // + answer + remove, plus an "Agregar pregunta" action. Autosave is wired by
 // the caller via onChange (no "Guardar" button — form-runtime-array doctrine).
+//
+// ADR-009 fix (G2-F12-FE): maintains LOCAL state seeded from `value` prop once
+// per mount. Edits mutate local state and propagate via onChange (for autosave);
+// the caller's stale re-renders no longer overwrite what the user typed.
+// Re-seed on entity change: pass key={offerId} at the call site (ParaAdrianView).
 "use client";
 
+import { useState } from "react";
 import { Button, Input, Textarea } from "@luana/ui-kit";
 import { cn } from "@/lib/cn";
 
@@ -29,24 +35,34 @@ function newId(): string {
     : `q-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export function FaqPairList({ value, onChange, disabled = false, className }: FaqPairListProps) {
+export function FaqPairList({ value: initialValue, onChange, disabled = false, className }: FaqPairListProps) {
+  // ADR-009: local state seeded from prop ONCE per mount (or per key change).
+  // value binding NEVER reads from the prop after mount — only from localPairs.
+  // The caller must pass key={entityId} to force remount when the entity changes.
+  const [localPairs, setLocalPairs] = useState<FaqPair[]>(initialValue);
+
+  const commitChange = (next: FaqPair[]) => {
+    setLocalPairs(next);
+    onChange(next);
+  };
+
   const patch = (id: string, fields: Partial<FaqPair>) =>
-    onChange(value.map((p) => (p.id === id ? { ...p, ...fields } : p)));
+    commitChange(localPairs.map((p) => (p.id === id ? { ...p, ...fields } : p)));
 
-  const remove = (id: string) => onChange(value.filter((p) => p.id !== id));
+  const remove = (id: string) => commitChange(localPairs.filter((p) => p.id !== id));
 
-  const add = () => onChange([...value, { id: newId(), question: "", answer: "" }]);
+  const add = () => commitChange([...localPairs, { id: newId(), question: "", answer: "" }]);
 
   return (
     <div className={className}>
       <div className="my-2 space-y-2.5">
-        {value.length === 0 && (
+        {localPairs.length === 0 && (
           <p className="text-xs text-muted-foreground" data-testid="faq-empty">
             Aún no agregaste preguntas frecuentes. Cada par pregunta/respuesta alimenta lo que
             Adrián puede responder.
           </p>
         )}
-        {value.map((pair) => (
+        {localPairs.map((pair) => (
           <div
             key={pair.id}
             data-testid={`faq-row-${pair.id}`}
