@@ -1,0 +1,235 @@
+---
+story_id: vitalia-fase2-lisa-servicios
+brand: vitalia
+type: ui-story
+state: refining
+architecture_pattern: ADR-vitalia-004
+po_ux_version: 2
+round: 1
+input_spec_signed: true
+mockup_final_signed: false
+---
+
+# 01-spec · vitalia-fase2-lisa-servicios — Catálogo de servicios de Lisa (agente-first)
+
+> **RONDA 1 (intención) — draft.** Este doc se escribe en 2 rondas / 2 firmas (`docs/process/spec-mapa-funcional.md`).
+> RONDA 1 = § Context/Dónde vive + § Mapa funcional + pantallas-borrador + dudas → Chris firma "esto es lo que quiero".
+> RONDA 2 = § Gherkin + § Matriz de cobertura + mockup FINAL → transition refining→refined.
+> Reframe agéntico + recomendación PM + decisiones Chris: **`00-research.md`** (SSoT).
+
+---
+
+## § Context
+
+- **Release:** F2. **Módulo:** `offer` (consume Offer Studio engine · NO `treatments` — eso es el followup de Camila).
+- **Capability:** `lisa.servicios` (`cap_change_type: new`).
+- **User journey:** la dueña/admin de la clínica entra a **Lisa → Servicios** para declarar QUÉ ofrece la clínica. Es la fuente de verdad del catálogo que después **Adrián vende** (canal-inbound match + Propuestas), **Mateo agenda** (duración), **Lucas promociona** y la **landing pública** muestra.
+- **Por qué importa (visión agéntica):** el catálogo no es una grilla bonita para el dueño — es el **cerebro compartido** que el equipo de agentes vende. Diferenciador H1 (agente que conoce el catálogo + cotiza + maneja objeciones). Hueco de mercado: ningún competidor (cero.ai · botclinico · rendu · Dentalink · doctocliq) conecta catálogo → conversación de venta de forma self-serve con un equipo de agentes.
+
+### Dónde vive (zona/caja → shell → ruta)
+
+- **Zona:** Agentes · **Caja:** Lisa (`agent_owner: lisa`) · **Área:** `lisa.servicios` (SYSTEM-MAP `agents.lisa.functional_areas.servicios`).
+- **Shell:** shell-organism (ADR-vitalia-004 + `SHELL-DESIGN-CONTRACT.md`): TopBar global + Ribbon 5 especialistas + SubTabsBar + ValeriaSidebar (50/50 split). El contenido vive en el `panel-content`.
+- **Rutas:**
+  - `/{tenantId}/(shell-organism)/lisa/servicios` — toggle **Catálogo | Escalera** (persiste `?view=catalogo|escalera`).
+  - `/{tenantId}/(shell-organism)/lisa/servicios/[offer-id]` — workspace N3-dyn de un servicio.
+  - `/{tenantId}/(shell-organism)/lisa/servicios/ladder/[slot-id]` — workspace N3-dyn de un peldaño de la escalera.
+- **Mockup de partida (referencia):** `vitalia/docs/archive/2026/stories/vitalia-fase1-empty-states/mockups/lisa-servicios-placeholder.html` (ya tiene el toggle Catálogo|Escalera + tokens del shell).
+
+### Out-of-scope explícito (anti-creep)
+- A/B testing de pricing · imports bulk (CSV) · AI suggested-pricing (anti-objetivos ratificados).
+- El **tool agéntico** `match_service_and_specialist` (vive en `canal-inbound`, decisión Chris 2026-06-06). Esta story SOLO entrega la **data**: Offers publicadas + link servicio↔doctor.
+- Edición del engine `core/luana-core-offer-studio` (consume vía EP-2; cambio de engine → `/pm-luana`).
+
+## Prior art applied
+
+- **Engine consumed:** `core/luana-core-offer-studio` — `Offer` + `OfferValueLevel` (5 peldaños: Gancho Gratuito·Primera Compra·Oferta Principal·Maximización·Corporativo) + `ServiceDetails` (duración, sesiones) + `value_level_catalog.py` + `offer_ladder_hints.py` (filas `PROFESIONAL_SALUD` con ejemplos médicos). Registrado vía **Extension SDK EP-2 preset pack** (`vitalia/backend/.../offer/extensions.py` — hoy stub vacío → materializar). CERO edit engine.
+- **Engine consumed:** `core/luana-core-sales-agent` — `TenantKnowledgeBuilder.build_identity()` ya inyecta las Offers publicadas en la identidad del agente → Adrián lee el catálogo **sin plomería nueva** (desbloquea canal-inbound RN-16).
+- **Reused from vitalia:** `lisa-marca` (done) — voz de marca (slot 5 BRAND_VOICE) genera las descripciones de cada servicio. `lisa-doctores` (developing) — tabla `vitalia_doctors` + roster para el link servicio↔doctor.
+- **Reused from vitalia:** componentes shell shipped (TopBar, Ribbon, SubTabsBar, ValeriaSidebar) + `@dnd-kit/core` (ya usado en `adrian-embudo`).
+- **Net-new justificado:** link servicio↔doctor brand-level (engine no lo tiene) · campos brand-level del peldaño (`pricing_override`, `cta_copy`) · seña/financiamiento por servicio (hueco que ningún competidor llena).
+- **Lift candidate:** si comunify/otra brand necesita el mismo "canvas escalera sobre Offer Studio" → escalar `/pm-luana` (promotion a `core/luana-core-ui` futuro). Por ahora brand-local.
+- **NO es PHI:** el catálogo de servicios es información comercial pública, NO datos de paciente → aplica tenant-isolation raíz, NO el full HIPAA-lite (dual-filter clinic se evalúa por multi-clínica, no por PHI — ver interrogatorio Q2).
+
+---
+
+## § Modelo del servicio (resuelto RONDA 1 · nivel humano — `/architect` concreta el schema)
+
+Un **servicio = una Offer de Offer Studio** (engine, vía EP-2). Campos (offer engine + proyección brand-level):
+
+| Campo | Origen | Notas |
+|---|---|---|
+| nombre | engine `Offer.public_name` | — |
+| qué incluye / descripción | engine + **voz de marca** (lisa-marca) | Lisa la sugiere; editable |
+| especialidad / categoría | brand-level | dental, estética, etc. |
+| **duración** | engine `ServiceDetails.session_duration_minutes` | Mateo agenda con esto |
+| **precio fijo o rango** ("desde $X") | engine pricing + brand flag `price_is_range` | moneda = `tenant_locale` |
+| **multi-sesión / paquete** | engine `ServiceDetails.total_sessions_count` | "diseño de sonrisa" = paquete; ortodoncia/botox = N sesiones |
+| **peldaño (value_level)** | engine `OfferValueLevel` | 5 rungs canónicos, labels médicos |
+| **recurrente** (flag + frecuencia) | brand-level `is_recurring` + `recurrence_interval` | atributo, NO peldaño; Camila lo usa para recall |
+| **doctores** (N) | brand-level link servicio↔doctor → `vitalia_doctors` | opcional; cimiento canal-inbound RN-17 |
+| **seña/depósito** (% o monto) | brand-level | por servicio |
+| **financiamiento/cuotas** (admite + plan) | brand-level | por servicio; lo consume Adrián/Propuestas |
+| **scope clínica** (opcional) | brand-level | a qué clínicas se ofrece (null = todas) |
+| **activo** (toggle único) | brand-level | Adrián lo conoce + vende. (★ toggle "landing" ELIMINADO de esta story — Chris #2 2026-06-06; la landing es otra historia) |
+
+> **★ Cambio Chris 2026-06-06 (post-mockup):** los peldaños de la escalera son **FIJOS** (5 columnas canónicas). El peldaño de un servicio = su `value_level` (un solo dato). **NO** existe `pricing_override` ni `cta_copy` por slot, ni un workspace de peldaño — eso agregaba complejidad sin valor. Mover un servicio entre peldaños solo cambia su `value_level`.
+>
+> El engine NO se toca. Lo brand-level vive en la tabla de offers de vitalia (extensión) + el link servicio↔doctor. `/architect` decide la forma exacta (columnas brand vs tabla aparte) + el preset pack EP-2.
+
+## § Workspace del servicio — contenido por pestaña (★ Chris #1 · agente-first · research 2026-06-06)
+
+> Objetivo: que **Adrián tenga TODO lo que necesita para ofrecer y cerrar el servicio**. Fundado en research de treatment-coordinators dentales/estéticos + manejo de objeciones + FAQ de pacientes high-ticket + KBs de agentes IA clínicos (fuentes en `00-research.md` / research log). Marca: **🔴 must-have** (el agente no vende bien sin esto) · 🟡 nice-to-have. El workspace usa **`EntitySubNavBar`** (patrón staff) — **6 leaves**, cada uno es una hoja con secciones (cards), sin Shadcn tabs.
+
+### Pestaña 1 · **Detalle** — "qué es y qué se lleva el paciente"
+- 🔴 nombre · 🔴 categoría/especialidad · 🔴 peldaño (`value_level`) · descripción corta (lenguaje paciente, **voz de marca**) · 🟡 descripción larga
+- 🔴 **qué incluye** (lista) · 🟡 qué NO incluye (exclusiones) · 🟡 variantes/niveles (básico/premium, materiales) · 🟡 garantía
+- 🔴 duración: sesión única **o** paquete (N sesiones + min c/u) · 🟡 tiempo total del tratamiento
+- 🔴 resultado esperado · 🔴 duración del resultado (vida útil) · 🟡 tiempo a ver resultados · 🟡 sesiones requeridas · 🟡 expectativas realistas (qué NO esperar)
+- 🟡 preparación previa · 🟡 cuidados posteriores · 🟡 tiempo de recuperación/downtime
+- flag **recurrente** (+ frecuencia) · **operación mini**: 🔴 duración de la cita · 🔴 tipo de cita inicial (valoración vs tratamiento directo)
+
+### Pestaña 2 · **Para Adrián** (Argumentario) ⭐ — "el brief de venta del agente" (TAB NUEVO)
+> El research es contundente: ~95% del cierre vive aquí (candidatura + consecuencia de no tratarse + objeciones + match), no en la ficha técnica. Es el diferencial.
+- **Candidatura & seguridad:** 🔴 candidato ideal · 🔴 **contraindicaciones / quién NO es candidato** · 🔴 preguntas de calificación (descubrimiento) · 🔴 requiere evaluación previa (sí/no) · 🔴 **condiciones de escalada a humano** (dolor/diagnóstico/medicación → no lo maneja el agente · HIPAA-lite) · 🟡 requisitos previos · 🟡 restricciones (edad/embarazo)
+- **Argumentario:** 🔴 beneficios emocionales (vender el resultado) · 🔴 dolor de no tratarse (urgencia) · 🔴 diferenciadores (por qué esta clínica) · 🟡 comparativa con alternativas · 🟡 ganchos promocionales vigentes
+- 🔴 **FAQ** — pares pregunta→respuesta editables (¿duele? ¿cuánto dura? ¿cuántas sesiones? ¿se ve natural? ¿soy candidato?)
+- 🔴 **Objeciones→respuestas** — pares para las 5 universales (precio · miedo · tiempo · "lo voy a pensar" · confianza)
+- **Para el match (RN-16):** 🔴 **palabras clave/sinónimos** (cómo el paciente lo nombra: "carillas", "fundas", "arreglarme los dientes") · 🟡 intenciones disparadoras · 🟡 problemas que resuelve · 🟡 lenguaje a evitar (jerga que asusta)
+
+### Pestaña 3 · **Doctores**
+- 🔴 doctores habilitados (link servicio↔doctor · cimiento canal-inbound RN-17) · 🟡 credenciales relevantes que el agente puede citar · 🟡 sedes donde se ofrece
+
+### Pestaña 4 · **Plan de pago**
+- 🔴 precio o rango + moneda (`tenant_locale`) · 🔴 **precio publicable** (¿el agente lo dice en chat o agenda valoración?) · 🔴 financiamiento disponible (sí/no) · 🔴 planes de pago (seña/enganche + cuotas + MSI + **monto/mes** calculado) · 🟡 socios financieros · 🟡 seña para reservar (encaja con reserva prepagada Vitalia) · 🟡 medios de pago
+
+### Pestaña 5 · **Prueba social** (renombra "Reseñas")
+- 🔴 fotos antes/después (con consentimiento) · 🟡 testimonios del tratamiento · 🟡 casos destacados · 🟡 prueba de volumen ("+300 sonrisas")
+
+### Pestaña 6 · **Stats** (para el dueño, no el agente)
+- leads interesados en el servicio · % de cierre de Adrián por tratamiento · sesiones/mes · revenue/mes · LTV
+
+> **MVP del registro (24 campos 🔴 mínimos para que Adrián venda):** nombre · categoría · descripción corta · qué incluye · candidato ideal · contraindicaciones · preguntas de calificación · requiere evaluación · condiciones de escalada · beneficios emocionales · dolor de no tratarse · diferenciadores · FAQ · objeciones→respuestas · resultado esperado · duración del resultado · precio/rango · precio publicable · financiamiento · planes de pago · fotos antes/después · doctores habilitados · duración de cita · palabras clave/sinónimos.
+>
+> **Decisión de implementación (a confirmar /architect):** `FAQ` + `objeciones→respuestas` = listas de pares editables (alimentan limpio el KB del agente), NO texto libre. `contraindicaciones` + `condiciones_escalada` son campos de **seguridad** (HIPAA-lite), no solo venta.
+
+## § Mapa funcional (RONDA 1 · resuelto)
+
+> Capa humana que Chris valida. El Gherkin (RONDA 2) lo formaliza. Profundidad alta (story keystone).
+
+### Happy path (camino dorado)
+
+1. La dueña entra a **Lisa → Servicios**. Catálogo vacío → **empty-state con seed presets por vertical** (dental / estética) adoptables con un clic; con datos → **vista Catálogo** (grid de tarjetas) con **buscador + filtros** (patrón staff).
+2. Crea un servicio (**+ Nuevo servicio**): nombre · qué incluye (Lisa sugiere en **voz de marca**) · especialidad · **duración** · **precio fijo o rango** + moneda · **paquete/multi-sesión** si aplica · **doctores** (opcional) · **seña + financiamiento** · **peldaño** · flags **recurrente** / **activo**.
+3. **Activa** el servicio (toggle único "Activo" → Adrián lo conoce + vende).
+4. Vista **Escalera de valor**: servicios distribuidos en los 5 peldaños con **labels médicos** (Gancho gratuito · Primera visita · Tratamiento principal · Premium · Plan/convenio). **Arrastra** una tarjeta a otro peldaño; ajusta `pricing_override` + `cta_copy` del peldaño en un drawer.
+5. **Workspace del servicio** (`[offer-id]`, patrón staff `EntitySubNavBar`): leaves Detalle · **Para Adrián** · Doctores · Plan de pago · Prueba social · Stats (contenido en § Workspace del servicio).
+6. **Resultado:** servicio activo → conocimiento de **Adrián** (lo cita + argumentario; con doctores → match especialista), **Propuestas** (line-item + financiamiento), **Mateo** (duración).
+
+### Bifurcaciones (árbol — Chris valida COMPLETITUD)
+
+```
+Entrar a Lisa → Servicios
+├─ catálogo vacío
+│   ├─ adopta seed preset vertical (dental/estética) ───────────────── [SC happy-seed]
+│   └─ crea servicio desde cero ──────────────────────────────────────  [SC happy-create]
+└─ catálogo con datos
+    ├─ vista Catálogo (grid)
+    │   ├─ crear/editar servicio
+    │   │   ├─ precio fijo ───────────────────────────────────────────  [SC happy-create]
+    │   │   ├─ precio rango "desde $X" ───────────────────────────────  [SC edge-rango]
+    │   │   ├─ paquete / multi-sesión ────────────────────────────────  [SC edge-paquete]
+    │   │   └─ servicio recurrente (flag + frecuencia) ───────────────  [SC edge-recurrente]
+    │   ├─ buscar por nombre + filtro especialidad/activo ────────────  [SC happy-search]
+    │   ├─ editar (admin/owner) vs read-only (doctor/staff) ──────────  [SC adversarial-rbac]
+    │   ├─ eliminar servicio (soft-delete) ───────────────────────────  [SC edge-delete]
+    │   └─ toggle único "Activo" (agente lo conoce) ──────────────────  [SC happy-activar]
+    └─ vista Escalera (5 peldaños FIJOS · autoexplicativa)
+        ├─ peldaño con servicios → muestra las tarjetas + "crear aquí" ─  [SC happy-rung-filled]
+        ├─ peldaño VACÍO → muestra qué va ahí + ejemplos por vertical ──  [SC happy-rung-empty-guidance] ★
+        ├─ drag servicio de peldaño A → B (cambia value_level) ────────  [SC edge-move-rung]
+        └─ keyboard-only mover peldaño (a11y) ────────────────────────  [SC a11y-keyboard]
+
+Cross-cutting:
+├─ servicio activo SIN doctores → UI avisa + agente degrada (responde, no matchea) ── [SC edge-sin-doctor]
+├─ servicio activo CON doctores → entra al conocimiento de Adrián ─────────────────── [SC happy-agente]  ★ KEYSTONE
+└─ query cross-tenant bloqueada ──────────────────────────────────────────────────── [SC adversarial-tenant]
+```
+
+### Reglas de negocio (RN — resueltas)
+
+- **RN-1** · Un servicio = una **Offer** de Offer Studio (consume engine EP-2; NO modelo `Treatment`/`LadderSlot` nuevo).
+- **RN-2** · El peldaño = `OfferValueLevel` del engine (5 rungs canónicos) con **labels médicos** de display. NO se inventan peldaños.
+- **RN-3** · Precio nunca hardcoded; moneda `tenant_locale`; soporta **fijo o rango** ("desde $X").
+- **RN-4** · Soporta **paquete/multi-sesión** (`total_sessions_count`).
+- **RN-5** · **Recurrente** = atributo del servicio (flag + frecuencia), aplicable en cualquier peldaño; NO es un peldaño.
+- **RN-6** · **Seña + financiamiento por servicio** (config en Lisa); Adrián/Propuestas lo consumen.
+- **RN-7** · Edición (crear/precio/activar) = **`admin_clinic` + `owner`**; `doctor` + `nurse` + `staff` = read-only.
+- **RN-8** · La descripción default se genera en **voz de marca** (lisa-marca); editable.
+- **RN-9** · Link servicio↔doctor **opcional** (N doctores); sin doctores la UI avisa + el agente degrada. Con doctores → match canal-inbound RN-17.
+- **RN-10** · **Un toggle "Activo"** (el agente lo conoce + vende). El toggle "landing" se eliminó de esta story (la landing pública es `lisa-landing-public`, otra historia).
+- **RN-15** · El catálogo tiene **buscador + filtros** (mismo patrón que staff: buscar por nombre + filtro especialidad + filtro activo).
+- **RN-11** · Precio del servicio ≥ 0 (Zod + backend). Los peldaños son FIJOS — el peldaño es el `value_level` del servicio, sin precio propio ni override.
+- **RN-12** · Catálogo **por-tenant**, scope clínica **opcional** por servicio (null = todas). Tenant-isolation siempre.
+- **RN-13** · El catálogo **NO es PHI** (info comercial) → tenant-isolation raíz, sin dual-filter PHI.
+- **RN-14** · Spanish neutro LatAm en toda la UI.
+
+### Criterios de aceptación (AC — feature-done)
+
+- **AC-1** · Toggle Catálogo|Escalera persiste en URL (`?view=`).
+- **AC-2** · CRUD de servicios con los campos del § Modelo (fijo/rango, paquete, recurrente, seña/financiamiento, doctores, peldaño, toggle único Activo).
+- **AC-3** · Escalera: 5 peldaños FIJOS; servicios ubicados por su `value_level`; drag mueve de peldaño; **peldaño vacío muestra qué va ahí + ejemplos por vertical + "crear aquí"** (autoexplicativo). SIN workspace de peldaño ni override.
+- **AC-4** · Workspace de servicio = patrón **staff** (`EntitySubNavBar`, NO Shadcn tabs): **6 leaves** Detalle · **Para Adrián** · Doctores · Plan de pago · Prueba social · Stats; back vuelve a Servicios. Contenido por leaf = § Workspace del servicio.
+- **AC-4.bis** · Leaf **"Para Adrián"** entrega el argumentario must-have: candidatura + contraindicaciones + condiciones de escalada + FAQ (pares) + objeciones→respuestas (5) + diferenciadores + palabras clave/sinónimos.
+- **AC-9** · Crear servicio: form (Sheet) con campos esenciales + **selector de peldaño autoexplicativo** (cada opción dice qué va ahí + ejemplos) + Lisa redacta la descripción en voz de marca. (El argumentario completo se enriquece luego en la ficha.)
+- **AC-10** · Catálogo con **buscador + filtros** (nombre + especialidad + activo), patrón staff.
+- **AC-5** · Link servicio↔doctor persiste y es consultable (cimiento canal-inbound RN-17).
+- **AC-6** · **KEYSTONE:** un servicio activo aparece en el conocimiento del agente (verificable live: `TenantKnowledgeBuilder` lo inyecta / Adrián lo cita).
+- **AC-7** · Seed presets dental/estética adoptables desde el empty-state.
+- **AC-8** · RBAC (admin/owner editan, resto read-only) + cross-tenant bloqueado + a11y (keyboard drag + axe).
+
+---
+
+## § Wireframes (mockups · v2 dentro del shell · cambios Chris 2026-06-06)
+
+`mockups/` — **shell-organism completo verbatim** (TopBar + Ribbon Lisa + SubTabsBar + ValeriaSidebar 50/50, portado de lisa-marca v2.1 + `EntitySubNavBar` shipped). `_shared.css` = chrome canónico + clases servicios. Tokens HSL de `globals.css`, datos LatAm reales, Spanish neutro.
+
+- `catalogo.html` — sub-tab Servicios → N3 SubSubTabsBar **[Catálogo · Escalera]** · grid de tarjetas (icono · peldaño badge · duración · precio fijo/rango · doctores o aviso "sin doctores" · chips seña/cuotas · recurrente · 2 switches Activo/Landing) + empty-state con seed presets.
+- `escalera.html` — **5 peldaños FIJOS** (labels médicos sobre `OfferValueLevel`) **autoexplicativos**: cada peldaño dice qué va ahí; el **vacío muestra ejemplos por vertical + "crear aquí"**. Drag mueve de peldaño. SIN drawer de override.
+- `servicio-workspace.html` — `[offer-id]` con **`EntitySubNavBar` (patrón staff · NO tabs)**: back ‹ Servicios + entidad + leaves Detalle/Doctores/Plan-pago/Reseñas/Stats + badge KEYSTONE (activo → Adrián lo conoce).
+- `nuevo-servicio.html` — **crear servicio (Sheet)**: form completo + **selector de peldaño autoexplicativo** (cada opción explica qué va ahí + ejemplos) + Lisa redacta descripción.
+
+```bash
+cd vitalia/docs/product/stories/vitalia-fase2-lisa-servicios/mockups && python3 -m http.server 8899
+# http://127.0.0.1:8899/catalogo.html · /escalera.html · /servicio-workspace.html · /nuevo-servicio.html
+```
+
+## § Componentes (reuse > new · verificar en `vitalia-design-system`)
+
+| Componente | Path (verificar) | reuse/new |
+|---|---|---|
+| Shell chrome (TopBar · Ribbon · SubTabsBar · ValeriaSidebar) | `components/shared/shell-organism/` | reuse (shipped) |
+| **SubSubTabsBar** (Catálogo · Escalera, N3-static) | `components/shared/shell-organism/SubSubTabsBar.tsx` | reuse (shipped) |
+| **EntitySubNavBar** (workspace servicio, patrón staff · NO tabs) | `components/shared/shell-organism/EntitySubNavBar.tsx` | reuse (shipped · = lisa-doctores) |
+| Card · Badge · Switch · Select · Avatar | `components/ui/{card,badge,switch,select,avatar}.tsx` | reuse |
+| **Input + Search icon (buscador) + Select (filtros)** — patrón `StaffDirectoryHeader` | `components/ui/{input,select}.tsx` | reuse |
+| Sheet (crear servicio) | `components/ui/sheet.tsx` | reuse |
+| DnD (mover servicio de peldaño) | `@dnd-kit/core` (ya en `adrian-embudo`) | reuse |
+| `ServiciosDirectoryHeader` (título + buscador + filtros + Nuevo) · `ServiceCard` · `EscaleraView` (5 rungs fijos) · `RungColumn` (con guía de vacío) · `ServiceWorkspace` + leaves (`DetalleView` · **`ParaAdrianView`** argumentario · `DoctoresView` · `PlanPagoView` · `PruebaSocialView` · `StatsView`) · `SeedPresetCard` · `NuevoServicioSheet` (rung-picker autoexplicativo) · `FaqPairList` + `ObjecionPairList` (pares editables) | `features/lisa/components/servicios/` | NEW (feature-local) |
+
+> ★ Eliminados del scope (Chris 2026-06-06): `LadderSlotWorkspace`, ruta `ladder/[slot-id]`, `pricing_override`/`cta_copy` por slot, Shadcn `Tabs` en el workspace. El workspace usa `EntitySubNavBar` (consistencia con staff).
+
+## § Decisiones RONDA 1 (cerradas — interrogatorio gate)
+
+Batch 1: todo servicio = Offer · catálogo por-tenant + scope clínica opcional · precio fijo+rango · paquetes en MVP.
+Batch 2: labels médicos sobre el enum engine · recurrente = atributo (no peldaño) · seña/financiamiento por servicio en Lisa.
+Batch 3: link doctor opcional pero recomendado · RBAC admin+owner editan / resto read-only · dos toggles (activo + landing).
+
+## § Pendientes para /architect (no bloquean RONDA 1)
+- Forma exacta del schema brand-level (columnas en tabla offers vitalia vs tabla aparte) + el preset pack EP-2 (`offer/extensions.py`).
+- Dónde persiste el link servicio↔doctor (FK brand-level → `vitalia_doctors`).
+- Mapeo fino label médico ↔ `OfferValueLevel` + qué ejemplos `PROFESIONAL_SALUD` del engine se muestran como hints.
+- Contenido de los seed presets dental/estética (escalera ejemplo por vertical).
+
+## Próximo paso
+**✍ FIRMA 1 (intención)** sobre este § Mapa funcional + § Modelo → luego mockups per-component (catálogo card · escalera canvas · workspace servicio · drawer peldaño) con fidelidad de shell (ADR-003) → **✍ FIRMA 2** → RONDA 2 (Gherkin + matriz de cobertura) → transition refining→refined.

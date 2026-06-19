@@ -14,7 +14,11 @@
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import type { ServiceDetail } from "../../../../types/servicios.types";
+
+// Hoisted so the use-autosave mock and the assertions share the same spy.
+const { mockSchedule } = vi.hoisted(() => ({ mockSchedule: vi.fn() }));
 
 vi.mock("@clerk/nextjs", () => ({
   useAuth: () => ({ getToken: vi.fn(), isLoaded: true, isSignedIn: true }),
@@ -25,7 +29,7 @@ vi.mock("@/hooks/useTenantId", () => ({
 }));
 
 vi.mock("@/hooks/use-autosave", () => ({
-  useAutosave: () => ({ schedule: vi.fn(), status: "idle", flush: vi.fn() }),
+  useAutosave: () => ({ schedule: mockSchedule, status: "idle", flush: vi.fn() }),
 }));
 
 const mockUseServicioDetail = vi.fn();
@@ -166,5 +170,72 @@ describe("ParaAdrianView", () => {
     render(<ParaAdrianView offerId="offer-123" />);
     const indicators = screen.getAllByTestId("floating-autosave");
     expect(indicators).toHaveLength(1);
+  });
+
+  // ── G2-F12: empty/partial pairs must NOT autosave ───────────────────────────
+  // Domain FaqPair/ObjectionPair require both fields non-empty (a blank FAQ is
+  // invalid → BE 500). Adding a row must stay local until it has content.
+  function briefWith(over: Record<string, unknown> = {}) {
+    return makeServiceDetail({
+      sales_brief: {
+        id: "brief-empty",
+        offer_id: "offer-123",
+        candidate_ideal: null,
+        contraindications: null,
+        qualification_questions: null,
+        escalation_conditions: null,
+        requires_evaluation: false,
+        emotional_benefits: null,
+        pain_of_not_treating: null,
+        differentiators: null,
+        promos: null,
+        faq: [],
+        objections: [],
+        keywords: [],
+        problems_solved: null,
+        language_to_avoid: null,
+        updated_at: null,
+        ...over,
+      },
+    });
+  }
+
+  it("adding an empty FAQ pair does NOT trigger a save (G2-F12)", async () => {
+    const user = userEvent.setup();
+    mockUseServicioDetail.mockReturnValue({ data: briefWith() });
+    render(<ParaAdrianView offerId="offer-123" />);
+
+    await user.click(screen.getByRole("button", { name: /agregar pregunta/i }));
+
+    // The empty row is visible (editable) but nothing is persisted.
+    expect(mockSchedule).not.toHaveBeenCalled();
+  });
+
+  it("saves a FAQ pair only once BOTH fields have content (G2-F12)", async () => {
+    const user = userEvent.setup();
+    mockUseServicioDetail.mockReturnValue({ data: briefWith() });
+    render(<ParaAdrianView offerId="offer-123" />);
+
+    await user.click(screen.getByRole("button", { name: /agregar pregunta/i }));
+
+    // Question only → still incomplete → no save.
+    await user.type(screen.getByPlaceholderText("¿Pregunta del paciente?"), "¿Duele?");
+    expect(mockSchedule).not.toHaveBeenCalled();
+
+    // Answer too → now complete → save fires, never with an empty pair.
+    await user.type(screen.getByPlaceholderText("Respuesta que da Adrián…"), "No");
+
+    expect(mockSchedule).toHaveBeenCalled();
+    const sentFaqs = mockSchedule.mock.calls
+      .map((c) => c[0]?.faq)
+      .filter((f): f is { question: string; answer: string }[] => Array.isArray(f));
+    // Last payload carries the complete pair…
+    expect(sentFaqs.at(-1)).toEqual([{ question: "¿Duele?", answer: "No" }]);
+    // …and no payload ever contained a blank pair.
+    for (const faq of sentFaqs) {
+      for (const pair of faq) {
+        expect(pair.question.trim() === "" && pair.answer.trim() === "").toBe(false);
+      }
+    }
   });
 });

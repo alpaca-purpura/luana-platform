@@ -46,26 +46,25 @@ COMMITTING_FACTORY = "get_async_session_committing"
 # Add exemptions WITH justification in the commit message (shrink-only ratchet).
 KNOWN_NON_COMMITTING_MUTATIONS: frozenset[str] = frozenset(
     [
-        # ── BASELINE 2026-06-16 · AUDIT-PENDING (HB-50 suspects) ──────────────
-        # These 11 mutation handlers reach NO committing session in their
-        # Depends() closure. Some are genuine no-write handlers (OAuth-init,
-        # transcription that doesn't persist) = harmless; others ("commits brand",
-        # recommendation approve/reject/undo) MAY be silent-write-loss like the
-        # HB-50 origin. The gate baselines them shrink-only so it can block NEW
-        # violations today; each needs a /pm-vitalia live-verify audit (does the
-        # write actually persist? read it back from DB) before removal-or-fix.
+        # ── AUDITED 2026-06-18 (HB-80) — genuine no-write handlers ────────────
+        # The 2026-06-16 baseline of 11 was audited (code read-back of each
+        # handler's write path). 8 were REAL silent-write-loss (HB-50 class) and
+        # were FIXED by routing them through `get_async_session_committing`:
+        #   wizard start_draft/confirm_slot/extract_tenant_context/complete_onboarding
+        #     (draft writes via SqlAlchemyOnboardingProgressRepository.save = flush-only
+        #      "Caller commits" → fixed at the `get_onboarding_progress_repo` provider),
+        #   marketing approve/reject/undo_recommendation (status transition + sync
+        #     audit-log INSERT, neither committed),
+        #   scheduling send_appointment_reminder (HIPAA-lite sync audit-log INSERT).
+        # simulate_personality came off the list too: its closure now reaches the
+        # committing session via the shared draft provider (and it is read-only).
+        #
+        # The 2 below are genuine NO-WRITE mutation handlers: they hold a session
+        # only for read-only auth/context resolution and delegate to a service
+        # that does no DB write. Committing them would be misleading. Shrink-only.
         # SSoT: docs/process/harness-backlog.md HB-50 + HB-80.
-        "vitalia/backend/src/modules/vitalia/copilot/api/routes/wizard_onboarding_routes.py::complete_onboarding",
-        "vitalia/backend/src/modules/vitalia/copilot/api/routes/wizard_onboarding_routes.py::confirm_slot",
-        "vitalia/backend/src/modules/vitalia/copilot/api/routes/wizard_onboarding_routes.py::extract_tenant_context",
-        "vitalia/backend/src/modules/vitalia/copilot/api/routes/wizard_onboarding_routes.py::simulate_personality",
-        "vitalia/backend/src/modules/vitalia/copilot/api/routes/wizard_onboarding_routes.py::start_draft",
-        "vitalia/backend/src/modules/vitalia/inbox/api/router.py::transcribe_audio",
-        "vitalia/backend/src/modules/vitalia/marketing/api/routes.py::approve_recommendation",
-        "vitalia/backend/src/modules/vitalia/marketing/api/routes.py::connect_channel",
-        "vitalia/backend/src/modules/vitalia/marketing/api/routes.py::reject_recommendation",
-        "vitalia/backend/src/modules/vitalia/marketing/api/routes.py::undo_recommendation",
-        "vitalia/backend/src/modules/vitalia/scheduling/api/notify_router.py::send_appointment_reminder",
+        "vitalia/backend/src/modules/vitalia/inbox/api/router.py::transcribe_audio",  # Whisper; no DB write
+        "vitalia/backend/src/modules/vitalia/marketing/api/routes.py::connect_channel",  # OAuth-init; returns auth URL
     ]
 )
 

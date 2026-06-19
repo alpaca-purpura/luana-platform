@@ -107,9 +107,13 @@ export interface EntityPickerProps<T extends EntityPickerItem = EntityPickerItem
 
 // ── Helpers ─────────────────────────────────────────────────────────────────────
 
-/** Derive up-to-2-char initials from a name when none are provided. */
-function deriveInitials(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
+/**
+ * Derive up-to-2-char initials from a name when none are provided.
+ * Null-safe by contract: a picker must NEVER crash on a value whose name is
+ * missing/undefined (e.g. a stale or partial cache entry) — returns "?".
+ */
+function deriveInitials(name: string | null | undefined): string {
+  const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "?";
   if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
   return (parts[0]![0]! + parts[parts.length - 1]![0]!).toUpperCase();

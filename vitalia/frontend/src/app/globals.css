@@ -29,6 +29,33 @@
  */
 @source "../../../../core/@luana/ui-kit/src";
 
+/* G2-F7: explicit z-index utilities for the shared-shell tokens (@luana/design-tokens
+ * Z_INDEX_CLASSES). The kit applies them via `${Z_INDEX_CLASSES.DROPDOWN}` runtime
+ * interpolation, so the literal `z-[85]` never reaches Tailwind v4's JIT scanner →
+ * the EntityPicker popover got the `z-[85]` class but NO css rule (z:auto) and
+ * rendered BEHIND the sticky ServiceStatusBar (z-10). These authored utilities
+ * guarantee the rules regardless of scanning. Values mirror Z_INDEX_CLASSES. */
+@layer utilities {
+  .z-\[40\] { z-index: 40; }
+  .z-\[50\] { z-index: 50; }
+  .z-\[60\] { z-index: 60; }
+  .z-\[70\] { z-index: 70; }
+  .z-\[80\] { z-index: 80; }
+  .z-\[85\] { z-index: 85; }
+  .z-\[90\] { z-index: 90; }
+  .z-\[100\] { z-index: 100; }
+}
+
+/* G2-F7 (the actual fix): Radix poppers render their Content as `position: static`
+ * INSIDE a `position: fixed` wrapper — so a z-index on the Content (e.g. the
+ * popover's `z-[85]`) is INERT (z-index needs a positioned element). The popover
+ * therefore stacked BEHIND the sticky ServiceStatusBar (z-10). Put the z-index on
+ * the positioned wrapper so every popover/dropdown/select clears the shell's sticky
+ * bars (ribbon z-20 · status z-10). Plain rule (not @layer) → always emitted. */
+[data-radix-popper-content-wrapper] {
+  z-index: 85;
+}
+
 /* ─── Shadcn standard tokens + agent tokens (F1-S0) ─────────────────────────
  * SSoT: vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md § 5.1
  * Format: H S% L% (consumed via hsl(var(--X)))

@@ -9,10 +9,23 @@
  *   - ChipOrigen (estándar/personalizado)
  *   - FichaCompletenessChip (completitud del servicio)
  *
- * Activo toggle fires `onToggleActive` immediately (POST, NOT autosave field).
+ * Activating fires a confirm dialog first (G2-F2a: hacer público un servicio es
+ * una acción visible, se avisa antes). Deactivating fires immediately.
+ * The toggle is a POST (NOT an autosave field).
  */
 
-import { Switch } from "@luana/ui-kit";
+import { useState } from "react";
+import {
+  Switch,
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@luana/ui-kit";
 import { Label } from "@/components/ui/label";
 import { ChipOrigen } from "./ChipOrigen";
 import { FichaCompletenessChip } from "./FichaCompletenessChip";
@@ -39,6 +52,17 @@ export function ServiceStatusBar({
   isToggling = false,
 }: ServiceStatusBarProps) {
   const switchId = `activo-switch-${servicio.offer_id}`;
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  // Activating → confirm first (G2-F2a). Deactivating → fire immediately.
+  const handleSwitch = (next: boolean) => {
+    if (next) setConfirmOpen(true);
+    else onToggleActive?.(false);
+  };
+  const confirmActivate = () => {
+    setConfirmOpen(false);
+    onToggleActive?.(true);
+  };
 
   return (
     <div
@@ -51,13 +75,31 @@ export function ServiceStatusBar({
           id={switchId}
           checked={servicio.is_active}
           disabled={isToggling}
-          onCheckedChange={onToggleActive}
+          onCheckedChange={handleSwitch}
           aria-label={servicio.is_active ? "Desactivar servicio" : "Activar servicio"}
         />
         <Label htmlFor={switchId} className="text-sm cursor-pointer">
           {servicio.is_active ? "Activo" : "Inactivo"}
         </Label>
       </div>
+
+      {/* G2-F2a: confirmación antes de activar (hacer el servicio público) */}
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Activar este servicio?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Al activarlo, “{servicio.public_name || "este servicio"}” queda visible
+              y disponible para tus pacientes y para los agentes. Puedes desactivarlo
+              cuando quieras.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmActivate}>Activar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <div className="h-4 w-px bg-border" aria-hidden="true" />
 

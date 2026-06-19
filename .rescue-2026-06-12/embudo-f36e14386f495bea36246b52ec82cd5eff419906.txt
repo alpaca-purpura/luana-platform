@@ -1,0 +1,126 @@
+---
+story_id: vitalia-fase2-adrian-embudo
+type: ui-story
+agent_owner: adrian
+map_zone: agentes
+map_box: adrian
+module: crm                          # ★ corregido 2026-06-03 (era sales_pipeline — duplicaba crm shipped; Chris ratificó EXTEND crm)
+capability: crm/adrian-embudo
+state: developing                      # ★ /dev-team autonomous build 2026-06-03 (ready → developing); PAUSED — colisión sesión concurrente (ver build_status)
+build_status:                          # ★ 2026-06-03 — build PAUSADO por colisión multi-sesión
+  completed: [T-BE-1, T-FE-1]          # T-BE-1 (BE funnel) + T-FE-1 (FE primitivas) implementados + tests GREEN
+  pending: [T-BE-2, T-AG-1, T-FE-2, T-FE-3, T-E2E-1, T-DEMO-1]
+  blocker: "Sesión inbox CONCURRENTE VIVA usó git add -A → barrió mis archivos T-BE-1 a SU commit 811f01b6 (mislabeled 'T-5 inbox'). T-BE-1 está en historia (entangled) + pushed. T-FE-1 NEW files untracked. PAUSA: dos /dev-team autónomos sobre el mismo hub con commits no-pathspec = contaminación cross-story. Requiere coordinación Chris (no untangle unilateral — 811f01b6 tiene T-5 inbox live)."
+  t_be_1_commit: 811f01b6              # entangled con inbox T-5 (no es mi commit, pero contiene mi T-BE-1)
+architecture_pattern: ADR-vitalia-004
+adr_004_compliance: full               # ★ 03-arch.md § Architecture Decisions
+autonomous_mode: true                  # ★ Chris ratificó (architect→dev-team→auditor→[demo_signoff]→merge)
+ready_package:                         # ★ 6 artifacts /architect
+  - 03-arch.md
+  - 03-arch-be.md
+  - 03-arch-fe.md
+  - 04-validators.yaml
+  - 05-guidelines.md
+  - 06-tickets.yaml
+  - dispatch-plan.md
+last_modified: '2026-06-03T18:30:00.000Z'
+ratified_by_chris: true                # ★ "go al spec" (Chris 2026-06-03)
+parallel_safe: true
+priority: critical
+estimated_dev_days: 8-11               # 1 story; si se parte S4a/S4b baja (§ Decisiones abiertas #3)
+dependencies:
+  hard:
+    - vitalia-fase1-empty-states
+    - vitalia-fase1-routing-shell
+    - vitalia-payment-adapter-mvp       # solo para el side-effect real → en esta story = STUB MSW
+  soft:
+    - vitalia-fase2-adrian-inbox
+    - vitalia-fase2-valeria-agenda
+blocks_hard: []
+blocks_soft:
+  - vitalia-fase2-adrian-propuestas
+  - vitalia-fase2-camila-reactivar
+reuse_map_summary: >-
+  EXTEND crm (Lead/lead_service/lead_dto/lead_repository + FE crm-shared/use-leads
+  ya shipped) · CONSUME sustrato agéntico engine (closer-studio + AgentStateCheckpoint
+  + transitions + diagnose + KPIs) vía Extension SDK · reuse EntitySubNavBar (de
+  doctores) · @dnd-kit/core ya instalado · NEW funnel clínico 6 etapas + SLA dental
+spawned_at: 2026-05-22T00:00:00.000Z
+supersedes:
+  - vitalia-slice-1-pipeline
+next_action: "READY cerrado 2026-06-03 (/architect). Ready package 6 artifacts (03-arch{,-be,-fe}.md · 04-validators.yaml · 05-guidelines.md · 06-tickets.yaml · dispatch-plan.md). adr_004_compliance=full. Existing-systems audit: EXTEND crm + REUSE EntitySubNavBar/ChannelBadge(extend)/TogglePill/@dnd-kit · CONSUME engine read-only (NO mount, NO schema edit §3) · NET-NEW funnel justificado (sin mirror cross-brand). 9 tickets (≤10) DAG paralelizable. → AUTO-HANDOFF /dev-team (autonomous_mode). Único gate humano = demo_signoff Chris (T-DEMO-1). Pipeline: dev-team→auditor→[GATE demo_signoff]→merge."
+spec_artifact: 01-spec.md             # ★ SSoT funcional (v3). El detalle vive AQUÍ, no en este checkpoint.
+po_ux_version: 3
+detail_pattern: page_entitysubnavbar  # opción C ratificada UX (Chris 2026-06-03)
+lead_detail_scope: core_2_tabs        # ★ v3: Resumen[Datos+Score] · Historial — vistas EN la barra (EntitySubNavBar, como Staff), NO Shadcn Tabs en body
+new_lead_surface: route_workspace     # ★ v3: /adrian/embudo/nuevo (hoja con URL, no modal)
+frozen_surface: subsubtab_recuperar   # ★ v3: V4 = sub-sub-tab /adrian/embudo/recuperar (no sección del board); Adrián corto plazo, Camila largo plazo
+pipeline_model: conversation_first    # propuesta (confirmar)
+ratified_visual_by_chris: true        # ★ Chris vio + aprobó mockup embudo-v3.html + § Design specification D.0-D.16 (ADR-003)
+ratified_visual_at: 2026-06-03
+design_spec_complete: true            # § Design specification D.0-D.16 (contrato visual fiel al mockup)
+phi_classification: non_phi           # Lead = marketing prospect (crm/domain/lead.py); hipaa-lite full-set NO aplica
+release: F3
+cap_target: crm/adrian-embudo
+cap_change_type: new
+parent_story: null
+---
+
+# F2-S4 vitalia-fase2-adrian-embudo — checkpoint
+
+> **★ Cuerpo adelgazado 2026-06-03.** El `Scope verbatim` viejo (§1-§9, 6 etapas `considerando/listo`, lead-detail 6 tabs, "Nuevo lead modal", paths `sales_pipeline/...`) fue **superado por `01-spec.md` v3** y removido por estar stale + contradictorio. Este checkpoint = tablero de control liviano (lo lee el cockpit). **El detalle funcional vive en `01-spec.md`** (vistas · reglas RN-1..18 · gherkin · dataset · componentes).
+
+## Goal
+
+Sub-tab **Embudo** de Adrián = **superficie de supervisión** sobre Adrián (empleado-IA que vende). Adrián conversa/califica/puntúa/mueve leads por un funnel clínico dental (Interesado → Calificando → Consulta agendada → Plan presentado → **Reservado=depósito** → Decidió no); la coordinadora supervisa (tomar control · instrucción oculta · override de etapa · recuperación); Valeria coordina. Embudo con SubSubTabsBar **Tablero** (Kanban|Lista, solo HOT) · **Recuperar** (congelados + diagnose, corto plazo Adrián; largo plazo = Camila). Detalle del lead = **página con URL propia** (vistas Resumen·Historial EN la barra EntitySubNavBar, como Staff — sin tabs en el body). Alta de lead = **ruta-hoja** `/nuevo` → redirect+highlight. Card = **proyección read-only** de estado+log (señales/micro-log/badges, no texto libre). Módulo `crm` (EXTEND), Lead **non-PHI**.
+
+## Anti-objetivos (anti-creep)
+
+- NO recrear el engine agéntico — CONSUMIR `core/luana-core-sales-agent/closer_studio` vía Extension SDK.
+- NO editor de customización de etapas per-vertical (defaults dental sirven MVP — story dedicada futura).
+- NO side-effect real de pago/agenda en `→Reservado` (STUB MSW; `payment-adapter-mvp` solo `refined`).
+- NO AI-suggest next-stage automático · NO bulk-action · NO lead-merge.
+- NO intercepting-route overlay del detalle (esta story = página C directa).
+
+## SSoT funcional → `01-spec.md` v3
+
+| Necesitás… | Sección del spec |
+|---|---|
+| Qué muestra cada vista (board · lista · página lead 2 tabs · congelados · nuevo lead) | § Vistas (V1-V5) |
+| Reglas de negocio (SLA, override manual, auto-freeze, orden de columnas, board scope) | § Reglas RN-1..18 |
+| Data realista para el mockup | § Dataset canónico |
+| Scenarios Gherkin + matriz de cobertura | § Gherkin + § Matriz |
+| Componentes + átomos + paths FSD | § Componentes |
+| Endpoints + RQ keys + forms | § Data flow |
+| Lo que falta cerrar | § Decisiones abiertas (#1-7) |
+
+## Gates pendientes pre-`refined`
+
+1. **Cerrar § Decisiones abiertas** (#1-7): consumir sustrato engine · conversation-first · alcance 1-story vs S4a/S4b · dataset · board-scope RN-18 · nuevo-lead ruta vs subsubtab · números SLA RN-11/13.
+2. **Gate ADR-vitalia-003** — mockup-per-component (KanbanBoard+LeadCard+drag · SubSubTabsBar `Tablero·Recuperar` · LeadsTable · LeadWorkspace cabecera EntitySubNavBar + Resumen/Historial · NewLeadPage `/nuevo` · RecuperarView · Header/Filters/Metrics) dentro del wrapper-shell portado verbatim → `ratified_visual_by_chris: true`. **Bloqueante.**
+3. **ADR-vitalia-004** ya citado en `01-spec.md` frontmatter ✓.
+
+## Dependencies (resumen — detalle en spec § Prior art / Data flow)
+
+- **Hard:** `vitalia-fase1-empty-states` (shell sub-tab nav) · `vitalia-fase1-routing-shell` (App Router incluye `adrian/embudo` + `[leadId]` + `/nuevo`) · `vitalia-payment-adapter-mvp` (solo para el side-effect real — STUB aquí).
+- **Soft:** `vitalia-fase2-adrian-inbox` (leads de conversación) · `vitalia-fase2-valeria-agenda` (slot al `→Consulta agendada`/`→Reservado`).
+- **Desbloquea:** `vitalia-fase2-adrian-propuestas` · `vitalia-fase2-camila-reactivar`.
+
+## Riesgos
+
+| Riesgo | Prob | Impacto | Mitigación |
+|---|---|---|---|
+| @dnd-kit/core × React 19 | Baja | Alto | ya instalado + verificar smoke |
+| Stage transition race (2 operadores) | Media | Medio | optimistic lock `version` → 409 (SC-5, RN-4) |
+| Side-effect cascade `→Reservado` falla parcial | Media | Alto | STUB MSW en esta story; saga real en payment-adapter |
+| Drag-drop mobile pobre | Alta | Medio | long-press + KeyboardSensor + tests `@mobile` |
+| SLA dental no fit todos los clinics | Alta | Bajo | story dedicada per-vertical futura — dental sirve MVP |
+
+## Referencias
+
+- **Spec (SSoT):** `01-spec.md`
+- **Research:** `research/{00-propuesta-embudo-agentico, 01-legacy-pipeline, 02-core-engine, 03-agentic-best-practices, 04-detail-entry-pattern, 05-lead-detail-benchmark, 06-pipeline-sla-benchmark}.md`
+- **Mockups:** `mockups/` (A panel · B drawer · C página ratificada · D híbrido) — regenerar C con dataset canónico tras "go al spec"
+- **Bitácora:** `chris-input.md`
+- **ADRs:** ADR-vitalia-003 (mockup-per-component) · ADR-vitalia-004 (shell-feature)
+- **HIPAA-lite:** `vitalia/.claude/rules/hipaa-lite.md` (Lead non-PHI → solo tenant-isolation + audit)

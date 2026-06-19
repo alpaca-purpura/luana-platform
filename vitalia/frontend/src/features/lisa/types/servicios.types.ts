@@ -128,13 +128,18 @@ export interface SalesBrief {
 }
 
 /**
- * Mirror of SpecialistLinkDTO. NO display_name / avatar_url on the wire —
- * useRoster joins the doctor display fields FE-side from the staff directory.
+ * Mirror of SpecialistLinkDTO. G2-F13: BE now enriches with display_name +
+ * specialty when the request carries X-Clinic-ID (dual-scoped roster join).
+ * Fields are optional to remain backwards-compatible with older BE responses.
  */
 export interface SpecialistLink {
   id: string;
   offer_id: string;
   doctor_id: string;
+  /** Resolved from the clinic roster when X-Clinic-ID is present. */
+  display_name?: string | null;
+  /** Specialty label resolved from the clinic roster. */
+  specialty?: string | null;
 }
 
 /** Mirror of CaseDTO (PHI). NOTE: never returned by the detail endpoint (always []). */
@@ -202,6 +207,59 @@ export interface ServiceDetail extends ServiceListItem {
   recurrence_interval?: ValueWithUnit | null;     // revealed when modality=recurrente
   initial_appt_duration_minutes?: number | null;
   initial_appt_type?: string | null;
+
+  // ── Pricing (T-R-planpago — 3-charge model wired to BE) ─────────────────────
+  /** ThreeChargePricingDTO — null on older services that haven't configured pricing. */
+  pricing?: ThreeChargePricing | null;
+}
+
+// ── 3-charge pricing types (T-R-planpago) ────────────────────────────────────
+//
+// Mirror of ThreeChargePricingDTO in offer/api/dtos.py (snake_case, from_attributes).
+// The BE stores pricing as a JSONB blob on the offer row.
+
+/** "monto" = fixed amount · "porcentaje" = % of total price. */
+export type ChargeKind = "monto" | "porcentaje";
+
+/** "fijo" = fixed price · "rango" = "desde X" display. */
+export type PriceMode = "fijo" | "rango";
+
+/** Mirror of ReservationConfigDTO. */
+export interface ReservationConfig {
+  enabled: boolean;
+  amount: number | null;
+  kind: ChargeKind;
+}
+
+/** Mirror of AdvanceConfigDTO. */
+export interface AdvanceConfig {
+  enabled: boolean;
+  amount: number | null;
+  kind: ChargeKind;
+}
+
+/** Mirror of FinancingConfigDTO. */
+export interface FinancingConfig {
+  offered: boolean;
+  installments: number | null;
+  interest_kind: string | null;
+  finance_partner: string | null;
+}
+
+/**
+ * Mirror of ThreeChargePricingDTO — the 3-cobro model.
+ *
+ * RN-23: currency is read-only on this screen (comes from tenant/offer config).
+ * The FE sends servicio.currency as-is in every pricing patch — NEVER edits it.
+ */
+export interface ThreeChargePricing {
+  price: number | null;
+  price_mode: PriceMode;
+  price_publishable: boolean;
+  currency: string | null;
+  reservation: ReservationConfig | null;
+  advance: AdvanceConfig | null;
+  financing: FinancingConfig | null;
 }
 
 // ── Knowledge extraction (Sub-phase A: extract-only) ────────────────────────────
@@ -345,6 +403,12 @@ export interface ServicePatchRequest {
   recurrence_interval?: ValueWithUnit | null;
   initial_appt_duration_minutes?: number | null;
   initial_appt_type?: string | null;
+  // Pricing (T-R-planpago)
+  /**
+   * Full ThreeChargePricingDTO — must be the COMPLETE object on every patch.
+   * price_mode + price_publishable are required by the BE (no defaults).
+   */
+  pricing?: ThreeChargePricing | null;
 }
 
 export interface ServiceActivateRequest {

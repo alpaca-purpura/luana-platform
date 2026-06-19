@@ -30,7 +30,7 @@ import {
 } from "../../../api/servicios";
 import { ServiceStatusBar } from "../ServiceStatusBar";
 import { KnowledgeSourcesPanel } from "../KnowledgeSourcesPanel";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 /**
  * Extracts the active leaf from the URL pathname for static-segment routes.
@@ -83,6 +83,12 @@ export function ServicioWorkspaceShell({
 }: ServicioWorkspaceShellProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // G2-F10: origin-aware back-pill. The catalog/escalera cards navigate here with
+  // ?from=catalogo|escalera. Default catalogo (never the generic "Servicios").
+  const origin = searchParams.get("from") === "escalera" ? "escalera" : "catalogo";
+  const originLabel = origin === "escalera" ? "Escalera" : "Catálogo";
 
   // Derive activeLeaf from URL when not explicitly provided (static-segment routes).
   // Prop takes priority (e.g., test fixtures, layout SSR context).
@@ -104,8 +110,8 @@ export function ServicioWorkspaceShell({
   // EntityPicker search fn — stable ref (latest-ref pattern in the hook).
   const pickerSearchFn = useServicioPickerSearchFn();
 
-  // Root-pill destination → catalog grid.
-  const rootHref = `/${tenantId}/lisa/servicios`;
+  // Root-pill destination → the origin view (catálogo o escalera) — G2-F10.
+  const rootHref = `/${tenantId}/lisa/servicios/${origin}`;
 
   // Build leaf hrefs from static segments (NOT [leaf] dynamic routes).
   const leaves = SERVICIO_LEAVES.map((leaf) => ({
@@ -114,9 +120,10 @@ export function ServicioWorkspaceShell({
     href: `/${tenantId}/lisa/servicios/${offerId}/${leaf.segment}`,
   }));
 
-  // EntityPicker → navigate to the selected servicio workspace (resumen leaf).
+  // EntityPicker → switch servicio, preserving the origin so the back-pill stays
+  // consistent (G2-F10).
   const handlePickerSelect = (item: ServicioPickerItem) => {
-    router.push(`/${tenantId}/lisa/servicios/${item.id}/resumen`);
+    router.push(`/${tenantId}/lisa/servicios/${item.id}/resumen?from=${origin}`);
   };
 
   // Entity descriptor for the SubNavBar identity slot.
@@ -129,7 +136,7 @@ export function ServicioWorkspaceShell({
       entity={entity}
       leaves={leaves}
       rootHref={rootHref}
-      rootLabel="Servicios"
+      rootLabel={originLabel}
       isLoading={isLoading && !initialServicio}
       activeLeaf={activeLeaf}
       entityIdentitySlot={
@@ -148,12 +155,12 @@ export function ServicioWorkspaceShell({
           isToggling={isToggling}
         />
       )}
-      {children}
       {/* ── KnowledgeSourcesPanel — persistent cross-leaf (C.2.4) ──────────
+          G2-F8: al TOP del contenido (Chris: "arriba de todo"), bajo el StatusBar.
           Mounted here so it survives leaf navigation (not per-leaf).
           Native <details> collapsible per mockup (no extra Radix dep).
           extract-only in Sub-phase A (RAG blocked behind /pm-luana). */}
-      <details className="mx-5 mb-6 rounded-lg border bg-card" open={false}>
+      <details className="mx-5 md:mx-6 mt-5 mb-2 rounded-lg border bg-card" open={false}>
         <summary className="flex cursor-pointer select-none items-center gap-2 px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/50">
           <span>Fuentes de conocimiento</span>
           <span className="ml-auto text-xs text-muted-foreground">Lisa puede leer documentos para completar la ficha</span>
@@ -162,6 +169,8 @@ export function ServicioWorkspaceShell({
           <KnowledgeSourcesPanel offerId={offerId} />
         </div>
       </details>
+      {/* G2-F1: leaf content gutter (StatusBar above stays full-bleed = ribbon). */}
+      <div className="px-5 py-5 md:px-6">{children}</div>
     </EntityWorkspaceLayout>
   );
 }

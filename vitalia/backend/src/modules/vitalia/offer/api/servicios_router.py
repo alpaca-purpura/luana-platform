@@ -207,10 +207,23 @@ def _build_service(session: AsyncSession) -> _ServiceBundle:
 # ============================================================
 
 
-async def _detail_dto(bundle: _ServiceBundle, *, tenant_id: UUID, view: ServiceView) -> ServiceDetailDTO:
-    """Compose the workspace DTO: catalog headline + sub-resources (tenant-scoped)."""
+async def _detail_dto(
+    bundle: _ServiceBundle,
+    *,
+    tenant_id: UUID,
+    view: ServiceView,
+    clinic_id: UUID | None = None,
+) -> ServiceDetailDTO:
+    """Compose the workspace DTO: catalog headline + sub-resources (tenant-scoped).
+
+    *clinic_id* is optional (G2-F13-BE): when present, specialist links are
+    enriched with ``display_name`` + ``specialty`` from the doctor roster.
+    When absent the enrichment is skipped and those fields are ``None``.
+    """
     brief = await bundle.sales_brief.get(tenant_id=tenant_id, offer_id=view.offer_id)
-    links = await bundle.specialists.list_for_offer(tenant_id=tenant_id, offer_id=view.offer_id)
+    enriched_links = await bundle.specialists.list_for_offer(
+        tenant_id=tenant_id, offer_id=view.offer_id, clinic_id=clinic_id
+    )
     testimonials = await bundle.proof.list_testimonials(tenant_id=tenant_id, offer_id=view.offer_id)
     return ServiceDetailDTO(
         offer_id=view.offer_id,
@@ -250,7 +263,18 @@ async def _detail_dto(bundle: _ServiceBundle, *, tenant_id: UUID, view: ServiceV
         pricing=ThreeChargePricingDTO.model_validate(view.pricing) if view.pricing is not None else None,
         candidate_for_library=view.candidate_for_library,
         sales_brief=SalesBriefDTO.model_validate(brief) if brief is not None else None,
-        specialists=[SpecialistLinkDTO.model_validate(link) for link in links],
+        # Build SpecialistLinkDTO explicitly to carry display_name + specialty
+        # from the enriched read model (G2-F13-BE).
+        specialists=[
+            SpecialistLinkDTO(
+                id=link.id,
+                offer_id=link.offer_id,
+                doctor_id=link.doctor_id,
+                display_name=link.display_name,
+                specialty=link.specialty,
+            )
+            for link in enriched_links
+        ],
         # cases are PHI (need clinic_id) — omitted from the generic workspace payload.
         cases=[],
         testimonials=[TestimonialDTO.model_validate(t) for t in testimonials],
@@ -293,15 +317,27 @@ async def list_services(
 async def get_service(
     offer_id: UUID,
     tenant_id: str = Header(alias="X-Tenant-ID"),
+    clinic_id_header: str | None = Header(default=None, alias="X-Clinic-ID"),
     session: AsyncSession = Depends(_get_db),
 ) -> ServiceDetailDTO:
-    """Return the workspace for a service. Cross-tenant / missing → 404 (no leak)."""
+    """Return the workspace for a service. Cross-tenant / missing → 404 (no leak).
+
+    When ``X-Clinic-ID`` is provided (G2-F13-BE) the response includes
+    ``display_name`` and ``specialty`` for each linked specialist.  The header
+    is **optional** — the endpoint remains fully functional without it.
+    """
     tenant = _tenant_uuid(tenant_id)
+    clinic: UUID | None = None
+    if clinic_id_header is not None:
+        try:
+            clinic = UUID(clinic_id_header)
+        except ValueError:
+            clinic = None  # invalid UUID → degrade gracefully, do not 422
     bundle = _build_service(session)
     view = await bundle.catalog.get_service(tenant_id=tenant, offer_id=offer_id)
     if view is None:
         raise HTTPException(status_code=404, detail="Service not found")
-    return await _detail_dto(bundle, tenant_id=tenant, view=view)
+    return await _detail_dto(bundle, tenant_id=tenant, view=view, clinic_id=clinic)
 
 
 @router.post(

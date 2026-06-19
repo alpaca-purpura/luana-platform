@@ -77,6 +77,14 @@ import type {
   CaseCreateRequest,
   KnowledgeExtractRequest,
   KnowledgeExtractResponse,
+  // Nested-resource responses — the BE returns the SUB-DTO (NOT the full
+  // ServiceDetail). G2-F3 (lisa-servicios round 2): typing these as
+  // ServiceDetail + setQueryData(detail) corrupted the cache (public_name lost)
+  // → EntityPicker crash. We type honestly + invalidate detail to refetch.
+  SalesBrief,
+  SpecialistLink,
+  ServiceTestimonial,
+  ServiceCase,
 } from "../types/servicios.types";
 
 // Client-side calls go SAME-ORIGIN relative (`/api/v1/offer/...`). See staff.ts
@@ -314,7 +322,11 @@ export function useActivateServicio() {
         },
       );
     },
-    onSuccess: () => {
+    onSuccess: (detail, { offerId }) => {
+      // G2-F2b: activate returns the full ServiceDetailDTO → seed the workspace
+      // detail cache so the StatusBar switch reflects the new state WITHOUT a
+      // full refresh (it previously only invalidated lists/escalera).
+      queryClient.setQueryData(serviciosKeys.detail(offerId), detail);
       void queryClient.invalidateQueries({ queryKey: serviciosKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: serviciosKeys.escalera() });
     },
@@ -431,9 +443,11 @@ export interface UseServicioDetailOptions {
 
 /**
  * useServicioDetail — the full workspace detail (sales_brief + specialists + cases
- * + testimonials nested). Catalog detail is NOT PHI (RN-13) → X-Tenant-ID only,
- * no actor/clinic gate. SSR seeds initialData so the workspace renders without a
- * fetch flash on first paint.
+ * + testimonials nested). G2-F13: passes X-Clinic-ID so the BE can enrich
+ * SpecialistLinkDTO with display_name + specialty (dual-scoped roster join).
+ * clinicId may be null for tenants without a resolved clinic; the BE degrades
+ * gracefully (display_name = null) when the header is absent.
+ * SSR seeds initialData so the workspace renders without a fetch flash on first paint.
  */
 export function useServicioDetail({
   offerId,
@@ -441,6 +455,7 @@ export function useServicioDetail({
 }: UseServicioDetailOptions) {
   const { getToken, isLoaded, isSignedIn } = useAuth();
   const tenantId = useTenantId();
+  const clinicId = useClinicId();
 
   return useQuery({
     queryKey: serviciosKeys.detail(offerId),
@@ -449,7 +464,7 @@ export function useServicioDetail({
       if (!token || !tenantId) throw new Error("Sin autenticación");
       return fetchClient<ServiceDetail>(
         `${API_BASE}/api/v1/offer/servicios/${offerId}`,
-        { token, tenantId },
+        { token, tenantId, clinicId },
       );
     },
     enabled: isLoaded && isSignedIn && !!tenantId && !!offerId,
@@ -494,8 +509,9 @@ export function usePatchField(offerId: string) {
 
 /**
  * useSalesBriefPatch — PATCH the sales brief ("Para Adrián" leaf). All fields
- * optional; sent per-field by the autosave coalescer. Returns the updated
- * ServiceDetail so the cache stays in sync.
+ * optional; sent per-field by the autosave coalescer. The BE returns the
+ * SalesBrief sub-DTO (NOT the full ServiceDetail) → we invalidate the detail
+ * query to refetch the authoritative workspace state (G2-F3 cache-corruption fix).
  */
 export function useSalesBriefPatch(offerId: string) {
   const queryClient = useQueryClient();
@@ -503,7 +519,7 @@ export function useSalesBriefPatch(offerId: string) {
   return useMutation({
     mutationFn: async (patch: SalesBriefPatchRequest) => {
       const { token, tenantId, actorHeaders } = await resolveAuth();
-      return fetchClient<ServiceDetail>(
+      return fetchClient<SalesBrief>(
         `${API_BASE}/api/v1/offer/servicios/${offerId}/sales-brief`,
         {
           token,
@@ -514,8 +530,8 @@ export function useSalesBriefPatch(offerId: string) {
         },
       );
     },
-    onSuccess: (detail) => {
-      queryClient.setQueryData(serviciosKeys.detail(offerId), detail);
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: serviciosKeys.detail(offerId) });
     },
   });
 }
@@ -535,7 +551,7 @@ export function useLinkSpecialist(offerId: string) {
       const { token, tenantId, actorHeaders } = await resolveAuth();
       if (!clinicId) throw new Error("Falta la clínica activa");
       const payload: SpecialistLinkRequest = { doctor_id: doctorId };
-      return fetchClient<ServiceDetail>(
+      return fetchClient<SpecialistLink>(
         `${API_BASE}/api/v1/offer/servicios/${offerId}/specialists`,
         {
           token,
@@ -547,8 +563,10 @@ export function useLinkSpecialist(offerId: string) {
         },
       );
     },
-    onSuccess: (detail) => {
-      queryClient.setQueryData(serviciosKeys.detail(offerId), detail);
+    // BE returns SpecialistLinkDTO (NOT ServiceDetail) → refetch the authoritative
+    // detail instead of overwriting it with a partial (G2-F3 root cause).
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: serviciosKeys.detail(offerId) });
     },
   });
 }
@@ -563,13 +581,15 @@ export function useUnlinkSpecialist(offerId: string) {
   return useMutation({
     mutationFn: async (doctorId: string) => {
       const { token, tenantId, actorHeaders } = await resolveAuth();
-      return fetchClient<ServiceDetail>(
+      return fetchClient<void>(
         `${API_BASE}/api/v1/offer/servicios/${offerId}/specialists/${doctorId}`,
         { token, tenantId, method: "DELETE", headers: actorHeaders },
       );
     },
-    onSuccess: (detail) => {
-      queryClient.setQueryData(serviciosKeys.detail(offerId), detail);
+    // BE returns 204 No Content → invalidate detail (overwriting with the empty
+    // body wiped the cache → EntityPicker crash, G2-F3).
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: serviciosKeys.detail(offerId) });
     },
   });
 }
@@ -583,7 +603,7 @@ export function useAddTestimonial(offerId: string) {
   return useMutation({
     mutationFn: async (payload: TestimonialCreateRequest) => {
       const { token, tenantId, actorHeaders } = await resolveAuth();
-      return fetchClient<ServiceDetail>(
+      return fetchClient<ServiceTestimonial>(
         `${API_BASE}/api/v1/offer/servicios/${offerId}/testimonials`,
         {
           token,
@@ -594,8 +614,9 @@ export function useAddTestimonial(offerId: string) {
         },
       );
     },
-    onSuccess: (detail) => {
-      queryClient.setQueryData(serviciosKeys.detail(offerId), detail);
+    // BE returns TestimonialDTO (NOT ServiceDetail) → invalidate detail (G2-F3).
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: serviciosKeys.detail(offerId) });
     },
   });
 }
@@ -607,13 +628,14 @@ export function useRemoveTestimonial(offerId: string) {
   return useMutation({
     mutationFn: async (testimonialId: string) => {
       const { token, tenantId, actorHeaders } = await resolveAuth();
-      return fetchClient<ServiceDetail>(
+      return fetchClient<void>(
         `${API_BASE}/api/v1/offer/servicios/${offerId}/testimonials/${testimonialId}`,
         { token, tenantId, method: "DELETE", headers: actorHeaders },
       );
     },
-    onSuccess: (detail) => {
-      queryClient.setQueryData(serviciosKeys.detail(offerId), detail);
+    // BE returns 204 No Content → invalidate detail (G2-F3).
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: serviciosKeys.detail(offerId) });
     },
   });
 }
@@ -631,7 +653,7 @@ export function useAddCase(offerId: string) {
     mutationFn: async (payload: CaseCreateRequest) => {
       const { token, tenantId, actorHeaders } = await resolveAuth();
       if (!clinicId) throw new Error("Falta la clínica activa");
-      return fetchClient<ServiceDetail>(
+      return fetchClient<ServiceCase>(
         `${API_BASE}/api/v1/offer/servicios/${offerId}/cases`,
         {
           token,
@@ -643,8 +665,9 @@ export function useAddCase(offerId: string) {
         },
       );
     },
-    onSuccess: (detail) => {
-      queryClient.setQueryData(serviciosKeys.detail(offerId), detail);
+    // BE returns CaseDTO (NOT ServiceDetail) → invalidate detail (G2-F3).
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: serviciosKeys.detail(offerId) });
     },
   });
 }
@@ -658,13 +681,14 @@ export function useRemoveCase(offerId: string) {
     mutationFn: async (caseId: string) => {
       const { token, tenantId, actorHeaders } = await resolveAuth();
       if (!clinicId) throw new Error("Falta la clínica activa");
-      return fetchClient<ServiceDetail>(
+      return fetchClient<void>(
         `${API_BASE}/api/v1/offer/servicios/${offerId}/cases/${caseId}`,
         { token, tenantId, clinicId, method: "DELETE", headers: actorHeaders },
       );
     },
-    onSuccess: (detail) => {
-      queryClient.setQueryData(serviciosKeys.detail(offerId), detail);
+    // BE returns 204 No Content → invalidate detail (G2-F3).
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: serviciosKeys.detail(offerId) });
     },
   });
 }

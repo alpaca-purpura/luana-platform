@@ -8,7 +8,7 @@
  */
 "use client";
 
-import { create } from "zustand";
+import { create } from "zustand/react"; // index export* falla en turbopack (HB-78)
 
 type MarketingStoreState = {
   /** Whether the bowtie funnel SVG animation is running */

@@ -22,7 +22,7 @@
  */
 "use client";
 
-import { create } from "zustand";
+import { create } from "zustand/react"; // index export* falla en turbopack (HB-78)
 import type { LeadFunnelStage, BoardFilters } from "../types/embudo.types";
 
 // ── Pending override (waiting for OverrideReasonDialog) ──────────────────────

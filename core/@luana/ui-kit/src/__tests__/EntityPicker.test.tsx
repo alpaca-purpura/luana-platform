@@ -219,4 +219,18 @@ describe("EntityPicker", () => {
     );
     expect(screen.getByTestId("entity-picker-trigger")).toHaveTextContent("Dra. Persona 7");
   });
+
+  // Regression (vitalia lisa-servicios G2-F3): a value whose `name` is missing
+  // (e.g. a stale/partial cache entry) must NOT crash deriveInitials.
+  it("does not crash when the selected value has no name (null-safe)", () => {
+    const searchFn = makeSearchFn();
+    expect(() =>
+      render(
+        // @ts-expect-error — intentionally simulating a partial cache entry (name undefined)
+        <EntityPicker searchFn={searchFn} value={{ id: "doc-x" }} placeholder="Buscar servicio…" />,
+      ),
+    ).not.toThrow();
+    // Falls back to the placeholder label + "?" initials, never an exception.
+    expect(screen.getByTestId("entity-picker-trigger")).toHaveTextContent("Buscar servicio…");
+  });
 });

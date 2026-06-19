@@ -149,6 +149,11 @@ const N3_DEFAULT_LEAF: ReadonlyArray<readonly [RegExp, string]> = [
   [new RegExp(`^/(${UUID_SEG})/config/cuenta/?$`, "i"), "datos"],
   // T-6 vitalia-fase2-lisa-servicios — lisa.servicios N3-static default leaf
   [new RegExp(`^/(${UUID_SEG})/lisa/servicios/?$`, "i"), "catalogo"],
+  // G2-F5 vitalia-fase2-lisa-servicios — bare [offer-id] workspace → resumen leaf.
+  // Edge-redirect (HTTP 307) so the soft-nav never hits the Server Component
+  // redirect() in-render, which throws the Next 16.2.x perf-measure / Router error
+  // (learning 2026-06-03-next16-softnav-redirect). Same shape as adrian/embudo/{uuid}.
+  [new RegExp(`^/(${UUID_SEG})/lisa/servicios/(${UUID_SEG})/?$`, "i"), "resumen"],
 ];
 
 /** Agente bare (`/{uuid}/{agent}`) → su defaultSubtab (espejo de [agent]/page.tsx). */

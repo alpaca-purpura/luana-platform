@@ -28,7 +28,7 @@
  */
 "use client";
 
-import { create } from "zustand";
+import { create } from "zustand/react"; // index export* falla en turbopack (HB-78)
 
 /** ValeriaState shape (mirrors shell-store ValeriaState enum) */
 export type ValeriaStateValue = "collapsed" | "rail" | "full";

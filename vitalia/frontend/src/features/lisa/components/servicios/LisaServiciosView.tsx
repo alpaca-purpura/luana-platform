@@ -51,7 +51,9 @@ function ServiciosBody({
     useServiciosFilters();
 
   return (
-    <div className="space-y-4">
+    // G2-F1: page gutter (p-5 md:p-6) so the catalog/escalera content isn't flush
+    // to the shell edges — matches the peer sub-tab convention (e.g. staff/page.tsx).
+    <div className="space-y-4 p-5 md:p-6">
       <ServiciosDirectoryHeader
         filters={filters}
         tenantId={tenantId}

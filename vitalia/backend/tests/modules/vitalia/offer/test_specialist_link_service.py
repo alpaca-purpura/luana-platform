@@ -4,6 +4,10 @@
 Linking a specialist verifies the doctor exists in the roster (via
 DoctorRosterPort) — it NEVER creates a doctor. Unknown/inactive doctor → raise.
 Unlink is idempotent. All scoped tenant_id (+ clinic_id for the roster read).
+
+G2-F13-BE regression: list_for_offer enriches display_name + specialty via
+roster when clinic_id is provided; gracefully degrades (None) when absent or
+doctor not found.
 """
 
 from __future__ import annotations
@@ -15,6 +19,7 @@ import pytest
 from src.modules.vitalia.offer.application.ports.doctor_roster_port import DoctorRosterPort, RosterDoctor
 from src.modules.vitalia.offer.application.services.specialist_link_service import (
     DoctorNotInRosterError,
+    EnrichedSpecialistLink,
     SpecialistLinkService,
 )
 from src.modules.vitalia.offer.domain.specialist_link import ServiceSpecialistLink
@@ -96,3 +101,56 @@ async def test_unlink_is_idempotent():
     await svc.unlink(tenant_id=TENANT, offer_id=OFFER, doctor_id=DOCTOR)
     await svc.unlink(tenant_id=TENANT, offer_id=OFFER, doctor_id=DOCTOR)  # no error second time
     assert len(repo.links) == 0
+
+
+# ── G2-F13-BE regression: enrichment via roster ──────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_list_for_offer_enriches_name_and_specialty_when_clinic_id_given():
+    """With clinic_id: EnrichedSpecialistLink carries doctor name + specialty."""
+    doctor = RosterDoctor(id=DOCTOR, full_name="Dra. Ana Pérez", specialty="Odontología", active=True)
+    svc, repo = _svc({DOCTOR: doctor})
+    await svc.link(tenant_id=TENANT, clinic_id=CLINIC, offer_id=OFFER, doctor_id=DOCTOR)
+
+    results = await svc.list_for_offer(tenant_id=TENANT, offer_id=OFFER, clinic_id=CLINIC)
+
+    assert len(results) == 1
+    item = results[0]
+    assert isinstance(item, EnrichedSpecialistLink)
+    assert item.display_name == "Dra. Ana Pérez"
+    assert item.specialty == "Odontología"
+    assert item.doctor_id == DOCTOR
+
+
+@pytest.mark.asyncio
+async def test_list_for_offer_no_clinic_id_returns_nones():
+    """Without clinic_id: display_name and specialty are None; no crash."""
+    doctor = RosterDoctor(id=DOCTOR, full_name="Dra. Ana", specialty="Estética", active=True)
+    svc, repo = _svc({DOCTOR: doctor})
+    await svc.link(tenant_id=TENANT, clinic_id=CLINIC, offer_id=OFFER, doctor_id=DOCTOR)
+
+    results = await svc.list_for_offer(tenant_id=TENANT, offer_id=OFFER)
+
+    assert len(results) == 1
+    item = results[0]
+    assert isinstance(item, EnrichedSpecialistLink)
+    assert item.display_name is None
+    assert item.specialty is None
+
+
+@pytest.mark.asyncio
+async def test_list_for_offer_doctor_not_in_roster_graceful():
+    """Doctor linked but not in roster at enrichment time → display_name None, no crash."""
+    # Link with a roster that has the doctor.
+    doctor = RosterDoctor(id=DOCTOR, full_name="Dr. Borrado", specialty="Cirugía", active=True)
+    svc, repo = _svc({DOCTOR: doctor})
+    await svc.link(tenant_id=TENANT, clinic_id=CLINIC, offer_id=OFFER, doctor_id=DOCTOR)
+
+    # Now replace the roster with an empty one (simulates doctor removed/inactive).
+    svc2 = SpecialistLinkService(roster=_FakeRoster({}), link_repo=repo)
+    results = await svc2.list_for_offer(tenant_id=TENANT, offer_id=OFFER, clinic_id=CLINIC)
+
+    assert len(results) == 1
+    assert results[0].display_name is None
+    assert results[0].specialty is None

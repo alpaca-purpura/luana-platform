@@ -77,6 +77,17 @@ export function SubSubTabsBar({
     ? (subSubTabsByKey[subsubtabsKey] ?? null)
     : null;
 
+  // Detail route guard (vitalia lisa-servicios G2-F10): on an entity workspace
+  // (e.g. /lisa/servicios/{offerId}/{leaf}) the segment after the subtab is an
+  // entity id, NOT a declared sub-sub-tab. The entity's own EntitySubNavBar takes
+  // over there, so the N3 sub-sub-tabs bar must NOT render. Generic across brands:
+  // if the post-subtab segment exists but isn't a known sub-sub-tab id → it's a detail.
+  const segAfterSubtab = pathname.split("/").filter(Boolean)[3] ?? null;
+  const isDetailRoute =
+    segAfterSubtab != null &&
+    subsubtabs != null &&
+    !subsubtabs.some((t) => t.id === segAfterSubtab);
+
   const initialFocusIdx = (() => {
     if (!activeSubSubTab || !subsubtabs || subsubtabs.length === 0) return 0;
     const idx = subsubtabs.findIndex((t) => t.id === activeSubSubTab);
@@ -148,7 +159,7 @@ export function SubSubTabsBar({
     [focusedIdx, focusTab, navigate, subsubtabs, totalTabs],
   );
 
-  if (!subsubtabs || subsubtabs.length === 0) {
+  if (!subsubtabs || subsubtabs.length === 0 || isDetailRoute) {
     return null;
   }
 

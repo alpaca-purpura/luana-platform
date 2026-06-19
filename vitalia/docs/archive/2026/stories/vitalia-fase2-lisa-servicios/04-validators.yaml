@@ -267,3 +267,39 @@ regression_guard:
   - "core/luana-core-offer-studio engine catalog NO regresa (consume, no edita)"
   - "TenantKnowledgeBuilder consume sync NO regresa (D-1 wrapping)"
   - "shell-routes.ts AGENT_SUBSUBTABS existentes (lisa.marca, config.cuenta) intactos"
+
+# ───────────────────────────────────────────────────────────────────────────
+# RECONCILE (Fase R · /pm-vitalia · 2026-06-19) — validators reconciliados a la realidad construida
+# HB-79: validator de scope DEFERIDO/descopado → must_pass:false + deferred: (no green-phantom).
+# Cada G-round finding (live-verify de Chris) construido + su regression. Paths REALES.
+# ───────────────────────────────────────────────────────────────────────────
+reconcile:
+  reconciled_by: /pm-vitalia
+  reconciled_date: 2026-06-19
+  note: >
+    El verde de los gates NO cazó estos comportamientos — los cazó la live-verify de Chris en G.
+    Cada uno tiene regression con el SHAPE REAL del wire + sin mockear el componente/hook bajo prueba
+    (ver learning 2026-06-19-unit-green-not-runtime-truth). Spec § Gherkin RECONCILE §17-22 + § Matriz reconciliada.
+
+  # Regression construida + verde (gate runs · re-run independiente /pm-vitalia)
+  g_round_regression:
+    - { id: VR-1, finding: G2-F11, must_pass: true, desc: "Autosave value-from-RHF-local + gate arch-fitness", tests: ["vitalia/frontend/src/__tests__/architecture/test-autosave-value-from-local-state.test.ts", "vitalia/frontend/src/features/lisa/components/servicios/leaves/__tests__/ResumenView.test.tsx"], commit: e6f97173 }
+    - { id: VR-2, finding: G2-F12, must_pass: true, desc: "BE _apply coerce faq/objections list[dict]→VOs (500→200)", tests: ["vitalia/backend/tests/modules/vitalia/offer/test_sales_brief_service.py", "vitalia/frontend/src/features/lisa/components/servicios/__tests__/FaqPairList.test.tsx", "vitalia/frontend/src/features/lisa/components/servicios/__tests__/ObjecionPairList.test.tsx"], commit: "cc4a2ea9+54119aaf" }
+    - { id: VR-3, finding: G2-F12b, must_pass: true, desc: "FE filtra pares incompletos (VO exige ambos campos · invariante intacto)", tests: ["vitalia/frontend/src/features/lisa/components/servicios/leaves/__tests__/ParaAdrianView.test.tsx"], commit: 5bfa7d4a }
+    - { id: VR-4, finding: G2-F13, must_pass: true, desc: "SpecialistLink enrich display_name+specialty (UUID→nombre)", tests: ["vitalia/backend/tests/modules/vitalia/offer/test_specialist_link_service.py", "vitalia/frontend/src/features/lisa/components/servicios/leaves/__tests__/EspecialistasView.test.tsx"], commit: "f40556ea+8a51ad4b" }
+    - { id: VR-5, finding: "G2-F14/F14b", must_pass: true, desc: "Plan-pago defaultValues full-shape + Decimal-string→number coerce (no-crash + montos persisten al recargar)", tests: ["vitalia/frontend/src/features/lisa/components/servicios/leaves/__tests__/PlanPagoView.test.tsx"], commit: "c0e89ca1+2dc86a85" }
+    - { id: VR-6, finding: "G2-F2a/F2b", must_pass: true, desc: "Activar confirm dialog + setQueryData(detail) refleja sin refresh", tests: ["vitalia/frontend/src/features/lisa/components/servicios/__tests__/ServiceStatusBar.test.tsx"], commit: 9b3c0a13 }
+    - { id: VR-7, finding: G2-F4, must_pass: true, desc: "Ver detalle doctor → /lisa/staff (no 404)", tests: ["vitalia/frontend/src/features/lisa/components/servicios/leaves/__tests__/EspecialistasView.test.tsx"], commit: 2eabe9bd }
+    - { id: VR-8, finding: G2-F5, must_pass: true, desc: "[offer-id]→resumen en N3_DEFAULT_LEAF (no Next16 negative-timestamp)", tests: ["vitalia/frontend/src/__tests__/ (shell-routes shellInRenderRedirectTarget)"], commit: "findings_round2b" }
+    - { id: VR-9, finding: G2-F3, must_pass: true, desc: "EntityPicker null-safe (deriveInitials) + 7 hooks mutación anidada no corrompen cache", tests: ["@luana/ui-kit EntityPicker (7/7 · proposal accepted)", "vitalia caller guard"], commit: 9b3c0a13 }
+    - { id: VR-10, finding: G2-F6, must_pass: true, desc: "plan-pago price re-hidrata (RHF values)", tests: ["vitalia/frontend/src/features/lisa/components/servicios/leaves/__tests__/PlanPagoView.test.tsx"], commit: e7d5766f }
+
+  # Deferred — NO se corre como gate HARD (no existe el verde aún). Owner explícito.
+  deferred:
+    - { id: VR-D1, must_pass: false, deferred: e2e-happy-path, desc: "E2E happy-path del workspace (crear→editar→plan-pago→especialista→activar) real-backend anti-burbuja. Specs existen pero test.skip gated en E2E_OFFER_ID/E2E_ENABLE_WRITES → no ejercidos.", paths: ["vitalia/frontend/e2e/shell-organism/lisa-servicios-crear.spec.ts", "vitalia/frontend/e2e/shell-organism/lisa-servicios-autosave.spec.ts", "vitalia/frontend/e2e/shell-organism/lisa-servicios-especialistas.spec.ts", "vitalia/frontend/e2e/shell-organism/lisa-servicios-escalera-drag.spec.ts"], owner: "auditor Carril R (un-skip + seed offer-id) o follow-up", reason: "hueco más grande para el auditor (RECONCILE-HANDOFF §5)" }
+    - { id: VR-D2, must_pass: false, deferred: visual-goldens, desc: "8 visual goldens (catalogo/escalera/workspace/nuevo × 2 themes · 0.001). Baselines NO generados (e2e/__screenshots__/servicios/ vacío).", paths: ["vitalia/frontend/e2e/visual/lisa-servicios-visual.spec.ts"], owner: "auditor/dev-team (generar baselines + ratchet)", reason: "live-verify de Chris cubrió el render real; goldens pendientes" }
+    - { id: VR-D3, must_pass: false, deferred: contract-test, desc: "Contract-test FE↔BE (shape real del wire). Ausente. Los bugs G2-F11/F14b nacieron de contratos imaginados (camelCase / Decimal-string).", paths: [], owner: "HB-42 (gate transversal) + esta story", reason: "lección recurrente (embudo · servicios) — gate faltante" }
+    - { id: VR-D4, must_pass: false, deferred: sub-phase-B-rag, desc: "RAG runtime: indexer Qdrant + tool retrieval sales_agent + 4 eval goldens (AE-B1..B4). verification_phase: B.", paths: [], owner: "/pm-luana engine-lift (STOP-2)", reason: "engine-lift fuera de scope brand · ya marcado deferred_pending_engine_lift" }
+
+  # G3/F3 originales del reconcile round 1 (ya resueltos · ledger)
+  round_1_resolved: [F1, F2, F3]   # ficha rica widen DTO + StatusBar en shell + appointment_type
