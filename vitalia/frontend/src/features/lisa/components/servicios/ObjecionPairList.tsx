@@ -5,8 +5,14 @@
 // responder"): a short objection tag (Precio, Miedo, Tiempo…) + the response
 // Adrián gives. Controlled array editor with add/remove. Autosave is wired by
 // the caller via onChange (no "Guardar" button — form-runtime-array doctrine).
+//
+// ADR-009 fix (G2-F12-FE): maintains LOCAL state seeded from `value` prop once
+// per mount. Edits mutate local state and propagate via onChange (for autosave);
+// the caller's stale re-renders no longer overwrite what the user typed.
+// Re-seed on entity change: pass key={offerId} at the call site (ParaAdrianView).
 "use client";
 
+import { useState } from "react";
 import { Button, Input, Textarea } from "@luana/ui-kit";
 import { cn } from "@/lib/cn";
 
@@ -32,28 +38,38 @@ function newId(): string {
 }
 
 export function ObjecionPairList({
-  value,
+  value: initialValue,
   onChange,
   disabled = false,
   className,
 }: ObjecionPairListProps) {
+  // ADR-009: local state seeded from prop ONCE per mount (or per key change).
+  // value binding NEVER reads from the prop after mount — only from localPairs.
+  // The caller must pass key={entityId} to force remount when the entity changes.
+  const [localPairs, setLocalPairs] = useState<ObjecionPair[]>(initialValue);
+
+  const commitChange = (next: ObjecionPair[]) => {
+    setLocalPairs(next);
+    onChange(next);
+  };
+
   const patch = (id: string, fields: Partial<ObjecionPair>) =>
-    onChange(value.map((o) => (o.id === id ? { ...o, ...fields } : o)));
+    commitChange(localPairs.map((o) => (o.id === id ? { ...o, ...fields } : o)));
 
-  const remove = (id: string) => onChange(value.filter((o) => o.id !== id));
+  const remove = (id: string) => commitChange(localPairs.filter((o) => o.id !== id));
 
-  const add = () => onChange([...value, { id: newId(), tag: "", response: "" }]);
+  const add = () => commitChange([...localPairs, { id: newId(), tag: "", response: "" }]);
 
   return (
     <div className={className}>
       <div className="my-2 space-y-2.5">
-        {value.length === 0 && (
+        {localPairs.length === 0 && (
           <p className="text-xs text-muted-foreground" data-testid="obj-empty">
             Aún no cargaste objeciones. Anota la objeción típica y cómo responderla; Adrián la usa
             para cerrar.
           </p>
         )}
-        {value.map((obj) => (
+        {localPairs.map((obj) => (
           <div
             key={obj.id}
             data-testid={`obj-row-${obj.id}`}

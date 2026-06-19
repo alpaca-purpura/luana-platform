@@ -1,10 +1,14 @@
 ---
 proposal_id: 2026-06-16-copilot-chat-brand-mountable
-state: accepted                # proposed | under_review | accepted | rejected | migrated
+state: migrated                # ★ lift completo 2026-06-16 — Settings lazy (0.5.0) + multibrand-instantiable (0.5.1)
 opened_date: 2026-06-16
 opened_by: /pm-luana
 ratified_by: Chris             # eligió dirección B (AskUserQuestion 2026-06-16)
 ratified_date: 2026-06-16
+migrated_date: 2026-06-16
+migrated_commits:
+  - "e9f16d06 — Settings lazy get_settings() (platform 0.5.0 + copilot 0.3.0), import-path migration"
+  - "wip/vitalia (settings 0.5.1) — Settings multibrand-instantiable + DATABASE_URL-first resolution + security fail-loud; closes the exercise-safe invariant (2nd consumer iam covered by same root)"
 
 # Origen (engine-fix, no lift de brand — el patrón nace de un blocker live)
 origin_learnings:
@@ -115,6 +119,11 @@ Corolario de diseño: el **factory por-router (#2)** NO escala — habría que f
 - 2026-06-16: opened by /pm-luana (engine-fix desde blocker live comunify-shell-organism).
 - 2026-06-16: Chris ratifica dirección B (AskUserQuestion) → state: accepted. Approach concreto → /architect.
 - 2026-06-16 (tarde): **scope expandido** (Chris, AskUserQuestion "expandir proposal B / engine lazy"). 2º consumer descubierto en vivo: el router **iam** (`auth_router` vía `get_db`) choca con la MISMA raíz al intentar el login→tenant real de comunify (Option 2). Confirma que la causa es el `settings` eager de `luana_core_platform`, no el chat → **approach #1 (Settings lazy) queda como dirección ratificada** (cubre chat + iam + futuros); #2 factory descartado como solución general (§3bis). `brands_affected_consumers` sin cambio (los 4). Próximo paso sin cambio: `/architect` engine-scoped en worktree core efímero.
+- 2026-06-16 (noche): **lift completo → state accepted → migrated.** Ejecutado en dos releases del platform:
+  - **0.5.0 (`e9f16d06`)** — lazy `get_settings()` + lazy DB/redis accessors; el **import-path** de `chat.py` deja de instanciar el `Settings` monolítico (invariante de import).
+  - **0.5.1 (wip/vitalia)** — `Settings` **multibrand-instanciable** (campos legacy `POSTGRES_*`/`WHATSAPP_*`/`QDRANT_URL`/`TRAEFIK_NETWORK`/`DOMAIN_NAME`/`API_SECRET_KEY`/`LOG_LEVEL`/`API_URL`/`OPENAI_API_KEY`/`REDIS_URL` → opcionales con default benigno) + nuevo `DATABASE_URL` con resolución **DATABASE_URL-first** (normalizada al esquema sync) y fallback `POSTGRES_*` (raise loud si ninguno). Cierra la **invariante de ejecución** (la 0.5.0 sólo cubría *montar*; faltaba *servir* — `get_db`→`Settings()` seguía crasheando bajo env multibrand). `security.get_encryption_key()` migrado a `get_settings()` + fail-loud si `API_SECRET_KEY` vacío (sin clave débil silenciosa). 2º consumer (iam `auth_router`) cubierto por la MISMA raíz, sin trabajo extra. Tests: `test_settings_multibrand_instantiation.py` (4) + suite platform verde (~294, sin regresión). **Decisión de approach concreto:** lazy puro **+ DATABASE_URL-first** (la proposal lo dejaba abierto a `/architect`; resuelto así porque "montar sin env legacy" no alcanza — el `200` real necesita resolver la DB del brand). **Decisión de worktree:** sin worktree core efímero; el lift viajó en `wip/vitalia` (SCOPE_GATE_SKIP, decisión Chris 2026-06-16), validado vía `PYTHONPATH` override (el `.venv` editable apunta a la copia del worktree main).
+  - **Docs:** `docs/core-modules/platform.md` (creado, contract del settings lazy + database_url) + `docs/core-modules/copilot.md` (invariante de ejecución + dep `>= 0.5.1`).
+  - **Pendiente downstream (NO bloquea el migrated del engine):** comunify-adoption (otra sesión, hub comunify) = quitar el guard try/except del mount copilot + montar iam `auth_router` + migración iam + seed tenant. R3 full 4-brand + live-verify DoD #37 (boot comunify health 200 + 401/200 sin env legacy) se cierran en esa sesión.
 
 ## 7. Cross-references
 - Origin blocker: `comunify/docs/product/stories/comunify-shell-organism/checkpoint.md § Blocker` + `chris-input.md` (2026-06-16).

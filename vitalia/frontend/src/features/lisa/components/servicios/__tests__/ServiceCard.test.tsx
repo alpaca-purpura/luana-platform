@@ -120,9 +120,10 @@ describe("ServiceCard", () => {
     );
   });
 
-  it("navigates to the workspace when the card body is clicked", () => {
+  it("navigates to the workspace (resumen leaf, from=catalogo) when the card body is clicked", () => {
     renderCard(makeItem());
     fireEvent.click(screen.getByTestId("service-card-off-1"));
-    expect(mockPush).toHaveBeenCalledWith("/t-1/lisa/servicios/off-1");
+    // G2-F10: direct to /resumen?from=catalogo so the origin survives the back-pill.
+    expect(mockPush).toHaveBeenCalledWith("/t-1/lisa/servicios/off-1/resumen?from=catalogo");
   });
 });

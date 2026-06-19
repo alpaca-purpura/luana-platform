@@ -95,6 +95,25 @@ class TestOnboardingDraftServiceCreate:
         assert saved_draft.deleted_at is None
 
     @pytest.mark.asyncio
+    async def test_create_draft_duplicate_raises_domain_error(self) -> None:
+        """A unique-violation on save → DraftAlreadyExistsError, not raw IntegrityError (HB-88)."""
+        from sqlalchemy.exc import IntegrityError
+
+        from src.modules.vitalia.copilot.application.services.onboarding_draft_service import (
+            DraftAlreadyExistsError,
+            OnboardingDraftService,
+        )
+
+        mock_repo = AsyncMock()
+        mock_repo.save = AsyncMock(
+            side_effect=IntegrityError("INSERT ...", params=None, orig=Exception("duplicate key"))
+        )
+        service = OnboardingDraftService(draft_repo=mock_repo)
+
+        with pytest.raises(DraftAlreadyExistsError):
+            await service.create_draft(tenant_id=TENANT_ID, user_id=USER_ID, mode="libre", clinic_id=None)
+
+    @pytest.mark.asyncio
     async def test_create_draft_initializes_required_slots(self) -> None:
         """create_draft() initializes the required slot set."""
         from src.modules.vitalia.copilot.application.services.onboarding_draft_service import (

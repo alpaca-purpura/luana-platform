@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import warnings
 from functools import lru_cache
 
@@ -12,22 +13,34 @@ from luana_core_platform.core.enums import AIProvider, ModelRole, PromptSource
 
 
 class Settings(BaseSettings):
-    """Environment-driven application settings."""
+    """Environment-driven application settings.
+
+    MULTIBRAND CONTRACT (2026-06-16, completes the brand-mountable lift):
+    every field below either has a default or is optional, so ``Settings()``
+    instantiates under a *minimal multibrand env* (``DATABASE_URL`` +
+    ``REDIS_URL`` + LLM keys) WITHOUT the legacy "Visionarias Brain" vars
+    (``POSTGRES_*``/``WHATSAPP_*``/``QDRANT_URL``/``TRAEFIK_NETWORK``/…).
+    This is what lets any brand mount core routers (copilot ``/chat``, iam
+    ``auth_router``) with its own config. Subsystems that genuinely NEED a
+    legacy field validate it at point-of-use (fail-loud), never as a blanket
+    import/instantiation crash. See ``database_url`` + ``core.security``.
+    """
 
     # API Config
     API_V1_STR: str = "/api/v1"
     PROJECT_NAME: str = "Visionarias Brain"
-    LOG_LEVEL: str  # Defined in .env
-    DOMAIN_NAME: str  # Defined in .env
-    TRAEFIK_NETWORK: str  # Defined in .env
+    LOG_LEVEL: str = "INFO"  # legacy-standalone overrides via .env
+    DOMAIN_NAME: str = ""  # legacy-standalone only (Traefik routing)
+    TRAEFIK_NETWORK: str = ""  # legacy-standalone only
 
-    # Security
-    API_SECRET_KEY: str  # Must be set in environment!
+    # Security — empty under multibrand; encryption helpers fail-loud if used
+    # without it (see core.security.get_encryption_key).
+    API_SECRET_KEY: str = ""
 
-    # WhatsApp / Meta
-    WHATSAPP_API_TOKEN: str
-    WHATSAPP_PHONE_NUMBER_ID: str
-    WHATSAPP_VERIFY_TOKEN: str
+    # WhatsApp / Meta — legacy-standalone channel; empty under multibrand
+    WHATSAPP_API_TOKEN: str = ""
+    WHATSAPP_PHONE_NUMBER_ID: str = ""
+    WHATSAPP_VERIFY_TOKEN: str = ""
 
     # Evolution API (Self-Hosted)
     EVOLUTION_API_URL: str = ""
@@ -73,8 +86,8 @@ class Settings(BaseSettings):
     SHOPIFY_API_SECRET: str = ""
     SHOPIFY_APP_URL: str = ""  # The URL where the app is hosted (e.g. https://api.visionarias.ai)
 
-    # OpenAI
-    OPENAI_API_KEY: str
+    # OpenAI — empty under multibrand brands that route exclusively via LiteLLM
+    OPENAI_API_KEY: str = ""
 
     # DeepSeek (OpenAI-compatible API)
     DEEPSEEK_API_KEY: str = ""
@@ -185,11 +198,11 @@ class Settings(BaseSettings):
     # Brand Extraction Profile: "safe" (2-wave, low rate-limit) or "fast" (all-concurrent, high rate-limit)
     BRAND_EXTRACTION_PROFILE: str = "safe"
 
-    # Redis
-    REDIS_URL: str  # Must be set in .env (e.g. redis://redis:6379/0)
+    # Redis — empty tolerated; get_redis_client() degrades gracefully to None
+    REDIS_URL: str = ""  # e.g. redis://redis:6379/0
 
-    # Qdrant
-    QDRANT_URL: str  # Must be set in .env (e.g. http://qdrant:6333)
+    # Qdrant — empty under brands that configure via QDRANT_HOST/PORT instead
+    QDRANT_URL: str = ""  # e.g. http://qdrant:6333
     QDRANT_API_KEY: str = ""  # Optional if running locally without auth, but required for prod
     # Brand-specific — MUST override en {brand}/.env.dev (e.g., visionarias_knowledge for nicolify
     # legacy, vitalia_knowledge, comunify_knowledge, etc.). Engine no asume brand (proposal
@@ -199,17 +212,22 @@ class Settings(BaseSettings):
     QDRANT_VECTOR_SIZE: int = 3072  # Default for text-embedding-3-large
     QDRANT_SPARSE_MODEL: str = "Qdrant/bm25"  # or "prithivida/Splade_PP_en_v1"
 
-    # Postgres
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: str
-    POSTGRES_DB: str
-    POSTGRES_HOST: str  # Must be set in .env (e.g. postgres)
-    POSTGRES_PORT: int  # Must be set in .env (e.g. 5432)
+    # ── Database ─────────────────────────────────────────────────────────
+    # DATABASE_URL is the CANONICAL multibrand env (matches each brand's
+    # docker-compose + their own backend/src/db.py). When set it wins over
+    # the legacy POSTGRES_* composition (see database_url property). The
+    # POSTGRES_* fields are the legacy-standalone fallback only.
+    DATABASE_URL: str = ""
+    POSTGRES_USER: str = ""
+    POSTGRES_PASSWORD: str = ""
+    POSTGRES_DB: str = ""
+    POSTGRES_HOST: str = ""  # legacy fallback (e.g. postgres)
+    POSTGRES_PORT: int = 5432
 
     # Production Domains
     API_DOMAIN: str = ""
     DASHBOARD_DOMAIN: str = ""
-    API_URL: str  # Internal URL for webhooks — set in .env per environment
+    API_URL: str = ""  # Internal URL for webhooks — set per environment
     UPLOAD_DIR: str = "static/uploads"
 
     # Storage Provider: "LOCAL" or "R2"
@@ -309,8 +327,29 @@ class Settings(BaseSettings):
 
     @property
     def database_url(self) -> str:
-        """Build the PostgreSQL connection URL from component settings."""
-        return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        """Canonical SYNC PostgreSQL URL (``postgresql://`` scheme).
+
+        Resolution order (multibrand-first):
+          1. ``DATABASE_URL`` if set — normalized to the sync scheme so sync
+             consumers (``create_engine``) work; async consumers re-add
+             ``+asyncpg`` via their existing ``.replace("postgresql://", …)``.
+             Brands commonly set the asyncpg form in docker-compose.
+          2. else compose from ``POSTGRES_*`` (legacy-standalone env).
+          3. else raise — loud at first DB use, never a blanket import-time
+             crash (that is the whole point of the multibrand contract).
+        """
+        if self.DATABASE_URL:
+            return re.sub(r"^postgresql\+\w+://", "postgresql://", self.DATABASE_URL)
+        if self.POSTGRES_USER and self.POSTGRES_HOST:
+            return (
+                f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
+                f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+            )
+        msg = (
+            "No database configured: set DATABASE_URL (multibrand, canonical) "
+            "or POSTGRES_USER/HOST/... (legacy-standalone)."
+        )
+        raise RuntimeError(msg)
 
     class Config:
         """Pydantic settings configuration."""

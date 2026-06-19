@@ -84,9 +84,10 @@ def _build_test_app(
         session = MagicMock(spec=AsyncSession)
         yield session
 
-    from src.db import get_async_session
+    # HB-80: the notify handler now uses the committing session — override that one.
+    from src.db import get_async_session_committing
 
-    app.dependency_overrides[get_async_session] = _fake_session
+    app.dependency_overrides[get_async_session_committing] = _fake_session
 
     return app
 

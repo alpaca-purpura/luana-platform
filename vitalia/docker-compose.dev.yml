@@ -92,8 +92,12 @@ services:
       - luana_dev_net
     deploy:
       resources:
+        # HB-78 turbopack: vitalia's heavy /[tenantId] shell compile spikes RSS to
+        # ~4GB (JS heap + turbopack Rust/tokio native, which NODE_OPTIONS does NOT
+        # bound). The old 4G ceiling cgroup-OOM-killed next-server mid-compile →
+        # restart loop. 6G fits the transient spike; it settles to ~2GB once compiled.
         limits:
-          memory: 4G
+          memory: 6G
 
   vitalia_admin_dev:
     # Streamlit admin panel for vitalia — port 8502 (per 03-arch-be.md § 5)

@@ -17,7 +17,8 @@ FROM base AS dev
 WORKDIR /app
 
 # Pre-instalar dependencias (package.json viene via bind mount en dev, pero pre-instalamos)
-COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY .npmrc pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY patches ./patches
 COPY vitalia/frontend/package.json ./vitalia/frontend/package.json
 # Workspace packages @luana/* (ui-kit, hooks, format, ...): sin sus package.json el
 # install --filter no ve sus deps (ej. tailwind-merge de @luana/format) → store de la
@@ -29,18 +30,20 @@ RUN --mount=type=cache,id=pnpm-vitalia,target=/pnpm/store \
 
 WORKDIR /app/vitalia/frontend
 EXPOSE 3002
-# HB-78: bump Node heap so the Next webpack dev-server doesn't hit the memory
-# threshold + enter a restart loop (→ ERR_SOCKET_NOT_CONNECTED + stale-cache
-# masking) when compiling large new routes. 3GB heap sits under the 4G container
-# limit (docker-compose.dev.yml). Takes effect on next `make dev-vitalia` rebuild.
-ENV NODE_OPTIONS="--max-old-space-size=3072"
+# HB-78: Node heap cap for the Next dev-server. Post-turbopack migration the FE
+# footprint dropped (~2.37GiB webpack → ~1.5GiB turbopack) so 2GB is enough and
+# matches nicolify/comunify. The prior 3GB cap made vitalia the host OOM-killer's
+# first victim mid-compile under global RAM pressure (14GB box, 3 stacks + swap)
+# → restart loop. 2GB sits under the 4G container limit. Rebuild to take effect.
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 CMD ["pnpm", "dev", "--port", "3002"]
 
 # ── builder target ──
 FROM base AS builder
 
 WORKDIR /app
-COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY .npmrc pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY patches ./patches
 COPY vitalia/frontend/package.json ./vitalia/frontend/package.json
 # @luana/* completos (manifests + src TS): pnpm build transpila ui-kit/format desde source
 COPY core/@luana ./core/@luana

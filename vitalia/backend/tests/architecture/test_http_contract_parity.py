@@ -42,15 +42,36 @@ MUTATION_AND_READ = frozenset(["get", "post", "put", "patch", "delete"])
 KNOWN_UNRESOLVABLE_FE_URLS: frozenset[str] = frozenset()
 
 # FE (method, path) pairs with no matching BE route. Shrink-only ratchet.
-# ── BASELINE 2026-06-16 · AUDIT-PENDING (HB-82) ──────────────────────────────
-# The gate surfaced 17 real FE→BE contract gaps on first run — these are the
-# HB-71 class (FE calls a path the BE never serves → 404 live, or dead FE code).
-# Root causes seen: spelling drift (FE `fidelization` vs BE `fidelizacion`),
-# prefix drift (FE `/vitalia/offers` vs BE `/offer`; FE `/notify` vs BE
-# `/scheduling`), and missing endpoints (GET single booking, POST treatments).
-# Baselined so the gate blocks NEW imagined-contracts today; each needs a
-# /pm-vitalia triage (real 404? rename FE/BE to match? dead FE hook? unmounted
-# router?) → fix-or-remove, then drop from this set. SSoT: harness-backlog HB-82.
+# ── TRIAGED 2026-06-18 (HB-82) — feature-reconciliation, NOT a URL typo ───────
+# All 17 were diagnosed against the live BE routes + the FE hook+type. Verdict:
+# they are the HB-44/HB-71 imagined-contract disease wholesale — the `fidelizacion`
+# feature and the `features/vitalia/*` offers/treatments/booking hooks were built
+# against an imagined contract that diverges from the real BE in THREE layers at
+# once (URL + request body + response shape), so a URL rename alone would swap a
+# 404 for a SILENT shape-mismatch (looks connected, still broken — worse). They
+# need per-feature FE↔BE reconciliation WITH live-verify, owned by /pm-vitalia
+# feature stories (the gate's whole point is to stop shipping these blind). The
+# gate already blocks NEW imagined contracts today. Per-gap diagnosis:
+#
+#   fidelizacion summary/activity (reads): URL drift `fidelization`→`fidelizacion`
+#     AND response shape diverges (BE `items`/snake_case vs FE `events`/camelCase).
+#   fidelizacion re-engagement (5 POSTs): FE puts patient_id in the PATH, BE wants
+#     patient_id+clinic_id (+pause_until/etc.) in the BODY (re_engagement_dtos.py).
+#   fidelizacion nps/responses: no BE route — BE has nps/summary + nps/submit only.
+#   vitalia offers (GET list/one, presets, POST): BE serves offers under
+#     `/api/v1/offer/servicios/*` (engine module) + `/api/v1/vitalia/offer/presets`,
+#     not `/api/v1/vitalia/offers*` — different module + missing POST create.
+#   vitalia treatments (POST create): BE has GET treatments + per-id sub-routes,
+#     no POST /treatments — missing endpoint.
+#   vitalia bookings/{id} (GET one): BE has GET list + per-id POST actions, no
+#     GET single — missing endpoint.
+#   vitalia brand-studio/sections (GET/PATCH): no BE brand-studio; marca lives
+#     under `/api/v1/lisa/marca/*` — superseded FE hooks, need decision.
+#   notify/reminder (POST): BE is `/api/v1/scheduling/appointments/{id}/notify`.
+#   lisa/marca/trust-signals (PUT): method mismatch — BE is POST (create) + DELETE.
+#
+# Each needs fix-or-remove in a /pm-vitalia story, then drop from this set.
+# SSoT: docs/process/harness-backlog.md HB-82.
 # Format: "<METHOD> <normalized-path>"
 KNOWN_CONTRACT_GAPS: frozenset[str] = frozenset(
     [

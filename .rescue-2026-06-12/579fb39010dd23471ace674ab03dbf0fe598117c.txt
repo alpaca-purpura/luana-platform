@@ -1,0 +1,112 @@
+---
+story_id: vitalia-fase2-lisa-servicios
+created_at: 2026-05-27T18:25:23-05:00
+last_modified: 2026-05-27T18:25:23-05:00
+notes_count: 0
+refs_count: 0
+conversation_count: 1
+---
+
+# chris-input.md · vitalia-fase2-lisa-servicios
+
+> **Qué es este archivo:** acá Chris escribe notas + referencias + Claude responde con verdicts. Es la cocina de la story (la conversación) — separada del spec/design/arch (los outputs ratificados).
+>
+> **3 secciones secuenciales** (mantener el orden + emojis para que parser + cockpit funcionen):
+> - 💭 Notas — Chris escribe en lenguaje natural antes/durante refinement
+> - 📎 Referencias — links, imágenes, story-refs, learning-refs, doc-refs
+> - 💬 Conversación — turn-by-turn cronológico Chris ↔ Claude con verdicts
+>
+> Doc canónico: `docs/process/chris-input-protocol.md`.
+
+## 💭 Notas
+
+> Chris: escribe acá tus notas en lenguaje natural. Cualquier cosa que te ayude a pensar la story.
+>
+> Cada entry abre con `### YYYY-MM-DD HH:MM` (timestamp).
+
+### 2026-05-27 18:25
+Sin notas todavía · Chris escribe aquí.
+
+## 📎 Referencias
+
+> Chris: pega links, sube imágenes (drag-drop o botón adjuntar), cita texto de buyer personas, referencia otras stories (`F2-S1`) o learnings (`2026-MM-DD-slug`).
+>
+> Tipos válidos: 🔗 link · 🖼 img · 💬 text · 📖 story-ref · 📚 learning-ref · 📄 doc.
+>
+> Formato: `- **(emoji) (tipo)** · (valor)` + opcional `  > (comentario)` en siguiente línea.
+
+(sin referencias todavía)
+
+## 💬 Conversación
+
+> Append-only · turn-by-turn cronológico.
+> Chris responde a Claude editando + agregando un entry nuevo.
+> Claude appendea verdict al cierre de cada turn de su skill.
+>
+> Verdict labels: ✓ APLICADO · ⚠️ DUDA · ❌ REFUTADO · 💡 PROPONE.
+
+### 2026-05-27 18:25 · 🤖 claude · `scripts/migrate_to_release_schema.py` · ✓ APLICADO
+Story migrada al schema v2: `release=F2`, `cap_target=lisa.servicios`, `cap_change_type=new`. Legacy `outcome` + `phase` preservados durante deprecation gradual.
+
+Cuando estés listo para refinar, llena 💭 Notas + 📎 Referencias arriba e invoca `/po-ux vitalia vitalia-fase2-lisa-servicios` (o `/po` si es service story, o `/ux-agentico` si es agentic).
+
+### 2026-06-06 22:10 · 🤖 claude · `/pm-vitalia` · 💡 PROPONE
+Re-refiné la story bajo la visión agéntica actual (pedido tuyo). Investigué LISA + ADRIÁN + sitemap + objetivo Vitalia + público (dental/estética alta-consideración) + 5 competidores (cero.ai · botclinico.cl · rendu.app · Dentalink AI · doctocliq). Recomendación completa en **`00-research.md`**. Tres hallazgos que cambian la story:
+
+1. **La premisa actual es falsa.** El `reuse_map` dice "reuse treatments shipped" pero NO existe catálogo de servicios — el `treatments/` shipped es el *followup* de Camila (PHI). El catálogo vendible = **Offer Studio offers** (SYSTEM-MAP: `Offer` owner=lisa), que Vitalia consume CERO hoy. El `LadderSlot` que la story inventa no existe ni hace falta (el engine ya tiene `value_level`).
+2. **La visión agéntica invierte el propósito del catálogo:** su consumidor #1 no es el dueño mirando una grilla linda, es **Adrián** (canal-inbound, ya `refined`, **bloqueado en esta story**: RN-16 mapea necesidad→servicio, RN-17 servicio→especialista). Es exactamente el hueco del mercado: nadie hace que el catálogo sea el cerebro que un equipo de agentes vende. La plomería del agente (`TenantKnowledgeBuilder`) **ya existe** — solo falta publicar servicios como Offers.
+3. **El spec original sobre-ingeniería** un canvas drag-drop de escalera + ladder-slot workspaces + analítica por peldaño — UX que la propia story marca "Alta probabilidad confuso" y que no sirve a Camila (50-60% de tenants, quiere "setup 1 día").
+
+**Recomiendo:** MVP lean agente-first (catálogo simple = Offers EP-2 + value_level como SELECT + link servicio↔doctor + seña/financiamiento + seed presets por vertical + escalera read-only); diferir el drag-drop authoring + analítica de conversión. Corregir `module: treatments → offer` + el reuse_map falso. Dos forks te paso aparte (alcance MVP + dónde vive el cableado agéntico). No encadené a `/po-ux` todavía — espero tu ratificación de dirección.
+
+### 2026-06-06 22:25 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO
+Ratificaste: (1) **alcance = canvas completo** (drag-drop escalera + ladder-slot workspaces + analítica + Reseñas/Stats), no la versión lean; (2) **cableado = data en lisa-servicios + tool `match_service_and_specialist` en canal-inbound**. Aplicado:
+- `00-research.md § 0` — banner de ratificación que OVERRIDE §5.2/§5.3 (canvas completo in-scope; solo A/B-pricing + imports-bulk + AI-pricing quedan fuera).
+- `checkpoint.md` — frontmatter corregido (`module: treatments → offer`, `reuse_map` falso → Offer Studio EP-2, `next_action` → /po-ux reframe) + banner reframe + **prior-art scan** (mandatorio) + decisión Chris registrada.
+- Correcciones estructurales que mantengo (no eran parte del fork): servicios = **Offer Studio offers** (no `LadderSlot`/`Treatment` engine nuevo) · el peldaño = `OfferValueLevel` del engine · CERO edit engine · descripciones en voz de marca · seña/financiamiento.
+
+Encadeno a **`/po-ux`** para reescribir `01-spec.md` bajo este reframe (mapa funcional + Gherkin + mockups per-component con fidelidad de shell, ADR-003+004). Quedan dos detalles finos para `/architect` (no bloquean el spec): mapeo exacto columnas-canvas ↔ `OfferValueLevel`, y dónde persiste el link servicio↔doctor brand-level.
+
+### 2026-06-06 22:45 · 🤖 claude · `/po-ux` · ⚠️ DUDA
+Escribí `01-spec.md` RONDA 1 (intención) + corrí el interrogatorio gate (3 batches, 10 preguntas). **Todas las recomendaciones quedaron elegidas** → modelo del servicio cerrado:
+- Servicio = **Offer Studio Offer** (consume engine EP-2, cero modelo nuevo). Catálogo **por-tenant**, scope clínica opcional. Precio **fijo o rango** ("desde $X"). **Paquetes/multi-sesión** en MVP.
+- Escalera = 5 peldaños del enum engine con **labels médicos** (Gancho gratuito · Primera visita · Tratamiento principal · Premium · Plan/convenio). **Recurrente** = atributo del servicio (no peldaño). **Seña + financiamiento por servicio** en Lisa (el diferenciador que el research marcó vacío).
+- Link servicio↔doctor **opcional pero recomendado** (sin doctores → agente degrada). RBAC: **admin+owner editan**, resto read-only. **Dos toggles** independientes: "Activo (agente)" + "Mostrar en landing".
+
+Spec actualizado: § Modelo del servicio (14 campos) + § Mapa funcional resuelto (happy + árbol bifurcaciones + RN-1..14 + AC-1..8) + § Decisiones RONDA 1 + § Pendientes /architect. **KEYSTONE AC-6:** un servicio activo aparece en el conocimiento de Adrián (verificable live).
+
+**Necesito tu ✍ FIRMA 1 (intención)** sobre el § Mapa funcional + § Modelo de `01-spec.md`. Con tu OK construyo los mockups per-component (catálogo card · escalera canvas · workspace servicio · drawer peldaño) con fidelidad de shell → ✍ FIRMA 2 → RONDA 2 (Gherkin + matriz) → refined. State sigue `refining` esperando tu firma.
+
+### 2026-06-06 23:05 · 🤖 claude · `/po-ux` · ✓ APLICADO
+**FIRMA 1 recibida** ("Ok") → `input_spec_signed: true` en checkpoint + spec. Construí el set de mockups borrador en `mockups/` (tokens espejo de `globals.css`, datos LatAm reales, Spanish neutro):
+- `catalogo.html` — grid de tarjetas con todo el modelo (peldaño badge · precio fijo/rango · paquete · doctores/aviso-sin-doctores · seña/cuotas · recurrente · 2 switches Activo/Landing) + empty-state con seed presets dental/estética.
+- `escalera.html` — 5 peldaños con labels médicos + drag-drop + "sin peldaño" + drawer (override + cta + conversión).
+- `servicio-workspace.html` — tabs Detalle/Doctores/Plan-pago/Reseñas/Stats + badge KEYSTONE (activo → Adrián lo conoce).
+
+Spec actualizado con § Wireframes + § Componentes (reuse Shadcn + @dnd-kit; NEW feature-local justificados). Servir: `cd mockups && python3 -m http.server 8888`.
+
+**Necesito tu ✍ FIRMA 2** (ratificación visual de los 3 mockups). Con tu OK → RONDA 2: escribo Gherkin (4 base + sub-categorías) + matriz de cobertura → transition `refining→refined` → handoff `/architect`. State sigue `refining`.
+
+### 2026-06-06 23:40 · 🤖 claude · `/po-ux` · ✓ APLICADO
+Apliqué tus 4 comentarios y reconstruí los mockups **dentro del shell-organism**:
+1. **Shell completo** — porté verbatim el wrapper de lisa-marca v2.1 (TopBar + Ribbon Lisa activo + SubTabsBar Servicios + ValeriaSidebar 50/50 + splitter 3 estados + dark). El `_shared.css` ahora es el chrome canónico + clases servicios. Ya NO es panel suelto.
+2. **Sin tabs en el body** — el workspace del servicio usa **`EntitySubNavBar`** (el componente shipped que usa staff: `‹ Servicios | ✨ Diseño de sonrisa | Detalle·Doctores·Plan-pago·Reseñas·Stats`). Catálogo|Escalera pasaron a **SubSubTabsBar** (N3), no toggle.
+3. **Peldaños FIJOS + autoexplicativo** — saqué el drawer de "editar peldaño" (override/cta por slot) + la ruta `ladder/[slot-id]`. La escalera son 5 columnas fijas; cada una explica qué va ahí; el **peldaño vacío muestra ejemplos por vertical + "crear aquí"** (ej. Premium vacío → "carillas, ortodoncia invisible, rehabilitación oral"). El peldaño de un servicio = su `value_level` (un solo dato); mover = cambiar de columna.
+4. **Crear servicio** — nuevo `nuevo-servicio.html` (Sheet) con todos los campos + **selector de peldaño autoexplicativo** (cada opción dice qué va ahí + ejemplos, JS interactivo) + Lisa escribe la descripción en tu voz.
+
+Spec actualizado (§ Modelo sin slot-override · § Mapa funcional escalera reframe · AC-3/4/9 · § Wireframes v2 · § Componentes con EntitySubNavBar + SubSubTabsBar reuse). 4 archivos sirven HTTP 200 en `:8899`.
+
+**Necesito tu ✍ FIRMA 2** sobre los 4 mockups. OK → RONDA 2 (Gherkin + matriz) → `refined` → `/architect`. Cambios → los aplico. State sigue `refining`.
+
+### 2026-06-07 00:30 · 🤖 claude · `/po-ux` · ✓ APLICADO
+Apliqué tus 3 comentarios (investigué online para el #1):
+1. **Detalle completo por pestaña (agente-first).** Investigué procesos reales de treatment-coordinators dentales/estéticos + manejo de objeciones + FAQ high-ticket + KBs de agentes IA. Hallazgo clave: faltaba el activo de venta → **agregué la pestaña ⭐ "Para Adrián" (argumentario)**. El workspace ahora tiene **6 pestañas** navegables (EntitySubNavBar): Detalle · **Para Adrián** · Doctores · Plan de pago · Prueba social · Stats. Definí TODOS los campos por pestaña en el spec (§ Workspace del servicio, ~55 campos agrupados + MVP de 24 must-have). "Para Adrián" = candidatura + contraindicaciones + condiciones de escalada (seguridad HIPAA-lite) + beneficios/dolor-de-no-tratarse/diferenciadores + FAQ (pares) + objeciones→respuestas (las 5) + palabras clave/sinónimos (para el match RN-16). El mockup `servicio-workspace.html` muestra las 6 pestañas con contenido real (cliqueables).
+2. **Sin landing.** Eliminé el toggle "Mostrar en landing" de tarjetas, workspace y crear-servicio → **toggle único "Activo"**. Spec actualizado (RN-10, modelo, mapa funcional, AC). La landing queda para su propia historia.
+3. **Buscador.** El catálogo ahora tiene **buscador + filtros** (especialidad · peldaño · estado), patrón `StaffDirectoryHeader` shipped.
+
+Spec: nueva § Workspace del servicio (contenido por pestaña) + § Componentes (ParaAdrianView, FaqPairList, buscador) + AC-4/4.bis/9/10. 4 mockups HTTP 200 en `:8899`.
+
+**Necesito tu ✍ FIRMA 2.** OK → RONDA 2 (Gherkin + matriz) → `refined` → `/architect`. Cambios → los aplico. State sigue `refining`.
+
+### 2026-06-07 00:45 · 🤖 claude · `/po-ux` · ⚠️ DUDA
+Chris cierra la sesión por contexto (51%) y tiene **más comentarios** para arrancar en sesión nueva. Escribí `HANDOFF-next-session.md` con todo el estado (decisiones cementadas + 4 mockups + abierto-para-architect + dependencias + git). State sigue `refining`, bloqueado en FIRMA 2. Reanudar con el prompt de arranque que dejé en la sesión.

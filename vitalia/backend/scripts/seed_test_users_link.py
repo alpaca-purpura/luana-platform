@@ -108,7 +108,9 @@ TENANTS = [
         "id": TENANT_SANARE,
         "name": "Sanaré LATAM",
         "slug": "sanare-latam-mx",
-        "default_currency": "MXN",
+        # PEN: demo tenant de pruebas en soles (Chris 2026-06-17 · fast-track previo a
+        # la historia vitalia-tenant-currency-config que hace la moneda configurable).
+        "default_currency": "PEN",
         "timezone": "America/Mexico_City",
         "location_country": "MX",
         "location_city": "Ciudad de México",
@@ -213,8 +215,18 @@ def _clerk_request(method: str, path: str, secret: str, body: dict | None = None
 def _clerk_sync(secret: str, clinic_id: str) -> dict[str, str]:
     """Create/update Clerk users with aligned publicMetadata. Returns email->clerk_id (live)."""
     resolved: dict[str, str] = {}
+    # Currency in publicMetadata so the FE useTenantLocale reads the tenant's real
+    # currency (not the hardcoded ARS fallback). Derived from the Sanaré tenant row
+    # so flipping TENANTS keeps this in sync. (vitalia-tenant-currency-config wires
+    # the canonical per-tenant source later; this is the fast-track for test data.)
+    sanare_currency = next((t["default_currency"] for t in TENANTS if t["id"] == TENANT_SANARE), "PEN")
     for email, role in CLERK_ROLE.items():
-        meta = {"role": role, "tenant_id": str(TENANT_SANARE), "clinicId": clinic_id}
+        meta = {
+            "role": role,
+            "tenant_id": str(TENANT_SANARE),
+            "clinicId": clinic_id,
+            "currency": sanare_currency,
+        }
         _, found = _clerk_request("GET", f"/users?email_address={email}", secret)
         uid = found[0]["id"] if isinstance(found, list) and found else None
         if uid:

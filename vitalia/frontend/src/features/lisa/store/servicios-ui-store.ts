@@ -18,7 +18,7 @@
 
 "use client";
 
-import { create } from "zustand";
+import { create } from "zustand/react"; // index export* falla en turbopack (HB-78)
 
 interface ServiciosUiState {
   /** offer_id of the escalera card being dragged (null = no active drag). */

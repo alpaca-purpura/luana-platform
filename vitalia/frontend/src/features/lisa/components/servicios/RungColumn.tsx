@@ -106,7 +106,8 @@ function LadCard({
       <button
         type="button"
         onClick={() =>
-          router.push(`/${tenantId}/lisa/servicios/${item.offer_id}`)
+          // G2-F10: from=escalera → workspace back-pill reads "Escalera" + vuelve allí.
+          router.push(`/${tenantId}/lisa/servicios/${item.offer_id}/resumen?from=escalera`)
         }
         className="flex min-w-0 items-center gap-1.5 truncate text-left font-medium text-foreground"
       >

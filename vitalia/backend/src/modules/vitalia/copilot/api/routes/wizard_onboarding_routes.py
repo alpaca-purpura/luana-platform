@@ -30,7 +30,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.db import get_async_session
+from src.db import get_async_session, get_async_session_committing
 from src.modules.vitalia.copilot.api.dtos.wizard_dtos import (
     CompleteRequest,
     CompleteResponse,
@@ -53,6 +53,7 @@ from src.modules.vitalia.copilot.application.services.extract_tenant_context_ser
     ExtractTenantContextService,
 )
 from src.modules.vitalia.copilot.application.services.onboarding_draft_service import (
+    DraftAlreadyExistsError,
     OnboardingDraftService,
 )
 from src.modules.vitalia.copilot.application.services.simulate_personality_service import (
@@ -82,9 +83,15 @@ TenantIdHeader = Annotated[str, Header(alias="X-Tenant-ID")]
 
 
 async def get_onboarding_progress_repo(
-    session: Annotated[AsyncSession, Depends(get_async_session)],
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
 ) -> SqlAlchemyOnboardingProgressRepository:
-    """Provide SqlAlchemyOnboardingProgressRepository with live DB session."""
+    """Provide SqlAlchemyOnboardingProgressRepository with the committing session.
+
+    The repo's save() flushes-only ("Caller commits"); the wizard handlers
+    (start_draft/confirm_slot/extract/complete) route their draft writes through
+    here. Without a committing unit-of-work the draft is flushed-then-rolled-back
+    at session close → HTTP 200 with no row (HB-80, the HB-50 silent-killer class).
+    """
     return SqlAlchemyOnboardingProgressRepository(session=session)
 
 
@@ -293,17 +300,24 @@ async def start_draft(
         StartDraftResponse with draft_id, mode, and initial slot state.
 
     Raises:
+        409: A draft already exists for this tenant+user (HB-88).
         422: Missing X-Tenant-ID header.
     """
     tenant_id = UUID(x_tenant_id)
     clinic_id = request.clinic_id
 
-    draft = await draft_svc.create_draft(
-        tenant_id=tenant_id,
-        user_id=tenant_id,  # Slice 1: use tenant_id as user_id stub
-        mode=request.mode,
-        clinic_id=clinic_id,
-    )
+    try:
+        draft = await draft_svc.create_draft(
+            tenant_id=tenant_id,
+            user_id=tenant_id,  # Slice 1: use tenant_id as user_id stub
+            mode=request.mode,
+            clinic_id=clinic_id,
+        )
+    except DraftAlreadyExistsError as exc:
+        raise HTTPException(
+            status_code=409,
+            detail="Ya existe un borrador de onboarding para este usuario.",
+        ) from exc
     logger.info("wizard_draft_started", draft_id=str(draft.id), tenant_id=x_tenant_id)
     return _draft_to_start_response(draft)
 

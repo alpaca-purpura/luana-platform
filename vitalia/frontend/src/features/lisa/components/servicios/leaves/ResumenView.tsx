@@ -63,6 +63,22 @@ const resumenSchema = z.object({
   category: z.string().nullable().optional(),
   modality: z.enum(["unica", "sesiones", "recurrente"]),
   appointment_type: z.string().nullable().optional(),
+  // Rich text fields — G2-F11: migrated to RHF local state (ADR-009 §2.1)
+  description_long: z.string().nullable().optional(),
+  includes: z.string().nullable().optional(),
+  excludes: z.string().nullable().optional(),
+  warranty: z.string().nullable().optional(),
+  procedure_steps: z.string().nullable().optional(),
+  anesthesia_pain: z.string().nullable().optional(),
+  prep: z.string().nullable().optional(),
+  aftercare: z.string().nullable().optional(),
+  downtime: z.string().nullable().optional(),
+  expected_result: z.string().nullable().optional(),
+  result_timing: z.string().nullable().optional(),
+  result_lifespan: z.string().nullable().optional(),
+  realistic_expectations: z.string().nullable().optional(),
+  risks: z.string().nullable().optional(),
+  red_flags: z.string().nullable().optional(),
 });
 
 type ResumenFormValues = z.infer<typeof resumenSchema>;
@@ -132,6 +148,22 @@ export function ResumenView({ offerId }: ResumenViewProps) {
       category: servicio?.category ?? null,
       modality: (servicio?.modality as ResumenFormValues["modality"]) ?? "unica",
       appointment_type: servicio?.initial_appt_type ?? null,
+      // Rich text fields — G2-F11 (ADR-009 §2.1)
+      description_long: servicio?.description_long ?? null,
+      includes: servicio?.includes ?? null,
+      excludes: servicio?.excludes ?? null,
+      warranty: servicio?.warranty ?? null,
+      procedure_steps: servicio?.procedure_steps ?? null,
+      anesthesia_pain: servicio?.anesthesia_pain ?? null,
+      prep: servicio?.prep ?? null,
+      aftercare: servicio?.aftercare ?? null,
+      downtime: servicio?.downtime ?? null,
+      expected_result: servicio?.expected_result ?? null,
+      result_timing: servicio?.result_timing ?? null,
+      result_lifespan: servicio?.result_lifespan ?? null,
+      realistic_expectations: servicio?.realistic_expectations ?? null,
+      risks: servicio?.risks ?? null,
+      red_flags: servicio?.red_flags ?? null,
     },
   });
 
@@ -143,6 +175,22 @@ export function ResumenView({ offerId }: ResumenViewProps) {
         category: servicio.category ?? null,
         modality: (servicio.modality as ResumenFormValues["modality"]) ?? "unica",
         appointment_type: servicio.initial_appt_type ?? null,
+        // Rich text fields — G2-F11 (ADR-009 §2.1)
+        description_long: servicio.description_long ?? null,
+        includes: servicio.includes ?? null,
+        excludes: servicio.excludes ?? null,
+        warranty: servicio.warranty ?? null,
+        procedure_steps: servicio.procedure_steps ?? null,
+        anesthesia_pain: servicio.anesthesia_pain ?? null,
+        prep: servicio.prep ?? null,
+        aftercare: servicio.aftercare ?? null,
+        downtime: servicio.downtime ?? null,
+        expected_result: servicio.expected_result ?? null,
+        result_timing: servicio.result_timing ?? null,
+        result_lifespan: servicio.result_lifespan ?? null,
+        realistic_expectations: servicio.realistic_expectations ?? null,
+        risks: servicio.risks ?? null,
+        red_flags: servicio.red_flags ?? null,
       });
     }
     // Reset only when a different entity loads (offer_id signals entity switch;
@@ -255,45 +303,81 @@ export function ResumenView({ offerId }: ResumenViewProps) {
               Descripción corta{" "}
               <span className="text-xs text-muted-foreground">(lenguaje del paciente)</span>
             </Label>
-            <Textarea
-              id="description_long"
-              value={servicio.description_long ?? ""}
-              placeholder="Una frase que el paciente entiende al instante"
-              rows={2}
-              onChange={(e) => schedule({ description_long: e.target.value || null })}
+            <Controller
+              control={form.control}
+              name="description_long"
+              render={({ field }) => (
+                <Textarea
+                  id="description_long"
+                  value={field.value ?? ""}
+                  placeholder="Una frase que el paciente entiende al instante"
+                  rows={2}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    schedule({ description_long: e.target.value || null });
+                  }}
+                />
+              )}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="includes">Qué incluye</Label>
-            <Textarea
-              id="includes"
-              value={servicio.includes ?? ""}
-              placeholder="Lista lo que está incluido en el precio…"
-              rows={3}
-              onChange={(e) => schedule({ includes: e.target.value || null })}
+            <Controller
+              control={form.control}
+              name="includes"
+              render={({ field }) => (
+                <Textarea
+                  id="includes"
+                  value={field.value ?? ""}
+                  placeholder="Lista lo que está incluido en el precio…"
+                  rows={3}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    schedule({ includes: e.target.value || null });
+                  }}
+                />
+              )}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="excludes">Qué no incluye</Label>
-            <Textarea
-              id="excludes"
-              value={servicio.excludes ?? ""}
-              placeholder="Lo que el paciente debe conseguir por su cuenta…"
-              rows={2}
-              onChange={(e) => schedule({ excludes: e.target.value || null })}
+            <Controller
+              control={form.control}
+              name="excludes"
+              render={({ field }) => (
+                <Textarea
+                  id="excludes"
+                  value={field.value ?? ""}
+                  placeholder="Lo que el paciente debe conseguir por su cuenta…"
+                  rows={2}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    schedule({ excludes: e.target.value || null });
+                  }}
+                />
+              )}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="warranty">Garantía</Label>
-            <Textarea
-              id="warranty"
-              value={servicio.warranty ?? ""}
-              placeholder="Condiciones de la garantía o política de re-tratamiento…"
-              rows={2}
-              onChange={(e) => schedule({ warranty: e.target.value || null })}
+            <Controller
+              control={form.control}
+              name="warranty"
+              render={({ field }) => (
+                <Textarea
+                  id="warranty"
+                  value={field.value ?? ""}
+                  placeholder="Condiciones de la garantía o política de re-tratamiento…"
+                  rows={2}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    schedule({ warranty: e.target.value || null });
+                  }}
+                />
+              )}
             />
           </div>
 
@@ -318,56 +402,101 @@ export function ResumenView({ offerId }: ResumenViewProps) {
         <div className="space-y-4 pt-1">
           <div className="space-y-2">
             <Label htmlFor="procedure_steps">Cómo se hace</Label>
-            <Textarea
-              id="procedure_steps"
-              value={servicio.procedure_steps ?? ""}
-              placeholder="Pasos que vive el paciente, en lenguaje claro…"
-              rows={4}
-              onChange={(e) => schedule({ procedure_steps: e.target.value || null })}
+            <Controller
+              control={form.control}
+              name="procedure_steps"
+              render={({ field }) => (
+                <Textarea
+                  id="procedure_steps"
+                  value={field.value ?? ""}
+                  placeholder="Pasos que vive el paciente, en lenguaje claro…"
+                  rows={4}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    schedule({ procedure_steps: e.target.value || null });
+                  }}
+                />
+              )}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="anesthesia_pain">Anestesia y dolor</Label>
-            <Textarea
-              id="anesthesia_pain"
-              value={servicio.anesthesia_pain ?? ""}
-              placeholder="Nivel de dolor esperado y qué anestesia se usa…"
-              rows={2}
-              onChange={(e) => schedule({ anesthesia_pain: e.target.value || null })}
+            <Controller
+              control={form.control}
+              name="anesthesia_pain"
+              render={({ field }) => (
+                <Textarea
+                  id="anesthesia_pain"
+                  value={field.value ?? ""}
+                  placeholder="Nivel de dolor esperado y qué anestesia se usa…"
+                  rows={2}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    schedule({ anesthesia_pain: e.target.value || null });
+                  }}
+                />
+              )}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="prep">Preparación previa</Label>
-            <Textarea
-              id="prep"
-              value={servicio.prep ?? ""}
-              placeholder="Qué debe hacer el paciente antes de la cita…"
-              rows={2}
-              onChange={(e) => schedule({ prep: e.target.value || null })}
+            <Controller
+              control={form.control}
+              name="prep"
+              render={({ field }) => (
+                <Textarea
+                  id="prep"
+                  value={field.value ?? ""}
+                  placeholder="Qué debe hacer el paciente antes de la cita…"
+                  rows={2}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    schedule({ prep: e.target.value || null });
+                  }}
+                />
+              )}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="aftercare">Cuidados posteriores</Label>
-            <Textarea
-              id="aftercare"
-              value={servicio.aftercare ?? ""}
-              placeholder="Qué debe hacer y evitar el paciente luego…"
-              rows={2}
-              onChange={(e) => schedule({ aftercare: e.target.value || null })}
+            <Controller
+              control={form.control}
+              name="aftercare"
+              render={({ field }) => (
+                <Textarea
+                  id="aftercare"
+                  value={field.value ?? ""}
+                  placeholder="Qué debe hacer y evitar el paciente luego…"
+                  rows={2}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    schedule({ aftercare: e.target.value || null });
+                  }}
+                />
+              )}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="downtime">Tiempo de recuperación</Label>
-            <Textarea
-              id="downtime"
-              value={servicio.downtime ?? ""}
-              placeholder="Días de reposo o restricciones de actividad…"
-              rows={2}
-              onChange={(e) => schedule({ downtime: e.target.value || null })}
+            <Controller
+              control={form.control}
+              name="downtime"
+              render={({ field }) => (
+                <Textarea
+                  id="downtime"
+                  value={field.value ?? ""}
+                  placeholder="Días de reposo o restricciones de actividad…"
+                  rows={2}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    schedule({ downtime: e.target.value || null });
+                  }}
+                />
+              )}
             />
           </div>
         </div>
@@ -382,43 +511,79 @@ export function ResumenView({ offerId }: ResumenViewProps) {
         <div className="space-y-4 pt-1">
           <div className="space-y-2">
             <Label htmlFor="expected_result">Resultado esperado</Label>
-            <Textarea
-              id="expected_result"
-              value={servicio.expected_result ?? ""}
-              placeholder="El cambio visible/tangible que experimenta el paciente…"
-              rows={2}
-              onChange={(e) => schedule({ expected_result: e.target.value || null })}
+            <Controller
+              control={form.control}
+              name="expected_result"
+              render={({ field }) => (
+                <Textarea
+                  id="expected_result"
+                  value={field.value ?? ""}
+                  placeholder="El cambio visible/tangible que experimenta el paciente…"
+                  rows={2}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    schedule({ expected_result: e.target.value || null });
+                  }}
+                />
+              )}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="result_timing">¿Cuándo se ve el resultado?</Label>
-            <Input
-              id="result_timing"
-              value={servicio.result_timing ?? ""}
-              placeholder="Ej. A las 48h se aprecian los primeros resultados"
-              onChange={(e) => schedule({ result_timing: e.target.value || null })}
+            <Controller
+              control={form.control}
+              name="result_timing"
+              render={({ field }) => (
+                <Input
+                  id="result_timing"
+                  value={field.value ?? ""}
+                  placeholder="Ej. A las 48h se aprecian los primeros resultados"
+                  onChange={(e) => {
+                    field.onChange(e);
+                    schedule({ result_timing: e.target.value || null });
+                  }}
+                />
+              )}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="result_lifespan">Duración del resultado</Label>
-            <Input
-              id="result_lifespan"
-              value={servicio.result_lifespan ?? ""}
-              placeholder="Ej. 2 años con mantenimiento adecuado"
-              onChange={(e) => schedule({ result_lifespan: e.target.value || null })}
+            <Controller
+              control={form.control}
+              name="result_lifespan"
+              render={({ field }) => (
+                <Input
+                  id="result_lifespan"
+                  value={field.value ?? ""}
+                  placeholder="Ej. 2 años con mantenimiento adecuado"
+                  onChange={(e) => {
+                    field.onChange(e);
+                    schedule({ result_lifespan: e.target.value || null });
+                  }}
+                />
+              )}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="realistic_expectations">Expectativas realistas</Label>
-            <Textarea
-              id="realistic_expectations"
-              value={servicio.realistic_expectations ?? ""}
-              placeholder="Qué puede y qué no puede esperar el paciente…"
-              rows={2}
-              onChange={(e) => schedule({ realistic_expectations: e.target.value || null })}
+            <Controller
+              control={form.control}
+              name="realistic_expectations"
+              render={({ field }) => (
+                <Textarea
+                  id="realistic_expectations"
+                  value={field.value ?? ""}
+                  placeholder="Qué puede y qué no puede esperar el paciente…"
+                  rows={2}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    schedule({ realistic_expectations: e.target.value || null });
+                  }}
+                />
+              )}
             />
           </div>
         </div>
@@ -433,23 +598,41 @@ export function ResumenView({ offerId }: ResumenViewProps) {
         <div className="space-y-4 pt-1">
           <div className="space-y-2">
             <Label htmlFor="risks">Riesgos y efectos secundarios</Label>
-            <Textarea
-              id="risks"
-              value={servicio.risks ?? ""}
-              placeholder="Señala los riesgos reales (curados, no alarmistas)…"
-              rows={3}
-              onChange={(e) => schedule({ risks: e.target.value || null })}
+            <Controller
+              control={form.control}
+              name="risks"
+              render={({ field }) => (
+                <Textarea
+                  id="risks"
+                  value={field.value ?? ""}
+                  placeholder="Señala los riesgos reales (curados, no alarmistas)…"
+                  rows={3}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    schedule({ risks: e.target.value || null });
+                  }}
+                />
+              )}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="red_flags">Señales de alarma</Label>
-            <Textarea
-              id="red_flags"
-              value={servicio.red_flags ?? ""}
-              placeholder="Si pasa X, el paciente debe llamar a la clínica…"
-              rows={2}
-              onChange={(e) => schedule({ red_flags: e.target.value || null })}
+            <Controller
+              control={form.control}
+              name="red_flags"
+              render={({ field }) => (
+                <Textarea
+                  id="red_flags"
+                  value={field.value ?? ""}
+                  placeholder="Si pasa X, el paciente debe llamar a la clínica…"
+                  rows={2}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    schedule({ red_flags: e.target.value || null });
+                  }}
+                />
+              )}
             />
           </div>
         </div>

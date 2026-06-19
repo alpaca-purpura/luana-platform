@@ -255,3 +255,120 @@ async def test_invalid_tenant_uuid_returns_422(app) -> None:
             resp = await client.get(_BASE, headers={"X-Tenant-ID": "not-a-uuid"})
     assert resp.status_code == 422
     assert isinstance(UUID(_TENANT_A), UUID)  # guard: constant is a valid uuid
+
+
+# ── G2-F13-BE regression: specialist detail carries display_name + specialty ──
+
+_CLINIC_A = "cccccccc-cccc-cccc-cccc-cccccccccccc"
+_DOCTOR_ID = uuid4()
+
+
+def _enriched_link_return(doctor_id: UUID | None = None) -> list:
+    """Build the mocked return value from specialists.list_for_offer (EnrichedSpecialistLink-like)."""
+    from src.modules.vitalia.offer.application.services.specialist_link_service import EnrichedSpecialistLink
+
+    did = doctor_id or _DOCTOR_ID
+    return [
+        EnrichedSpecialistLink(
+            id=uuid4(),
+            offer_id=_OFFER_ID,
+            doctor_id=did,
+            display_name="Dra. Ana Pérez",
+            specialty="Odontología",
+        )
+    ]
+
+
+@pytest.mark.asyncio
+async def test_get_detail_with_clinic_id_carries_specialist_name(app) -> None:
+    """GET /servicios/{id} with X-Clinic-ID → specialists include display_name + specialty."""
+    catalog = AsyncMock()
+    catalog.get_service.return_value = _view()
+    bundle = _bundle(catalog=catalog)
+    bundle.specialists.list_for_offer.return_value = _enriched_link_return()
+
+    with _patch() as mock_build:
+        mock_build.return_value = bundle
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            resp = await client.get(
+                f"{_BASE}/{_OFFER_ID}",
+                headers={"X-Tenant-ID": _TENANT_A, "X-Clinic-ID": _CLINIC_A},
+            )
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data["specialists"]) == 1
+    spec = data["specialists"][0]
+    assert spec["display_name"] == "Dra. Ana Pérez"
+    assert spec["specialty"] == "Odontología"
+    # Verify clinic_id was forwarded to list_for_offer.
+    bundle.specialists.list_for_offer.assert_awaited_once()
+    call_kwargs = bundle.specialists.list_for_offer.await_args.kwargs
+    assert "clinic_id" in call_kwargs
+    assert call_kwargs["clinic_id"] == UUID(_CLINIC_A)
+
+
+@pytest.mark.asyncio
+async def test_get_detail_without_clinic_id_specialists_have_none_name(app) -> None:
+    """GET /servicios/{id} without X-Clinic-ID → specialists have null display_name."""
+    from src.modules.vitalia.offer.application.services.specialist_link_service import EnrichedSpecialistLink
+
+    catalog = AsyncMock()
+    catalog.get_service.return_value = _view()
+    bundle = _bundle(catalog=catalog)
+    bundle.specialists.list_for_offer.return_value = [
+        EnrichedSpecialistLink(
+            id=uuid4(),
+            offer_id=_OFFER_ID,
+            doctor_id=_DOCTOR_ID,
+            display_name=None,
+            specialty=None,
+        )
+    ]
+
+    with _patch() as mock_build:
+        mock_build.return_value = bundle
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            resp = await client.get(
+                f"{_BASE}/{_OFFER_ID}",
+                headers={"X-Tenant-ID": _TENANT_A},  # no X-Clinic-ID
+            )
+
+    assert resp.status_code == 200
+    spec = resp.json()["specialists"][0]
+    assert spec["display_name"] is None
+    assert spec["specialty"] is None
+    # clinic_id must be None when header is absent.
+    call_kwargs = bundle.specialists.list_for_offer.await_args.kwargs
+    assert call_kwargs.get("clinic_id") is None
+
+
+@pytest.mark.asyncio
+async def test_get_detail_invalid_clinic_id_degrades_gracefully(app) -> None:
+    """X-Clinic-ID with invalid UUID → detail still returns 200 (no 422), clinic_id=None."""
+    from src.modules.vitalia.offer.application.services.specialist_link_service import EnrichedSpecialistLink
+
+    catalog = AsyncMock()
+    catalog.get_service.return_value = _view()
+    bundle = _bundle(catalog=catalog)
+    bundle.specialists.list_for_offer.return_value = [
+        EnrichedSpecialistLink(
+            id=uuid4(),
+            offer_id=_OFFER_ID,
+            doctor_id=_DOCTOR_ID,
+            display_name=None,
+            specialty=None,
+        )
+    ]
+
+    with _patch() as mock_build:
+        mock_build.return_value = bundle
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            resp = await client.get(
+                f"{_BASE}/{_OFFER_ID}",
+                headers={"X-Tenant-ID": _TENANT_A, "X-Clinic-ID": "not-a-valid-uuid"},
+            )
+
+    assert resp.status_code == 200
+    call_kwargs = bundle.specialists.list_for_offer.await_args.kwargs
+    assert call_kwargs.get("clinic_id") is None

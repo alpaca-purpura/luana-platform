@@ -44,6 +44,23 @@ vi.mock("@/hooks/use-autosave", () => ({
   useAutosave: () => ({ schedule: mockSchedule, status: "idle", flush: vi.fn() }),
 }));
 
+// ── Cycling autosave status factory (for G2-F11 regression — NOT frozen) ────
+// Returns a hook impl that cycles status idle→saving→saved on each schedule call,
+// mimicking real re-renders that expose the value={servicio.X} bug.
+function makeCyclingAutosave() {
+  let _status: "idle" | "saving" | "saved" = "idle";
+  const schedule = vi.fn((payload: unknown) => {
+    void payload; // fire-and-forget, like real hook
+    _status = "saving";
+    // Sync: immediately flip to saved so React re-renders in the same act()
+    _status = "saved";
+  });
+  return {
+    useAutosave: () => ({ schedule, status: _status, flush: vi.fn() }),
+    getSchedule: () => schedule,
+  };
+}
+
 // ── Mock api/servicios hooks ──────────────────────────────────────────────
 const mockUseServicioDetail = vi.fn();
 vi.mock("../../../../api/servicios", () => ({
@@ -344,6 +361,58 @@ describe("ResumenView", () => {
       });
       render(<ResumenView offerId="offer-123" />);
       expect(screen.queryByText(/intervalo de recurrencia/i)).not.toBeInTheDocument();
+    });
+  });
+
+  // ── G2-F11 regression: value must come from RHF local state, not servicio ──
+  // ADR-vitalia-009 §2.1 invariant: editable inputs MUST NOT bind value={servicio.X}.
+  // When status cycles (idle→saving→saved), React re-renders; if value is bound to
+  // server data the textarea reverts to the server value on every keystroke (the bug).
+  // This test exercises that re-render cycle and asserts the typed value is preserved.
+  describe("G2-F11 — autosave re-renders preserve typed value (ADR-009 §2.1)", () => {
+    it("description_long textarea keeps typed value after autosave status cycles (RED before fix)", async () => {
+      const { userEvent } = await import("@testing-library/user-event");
+      const ue = userEvent.setup();
+
+      // Override use-autosave mock for this test to use a cycling status implementation.
+      // We need the re-render to happen so we use a ref-based approach: the standard
+      // mock above always returns status:"idle" (no re-render). Here we use a controlled
+      // React state simulation via a wrapper component.
+      const serverValue = "Valor del servidor";
+      mockUseServicioDetail.mockReturnValue({
+        data: makeServiceDetail({ description_long: serverValue }),
+      });
+
+      // We override the mock module factory inline: vi.mock is hoisted so we can't
+      // call it inside a describe — instead we spy on the already-mocked module and
+      // replace the implementation for this test only.
+      const autosaveMod = await import("@/hooks/use-autosave");
+      const cycling = makeCyclingAutosave();
+      const spy = vi.spyOn(autosaveMod, "useAutosave").mockImplementation(cycling.useAutosave);
+
+      const { rerender } = render(<ResumenView offerId="offer-123" />);
+
+      // Textarea starts with server value (hydration)
+      const textarea = screen.getByPlaceholderText(
+        "Una frase que el paciente entiende al instante",
+      ) as HTMLTextAreaElement;
+      expect(textarea.value).toBe(serverValue);
+
+      // Type new text — this calls field.onChange (RHF) + schedule (autosave)
+      // The schedule call mutates _status → saved, triggering a re-render via
+      // the cycling impl. The re-render will expose the bug if value={servicio.X}.
+      await ue.clear(textarea);
+      await ue.type(textarea, "Texto escrito por el usuario");
+
+      // Force a re-render (simulates what setStatus("saved") triggers in real hook)
+      rerender(<ResumenView offerId="offer-123" />);
+
+      // INVARIANT (ADR-009 §2.1): typed value must survive the re-render.
+      // Before fix: value reverts to serverValue (THE BUG).
+      // After fix: value is the typed text (RHF local state).
+      expect(textarea.value).toBe("Texto escrito por el usuario");
+
+      spy.mockRestore();
     });
   });
 });

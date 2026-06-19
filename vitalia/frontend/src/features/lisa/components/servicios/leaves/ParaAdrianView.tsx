@@ -159,37 +159,57 @@ export function ParaAdrianView({ offerId }: ParaAdrianViewProps) {
       {/* ── FAQ ─────────────────────────────────────────────────────────────── */}
       <Group>
         <GroupHeader title="Preguntas frecuentes" />
+        {/* ADR-009: key={offerId} forces remount when entity changes → clean re-seed of local state */}
         <FaqPairList
+          key={offerId}
           value={(brief?.faq ?? []).map((f, i) => ({
             id: `faq-${i}`,
             question: f.question,
             answer: f.answer,
           }))}
-          onChange={(pairs) =>
-            schedule({
-              faq: pairs.map((p) => ({ question: p.question, answer: p.answer })),
-            })
-          }
+          onChange={(pairs) => {
+            // G2-F12: only persist COMPLETE pairs (domain FaqPair requires both
+            // fields non-empty). An empty/partial row stays editable locally but is
+            // never sent — adding a blank row no longer fires a save (or a 500).
+            const faq = pairs
+              .filter((p) => p.question.trim() !== "" && p.answer.trim() !== "")
+              .map((p) => ({ question: p.question, answer: p.answer }));
+            const current = (brief?.faq ?? []).map((f) => ({
+              question: f.question,
+              answer: f.answer,
+            }));
+            if (JSON.stringify(faq) !== JSON.stringify(current)) {
+              schedule({ faq });
+            }
+          }}
         />
       </Group>
 
       {/* ── Objeciones ──────────────────────────────────────────────────────── */}
       <Group>
         <GroupHeader title="Objeciones y respuestas" />
+        {/* ADR-009: key={offerId} forces remount when entity changes → clean re-seed of local state */}
         <ObjecionPairList
+          key={offerId}
           value={(brief?.objections ?? []).map((o, i) => ({
             id: `obj-${i}`,
             tag: o.objection_type,
             response: o.response,
           }))}
-          onChange={(pairs) =>
-            schedule({
-              objections: pairs.map((p) => ({
-                objection_type: p.tag,
-                response: p.response,
-              })),
-            })
-          }
+          onChange={(pairs) => {
+            // G2-F12: only persist COMPLETE pairs (domain ObjectionPair requires
+            // both fields non-empty). Blank/partial rows never fire a save.
+            const objections = pairs
+              .filter((p) => p.tag.trim() !== "" && p.response.trim() !== "")
+              .map((p) => ({ objection_type: p.tag, response: p.response }));
+            const current = (brief?.objections ?? []).map((o) => ({
+              objection_type: o.objection_type,
+              response: o.response,
+            }));
+            if (JSON.stringify(objections) !== JSON.stringify(current)) {
+              schedule({ objections });
+            }
+          }}
         />
       </Group>
 
