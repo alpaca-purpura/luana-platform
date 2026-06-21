@@ -520,7 +520,7 @@ related_capabilities:
     - auth.clerk-middleware
     - iam.luana-core-adoption
   enables:
-    - scheduling.valeria-agenda
+    - scheduling.mateo-agenda
     - brand_studio.lisa-marca
     - sales_agent.inbox-handler-mode-occ
     - patients.nps-tracking

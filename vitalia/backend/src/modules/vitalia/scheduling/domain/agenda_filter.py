@@ -1,4 +1,4 @@
-# cap: scheduling.valeria-agenda
+# cap: scheduling.mateo-agenda
 # story-origin: vitalia-fase2-s1-TBD
 """Preset filter enum for the Valeria Agenda cockpit.
 

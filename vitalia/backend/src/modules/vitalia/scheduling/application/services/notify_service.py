@@ -1,4 +1,4 @@
-# cap: scheduling.valeria-agenda
+# cap: scheduling.mateo-agenda
 # story-origin: vitalia-fase2-s1-TBD
 """Notify Service — template-only WhatsApp notification with ComplianceService guard.
 

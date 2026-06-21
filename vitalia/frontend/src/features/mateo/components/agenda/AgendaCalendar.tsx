@@ -44,7 +44,7 @@ export interface AgendaCalendarProps {
   isLoading?: boolean;
   /**
    * Called with appointmentId when a slot is clicked.
-   * Parent (ValeriaAgendaView) opens AppointmentDrawer.
+   * Parent (MateoAgendaView) opens AppointmentDrawer.
    */
   onSlotClick?: (appointmentId: string) => void;
   /**

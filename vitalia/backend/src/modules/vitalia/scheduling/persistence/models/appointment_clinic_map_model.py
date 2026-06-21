@@ -1,4 +1,4 @@
-# cap: scheduling.valeria-agenda
+# cap: scheduling.mateo-agenda
 # story-origin: TBD
 """SQLAlchemy 2.0 model — vitalia_appointment_clinic_map.
 

@@ -1,4 +1,4 @@
-# cap: scheduling.valeria-agenda
+# cap: scheduling.mateo-agenda
 # story-origin: vitalia-fase2-s1-TBD
 """Notify API DTOs — template-only WhatsApp notification for Vitalia scheduling.
 

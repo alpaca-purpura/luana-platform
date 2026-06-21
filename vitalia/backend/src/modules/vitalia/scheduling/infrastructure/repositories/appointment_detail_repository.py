@@ -1,4 +1,4 @@
-# cap: scheduling.valeria-agenda
+# cap: scheduling.mateo-agenda
 # story-origin: TBD
 """AppointmentDetailRepository — appointment detail view with PHI masking.
 
@@ -26,6 +26,8 @@ from luana_core_platform.repositories.compound_scope_repository import (
 from sqlalchemy import bindparam, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.modules.vitalia._shared.encryption.kek_client import KEKClient
+from src.modules.vitalia.scheduling.infrastructure.repositories._phi_mask import apply_name_mask
 from src.modules.vitalia.scheduling.persistence.models.appointment_payment_model import (
     AppointmentPaymentModel,
 )
@@ -43,16 +45,24 @@ logger = structlog.get_logger()
 _DETAIL_PROJECTION = """
     va.id AS appointment_id,
     va.patient_id AS patient_id,
-    '—' AS patient_name_masked,
+    pgp_sym_decrypt(p.name, :kek)::text AS raw_patient_name,
     '—' AS dni_masked,
     COALESCE(map.service_label, 'Consulta') AS service_label,
     va.doctor_id AS doctor_id,
+    COALESCE(NULLIF(TRIM(CONCAT(doc.first_name, ' ', doc.last_name)), ''), 'Sin asignar') AS doctor_label,
     va.slot_iso AS start_time,
     va.slot_iso + (va.duration_minutes * INTERVAL '1 minute') AS end_time,
     va.duration_minutes AS duration_minutes,
     va.status AS appointment_status,
-    va.payment_status AS payment_status,
+    CASE
+        WHEN va.status = 'NO_SHOW' THEN 'no_show'
+        WHEN COALESCE(va.amount_pending, 0) <= 0 AND COALESCE(va.amount_paid, 0) > 0 THEN 'pagado'
+        WHEN COALESCE(va.amount_paid, 0) > 0 THEN 'deposito'
+        ELSE 'sin_pago'
+    END AS payment_status,
     COALESCE(map.origin, va.origin) AS origin,
+    ROUND(COALESCE(va.amount_pending, 0) * 100)::bigint AS balance_due_cents,
+    ROUND(COALESCE(va.amount_paid, 0) * 100)::bigint AS balance_paid_cents,
     COALESCE(map.currency_override, va.currency) AS currency,
     va.booking_metadata AS booking_metadata,
     va.created_at AS created_at,
@@ -73,8 +83,9 @@ class AppointmentDetailRepository(CompoundScopeRepositoryBase):  # type: ignore[
 
     MODEL = None  # Complex JOIN repo — all query methods overridden, never calls super().get_by_id()
 
-    def __init__(self, session: AsyncSession) -> None:
+    def __init__(self, session: AsyncSession, kek: KEKClient | None = None) -> None:
         super().__init__(session=session, scope_field="clinic_id")
+        self._kek: KEKClient = kek if kek is not None else KEKClient.from_env()
 
     async def get_by_id(
         self,
@@ -108,6 +119,10 @@ class AppointmentDetailRepository(CompoundScopeRepositoryBase):  # type: ignore[
             " FROM vitalia_appointments va"
             " LEFT OUTER JOIN vitalia_appointment_clinic_map map"
             "   ON map.appointment_id = va.id AND map.deleted_at IS NULL"
+            " LEFT OUTER JOIN vitalia_doctors doc"
+            "   ON doc.id = va.doctor_id AND doc.tenant_id = va.tenant_id AND doc.deleted_at IS NULL"
+            " LEFT OUTER JOIN vitalia_patients p"
+            "   ON p.id = va.patient_id AND p.tenant_id = va.tenant_id AND p.deleted_at IS NULL"
             " WHERE va.tenant_id = :tenant_id"
             "   AND va.clinic_id = :clinic_id"
             "   AND va.id = :appointment_id"
@@ -116,13 +131,15 @@ class AppointmentDetailRepository(CompoundScopeRepositoryBase):  # type: ignore[
             bindparam("tenant_id", value=tenant_id),
             bindparam("clinic_id", value=clinic_id),
             bindparam("appointment_id", value=entity_id),
+            bindparam("kek", value=self._kek.get_key()),
         )
 
         result = await self._session.execute(stmt)
         row = result.mappings().first()
         if row is None:
             return None
-        detail = dict(row)
+        # Mask the decrypted patient name + strip the raw key before it leaves the repo (D5).
+        detail = apply_name_mask(dict(row))
 
         # Fetch payment history
         payments = await self._get_payments(
@@ -167,10 +184,15 @@ class AppointmentDetailRepository(CompoundScopeRepositoryBase):  # type: ignore[
         models = result.scalars().all()
         return [
             {
-                "id": str(m.id),
-                "amount": m.amount,
+                # DTO field names (AppointmentPaymentDTO) — NOT the model's id/amount.
+                # The id/amount mismatch 500'd the detail drawer (D9, story vitalia-scheduling-mateo-review).
+                "payment_id": str(m.id),
+                "amount_cents": m.amount,
                 "currency": m.currency,
                 "method": m.method,
+                "fiscal_doc_url": None,  # fiscal doc URL not resolved here (DTO-optional)
+                "fiscal_doc_type": None,
+                "created_by_label": None,  # staff label not resolved here (DTO-optional)
                 "external_payment_id": m.external_payment_id,
                 "fiscal_doc_id": str(m.fiscal_doc_id) if m.fiscal_doc_id else None,
                 "notes": m.notes,

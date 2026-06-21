@@ -1,4 +1,4 @@
-# cap: scheduling.valeria-agenda
+# cap: scheduling.mateo-agenda
 # story-origin: vitalia-fase2-s1-TBD
 """PaymentChargePort — abstract interface for payment adapter (service-blocker pattern).
 

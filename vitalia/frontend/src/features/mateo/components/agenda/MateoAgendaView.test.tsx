@@ -1,5 +1,5 @@
 /**
- * ValeriaAgendaView.test.tsx — Component integration tests (TDD RED→GREEN).
+ * MateoAgendaView.test.tsx — Component integration tests (TDD RED→GREEN).
  * T-12 vitalia-fase2-valeria-agenda
  *
  * Tests cover:
@@ -56,7 +56,7 @@ vi.mock("@/hooks/useActorHeaders", () => ({
 
 vi.mock("next/navigation", () => ({
   useRouter: vi.fn(() => ({ replace: vi.fn() })),
-  usePathname: vi.fn(() => "/tenant-1/valeria/agenda"),
+  usePathname: vi.fn(() => "/tenant-1/mateo/agenda"),
   useSearchParams: vi.fn(() => new URLSearchParams()),
 }));
 
@@ -72,7 +72,7 @@ vi.mock("@/lib/fetch-client", () => ({
 }));
 
 // Import after mock declarations (vi.mock is hoisted)
-import { ValeriaAgendaView } from "./ValeriaAgendaView";
+import { MateoAgendaView } from "./MateoAgendaView";
 import type { AgendaGridResponseDTO } from "../../types/agenda-schema";
 import { vitaliaFetch } from "@/lib/fetch-client";
 
@@ -126,14 +126,14 @@ const DEFAULT_PROPS = {
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
-describe("ValeriaAgendaView", () => {
+describe("MateoAgendaView", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(vitaliaFetch).mockResolvedValue(EMPTY_GRID);
   });
 
   it("renders main element with correct aria-label", () => {
-    render(<ValeriaAgendaView {...DEFAULT_PROPS} />, {
+    render(<MateoAgendaView {...DEFAULT_PROPS} />, {
       wrapper: makeWrapper(),
     });
     expect(
@@ -142,7 +142,7 @@ describe("ValeriaAgendaView", () => {
   });
 
   it("renders AgendaHeader", () => {
-    render(<ValeriaAgendaView {...DEFAULT_PROPS} />, {
+    render(<MateoAgendaView {...DEFAULT_PROPS} />, {
       wrapper: makeWrapper(),
     });
     // AgendaHeader renders a toolbar with view buttons
@@ -152,7 +152,7 @@ describe("ValeriaAgendaView", () => {
   });
 
   it("shows 'Sin citas para mostrar' when grid is empty and loaded", async () => {
-    render(<ValeriaAgendaView {...DEFAULT_PROPS} />, {
+    render(<MateoAgendaView {...DEFAULT_PROPS} />, {
       wrapper: makeWrapper(),
     });
 
@@ -164,7 +164,7 @@ describe("ValeriaAgendaView", () => {
   });
 
   it("shows view toggle buttons in header", () => {
-    render(<ValeriaAgendaView {...DEFAULT_PROPS} />, {
+    render(<MateoAgendaView {...DEFAULT_PROPS} />, {
       wrapper: makeWrapper(),
     });
 
@@ -175,7 +175,7 @@ describe("ValeriaAgendaView", () => {
 
   it("tracks AGENDA_VIEWED telemetry on mount", async () => {
     const { trackEvent } = await import("../../lib/telemetry");
-    render(<ValeriaAgendaView {...DEFAULT_PROPS} />, {
+    render(<MateoAgendaView {...DEFAULT_PROPS} />, {
       wrapper: makeWrapper(),
     });
 
@@ -197,7 +197,7 @@ describe("ValeriaAgendaView", () => {
 
     // Pass undefined initialData to simulate no SSR data
     render(
-      <ValeriaAgendaView
+      <MateoAgendaView
         {...DEFAULT_PROPS}
         initialData={{ ...EMPTY_GRID, slots: [] }}
         key="loading-test"
@@ -214,7 +214,7 @@ describe("ValeriaAgendaView", () => {
   });
 
   it("shows date navigation controls", () => {
-    render(<ValeriaAgendaView {...DEFAULT_PROPS} />, {
+    render(<MateoAgendaView {...DEFAULT_PROPS} />, {
       wrapper: makeWrapper(),
     });
 

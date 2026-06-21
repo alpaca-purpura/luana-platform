@@ -102,7 +102,7 @@ const ORIGIN_DIALOG_TITLE: Record<CrearCitaOrigin, string> = {
 /**
  * CrearCitaButton — DropdownMenu with 3 appointment creation modes.
  *
- * Usage in ValeriaAgendaView:
+ * Usage in MateoAgendaView:
  * ```tsx
  * {/* Desktop - shown inline in toolbar *\/}
  * <CrearCitaButton variant="button" tenantId={tenantId} clinicId={clinicId} className="hidden md:flex" />

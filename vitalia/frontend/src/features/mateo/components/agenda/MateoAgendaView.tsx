@@ -3,7 +3,7 @@
 "use client";
 
 /**
- * ValeriaAgendaView.tsx — Client root component for Valeria Agenda sub-tab.
+ * MateoAgendaView.tsx — Client root component for Valeria Agenda sub-tab.
  * T-12 vitalia-fase2-valeria-agenda · F2-S1
  *
  * Root client boundary for the Agenda sub-tab.
@@ -49,7 +49,7 @@ import type { AgendaView, AgendaFilter } from "../../types/agenda.types";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export interface ValeriaAgendaViewProps {
+export interface MateoAgendaViewProps {
   /** SSR initial data — hydrates React Query cache on first render. */
   initialData: AgendaGridResponseDTO;
   /** Initial view mode from URL. */
@@ -70,13 +70,13 @@ export interface ValeriaAgendaViewProps {
  * Hydrates React Query cache with SSR data, then polls every 30 seconds.
  * T-13 + T-14 will add calendar grid + appointment drawer as children.
  */
-export function ValeriaAgendaView({
+export function MateoAgendaView({
   initialData,
   initialView,
   initialDate,
   initialPresetFilter,
   tenantId,
-}: ValeriaAgendaViewProps) {
+}: MateoAgendaViewProps) {
   const queryClient = useQueryClient();
   const { view, date, presetFilter } = useAgendaFilters();
   const { drawerOpen, selectedSlotId, openDrawer } = useDrawerStore();

@@ -1,4 +1,4 @@
-# cap: scheduling.valeria-agenda
+# cap: scheduling.mateo-agenda
 # story-origin: TBD
 """AgendaGridRepositoryImpl — SQLAlchemy 2.0 async implementation.
 
@@ -31,9 +31,18 @@ from luana_core_platform.repositories.compound_scope_repository import (
 from sqlalchemy import bindparam, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.modules.vitalia._shared.encryption.kek_client import KEKClient
 from src.modules.vitalia.scheduling.domain.agenda_filter import AgendaPresetFilter
+from src.modules.vitalia.scheduling.infrastructure.repositories._phi_mask import (
+    apply_name_mask as _apply_name_mask,
+)
+from src.modules.vitalia.scheduling.infrastructure.repositories._phi_mask import (
+    mask_name as _mask_name,
+)
 
 logger = structlog.get_logger()
+
+__all__ = ["AgendaGridRepositoryImpl", "_apply_name_mask", "_mask_name"]
 
 # ---------------------------------------------------------------------------
 # Raw-SQL projection over vitalia_appointments (no ORM model — the table is
@@ -61,16 +70,28 @@ logger = structlog.get_logger()
 _GRID_PROJECTION = """
     va.id AS appointment_id,
     va.patient_id AS patient_id,
-    '—' AS patient_name_masked,
+    -- raw decrypted name (masked in Python via _mask_name, never returned raw — D5)
+    MAX(pgp_sym_decrypt(p.name, :kek)::text) AS raw_patient_name,
     '—' AS dni_masked,
+    -- service name from the brand-local clinic_map extension (populated on create) (D4)
     COALESCE(map.service_label, 'Consulta') AS service_label,
     va.doctor_id AS doctor_id,
+    -- doctor display name from vitalia_doctors (D3)
+    MAX(COALESCE(NULLIF(TRIM(CONCAT(doc.first_name, ' ', doc.last_name)), ''), 'Sin asignar')) AS doctor_label,
     va.slot_iso AS start_time,
     va.slot_iso + (va.duration_minutes * INTERVAL '1 minute') AS end_time,
     va.status AS appointment_status,
-    va.payment_status AS payment_status,
+    -- SlotPaymentStatus derived server-side (domain: pagado|deposito|sin_pago|no_show) — D2
+    CASE
+        WHEN va.status = 'NO_SHOW' THEN 'no_show'
+        WHEN COALESCE(va.amount_pending, 0) <= 0 AND COALESCE(va.amount_paid, 0) > 0 THEN 'pagado'
+        WHEN COALESCE(va.amount_paid, 0) > 0 THEN 'deposito'
+        ELSE 'sin_pago'
+    END AS payment_status,
     COALESCE(map.origin, va.origin) AS origin,
-    COALESCE(SUM(pay.amount), 0) AS balance_amount_cents,
+    -- real balances from the appointment ledger (cents) — D6
+    ROUND(COALESCE(va.amount_pending, 0) * 100)::bigint AS balance_due_cents,
+    ROUND(COALESCE(va.amount_paid, 0) * 100)::bigint AS balance_paid_cents,
     COALESCE(map.currency_override, va.currency) AS currency
 """
 
@@ -78,14 +99,17 @@ _GRID_FROM_JOINS = """
     FROM vitalia_appointments va
     LEFT OUTER JOIN vitalia_appointment_clinic_map map
         ON map.appointment_id = va.id AND map.deleted_at IS NULL
-    LEFT OUTER JOIN vitalia_appointment_payments pay
-        ON pay.appointment_id = va.id AND pay.deleted_at IS NULL
+    LEFT OUTER JOIN vitalia_doctors doc
+        ON doc.id = va.doctor_id AND doc.tenant_id = va.tenant_id AND doc.deleted_at IS NULL
+    LEFT OUTER JOIN vitalia_patients p
+        ON p.id = va.patient_id AND p.tenant_id = va.tenant_id AND p.deleted_at IS NULL
 """
 
 _GRID_GROUP_BY = """
     GROUP BY va.id, va.slot_iso, va.duration_minutes, va.status,
-             va.payment_status, va.origin, va.doctor_id, va.patient_id,
-             va.currency, map.service_label, map.origin, map.currency_override
+             va.origin, va.doctor_id, va.patient_id,
+             va.amount_paid, va.amount_pending, va.currency,
+             map.service_label, map.origin, map.currency_override
 """
 
 # Preset → appointment status filter mapping
@@ -119,8 +143,11 @@ class AgendaGridRepositoryImpl(CompoundScopeRepositoryBase):  # type: ignore[typ
 
     MODEL = None  # Complex JOIN repo — overrides all query methods, never calls super().get_by_id()
 
-    def __init__(self, session: AsyncSession) -> None:
+    def __init__(self, session: AsyncSession, kek: KEKClient | None = None) -> None:
         super().__init__(session=session, scope_field="clinic_id")
+        # KEK for decrypting the patient name (masked server-side). Lazy: from_env() does
+        # not read the env until get_key() is called (safe to construct without env).
+        self._kek: KEKClient = kek if kek is not None else KEKClient.from_env()
 
     def _check_dual_filter(self, *, tenant_id: UUID, clinic_id: UUID | None) -> None:
         """Inline dual-filter guard (HIPAA-lite — tenant_id + clinic_id mandatory).
@@ -160,10 +187,11 @@ class AgendaGridRepositoryImpl(CompoundScopeRepositoryBase):  # type: ignore[typ
             bindparam("tenant_id", value=tenant_id),
             bindparam("clinic_id", value=clinic_id),
             bindparam("appointment_id", value=entity_id),
+            bindparam("kek", value=self._kek.get_key()),
         )
         result = await self._session.execute(stmt)
         row = result.mappings().first()
-        return dict(row) if row else None
+        return _apply_name_mask(dict(row)) if row else None
 
     async def list_by_filter(
         self,
@@ -222,12 +250,16 @@ class AgendaGridRepositoryImpl(CompoundScopeRepositoryBase):  # type: ignore[typ
             "va.slot_iso >= :date_from",
             "va.slot_iso <= :date_to",
             "va.deleted_at IS NULL",
+            # A cancelled appointment freed its slot — it is not an active turn on the agenda (D7).
+            # The slot disappears from the grid; the detail endpoint still serves it by id.
+            "va.status <> 'CANCELLED'",
         ]
         params: list[Any] = [
             bindparam("tenant_id", value=tenant_id),
             bindparam("clinic_id", value=clinic_id),
             bindparam("date_from", value=date_from),
             bindparam("date_to", value=date_to),
+            bindparam("kek", value=self._kek.get_key()),  # decrypt patient name (D5)
         ]
 
         # Preset filter → additional status conditions (static SQL — no user input).
@@ -272,4 +304,4 @@ class AgendaGridRepositoryImpl(CompoundScopeRepositoryBase):  # type: ignore[typ
             count=len(rows),
         )
 
-        return [dict(row) for row in rows]
+        return [_apply_name_mask(dict(row)) for row in rows]

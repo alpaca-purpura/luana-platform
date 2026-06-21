@@ -1,4 +1,4 @@
-# cap: scheduling.valeria-agenda
+# cap: scheduling.mateo-agenda
 # story-origin: vitalia-fase2-s1-TBD
 """Vitalia Scheduling — Agenda API Router.
 
@@ -298,7 +298,7 @@ async def get_agenda_grid(
             appointment_status=str(s.get("appointment_status", "SCHEDULED")),
             payment_status=str(s.get("payment_status", "sin_pago")),
             origin=str(s.get("origin", "walk_in")),
-            balance_due_cents=s.get("balance_due_cents") or s.get("balance_amount_cents"),
+            balance_due_cents=s.get("balance_due_cents"),
             balance_paid_cents=s.get("balance_paid_cents"),
             currency=str(s.get("currency", "PEN")),
         )

@@ -59,8 +59,10 @@ export function AppointmentDrawerHeader({
   patientDniMasked,
   className,
 }: AppointmentDrawerHeaderProps) {
-  // Derive avatar initial from masked name (safe: first char of masked string)
-  const avatarInitial = patientNameMasked.charAt(0).toUpperCase();
+  // Derive avatar initial from masked name (safe: first char of masked string).
+  // Guard against a missing/empty masked name — a missing field must never crash the
+  // whole agenda via the error boundary (D9 follow-on, story vitalia-scheduling-mateo-review).
+  const avatarInitial = (patientNameMasked ?? "").charAt(0).toUpperCase();
 
   return (
     <div

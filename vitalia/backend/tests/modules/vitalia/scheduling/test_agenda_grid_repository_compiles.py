@@ -92,6 +92,31 @@ _FROM = datetime(2026, 6, 1, tzinfo=timezone.utc)
 _TO = datetime(2026, 6, 30, tzinfo=timezone.utc)
 
 
+class TestPatientNameMasking:
+    """_mask_name / _apply_name_mask — PHI masking happens in Python (D5)."""
+
+    def test_mask_name_initial_plus_surname(self) -> None:
+        from src.modules.vitalia.scheduling.infrastructure.repositories.agenda_grid_repository_impl import (
+            _mask_name,
+        )
+
+        assert _mask_name("María Fernanda López") == "M. López"
+        assert _mask_name("Ana García") == "A. García"
+        assert _mask_name(None) == "—"
+        assert _mask_name("   ") == "—"
+
+    def test_apply_name_mask_strips_raw_key(self) -> None:
+        from src.modules.vitalia.scheduling.infrastructure.repositories.agenda_grid_repository_impl import (
+            _apply_name_mask,
+        )
+
+        row = {"appointment_id": "a1", "raw_patient_name": "Diego Hernández Ruiz"}
+        out = _apply_name_mask(row)
+        # Raw decrypted name MUST be gone; only the masked value remains (HIPAA-lite).
+        assert "raw_patient_name" not in out
+        assert out["patient_name_masked"] == "D. Ruiz"
+
+
 class TestAgendaGridStatementCompiles:
     """The agenda-grid statements must compile to SQL (no TextClause AttributeError)."""
 
@@ -110,8 +135,12 @@ class TestAgendaGridStatementCompiles:
         # Dual filter must survive the rewrite (HIPAA-lite, non-negotiable).
         assert "tenant_id" in sql
         assert "clinic_id" in sql
-        # PHI masking projection must survive (never raw patient name).
-        assert "patient_name_masked" in sql
+        # PHI: the SQL decrypts the encrypted name (pgp_sym_decrypt + bound KEK :kek);
+        # the masking to "M. López" + stripping the raw key happen in Python (_apply_name_mask).
+        assert "pgp_sym_decrypt" in sql
+        assert "raw_patient_name" in sql
+        # Real doctor name now resolved (no more '—' placeholder): doctor join present.
+        assert "vitalia_doctors" in sql
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(

@@ -146,7 +146,7 @@ related_capabilities:
     - shell-organism.shell-vitalia
     - auth.clerk-middleware
     - compliance.hipaa-lite-defensive-stack
-    - scheduling.valeria-agenda
+    - scheduling.mateo-agenda
   enables:
     - sales_agent.inbox-handler-mode-occ
   similar: []

@@ -1,4 +1,4 @@
-# cap: scheduling.valeria-agenda
+# cap: scheduling.mateo-agenda
 # story-origin: TBD
 """Scheduling domain exceptions — vitalia brand-local.
 

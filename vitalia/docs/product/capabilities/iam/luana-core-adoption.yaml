@@ -283,7 +283,7 @@ related_capabilities:
   enables:
     - shell-organism.shell-vitalia
     - compliance.hipaa-lite-defensive-stack
-    - scheduling.valeria-agenda
+    - scheduling.mateo-agenda
     - brand_studio.lisa-marca
   similar: []
   obsoletes: []

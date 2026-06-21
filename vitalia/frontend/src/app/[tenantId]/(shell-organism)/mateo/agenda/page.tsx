@@ -12,7 +12,7 @@
  *   1. Await params + searchParams (Next.js 16 App Router — Promise-based).
  *   2. Resolve view/date/presetFilter from URL (SSoT).
  *   3. Call getInitialAgendaState() for SSR hydration (graceful degradation).
- *   4. Pass initialData to ValeriaAgendaView (client root).
+ *   4. Pass initialData to MateoAgendaView (client root).
  *
  * No "use client" — Server Component.
  * Auth: shell-organism layout handles Clerk validation + tenant redirect.
@@ -24,7 +24,7 @@
 
 import { type Metadata } from "next";
 import {
-  ValeriaAgendaView,
+  MateoAgendaView,
   getInitialAgendaState,
 } from "@/features/mateo";
 import type { AgendaView } from "@/features/mateo";
@@ -78,7 +78,7 @@ export default async function MateoAgendaPage({
   });
 
   return (
-    <ValeriaAgendaView
+    <MateoAgendaView
       initialData={initialData}
       initialView={view}
       initialDate={date}

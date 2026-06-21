@@ -1,4 +1,4 @@
-# cap: scheduling.valeria-agenda
+# cap: scheduling.mateo-agenda
 """Scheduling RBAC — single source of truth for PHI-access roles.
 
 SSoT for the set of roles allowed to read/act on PHI-bearing scheduling endpoints

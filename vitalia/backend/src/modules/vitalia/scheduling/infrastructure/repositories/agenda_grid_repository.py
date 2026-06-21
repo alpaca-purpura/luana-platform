@@ -1,4 +1,4 @@
-# cap: scheduling.valeria-agenda
+# cap: scheduling.mateo-agenda
 # story-origin: TBD
 """AgendaGridRepository — interface (Protocol) for agenda grid queries.
 

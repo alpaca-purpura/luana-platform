@@ -9,7 +9,7 @@
  * Clerk server-side token is obtained via auth() from @clerk/nextjs/server.
  *
  * Pattern: Server Component calls getInitialAgendaState() → passes result
- * as placeholderData to ValeriaAgendaView → React Query hydrates client cache.
+ * as placeholderData to MateoAgendaView → React Query hydrates client cache.
  *
  * ★ Actor headers (vitalia-bugfix-agenda-actor-headers-422, 2026-06-15):
  *   /scheduling/agenda/grid REQUIRES the HIPAA-lite dual filter + audit actor
@@ -27,6 +27,7 @@
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import type { AgendaGridResponseDTO } from "../types/agenda-schema";
 import type { AgendaView } from "../types/agenda.types";
+import { normalizeAgendaGridResponse } from "./normalize-agenda";
 
 // SSR runs inside the frontend Docker container: NEXT_PUBLIC_API_URL points to
 // `http://127.0.0.1:8002` (which the host browser can reach) but resolves to the
@@ -197,7 +198,9 @@ export async function getInitialAgendaState({
       return emptyGrid(tenantId, normalizedView, date);
     }
 
-    return (await response.json()) as AgendaGridResponseDTO;
+    // The grid BE returns snake_case + engine enum values; normalize → the camelCase DTO the
+    // components read (raw cast was the bug: undefined fields → blank grid). Idempotent.
+    return normalizeAgendaGridResponse(await response.json()) as AgendaGridResponseDTO;
   } catch (err) {
     // Network error or auth error — graceful degradation
     console.warn("[agenda-server] getInitialAgendaState error:", err, {

@@ -34,7 +34,7 @@ const mockReplace = vi.fn();
 
 vi.mock("next/navigation", () => ({
   useRouter: vi.fn(() => ({ replace: mockReplace })),
-  usePathname: vi.fn(() => "/tenant-1/valeria/agenda"),
+  usePathname: vi.fn(() => "/tenant-1/mateo/agenda"),
   useSearchParams: vi.fn(() => {
     const params = new URLSearchParams("view=semana&date=2026-05-26");
     return params;

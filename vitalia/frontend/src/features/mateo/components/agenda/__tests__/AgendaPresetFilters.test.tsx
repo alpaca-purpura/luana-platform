@@ -34,7 +34,7 @@ vi.mock("../../../hooks/useAgendaFilters", () => ({
 // Mock next/navigation (used inside useAgendaFilters indirectly)
 vi.mock("next/navigation", () => ({
   useRouter: vi.fn(() => ({ replace: vi.fn() })),
-  usePathname: vi.fn(() => "/test/valeria/agenda"),
+  usePathname: vi.fn(() => "/test/mateo/agenda"),
   useSearchParams: vi.fn(() => new URLSearchParams()),
 }));
 

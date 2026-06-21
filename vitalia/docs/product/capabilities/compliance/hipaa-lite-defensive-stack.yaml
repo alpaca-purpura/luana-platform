@@ -168,7 +168,7 @@ related_capabilities:
     - iam.luana-core-adoption
     - auth.clerk-middleware
   enables:
-    - scheduling.valeria-agenda
+    - scheduling.mateo-agenda
     - patients.nps-tracking
     - sales_agent.inbox-handler-mode-occ
     - booking.prepaid-booking-advisory-locks

@@ -80,8 +80,8 @@ export { AgendaSummaryFooter } from "./components/agenda/AgendaSummaryFooter";
 export type { AgendaSummaryFooterProps } from "./components/agenda/AgendaSummaryFooter";
 
 // ── Agenda root + header (T-12) ───────────────────────────────────────────────
-export { ValeriaAgendaView } from "./components/agenda/ValeriaAgendaView";
-export type { ValeriaAgendaViewProps } from "./components/agenda/ValeriaAgendaView";
+export { MateoAgendaView } from "./components/agenda/MateoAgendaView";
+export type { MateoAgendaViewProps } from "./components/agenda/MateoAgendaView";
 export { AgendaHeader } from "./components/agenda/AgendaHeader";
 export type { AgendaHeaderProps } from "./components/agenda/AgendaHeader";
 

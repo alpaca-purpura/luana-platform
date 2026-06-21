@@ -38,6 +38,7 @@ import {
 import { vitaliaFetch } from "@/lib/fetch-client";
 import { useClinicId } from "@/hooks/useClinicId";
 import { useActorHeaders } from "@/hooks/useActorHeaders";
+import { normalizeAgendaGridResponse, normalizeAppointmentDetail } from "./normalize-agenda";
 import type {
   AgendaGridResponse,
   AgendaView,
@@ -133,10 +134,12 @@ export function useAgendaGrid({
       const params = new URLSearchParams({ view, date });
       if (presetFilter) params.set("preset_filter", presetFilter);
 
-      return vitaliaFetch<AgendaGridResponseDTO>(
+      // BE returns snake_case + engine enums; normalize → camelCase DTO the grid reads.
+      const raw = await vitaliaFetch<unknown>(
         `${BASE}/agenda/grid?${params.toString()}`,
         { token, tenantId, headers },
       );
+      return normalizeAgendaGridResponse(raw) as AgendaGridResponseDTO;
     },
     // Gate until X-User-ID (from /me) resolved — firing before it sends X-User-ID:"" → 422.
     enabled: isLoaded && isSignedIn === true && ready,
@@ -214,10 +217,12 @@ export function useAppointmentDetail({
       if (!token) throw new Error("Not authenticated");
       if (!appointmentId) throw new Error("appointmentId is required");
 
-      return vitaliaFetch<Appointment>(
+      // BE returns snake_case + engine enums; normalize → the camelCase Appointment the drawer reads.
+      const raw = await vitaliaFetch<unknown>(
         `${BASE}/appointments/${appointmentId}`,
         { token, tenantId, headers },
       );
+      return normalizeAppointmentDetail(raw);
     },
     // Gate until X-User-ID (from /me) resolved — firing before it sends X-User-ID:"" → 422.
     enabled: isLoaded && isSignedIn === true && !!appointmentId && enabled && ready,
