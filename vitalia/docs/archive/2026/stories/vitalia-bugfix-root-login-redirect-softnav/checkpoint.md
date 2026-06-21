@@ -10,8 +10,8 @@ cap_target: auth.clerk-middleware
 cap_change_type: fix
 parent_story: null
 
-state: developed
-phase_workflow: AWAIT_CHRIS_VERIFY
+state: done
+phase_workflow: MERGED
 last_artifact: T-1-result.md
 last_modified: 2026-06-15
 next_action: "G — Chris se loguea en dev-app y confirma que cae directo en Mateo sin colgarse/refrescar (signoff). Luego /pm-vitalia merge→done (cap change_log type=fix en auth.clerk-middleware). Fix: edge-redirect del root `/` en proxy.ts (307, tenant via clerkClient publicMetadata). Verificado live: Playwright 8/8 determinístico, 0× 'Rendered more hooks'."
