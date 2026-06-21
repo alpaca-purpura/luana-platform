@@ -37,20 +37,10 @@ export { OnboardingStep2Client } from "./components/onboarding-step-2-client";
 export type { OnboardingStep2ClientProps } from "./components/onboarding-step-2-client";
 export { OnboardingStep3Client } from "./components/onboarding-step-3-client";
 export type { OnboardingStep3ClientProps } from "./components/onboarding-step-3-client";
-export { OfferWizardClient } from "./components/offer-wizard-client";
-export type { OfferWizardClientProps } from "./components/offer-wizard-client";
 
 // Components — T-fe-3 base components
 export { ClinicTypePicker } from "./components/clinic-type-picker";
 export type { ClinicTypePickerProps } from "./components/clinic-type-picker";
-export {
-  MedicalServicesOfferWizardSteps,
-  OFFER_WIZARD_STEPS,
-} from "./components/medical-services-offer-wizard-steps";
-export type {
-  MedicalServicesOfferWizardStepsProps,
-  WizardStep,
-} from "./components/medical-services-offer-wizard-steps";
 export { TreatmentTimeline } from "./components/treatment-timeline";
 export type {
   TreatmentTimelineProps,
@@ -143,20 +133,6 @@ export type {
 // Schemas
 export { clinicProfileSchema } from "./schemas/clinic-profile-schema";
 export type { ClinicProfileInput } from "./schemas/clinic-profile-schema";
-export {
-  offerWizardStep1Schema,
-  offerWizardStep2Schema,
-  offerWizardStep3Schema,
-  offerWizardStep4Schema,
-  offerWizardStep5Schema,
-} from "./schemas/offer-wizard-schema";
-export type {
-  OfferWizardStep1Input,
-  OfferWizardStep2Input,
-  OfferWizardStep3Input,
-  OfferWizardStep4Input,
-  OfferWizardStep5Input,
-} from "./schemas/offer-wizard-schema";
 export { bookingCreateSchema } from "./schemas/booking-schema";
 export type { BookingCreateInput } from "./schemas/booking-schema";
 export { consentSignSchema } from "./schemas/consent-schema";
@@ -187,12 +163,6 @@ export { useClinicProfileCreate } from "./api/use-clinic-profile-create";
 export type { CreateClinicProfilePayload } from "./api/use-clinic-profile-create";
 export { useOnboardingStatus } from "./api/use-onboarding-status";
 export { usePlanTiers } from "./api/use-plan-tiers";
-export { useOfferPreset } from "./api/use-offer-presets";
-export { useOffers } from "./api/use-offers";
-export type { OfferSummary, OfferListResponse } from "./api/use-offers";
-export { useOffer } from "./api/use-offer";
-export { useOfferCreate } from "./api/use-offer-create";
-export type { OfferCreatePayload } from "./api/use-offer-create";
 export { useBookingAvailability } from "./api/use-booking-availability";
 export type { AvailableSlotsFilters } from "./api/use-booking-availability";
 export { useBookingCreate } from "./api/use-booking-create";

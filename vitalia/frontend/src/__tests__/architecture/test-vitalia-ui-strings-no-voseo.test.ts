@@ -70,7 +70,6 @@ const UI_STRING_FILES = ["src/features/vitalia/config/microcopy.ts"];
 // Files scan includes components that render user-facing text
 const COMPONENT_FILES = [
   "src/features/vitalia/components/clinic-type-picker.tsx",
-  "src/features/vitalia/components/medical-services-offer-wizard-steps.tsx",
   "src/features/vitalia/components/treatment-timeline.tsx",
   "src/features/vitalia/components/consent-signature-modal.tsx",
   "src/features/vitalia/components/compliance-stats-cards.tsx",
@@ -80,7 +79,6 @@ const COMPONENT_FILES = [
   "src/features/vitalia/components/onboarding-step-1-client.tsx",
   "src/features/vitalia/components/onboarding-step-2-client.tsx",
   "src/features/vitalia/components/onboarding-step-3-client.tsx",
-  "src/features/vitalia/components/offer-wizard-client.tsx",
 ];
 
 // F1-S7 Ribbon shell-organism components with user-facing microcopy (T-4 EXTEND)
