@@ -30,6 +30,7 @@ from src.modules.vitalia.clinics.api.assets_proxy_router import router as assets
 from src.modules.vitalia.clinics.api.doctors_router import router as doctors_router
 from src.modules.vitalia.clinics.api.public_doctors_router import router as public_doctors_router
 from src.modules.vitalia.clinics.api.router import router as clinics_router
+from src.modules.vitalia.connections.telegram.api.router import router as telegram_router
 from src.modules.vitalia.copilot.api.routes.wizard_onboarding_routes import (
     router as wizard_onboarding_router,
 )
@@ -105,6 +106,10 @@ app.include_router(telemetry_router, prefix="/api/telemetry", tags=["telemetry"]
 app.include_router(audit_log_router, prefix="/api/v1/vitalia", tags=["audit"])
 
 app.include_router(account_router, prefix="/api/v1/clinics/account", tags=["account"])
+# T-BE-1 vitalia-fase2-adrian-canal-inbound: Telegram inbound webhook receiver.
+# Route: POST /api/v1/connections/telegram/webhook
+# Secret validation + update_id dedup + tenant resolve + engine dispatch.
+app.include_router(telegram_router, prefix="/api/v1/connections/telegram", tags=["connections"])
 
 
 class HealthResponse(BaseModel):
