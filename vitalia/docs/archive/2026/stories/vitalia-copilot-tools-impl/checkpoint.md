@@ -1,8 +1,8 @@
 ---
 story_id: vitalia-copilot-tools-impl
 outcome: vitalia-mvp-ui-foundation
-state: developed
-phase: AWAITING_AUDITOR_AGENTIC
+state: done
+phase: MERGED
 last_artifact: gate-output.final.json
 last_modified: 2026-05-18
 dev_team_started_at: 2026-05-18
@@ -28,7 +28,6 @@ ratified_at: 2026-05-17
 architect_run_at: 2026-05-18
 architect_model: claude-opus-4-7[1m]
 next_action: "★ READY package CLOSED 2026-05-18. /architect Opus 4.7 produjo: 03-arch.md (consolidated index 7 sections) + 03-arch-be.md (BE sub-arch DDD layers + 5 migrations + persistence schema mirrors + 10 application services + 7 API routes) + 03-arch-agentic.md (LangGraph supervisor wizard + ReAct Lucas + deepagents SubAgentMiddleware + 4-6 slot prompt architectures + 4 medical guardrails + 16 goldens + observability subclasses anti-duplication §0) + 04-validators.yaml (4 categories: non_functional + functional + visual_na + agentic_eval pass^k policy 16 goldens × 3 trials, threshold 0.66/0.5) + 05-guidelines.md (patterns required/forbidden + 25+ anti-patterns + skills/rules loadout per surface) + 06-tickets.yaml (10 atomic tickets en 5 waves: T-be-migrations-1 → T-be-services-{1,2,3} parallel → T-ag-tools-{1,2,3} parallel → T-ag-workflows-{1,2} parallel → T-ag-evals-1; R23 enforcement: 6 tickets Opus 4.7 required, 4 tickets Sonnet default). State transition: refined → ready. HANDOFF /dev-team vitalia-copilot-tools-impl. Blockers externos: vitalia-slice-1-infra-cross-cutting/T-infra-{1,2,3} prerequisite — wait for state=developed antes spawn /dev-team."
-ratified_by_chris: true
 spawned_at: 2026-05-17
 transitioned_at: 2026-05-18
 spawned_by: /pm-vitalia

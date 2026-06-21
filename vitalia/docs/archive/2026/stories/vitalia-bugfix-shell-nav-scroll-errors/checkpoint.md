@@ -10,8 +10,8 @@ cap_target: null                                  # no es una cap única — hig
 cap_change_type: fix                              # bugfix → fix (corrige comportamiento del shell · no agrega scenarios nuevos de negocio)
 parent_story: null
 
-state: reviewing
-phase_workflow: REVIEWING_AWAITING_DEMO_SIGNOFF
+state: done
+phase_workflow: MERGED
 module: shell
 last_artifact: checkpoint.md (re-audit APPROVED · 6/6 live dev-app · SOLO falta demo_signoff Chris · sesión 2026-06-03)
 last_modified: 2026-06-03T12:25:00-05:00
