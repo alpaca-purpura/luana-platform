@@ -45,13 +45,17 @@ class CreateAppointmentService:
     Orchestration flow (A12):
     1. repo.create() → engine appointment row (returns appointment_id UUID)
     2. repo.create_clinic_map() → vitalia_appointment_clinic_map row (brand-local FK)
-    3. audit_writer.write() → HIPAA-lite mandatory sync write
-    4. growth_emitter.emit_event() → fire-forget UX telemetry
-    5. repo.get_by_id() → load full detail + return
+    3. [optional] hold_service.book_with_hold() → mark slot + set hold-TTL (RN-26 fix)
+    4. audit_writer.write() → HIPAA-lite mandatory sync write
+    5. growth_emitter.emit_event() → fire-forget UX telemetry
+    6. repo.get_by_id() → load full detail + return
 
     Both create + create_clinic_map happen in the same service call.
     If clinic_map persistence fails, caller sees exception and appointment
     is considered incomplete (compensating via explicit re-create).
+
+    hold_service is optional: None for Mateo manual creates (walk_in/telefono)
+    where no hold-TTL is needed. Present for proactivo_adrian flow (T-BE-2).
     """
 
     def __init__(
@@ -60,6 +64,7 @@ class CreateAppointmentService:
         repo: Any,
         audit_writer: Any,
         growth_emitter: Any,
+        hold_service: Any = None,
     ) -> None:
         """Initialize CreateAppointmentService.
 
@@ -68,10 +73,14 @@ class CreateAppointmentService:
                   Typically a combined scheduling repo adapter.
             audit_writer: AsyncAuditWriter — sync write before response.
             growth_emitter: GrowthStudioEmitter — fire-forget telemetry.
+            hold_service: Optional SchedulingHoldService. If provided, called
+                after clinic_map persist to mark slot + set hold-TTL (T-BE-2).
+                If None (default), slot marking is skipped (Mateo manual flow).
         """
         self._repo = repo
         self._audit = audit_writer
         self._growth = growth_emitter
+        self._hold_service = hold_service
 
     async def create_appointment(
         self,
@@ -87,6 +96,8 @@ class CreateAppointmentService:
         end_time: datetime,
         notes_internal: str | None = None,
         currency_override: str | None = None,
+        slot_id: UUID | None = None,
+        tenant_config: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Create an appointment and its brand-local clinic_map entry.
 
@@ -106,6 +117,9 @@ class CreateAppointmentService:
             end_time: Appointment end (UTC).
             notes_internal: Optional internal staff notes (PHI-adjacent — not returned).
             currency_override: Optional ISO currency override for this appointment.
+            slot_id: Optional UUID of the vitalia_availability_slots row to mark
+                     confirmed (required when hold_service is provided — T-BE-2).
+            tenant_config: Optional tenant JSONB config dict (for TTL — T-BE-2).
 
         Returns:
             Full appointment detail dict (same shape as get_detail).
@@ -134,6 +148,22 @@ class CreateAppointmentService:
             origin=origin,
             currency_override=currency_override,
         )
+
+        # Step 2b: Mark availability slot + set hold-TTL (T-BE-2 / RN-26 fix)
+        # Only called when hold_service is injected (proactivo_adrian flow).
+        # Mateo manual flow (walk_in/telefono) passes hold_service=None → skip.
+        if self._hold_service is not None and slot_id is not None:
+            import datetime as _dt  # noqa: PLC0415
+
+            _now = _dt.datetime.now(_dt.timezone.utc)
+            await self._hold_service.book_with_hold(
+                tenant_id=tenant_id,
+                clinic_id=clinic_id,
+                appointment_id=appointment_id,
+                slot_id=slot_id,
+                tenant_config=tenant_config or {},
+                now=_now,
+            )
 
         # Step 3: Audit log sync write (HIPAA mandate — PHI write = mandatory log)
         await self._audit.write(

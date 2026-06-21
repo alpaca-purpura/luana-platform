@@ -17,7 +17,7 @@ from datetime import datetime
 from uuid import UUID
 
 from luana_core_platform.domain.base_entity import Base
-from sqlalchemy import DateTime, ForeignKey, String, text
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, text
 from sqlalchemy.dialects.postgresql import UUID as PgUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -64,6 +64,21 @@ class AppointmentClinicMapModel(Base):
     # Per-appointment currency override (tenant default otherwise) — currency-handling.md
     # ISO 4217 code: PEN/ARS/MXN/USD/... — None means use tenant locale default
     currency_override: Mapped[str | None] = mapped_column(String(3), nullable=True)
+    # Hold-status columns (T-BE-2 / RN-26 — added idempotently via migration 047)
+    # None = no hold (manual create); 'hold_pending_payment' = pending payment within TTL;
+    # 'confirmed' = payment received; 'expired' = TTL elapsed, slot released
+    hold_status: Mapped[str | None] = mapped_column(String(24), nullable=True)
+    # UTC expiry of the hold (None for non-hold appointments)
+    hold_expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    # True if the hold was created by the Adrián sales agent (vs manual staff)
+    hold_created_by_agent: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        server_default=text("false"),
+    )
     # Soft delete (brand consistency per backend-ddd.md)
     deleted_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
