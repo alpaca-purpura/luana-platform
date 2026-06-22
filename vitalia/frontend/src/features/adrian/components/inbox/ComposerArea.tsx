@@ -10,9 +10,14 @@
  *   - ComposerAttachButton (📎)
  *   - ComposerVoiceButton (🎤 MediaRecorder)
  *   - SendButton (dynamic Adrián / Yo label)
+ *   - InstructionChip (persistent instruction badge — RN-13)
  *
  * Shows ProposalCardBanner above when agent-waiting-approval state (Adrián consulta
  * + has a pending proposed message).
+ *
+ * effectiveMode (RN-14 · SC-8):
+ *   - handler_mode === 'human' (Adrián paused) → 'direct': sends to lead
+ *   - handler_mode === 'ai'   (Adrián decide)  → 'instruction': steers Adrián, lead never sees
  *
  * Disabled entirely when handler_mode state = "agent-thinking".
  *
@@ -26,8 +31,11 @@ import { ComposerAttachButton } from "./ComposerAttachButton";
 import { ComposerVoiceButton } from "./ComposerVoiceButton";
 import { SendButton } from "./SendButton";
 import { ProposalCardBanner } from "./ProposalCardBanner";
+import { InstructionChip } from "./InstructionChip";
 import { useSendMessage } from "../../api/use-send-message";
 import { useInboxStore } from "../../store/inbox-store";
+import { useOperatorInstruction, getEffectiveMode } from "../../hooks/use-operator-instruction";
+import { INBOX_COPY } from "../../lib/copy";
 import type { Conversation } from "@/features/crm-shared";
 import type { VoiceReadyResult } from "./ComposerVoiceButton";
 
@@ -44,16 +52,23 @@ export interface ComposerAreaProps {
    * Set to the text Adrián is proposing to send.
    */
   pendingProposalText?: string | null;
+  /**
+   * Currently active operator instruction for this conversation.
+   * Shown as an editable chip when effectiveMode === 'instruction' (RN-13).
+   */
+  activeInstruction?: string | null;
   className?: string;
 }
 
 /**
  * ComposerArea — full message input + attach + voice + send assembler.
+ * Supports effectiveMode: 'instruction' (decide) | 'direct' (paused).
  */
 export function ComposerArea({
   conversation,
   patientName,
   pendingProposalText,
+  activeInstruction,
   className,
 }: ComposerAreaProps) {
   const [text, setText] = useState("");
@@ -61,20 +76,39 @@ export function ComposerArea({
   const sendMessage = useSendMessage();
   const clearAttachQueue = useInboxStore((s) => s.clearAttachQueue);
   const attachQueue = useInboxStore((s) => s.attachQueue);
+  const setInstruction = useOperatorInstruction();
 
-  // The operator always writes as a human here (the textarea is THEIR voice). The
-  // "send as Adrián" path is the proposal-approval flow (ProposalCardBanner). The
-  // box is always usable; whether Adrián also auto-replies is governed by Pausar
-  // in ThreadComposerDock (Chris UI #2 + #3).
-  const { id: conversationId } = conversation;
+  const { id: conversationId, handler_mode } = conversation;
+
+  // RN-14: effectiveMode switches based on handler_mode
+  const effectiveMode = getEffectiveMode(handler_mode);
+  const isInstructionMode = effectiveMode === "instruction";
 
   const canSend =
     (text.trim().length > 0 || voiceReady !== null || attachQueue.length > 0) &&
-    !sendMessage.isPending;
+    !sendMessage.isPending &&
+    !setInstruction.isPending;
 
   const handleSend = useCallback(() => {
     if (!canSend) return;
 
+    if (isInstructionMode) {
+      // RN-13/SC-8: send as instruction to Adrián — lead NEVER receives this
+      setInstruction.mutate(
+        {
+          conversationId,
+          instruction: text.trim(),
+        },
+        {
+          onSuccess: () => {
+            setText("");
+          },
+        },
+      );
+      return;
+    }
+
+    // Direct mode: send as human message to lead
     if (voiceReady) {
       sendMessage.mutate(
         {
@@ -110,10 +144,12 @@ export function ComposerArea({
     }
   }, [
     canSend,
+    isInstructionMode,
     voiceReady,
     text,
     conversationId,
     sendMessage,
+    setInstruction,
     clearAttachQueue,
   ]);
 
@@ -136,8 +172,48 @@ export function ComposerArea({
     setText(pendingProposalText);
   }, [pendingProposalText]);
 
+  // Copy instruction back to textarea for editing
+  const handleEditInstruction = useCallback((instructionText: string) => {
+    setText(instructionText);
+  }, []);
+
+  // Clear instruction by posting empty string
+  const handleClearInstruction = useCallback(() => {
+    setInstruction.mutate({
+      conversationId,
+      instruction: "",
+    });
+  }, [conversationId, setInstruction]);
+
+  // Instruction mode label header (shown above composer when in instruction mode)
+  const instructionCopy = INBOX_COPY.instruction;
+
   return (
     <div className={cn("flex flex-col gap-2 p-3", className)}>
+      {/* Instruction mode label (RN-14/SC-8) — shown when Adrián is in decide */}
+      {isInstructionMode && (
+        <div
+          role="note"
+          aria-label={instructionCopy.modeLabel}
+          className="flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-400"
+        >
+          <span>{instructionCopy.modeLabel}</span>
+          <span className="font-normal text-amber-600 dark:text-amber-500">
+            · {instructionCopy.modeHint}
+          </span>
+        </div>
+      )}
+
+      {/* Active instruction chip (RN-13 persistent) */}
+      {isInstructionMode && activeInstruction && (
+        <InstructionChip
+          activeInstruction={activeInstruction}
+          isPending={setInstruction.isPending}
+          onEdit={handleEditInstruction}
+          onClear={handleClearInstruction}
+        />
+      )}
+
       {/* Proposal banner for Adrián consulta state */}
       {pendingProposalText && (
         <ProposalCardBanner
@@ -180,30 +256,44 @@ export function ComposerArea({
           value={text}
           onChange={setText}
           onSubmit={handleSend}
-          handlerMode="human"
+          handlerMode={handler_mode}
           patientName={patientName}
-          disabled={sendMessage.isPending}
+          effectiveMode={effectiveMode}
+          disabled={sendMessage.isPending || setInstruction.isPending}
           className="flex-1"
         />
 
-        <ComposerAttachButton
-          conversationId={conversationId}
-          disabled={sendMessage.isPending}
-        />
+        {/* Attach + Voice only in direct mode (no media in instruction) */}
+        {!isInstructionMode && (
+          <>
+            <ComposerAttachButton
+              conversationId={conversationId}
+              disabled={sendMessage.isPending}
+            />
 
-        <ComposerVoiceButton
-          conversationId={conversationId}
-          onVoiceReady={handleVoiceReady}
-          disabled={sendMessage.isPending}
-        />
+            <ComposerVoiceButton
+              conversationId={conversationId}
+              onVoiceReady={handleVoiceReady}
+              disabled={sendMessage.isPending}
+            />
+          </>
+        )}
 
         <SendButton
-          handlerMode="human"
+          handlerMode={handler_mode}
+          effectiveMode={effectiveMode}
           onClick={handleSend}
           disabled={!canSend}
-          isPending={sendMessage.isPending}
+          isPending={sendMessage.isPending || setInstruction.isPending}
         />
       </div>
+
+      {/* SR live region for instruction set confirmation (a11y) */}
+      {setInstruction.isSuccess && (
+        <span role="status" aria-live="polite" className="sr-only">
+          {instructionCopy.ariaLiveSet}
+        </span>
+      )}
     </div>
   );
 }

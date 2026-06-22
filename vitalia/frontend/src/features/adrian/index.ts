@@ -129,3 +129,14 @@ export type { CreateLeadPayload } from "./api/create-lead";
 // ── T-FE-3 Zod schemas ────────────────────────────────────────────────────────
 export { newLeadSchema, CHANNEL_OPTIONS } from "./types/embudo-schema";
 export type { NewLeadFormData } from "./types/embudo-schema";
+
+// ── T-FE-1 vitalia-fase2-adrian-canal-inbound — operator instruction (SC-8) ──
+export { InstructionChip } from "./components/inbox/InstructionChip";
+export type { InstructionChipProps } from "./components/inbox/InstructionChip";
+export { useOperatorInstruction, getEffectiveMode } from "./hooks/use-operator-instruction";
+export { operatorInstructionApi } from "./api/operator-instruction";
+export type {
+  SetOperatorInstructionRequest,
+  SetOperatorInstructionResponse,
+  ComposerMode,
+} from "./types/operator-instruction";

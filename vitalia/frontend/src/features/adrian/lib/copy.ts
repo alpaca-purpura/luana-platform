@@ -148,13 +148,38 @@ export const INBOX_COPY = {
       adrianConsulta:
         "Adrián te sugiere esta respuesta… (puedes editarla antes de enviar)",
       yoEscribo: "Escribe tu mensaje a {patient_name}…",
+      /** instruction mode — handler_mode=ai (decide), operator steers Adrián */
+      instructionToAdrian:
+        "Instrucción a Adrián (el paciente no la verá)…",
     },
     sendButtonAi: "Enviar como Adrián",
     sendButtonHuman: "Enviar",
+    /** instruction mode send button label */
+    sendButtonInstruction: "Dar instrucción",
     attachAriaLabel: "Adjuntar archivo",
     voiceAriaLabel: "Grabar nota de voz",
     recordingActive: "Grabando…",
     recordingStop: "Detener grabación",
+  },
+
+  /** Instruction mode (RN-13/14/SC-8) — operator instruction to Adrián */
+  instruction: {
+    /** Label shown in composer header when effectiveMode === 'instruction' */
+    modeLabel: "🤖 Instrucción a Adrián",
+    /** Hint below label */
+    modeHint: "el paciente no la verá",
+    /** Chip shown when an instruction is active for this conversation */
+    chipPrefix: "🤖 Instrucción activa:",
+    /** Chip clear button aria-label */
+    chipClearAriaLabel: "Limpiar instrucción activa",
+    /** Chip edit button aria-label */
+    chipEditAriaLabel: "Editar instrucción activa",
+    /** Toast on success */
+    toastSuccess: "Instrucción enviada a Adrián",
+    /** Toast on error */
+    toastError: "No se pudo guardar la instrucción. Intenta de nuevo.",
+    /** Aria live region for screen readers */
+    ariaLiveSet: "Instrucción guardada para Adrián",
   },
 
   /** Multimedia messages */
