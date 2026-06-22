@@ -11,7 +11,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "storybook": "storybook dev -p 6007",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "test-storybook": "test-storybook --url http://localhost:6006"
   },
   "dependencies": {
     "@luana/design-tokens": "workspace:*",
@@ -57,6 +58,7 @@
     "@storybook/addon-a11y": "^10.4.0",
     "@storybook/addon-docs": "^10.4.0",
     "@storybook/nextjs": "^10.4.0",
+    "@storybook/test-runner": "^0.24.4",
     "@tailwindcss/postcss": "^4.3.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^16.0.0",

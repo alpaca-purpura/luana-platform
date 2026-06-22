@@ -18,10 +18,31 @@ const storiesDir = join(root, "core/@luana/ui-kit/stories");
 
 // component file basename (under src/) → story file basename (under stories/)
 const BATCH = [
+  // Batch 1 — lista/detalle
   ["EntityWorkspaceLayout", "EntityWorkspaceLayout.stories.tsx"],
   ["EntitySubNavBar", "EntitySubNavBar.stories.tsx"],
   ["EntityPicker", "EntityPicker.stories.tsx"],
   ["EntityInfoCard", "EntityInfoCard.stories.tsx"],
+  // Batch 2 — layout primitives
+  ["layout/page", "layout.PageContainer.stories.tsx"],
+  ["layout/page", "layout.PageHeader.stories.tsx"],
+  ["layout/page", "layout.PageSection.stories.tsx"],
+  ["layout/page", "layout.PageContentStack.stories.tsx"],
+  ["layout/toolbar", "layout.Toolbar.stories.tsx"],
+  ["layout/states", "layout.EmptyState.stories.tsx"],
+  ["layout/pagination", "layout.Pagination.stories.tsx"],
+  ["layout/skeletons", "layout.Skeletons.stories.tsx"],
+  ["layout/layouts", "layout.DetailLayout.stories.tsx"],
+  // Batch 2 — archetypes
+  ["archetypes/ListPageScaffold", "archetypes.ListPageScaffold.stories.tsx"],
+  ["archetypes/DetailPageScaffold", "archetypes.DetailPageScaffold.stories.tsx"],
+  ["archetypes/FormPageScaffold", "archetypes.FormPageScaffold.stories.tsx"],
+  ["archetypes/DashboardPageScaffold", "archetypes.DashboardPageScaffold.stories.tsx"],
+  // Batch 2 — Group
+  ["Group", "Group.stories.tsx"],
+  // Batch 2 — autosave
+  ["FloatingAutosaveIndicator", "autosave.FloatingAutosaveIndicator.stories.tsx"],
+  ["AutosaveBadge", "autosave.AutosaveBadge.stories.tsx"],
 ];
 
 const failures = [];
