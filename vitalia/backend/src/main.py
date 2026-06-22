@@ -60,11 +60,19 @@ async def _brand_lifespan(_app: FastAPI):
     never block app boot (the engine graph still runs with its base tool set).
     """
     try:
+        import asyncio
+
         from luana_core_extension_sdk._adapters import _SalesAgentToolRegistryAdapter
         from luana_core_extension_sdk.extension_points import ExtensionPointRegistry
         from luana_core_sales_agent.application.tools.registry import get_tool_registry
 
         from src.modules.vitalia.extensions import register_all
+        from src.modules.vitalia.sales_agent.tool_bridge import set_main_loop
+
+        # ESC-17 / Tier 2.4b: capture the main loop so EP-3 sync tool adapters can
+        # submit async-DB coroutines back to the loop that owns the shared engine pool
+        # (run_coroutine_threadsafe) — eliminates the cross-loop asyncpg trap.
+        set_main_loop(asyncio.get_running_loop())
 
         _ext_registry = ExtensionPointRegistry(
             sales_agent_tool_registry_adapter=_SalesAgentToolRegistryAdapter(get_tool_registry()),

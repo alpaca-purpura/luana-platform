@@ -44,26 +44,51 @@ _AUTHORITATIVE_STATE_KEYS = ("tenant_id", "clinic_id")
 # Identity/context the engine seeds in state; inject only when the LLM omitted it.
 _FALLBACK_STATE_KEYS = ("lead_id", "user_id", "conversation_id")
 
+# The app's main event loop, captured at FastAPI lifespan startup (main.py).
+# Async-DB coroutines are submitted HERE so they run on the loop that owns the
+# shared SQLAlchemy async engine pool — eliminating the cross-loop asyncpg trap
+# (see run_async). None in tests / before startup → fresh-loop fallback.
+_main_loop: asyncio.AbstractEventLoop | None = None
+
+
+def set_main_loop(loop: asyncio.AbstractEventLoop) -> None:
+    """Register the app's main event loop (call once at FastAPI lifespan startup)."""
+    global _main_loop  # noqa: PLW0603 — process-wide bridge bootstrap
+    _main_loop = loop
+
 
 def run_async(coro: Awaitable[Any]) -> Any:
-    """Run ``coro`` to completion from a sync context (the graph's sync tool node).
+    """Run ``coro`` to completion from the SYNC graph tool node.
 
-    Executes in a dedicated daemon thread with its own fresh event loop, so it is
-    safe whether or not the caller already has a running loop, and for CPU/IO-bound
-    coroutines or those that open their OWN connection.
+    The sales graph runs ``await agent_app.ainvoke(...)`` on the app's main loop;
+    sync nodes (``node_tool_executor``) are offloaded by LangGraph to a worker
+    thread with no running loop. From that worker thread we **submit the coro to the
+    app's main loop** via ``asyncio.run_coroutine_threadsafe`` and block on the
+    result. This is the fix for the cross-loop asyncpg trap (verified 2026-06-22): a
+    coroutine using an AsyncSession from the **shared** engine pool must run on the
+    loop that created those pooled connections (the main loop) — running it on a
+    fresh per-call loop raises ``got Future attached to a different loop`` on the 2nd
+    call. Running on the main loop also makes ``book_appointment`` and the (currently
+    unwired) StructuredTool DI resolvers safe.
 
-    ⚠️ CROSS-LOOP CAVEAT (verified 2026-06-22, empirical): a coroutine that uses an
-    AsyncSession from the **shared** SQLAlchemy async engine pool is NOT safe across
-    repeated calls here — the first call works, the second raises
-    ``RuntimeError: got Future attached to a different loop`` (the pool hands out a
-    connection created in a prior loop). The wrapped EP-3 StructuredTools currently
-    have UNWIRED DI resolvers so they never reach the DB → the trap doesn't manifest
-    today. Before wiring those resolvers OR building ``book_appointment`` (async
-    ``create_appointment_service`` via this bridge), the async-DB path MUST use a
-    dedicated NullPool bridge engine (fresh connection per checkout, in the bridge
-    loop) OR submit the coro to the app's main loop via
-    ``asyncio.run_coroutine_threadsafe``. See the lift design doc § ESC-17 / Tier 2.4b.
+    Fallback (no main loop registered — unit tests, or a context with no running app):
+    a dedicated daemon thread with a fresh event loop. That fallback is only safe for
+    coroutines that do NOT reuse the shared pool across calls (CPU-bound, NullPool,
+    or own-connection) — fine for tests.
     """
+    # If we're already on an event loop thread, we cannot block on .result() of a
+    # coro submitted to the same loop (deadlock). Sync tool nodes never run on the
+    # loop thread, so this only guards misuse / the fallback path.
+    try:
+        asyncio.get_running_loop()
+        on_event_loop = True
+    except RuntimeError:
+        on_event_loop = False
+
+    if not on_event_loop and _main_loop is not None and _main_loop.is_running():
+        return asyncio.run_coroutine_threadsafe(coro, _main_loop).result()
+
+    # Fallback: fresh-loop in a dedicated thread.
     box: dict[str, Any] = {}
 
     def _runner() -> None:

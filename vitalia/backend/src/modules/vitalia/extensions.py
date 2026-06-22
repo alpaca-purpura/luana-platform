@@ -155,9 +155,11 @@ from src.modules.vitalia.sales_agent.tools import (
     send_payment_link,
 )
 
-# OLA-2 "comparte" / "recomienda" — native sync (state, db)->dict tools (no async
-# bridge: public marketing data, sync DB read). share = ESC-17 pilot (2.4a); match
-# recommends the specialist for a service (2.4b).
+# OLA-2 tools (2.4b). share/match = native sync reads (public data); book = sync
+# entry + async write via the main-loop bridge (run_async) → CreateAppointmentService.
+from src.modules.vitalia.sales_agent.tools.book_appointment import (
+    book_appointment,
+)
 from src.modules.vitalia.sales_agent.tools.match_service_and_specialist import (
     match_service_and_specialist,
 )
@@ -799,6 +801,42 @@ def register_all(registry: ExtensionPointRegistry) -> None:
             },
             handler=match_service_and_specialist,  # native sync (state, db)->dict — ESC-17 ABI
             tool_groups=("discovery", "presentation"),
+        ),
+    )
+
+    # ───────────────────────────────────────────────────────────────────────
+    # EP-3 — book_appointment (OLA-2 "agenda" · Tier 2.4b)
+    # ───────────────────────────────────────────────────────────────────────
+    # Per 03-arch-agentic.md § 2.2 — books a real appointment via the live scheduling
+    # lane (CreateAppointmentService, origin=proactivo_adrian). Sync (state,db)->dict
+    # entry; the async write bridges to the app main loop via run_async (cross-loop
+    # safe). patient/lead = state["user_id"] (appointments.lead_id FK); clinic from
+    # the doctor. HIPAA-lite audit via the service. closing stage.
+
+    registry.sales_agent_tool_register(
+        ToolDef(
+            name=_ns("book_appointment"),
+            description=(
+                "Book a real appointment for the lead with a doctor. Use in CLOSING when the "
+                "lead agreed on a doctor + a date/time. Args: doctor_id (or the recommended "
+                "doctor from context), start_time (ISO, e.g. 2026-06-26T15:00), service_label, "
+                "duration_minutes (optional, default 60). Creates the appointment (origin "
+                "proactivo_adrian) + audit log; idempotent per (lead, start_time). Returns the "
+                "appointment_id + a confirmation summary. Never books without an explicit "
+                "doctor + time."
+            ),
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "doctor_id": {"type": ["string", "null"], "format": "uuid"},
+                    "start_time": {"type": "string"},
+                    "service_label": {"type": ["string", "null"]},
+                    "duration_minutes": {"type": ["integer", "null"]},
+                },
+                "required": ["start_time"],
+            },
+            handler=book_appointment,  # sync entry; async write via main-loop bridge — ESC-17 ABI
+            tool_groups=("closing",),
         ),
     )
 

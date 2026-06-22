@@ -5,7 +5,6 @@ import uuid
 from luana_core_platform.domain.base_entity import Base
 from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB, UUID
-from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 
@@ -39,10 +38,14 @@ class AppointmentModel(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-    # ESC-7 (2026-06-22 · multibrand-graph-runtime): one-directional (was
-    # back_populates="appointments"). The reverse side LeadModel.appointments was removed
-    # from engine CRM because platform→scheduling is the wrong coupling direction (platform
-    # must not navigate into scheduling, and the bare-string target crashed configure_mappers
-    # in brand processes that import crm but not scheduling). scheduling→platform IS an allowed
-    # dependency, so AppointmentModel keeps a read-only nav to LeadModel with no back_populates.
-    lead = relationship("LeadModel")
+    # ESC-18 (2026-06-22 · multibrand-graph-runtime): the `lead = relationship("LeadModel")`
+    # forward nav was REMOVED. It is the mirror of ESC-7's already-removed
+    # LeadModel.appointments and was DEAD (no `appointment.lead` access anywhere — the
+    # `link.lead` usages are BookingLinkModel, a different model). As a bare-string
+    # cross-registry target (scheduling→platform on a different mapper registry) it only
+    # resolved on a clean global configure_mappers(); any later lazy import re-triggered a
+    # per-registry configure that could NOT locate `LeadModel` → crashed the FIRST ORM query
+    # on `appointments` (surfaced live by `book_appointment` creating an appointment — the
+    # first code to ORM-query this table). The FK `lead_id` (ForeignKey "leads.id") stays;
+    # only the ORM relationship object is dropped. Read the lead via an explicit query when
+    # needed. (arch-green != runtime — found by book live-verify, not by tests.)
