@@ -109,7 +109,7 @@ Orden — un artefacto reviewable por batch:
 - **Pointers (DRY):** `po-ux` (partí de Storybook + propone/promueve, checklist + anti-pattern) · `ux-agentico` (UI sale de Storybook, no inventa) · `architect` SKILL + `architect-orchestrator` design_rule 24 (cita la story + PROMOTE net-new) · `dev-team` SKILL + `builder-frontend` D0 (construye desde la story citada + promueve net-new) · `auditor` SKILL anti-patterns + `auditor-frontend` Cat 16 (verifica composición + promote check, FAIL si local sin promover) · `ADR-014 §5` row.
 - **SUPERSEDED reframed:** `_shared.css`/mockup-kit/`preview.html` (canon §5 + rule) · `vitalia/.claude/rules/shell-mockup-per-component.md` + `ADR-vitalia-003` (banner SUPERSEDED, status→Superseded) + vitalia README + `vitalia-design-system` skill (gate ADR-003 → Storybook).
 - **Verificado:** `make machinery-check` = 67 checks · 0 fallos · 0 advisory.
-- **Handoffs (cross-brand, no mid-review):** `/pm-nicolify` → banner SUPERSEDED en `nicolify/.claude/rules/shell-mockup-per-component.md` (mismo que vitalia) · `/pm-luana` → reframe nota `_shared.css` en `docs/architecture/luana-platform/design-system-inventory-best-of-best.md` (doc histórico, baja prioridad).
+- **Handoffs ✅ EJECUTADOS acá (Chris: "usá skip y hazlo de una vez", 2026-06-22):** nicolify SUPERSEDED banners → `nicolify/.claude/rules/shell-mockup-per-component.md` + `README.md` + `shell-feature-architecture.md` (G1) + `ADR-nicolify-003` (status→Superseded) · `docs/architecture/luana-platform/design-system-inventory-best-of-best.md` (banner: Mockup-kit CSS DESCARTADO, Storybook-only). Commit nicolify-brand vía `SCOPE_GATE_SKIP=1` (cross-brand ratificado).
 
 ---
 
