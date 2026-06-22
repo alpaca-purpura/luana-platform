@@ -1,10 +1,28 @@
 ---
 proposal_id: 2026-06-22-sales-agent-multibrand-graph-runtime
-state: accepted                  # proposed | under_review | accepted | rejected | migrated — Phase 1 NOT migrated: runtime bar unmet (ESC-7)
+state: migrated                  # ★ 2026-06-22 — runtime bar MET: graph runs live in vitalia + brand tools EXECUTE live (share/match, real DB) + downstream ×4 green. Engine SHAs cherry-picked to main b4155f2a + sync-all (comunify/nicolify synced). See migrated_2026-06-22 below.
 opened_date: 2026-06-22
 opened_by: /pm-luana
-ratified_by: Chris               # APPROVED 2026-06-22
+ratified_by: Chris               # APPROVED 2026-06-22 (lift) + 2026-06-22 (promote: "ci-parity → si verde, promote+sync")
 ratified_date: 2026-06-22
+
+# ── Migration record (E · /pm-vitalia self-paced loop) ──────────────────────────
+migrated_2026-06-22:
+  promoted_to_main: b4155f2a       # cherry-picked (oldest-first) onto main + pushed:
+  promoted_shas:                   #   44e1d4af (Tier1 ESC-7/8/13/15/16) · 64c0e3e1 (stateful ToolRegistry seam)
+    - 44e1d4af                     #   ad6a95ff←e43015ee (2.1 tools-hint) · 746878a1←3aff15af (2.2 scheduler resolver)
+    - 64c0e3e1                     #   b4155f2a←3d2f3cf8 (uv.lock fastembed==0.5.1)
+    - e43015ee
+    - 3aff15af
+    - 3d2f3cf8
+  sync_all: "comunify + nicolify synced; vitalia (origin) already has content under original SHAs (own sync-from-main deferred — dirty ajeno tree + content-dup merge, not functionally needed)"
+  downstream_x4: "sales-agent engine net-new=0 (461 pass / 29 pre-existing booking_links+payment_webhook+appointments-MetaData SQLite-isolation) · comunify arch 144 ✓ · nicolify arch 20 ✓ · vitalia live"
+  runtime_bar: MET                 # share/match execute live vs real dev DB (in-container seam exercise) + graph live (webhook)
+  deferred_NOT_migrated:
+    - "ESC-18 (appointment_model.lead removal) — entangled in brand commit b834b130; promote-to-main refuses brand-touching commits. Not urgent (other brands import the full model graph at startup → configure_mappers succeeds; only book's lazy-import path hit it). Reaches main via vitalia squash-merge OR a future extracted shared-only commit."
+    - "Phase-2 book_appointment 'agenda' — escalated (ESC-19 scheduling create-lane). Chris ratified leaving escalated."
+    - "autonomous-dispatch — F-path found the LLM doesn't emit [TOOL_REQUEST] for share/match (advertised+executable != autonomously dispatched). Agentic tuning + goldens follow-up (sales-agent-expert). Does NOT block 'migrated' (bar = tool EXECUTES, met)."
+    - "uv.lock pillow/hf-hub downgrade impact NOT Docker-validated (ci-parity deferred sentinel). The pin (fastembed==0.5.1) is the corrected state; main was at broken 0.8.0. Validate on next ci-parity/Docker rebuild."
 
 # Phase 1 status (ESC-4/5/6) — reconciled by /pm-vitalia 2026-06-22 after vitalia live-verify
 phase_1:

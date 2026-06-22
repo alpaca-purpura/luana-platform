@@ -223,6 +223,15 @@ TDD (RED first) → impl → ruff → adversarial subagent review → net-new-re
     stake-asymmetric, FOLLOW-UP (no prompt hack without goldens). Evidence + seam-exercise proof in the
     story `demo-script.md` § F-path finding; learning `docs/learnings/2026-06-22-tools-advertised-executable-not-dispatched.md`.
 - **Tier 3** (Base split) — PENDING (likely escalate w/ sub-phases; blast radius ×4).
+- **E — PROMOTE + sync — DONE (2026-06-22, Chris-approved).** Cherry-picked the shared-only engine
+  commits to main (`b4155f2a`, oldest-first): 44e1d4af (Tier1) · 64c0e3e1 (stateful ToolRegistry) ·
+  e43015ee (2.1) · 3aff15af (2.2) · 3d2f3cf8 (uv.lock). `sync-all` → comunify + nicolify synced. Downstream
+  ×4: sales-agent engine net-new=0 · comunify arch 144 ✓ · nicolify arch 20 ✓ · vitalia live. Proposal
+  `2026-06-22-sales-agent-multibrand-graph-runtime` → **state: migrated** (runtime bar met). DEFERRED (not on
+  main): ESC-18 (entangled in brand commit b834b130 — promote-to-main refuses brand-touching commits; not
+  urgent, reaches main via vitalia squash-merge) · book/ESC-19 (escalated) · uv.lock downgrade Docker-validation
+  (ci-parity deferred). vitalia's own sync-from-main deferred (dirty ajeno tree + content-dup merge; wip already
+  has the content under original SHAs).
 
 ### ESC-17 — EP-3 tool handler ABI mismatch (registered ≠ executable) 🔴 NEW (2026-06-22)
 
