@@ -15,6 +15,8 @@ Arch tests verify:
 
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from luana_core_iam.api.routers import auth_router as iam_users
 from pydantic import BaseModel
@@ -47,6 +49,35 @@ from src.modules.vitalia.sales_agent.api.routers.operator_instruction_router imp
 from src.modules.vitalia.scheduling.api.agenda_router import router as agenda_router
 from src.modules.vitalia.scheduling.api.notify_router import router as notify_router
 
+
+@asynccontextmanager
+async def _brand_lifespan(_app: FastAPI):
+    """Tier-2 (multibrand-graph-runtime 2026-06-22): brand composition root.
+
+    Registers Vitalia's Extension SDK surface at startup so its EP-3 sales_agent tools
+    merge into the engine ToolRegistry singleton — the sales_agent graph then dispatches
+    Vitalia's own tools (each brand owns its tools). Fail-open: a registration error must
+    never block app boot (the engine graph still runs with its base tool set).
+    """
+    try:
+        from luana_core_extension_sdk._adapters import _SalesAgentToolRegistryAdapter
+        from luana_core_extension_sdk.extension_points import ExtensionPointRegistry
+        from luana_core_sales_agent.application.tools.registry import get_tool_registry
+
+        from src.modules.vitalia.extensions import register_all
+
+        _ext_registry = ExtensionPointRegistry(
+            sales_agent_tool_registry_adapter=_SalesAgentToolRegistryAdapter(get_tool_registry()),
+        )
+        register_all(_ext_registry)
+        _ext_registry.close()  # CC-3 lock after startup
+    except Exception:  # noqa: BLE001 — brand-extension wiring must never block app boot
+        import structlog
+
+        structlog.get_logger(__name__).exception("brand_extension_registration_failed")
+    yield
+
+
 # redirect_slashes=False is MANDATORY — arch test test_vitalia_response_models_required.py
 # also verifies this flag. Default True → 307 POST → Next.js drops body (DDD rule).
 app = FastAPI(
@@ -57,6 +88,7 @@ app = FastAPI(
     ),
     version="0.1.0",
     redirect_slashes=False,
+    lifespan=_brand_lifespan,
 )
 
 app.include_router(vitalia_router)

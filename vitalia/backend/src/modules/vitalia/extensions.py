@@ -204,10 +204,18 @@ def _not_implemented_yet(extension_point: str, owner_ticket: str):
     """
 
     def _placeholder(*args: Any, **kwargs: Any) -> Any:
-        raise NotImplementedError(
-            f"{extension_point} handler is a placeholder — real implementation "
-            f"lands in {owner_ticket}. Story 11 T-extensions-1 scope is mounting only."
-        )
+        # Tier-2 (multibrand-graph-runtime 2026-06-22): graceful degradation instead of
+        # raising. Once these tools register into the LIVE engine ToolRegistry (brand
+        # lifespan wiring), a raising placeholder would crash the running sales_agent graph
+        # if the LLM dispatched it. Return a structured 'unavailable' tool result so the
+        # agent degrades cleanly; the pointer to the implementing ticket stays in the message.
+        return {
+            "status": "unavailable",
+            "message": (
+                f"La herramienta '{extension_point}' todavía no está disponible "
+                f"(implementación pendiente: {owner_ticket})."
+            ),
+        }
 
     return _placeholder
 
