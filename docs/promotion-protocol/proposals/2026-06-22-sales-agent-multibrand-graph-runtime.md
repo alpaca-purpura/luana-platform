@@ -41,10 +41,14 @@ phase_2:
     ESC-2: done                  # 64c0e3e1 (stateful ToolRegistry + merged dispatch) + e43015ee (prompt advertises)
     ESC-3: done                  # 64c0e3e1 stage-scope (ExtensionTool.stage_scope) + is_extension_tool_in_stage
   remaining: >-
-    Tier 2.4 — implement the OLA-2 tool HANDLERS (book_appointment / match_service_and_specialist /
-    share_doctor_profile) + the 4 _not_implemented_yet placeholders (T-tools-1..4) consuming vitalia
-    services via their ports. The dispatch/advertise/scope seam is now LIVE (a registered brand tool is
-    dispatchable + advertised + stage-gated); what's left is the brand-side business logic of the tools.
+    Tier 2.4b — book_appointment + VitaliaSchedulerProvider only (the rest landed):
+    share_doctor_profile DONE (2.4a b13c6455), match_service_and_specialist DONE (dd950beb) — both
+    native-sync, live-verified vs real dev DB. book_appointment + VitaliaSchedulerProvider SUB-PHASED +
+    ESCALATED to Chris (HIPAA write + needs the cross-loop async-DB bridge fix — NullPool bridge engine or
+    main-loop submission; the current run_async fresh-loop+shared-pool path raises 'Future attached to a
+    different loop' on the 2nd async-DB call, confirmed empirically 2026-06-22). See lift doc § Tier 2.4b.
+    The 4 _not_implemented_yet placeholders + the 9 wrapped StructuredTools' DI resolvers stay unwired
+    (also gated on the same bridge fix).
   next: >-
     Fix ESC-17 (handler ABI) FIRST (sub-phase 2.4a), then build book/match/share (2.4b), then promote.
 esc_17:                           # NEW wall — discovered in Tier 2.4 pre-flight (verify-before-build), 2026-06-22

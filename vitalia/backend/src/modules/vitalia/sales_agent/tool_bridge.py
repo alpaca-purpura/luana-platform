@@ -48,10 +48,21 @@ _FALLBACK_STATE_KEYS = ("lead_id", "user_id", "conversation_id")
 def run_async(coro: Awaitable[Any]) -> Any:
     """Run ``coro`` to completion from a sync context (the graph's sync tool node).
 
-    Executes in a dedicated daemon thread with its own fresh event loop so a DB
-    session opened inside the coroutine connects within that loop (no cross-loop
-    asyncpg ``Future attached to a different loop``), regardless of whether the
-    caller already has a running loop.
+    Executes in a dedicated daemon thread with its own fresh event loop, so it is
+    safe whether or not the caller already has a running loop, and for CPU/IO-bound
+    coroutines or those that open their OWN connection.
+
+    ⚠️ CROSS-LOOP CAVEAT (verified 2026-06-22, empirical): a coroutine that uses an
+    AsyncSession from the **shared** SQLAlchemy async engine pool is NOT safe across
+    repeated calls here — the first call works, the second raises
+    ``RuntimeError: got Future attached to a different loop`` (the pool hands out a
+    connection created in a prior loop). The wrapped EP-3 StructuredTools currently
+    have UNWIRED DI resolvers so they never reach the DB → the trap doesn't manifest
+    today. Before wiring those resolvers OR building ``book_appointment`` (async
+    ``create_appointment_service`` via this bridge), the async-DB path MUST use a
+    dedicated NullPool bridge engine (fresh connection per checkout, in the bridge
+    loop) OR submit the coro to the app's main loop via
+    ``asyncio.run_coroutine_threadsafe``. See the lift design doc § ESC-17 / Tier 2.4b.
     """
     box: dict[str, Any] = {}
 

@@ -181,9 +181,30 @@ TDD (RED first) → impl → ruff → adversarial subagent review → net-new-re
   Net-new regression 0 (fixed 1 pre-existing stale placeholder test from 846388a6). The
   LLM-driven multi-turn dispatch (lead must reach discovery stage) is the END-STATE F demo +
   2.4b tool-trajectory goldens — not a 2.4a blocker.
-- **Tier 2.4b** (OLA-2 business tools) — NEXT. `VitaliaSchedulerProvider` + `match_service_and_specialist`
-  + `book_appointment` (+ `share_doctor_profile` already landed in 2.4a) + eval goldens. All as
-  native sync `(state, db) -> dict` handlers (the 2.4a pilot is the pattern).
+- **Tier 2.4b** (OLA-2 business tools) — IN PROGRESS.
+  - `match_service_and_specialist` — DONE `dd950beb` (OLA-2 "recomienda"). Native sync `(state,db)->dict`:
+    service_intent → `products` (engine offer, name ilike) → `offer_service_specialist_links` → doctors;
+    primary = first shareable (visible+active+public_slug → public URL) + callbacks. **Live-verified** (real
+    registry + real dev DB): "limpieza dental" → Ana + URL; "botox" → Ana; nonexistent → not_found.
+  - `share_doctor_profile` — DONE in 2.4a (OLA-2 "comparte").
+  - **`book_appointment` + `VitaliaSchedulerProvider` — SUB-PHASED + ESCALATED to Chris (HIPAA write,
+    exceeds a safe single pass).** Why: (a) ★ **cross-loop trap CONFIRMED empirically** (2026-06-22) — a coro
+    using an AsyncSession from the *shared* engine pool via `run_async` works on call 1 but raises
+    `got Future attached to a different loop` on call 2. So the async-DB bridge for book needs a **NullPool
+    bridge engine** (fresh connection per checkout in the bridge loop) OR **main-loop submission**
+    (`run_coroutine_threadsafe`) — NOT the current fresh-loop+shared-pool path. The same fix is required before
+    wiring the 9 StructuredTools' (unwired) DI resolvers. (b) `create_appointment_service.create_appointment`
+    needs 4 injected deps (repo + audit_writer + growth_emitter + hold_service) + resolved `patient_id`
+    (lead→patient mapping), `doctor_id`, `slot_id`+start/end (slot resolution by LLM reasoning over availability),
+    idempotency `(patient,doctor,slot)`, advisory-lock 409→re-propose. (c) HIPAA-sensitive → builder-agentic
+    flagship (R23) + real-booking live-verify (appointment row + slot marking + idempotency + race). The
+    `share`/`match` reads sidestepped all this (sync, public data); book cannot. Mini-design: book handler =
+    sync `(state,db)->dict` → `run_async` over a NullPool bridge session → construct
+    `CreateAppointmentService(repo, audit_writer, growth_emitter, hold_service)` → `create_appointment(
+    origin="proactivo_adrian", slot_id=..., ...)`. Use the live scheduling lane (V-ARCH-2: NOT BookingService/
+    `propose_and_book` which is deprecated). + eval goldens (book-happy/no-isla/consulta/race/hold-expira).
+  - **END-STATE note:** "recomienda" (match) + "comparte" (share) are LIVE real brand tools — the loop's
+    tool-execution bar is already met; book strengthens the "agenda" verb + a richer DB-write effect.
 - **Tier 3** (Base split) — PENDING (likely escalate w/ sub-phases; blast radius ×4).
 
 ### ESC-17 — EP-3 tool handler ABI mismatch (registered ≠ executable) 🔴 NEW (2026-06-22)
