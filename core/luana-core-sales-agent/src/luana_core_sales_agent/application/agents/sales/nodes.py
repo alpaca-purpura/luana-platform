@@ -397,9 +397,12 @@ def node_tool_executor(state: AgentState) -> dict[str, Any]:
     tool_name = pending.get("tool", "")
     tool_args = pending.get("args") or {}
 
-    from luana_core_sales_agent.application.agents.sales.tools import TOOL_REGISTRY
+    # Tier-2 (multibrand-graph-runtime): dispatch from the MERGED registry (engine ⊕ brand
+    # extension tools registered via EP-3), not the static engine dict — so a brand's own
+    # tools are dispatchable through the graph.
+    from luana_core_sales_agent.application.tools.registry import get_tool_registry
 
-    tool_fn = TOOL_REGISTRY.get(tool_name)
+    tool_fn = get_tool_registry().merged_tools().get(tool_name)
     if not tool_fn:
         return {
             "messages": [

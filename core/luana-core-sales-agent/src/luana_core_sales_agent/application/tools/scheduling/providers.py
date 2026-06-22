@@ -436,14 +436,49 @@ def register_scheduler_provider(provider: type[SchedulerProvider]) -> None:
     SCHEDULER_PROVIDERS[provider.provider_id] = provider
 
 
+def _resolve_provider_id(db: Session, tenant_id: UUID) -> str:
+    """Read ``tenants.config_json['scheduler_provider']``; default ``'internal'``.
+
+    Tier-2 (ESC-1). Same ``TenantModel.config_json`` JSONB the engine already reads for
+    prompts/keys (``infrastructure/prompts/base.py``, ``orchestrator/conversation_pipeline.py``)
+    — no new coupling. Resilient by design: a missing key, an unknown tenant, an unregistered
+    provider id (typo / not-yet-deployed), or a DB hiccup all fall back to ``'internal'`` so a
+    misconfiguration can never break booking. An unregistered-but-requested id is logged so the
+    misconfig is visible.
+    """
+    from luana_core_iam.infrastructure.models.tenant_model import TenantModel  # noqa: PLC0415
+
+    try:
+        config_json = db.execute(
+            select(TenantModel.config_json).where(TenantModel.id == tenant_id),
+        ).scalar_one_or_none()
+    except Exception:  # noqa: BLE001 — booking resilience: never break on a config lookup
+        logger.warning("scheduler_provider_resolve_db_error", tenant_id=str(tenant_id))
+        return "internal"
+
+    requested = (config_json or {}).get("scheduler_provider")
+    # config_json is operator-set JSONB → a malformed value (None/empty/list/dict/number)
+    # must fall back, never crash booking (e.g. an unhashable value in the `in` check).
+    if not isinstance(requested, str) or not requested:
+        return "internal"
+    if requested in SCHEDULER_PROVIDERS:
+        return requested
+    logger.warning(
+        "scheduler_provider_unregistered_falling_back_internal",
+        tenant_id=str(tenant_id),
+        requested=requested,
+    )
+    return "internal"
+
+
 def scheduler_provider_for_tenant(db: Session, tenant_id: UUID) -> SchedulerProvider:
     """Return the SchedulerProvider configured for ``tenant_id``.
 
-    Resolution today: every tenant uses ``InternalSchedulerProvider``.
-    When tenant config grows a ``scheduler_provider`` column (or
-    ``connections`` exposes a per-tenant scheduler choice), branch here
-    via lookup — never inside tools.
+    Resolves ``tenants.config_json['scheduler_provider']`` against the
+    ``SCHEDULER_PROVIDERS`` registry (a brand registers its own provider via
+    ``register_scheduler_provider``). Defaults to ``internal``. The branch lives HERE,
+    never inside tools (the resolver is the single routing seam).
     """
-    _ = tenant_id  # reserved for future per-tenant routing
-    klass = SCHEDULER_PROVIDERS["internal"]
+    provider_id = _resolve_provider_id(db, tenant_id)
+    klass = SCHEDULER_PROVIDERS.get(provider_id) or SCHEDULER_PROVIDERS["internal"]
     return klass(db=db)

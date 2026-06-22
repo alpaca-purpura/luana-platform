@@ -107,4 +107,113 @@ def get_tools_for_stage(
 def is_tool_available_in_stage(tool_name: str, stage: str) -> bool:
     """Return True if ``tool_name`` is allowed at ``stage``."""
     stage_set = STAGE_TOOL_SCOPE.get(stage, STAGE_TOOL_SCOPE["rapport"])
-    return tool_name in (ALWAYS_AVAILABLE | stage_set)
+    if tool_name in (ALWAYS_AVAILABLE | stage_set):
+        return True
+    # Tier-2 (multibrand-graph-runtime): a brand extension tool is allowed at a stage when
+    # its declared stage_scope includes the stage (or it declares none → cross-stage).
+    return get_tool_registry().is_extension_tool_in_stage(tool_name, stage)
+
+
+# ──────────────────────────────────────────────────────────────
+# Tier-2 (2026-06-22 · multibrand-graph-runtime) — stateful tool registry.
+#
+# Hexagonal seam: the engine ships a STATIC tool set
+# (application/agents/sales/tools.py::TOOL_REGISTRY). Brands own their own business tools
+# and register them via EP-3 (sales_agent_tool_register) → the SDK
+# `_SalesAgentToolRegistryAdapter` calls `register_tool_from_extension` on the singleton
+# below at brand FastAPI lifespan. Dispatch (agents/sales/nodes.py), the prompt tool-hint
+# (application/prompts/compose.py) and stage-scope all read the MERGED view, so a
+# brand-registered tool is dispatchable, advertised to the LLM, and stage-gated — i.e.
+# "each brand owns its own tools" is real, not aspirational.
+# ──────────────────────────────────────────────────────────────
+
+
+class ExtensionTool:
+    """A brand-registered sales-agent tool (EP-3 ToolDef projected into the engine)."""
+
+    __slots__ = ("description", "handler", "input_schema", "name", "stage_scope")
+
+    def __init__(
+        self,
+        *,
+        name: str,
+        handler: Any,
+        description: str = "",
+        input_schema: dict[str, Any] | None = None,
+        tool_groups: tuple[str, ...] = (),
+    ) -> None:
+        self.name = name
+        self.handler = handler
+        self.description = description
+        self.input_schema = input_schema or {}
+        # tool_groups doubles as the stage scope hint (e.g. ("closing","presentation")).
+        # Empty → cross-stage (available everywhere), like ALWAYS_AVAILABLE engine tools.
+        self.stage_scope: frozenset[str] = frozenset(tool_groups)
+
+
+class ToolRegistry:
+    """Stateful registry merging engine tools with brand extension tools (EP-3).
+
+    Singleton per process (see ``get_tool_registry``). The engine static set stays the
+    SSoT for engine tools; this object only adds the brand layer + the merged view the
+    runtime reads. Pure in-memory; no I/O.
+    """
+
+    def __init__(self) -> None:
+        self._extension_tools: dict[str, ExtensionTool] = {}
+
+    def register_tool_from_extension(
+        self,
+        *,
+        name: str,
+        handler: Any,
+        description: str = "",
+        input_schema: dict[str, Any] | None = None,
+        tool_groups: tuple[str, ...] = (),
+    ) -> None:
+        """Register a brand tool. Public surface the SDK adapter delegates to."""
+        self._extension_tools[name] = ExtensionTool(
+            name=name,
+            handler=handler,
+            description=description,
+            input_schema=input_schema,
+            tool_groups=tool_groups,
+        )
+
+    def merged_tools(self) -> dict[str, Any]:
+        """Return ``{name: handler}`` = engine tools ⊕ brand extension tools.
+
+        Brand tools override engine homonyms last-write-wins (a brand may specialise an
+        engine tool). Lazy import of the engine static set avoids a circular import.
+        """
+        from luana_core_sales_agent.application.agents.sales.tools import (  # noqa: PLC0415
+            TOOL_REGISTRY as _ENGINE_TOOLS,
+        )
+
+        merged: dict[str, Any] = dict(_ENGINE_TOOLS)
+        for name, tool in self._extension_tools.items():
+            merged[name] = tool.handler
+        return merged
+
+    def extension_tools(self) -> dict[str, ExtensionTool]:
+        """Return the brand-registered tools (for the prompt tool-hint composer)."""
+        return dict(self._extension_tools)
+
+    def is_extension_tool_in_stage(self, tool_name: str, stage: str) -> bool:
+        """True if a brand tool is allowed at ``stage`` (empty scope → cross-stage)."""
+        tool = self._extension_tools.get(tool_name)
+        if tool is None:
+            return False
+        return not tool.stage_scope or stage in tool.stage_scope
+
+    def reset(self) -> None:
+        """Drop all brand tools (test isolation)."""
+        self._extension_tools.clear()
+
+
+_tool_registry = ToolRegistry()
+
+
+def get_tool_registry() -> ToolRegistry:
+    """Return the process-singleton sales-agent ToolRegistry (engine ⊕ brand tools)."""
+    return _tool_registry
