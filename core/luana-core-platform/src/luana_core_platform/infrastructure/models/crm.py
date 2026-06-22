@@ -207,7 +207,7 @@ class LeadModel(Base):
     # shared/infrastructure/models/crm.py:201 LeadModel.messages SSoT.
     # AppointmentModel remains stub-targeted (Story 8 lift pending).
     messages = relationship(
-        "MessageModel",
+        "luana_core_sales_agent.infrastructure.models.message_model.MessageModel",
         back_populates="lead",
         cascade="all, delete-orphan",
     )
