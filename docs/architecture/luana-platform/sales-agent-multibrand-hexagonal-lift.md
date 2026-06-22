@@ -200,6 +200,12 @@ focused mini-design.
   every EP-3 handler is a plain sync callable (not StructuredTool/coroutine). Live-verify: force a real tool
   dispatch via webhook + read logs for the tool result (not just `processing_response_chunks`). **Owner:
   builder-agentic (R23 flagship).**
+  - *Event-loop context (verified 2026-06-22):* inbound runs `await agent_app.ainvoke(...)`
+    (conversation_pipeline.py:506) and `node_tool_executor` is a **sync** `def` node → LangGraph offloads
+    sync nodes to a worker thread with no running loop, so `asyncio.run(coro)` in the adapter is *likely* safe
+    — but DO NOT assume; the cleanest bridge is a **sync adapter over a sync `db` session** (dispatch already
+    passes `db: Session`), bypassing the async StructuredTool entirely. If a service is async-only, verify the
+    `asyncio.run` path with a real live dispatch before trusting it.
 - **2.4b — OLA-2 tools (depends on 2.4a).** `VitaliaSchedulerProvider` (sync Protocol, async-bridge) +
   `match_service_and_specialist` + `share_doctor_profile` (trivial) + `book_appointment` (portable base
   `agentic/tools/appointment_reschedule_with_doctor.py::propose_and_book`; deprecate that duplicate route) +
