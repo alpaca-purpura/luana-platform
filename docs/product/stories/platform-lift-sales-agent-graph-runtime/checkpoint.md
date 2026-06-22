@@ -14,8 +14,14 @@ cap_change_type: fix                  # bugfix + additivo de engine (relationshi
 parent_story: null
 predecessor_story: vitalia-fase2-adrian-canal-inbound   # OLA-1 construida en wip/vitalia; su G live-verify surfaceó ESC-4/5/6
 
-state: ready                          # ★ TRANSITION refined → ready (Phase 1 package cerrado)
-phase: READY_PACKAGE_CLOSED_PHASE1
+state: developed                      # ★ TRANSITION developing → developed (Phase 1 build GREEN + verified)
+phase: AWAIT_CHRIS_VERIFY             # technical-story: no demo UI; el "verify" de Chris = ratificar el lift antes de /auditor + merge. autonomous_mode false → NO auto-handoff.
+build_commit: 5120881a                # feat(sales-agent): engine lift Phase 1 (ESC-4/5/6 + T-DEBT1)
+dod_live_verified_skip_reason: "technical-story user_visible:false; el efecto runtime real (grafo en vitalia · mensaje Telegram→reply de Adrián) se ejerce POST merge+sync a vitalia — lo verifica Chris. In-worktree DoD = arch tests por ESC GREEN (independientemente re-corridos por el orchestrator) + diffs = los proven del architect + platform suite verde (ESC-4 downstream)."
+chris_verify:
+  required: true                      # Chris ratifica el lift (stake-asimétrico engine) antes de /auditor + migrate
+  signoff: null
+  rounds: []
 map_zone: infraestructura             # caja = motor-agentico (runtime del trabajador, no feature)
 module: sales_agent
 cross_module_scope: [sales_agent, platform-crm]   # core/luana-core-sales-agent + core/luana-core-platform (ESC-4)
@@ -54,8 +60,9 @@ worktree: "core efímero wip/core-sales-agent-multibrand (NO editar core desde h
 autonomous_mode: false                # engine + agentic = stake-asimétrico (R23) · Chris ratifica entre fases
 autonomous_mode_chain: []
 
-next_action: "Chris ratificó (2026-06-22): T-DEBT1 agregado, package commiteado → /dev-team Phase 1 (orden: T-DEBT1 → T-ESC4 → T-ESC5 → T-ESC6, PYTHONPATH override) → suites canónico → /pm-luana migrate + merge a main + sync vitalia"
-tickets_count: 4   # T-ESC4 + T-ESC5 + T-ESC6 (runtime) + T-DEBT1 (test-housekeeping, ratificado Chris)
+next_action: "Phase 1 build GREEN + verificado (commit 5120881a). autonomous_mode false → PAUSA. Chris ratifica el lift → /auditor (auditor-agentic, review independiente engine stake-asimétrico) → /pm-luana migrate (merge a main + sync vitalia) → Chris ejerce el grafo LIVE en vitalia (bar runtime, cierra G de canal-inbound + Phase 1)"
+tickets_count: 4   # T-ESC4 + T-ESC5 + T-ESC6 (runtime) + T-DEBT1 (test-housekeeping)
+phase1_status: build_green_verified   # 4/4 arch tests GREEN (re-corridos por orchestrator) · diffs = proven · platform suite verde · message_model.py/marca/alembic/conftest intactos
 ---
 
 # checkpoint — platform-lift-sales-agent-graph-runtime (Phase 1)

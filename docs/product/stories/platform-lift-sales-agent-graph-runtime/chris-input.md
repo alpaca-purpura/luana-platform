@@ -65,3 +65,24 @@ autonomous_mode: false → **no encadeno a /dev-team**. Revisás el package (sob
 
 ### 2026-06-22 · 🤖 claude · `/architect` · ✓ APLICADO
 **T-DEBT1 agregado** (4º ticket): fix import stale `tests.modules.sales_agent.orchestrator` → `tests.orchestrator` (1 línea, L27 de test_chat_orchestrator_snapshot.py). Verifiqué que el import corregido resuelve + el helper expone los símbolos. test-only, production_code:false, builder-agentic/workhorse, independiente. Nuevo validator `suite_collects` (HARD) — hoy RED (ModuleNotFoundError), T-DEBT1 lo pone verde → habilita el gate `sales_agent_suite_canonical` a colectar limpio (sin `--ignore`). #2 (conftest AppointmentModel = stub Story-8 deliberado) y #3 (copilot) quedan flag. Package: 4 tickets, total_tickets:4, scenario_coverage + dispatch + checkpoint actualizados. **Commiteo el package + arranco `/dev-team platform: T-DEBT1` (orden: T-DEBT1 → T-ESC4 → T-ESC5 → T-ESC6).** autonomous_mode:false (Chris ratifica entre developed→auditor).
+
+### 2026-06-22 · 🤖 claude · `/dev-team` (build Phase 1 · builder-agentic) · ✓ APLICADO
+`developing → developed`. Commit **5120881a** (FF push wip/core-sales-agent-multibrand). 12 archivos: 3 src + 4 arch tests (incl __init__) + 1 fix import + 4 result md. **4/4 tickets GREEN bajo TDD (RED→GREEN cada uno):**
+
+| Ticket | RED | GREEN (re-corrido por orchestrator) |
+|---|---|---|
+| T-ESC4 | `Multiple classes found for path "MessageModel"` | 1 passed |
+| T-ESC5 | `TemplateNotFound` cwd ajeno | 3 passed |
+| T-ESC6 | `AttributeError no attribute tenant_id` | 2 passed |
+| T-DEBT1 | `ModuleNotFoundError tests.modules` (colección bloqueada) | colecta 476 tests, 0 errores |
+
+**Verificación independiente del orchestrator (no confié en el stdout del builder):**
+- Los 3 diffs committeados = EXACTAMENTE los proven del architect (ESC-4 una línea en crm.py; ESC-5 engine-relative; ESC-6 columna). ✓
+- ESC-4 **UNILATERAL confirmado**: `message_model.py` = 0 líneas cambiadas. ✓
+- Re-corrí los 4 validators yo mismo → 1/3/2 passed + collect 476. ✓
+- **Platform suite verde (exit=0)** = ESC-4 downstream sin regresión. ✓
+- Superficies prohibidas intactas: cero marca, sin alembic, sin application/, sin conftest, sin appointments/tenant, sin copilot. ✓
+
+**3 flags fuera de scope (no tocados):** LeadModel.appointments latente (Story 8) · copilot mismo bug-class (/harness-issue) · 4 archivos con ruff-format drift pre-existente en eval_simulator/quality_eval (ajenos al lift).
+
+**autonomous_mode false → PAUSA en developed (no auto-handoff).** Build-claim liberado. El bar runtime real (grafo en vitalia) es post merge+sync. **Recomiendo: Chris ratifica el lift → /auditor (auditor-agentic, engine stake-asimétrico) → /pm-luana migrate (merge main + sync vitalia) → ejercés el grafo live.** Esperando tu go.
