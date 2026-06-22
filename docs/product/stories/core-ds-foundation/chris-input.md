@@ -172,3 +172,18 @@ cazó 2 cosas que el smoke NO ve (montar sin crashear ≠ rendear bien):
 **SHELL organism** como pase propio (createShellStore + decorator de store/routing — el más complejo). 3 src bugs de
 `@luana/ui-kit` flaggeados (calendar v4 · timezone-select tsc · jest-dom tsconfig) → `/pm-luana` triage, ticket aparte.
 ¿Y los ~8 commits platform-only sin promover: `make promote-to-main + sync-all` ahora o batcheo al cierre?
+
+### 2026-06-22 · SHELL organism increment 1 (3 átomos de chat) — UP para review
+
+**/dev-team · ✓ APLICADO** — arranqué el shell por lo más barato y de-riskeante: los 3 **átomos de chat sin store**
+(`MessageBubble`/`DelegateMarker`/`TypingIndicator`, 9 stories). Probé que el color-por-agente RESUELVE en contexto
+shell antes de meterme con `ShellLayout` (incremental, no big-bang). Necesité 2 fixes de **config** (NO src): `@source
+"../stories"` en preview.css (las clases `bg-agent-*` literales del fixture viven en stories/ → sin esto, gris/negro
+como el chart) + keyframe `typing-dot` (mirror de globals.css). Verifiqué yo: render-smoke 209/209 + **Chrome de los 3
+estados color** (púrpura/verde/naranja OK). Fixture reusable `stories/_shell-fixtures.tsx` (catálogo demo + switch
+literal de clases).
+
+**/dev-team · 💡 PROPONE** — **AWAIT Chris:** revisá los 3 átomos en :6007 (grupo **Shell/Chat**). Tras tu OK sigo con
+increment 2 = **ChatPanel** + sub-tree (`ChatHeader`/`ChatMessages`/`ChatComposer`) — éstos SÍ necesitan un decorator
+con store mock (`createShellStore` real + chat store mock zustand), por eso pasan aparte. ¿Promuevo los ~9 commits
+platform-only a main ahora o batcheo al cierre?
