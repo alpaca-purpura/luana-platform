@@ -217,3 +217,32 @@ _tool_registry = ToolRegistry()
 def get_tool_registry() -> ToolRegistry:
     """Return the process-singleton sales-agent ToolRegistry (engine ⊕ brand tools)."""
     return _tool_registry
+
+
+def extension_tool_schemas(stage: str | None = None) -> list[dict[str, Any]]:
+    """OpenAI function schemas for the brand EP-3 tools — for NATIVE function-calling.
+
+    The text-``[TOOL_REQUEST]`` protocol is unreliable for getting models to dispatch
+    brand tools (measured 0→25%); passing these schemas to the LLM via ``bind_tools``
+    makes dispatch reliable. Each brand tool self-describes (name + description + its own
+    ``input_schema``) → hexagonal, no brand hardcoding. Stage-scoped when ``stage`` is
+    given (only tools whose ``stage_scope`` includes it). Engine tools are NOT included —
+    they stay on the working text protocol (closer's concrete examples).
+    """
+    reg = get_tool_registry()
+    schemas: list[dict[str, Any]] = []
+    for name, tool in reg.extension_tools().items():
+        if stage is not None and not reg.is_extension_tool_in_stage(name, stage):
+            continue
+        schemas.append(
+            {
+                "type": "function",
+                "function": {
+                    "name": name,
+                    "description": tool.description or name,
+                    "parameters": tool.input_schema
+                    or {"type": "object", "properties": {}},
+                },
+            }
+        )
+    return schemas
