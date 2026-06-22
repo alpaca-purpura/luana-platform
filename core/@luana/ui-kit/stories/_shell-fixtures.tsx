@@ -71,7 +71,7 @@ export const DEMO_AGENTS: Record<string, ShellAgentDescriptor> = {
     colorSoftToken: "agent-mateo-soft",
     initial: "M",
     thumbnail: "/sb-assets/agents/mateo/thumbnail.png",
-    tabLabel: "Operar",
+    tabLabel: "Atender",
     defaultSubtab: "agenda",
   },
   adrian: {
@@ -190,7 +190,7 @@ const SEED_CONVERSATIONS: ShellConversationMeta[] = [
   { id: "c3", title: "Campaña blanqueamiento", meta: "8 mensajes", group: "this_week" },
 ];
 
-/** A coherent demo conversation (agenda/turnos → delegación a Mateo·Operar). */
+/** A coherent demo conversation (agenda/turnos → delegación a Mateo·Atender). */
 const SEED_MESSAGES: ShellChatMessage[] = [
   { id: "m1", role: "bot", agent: "valeria", time: "09:14", content: "Buen día. Tienes 3 turnos sin confirmar para hoy." },
   { id: "m2", role: "user", time: "09:15", content: "Confírmalos y avísame si alguno se cae." },
@@ -237,9 +237,10 @@ export const useDemoChatStoreNoConvos = makeDemoChatStore("sb-demo-no-convos", [
 
 /**
  * Ribbon order — the REAL vitalia order (Valeria is the supervisor sidebar, NOT a
- * ribbon tab): Lisa · Mateo · Adrián · Lucas · Camila. Mirrors AGENT_RIBBON_ORDER.
+ * ribbon tab), value-chain order: Mi Clínica · Atraer · Vender · Atender · Mantener
+ * → [lisa, lucas, adrian, mateo, camila]. Mirrors AGENT_RIBBON_ORDER.
  */
-export const DEMO_RIBBON_ORDER: string[] = ["lisa", "mateo", "adrian", "lucas", "camila"];
+export const DEMO_RIBBON_ORDER: string[] = ["lisa", "lucas", "adrian", "mateo", "camila"];
 /** Ribbon-only catalog (5 agents, in ribbon order) — what the Ribbon iterates. */
 export const DEMO_AGENTS_ARRAY: ShellAgentDescriptor[] = DEMO_RIBBON_ORDER.map(
   (slug) => DEMO_AGENTS[slug],
