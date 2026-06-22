@@ -57,7 +57,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const MateoActivo: Story = {
-  name: "Mateo activo (Operar)",
+  name: "Mateo activo (Atender)",
   args: { pathname: "/clinica/mateo/agenda" },
 };
 
