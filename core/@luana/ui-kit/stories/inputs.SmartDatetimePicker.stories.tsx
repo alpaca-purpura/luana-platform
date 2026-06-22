@@ -4,7 +4,7 @@ import * as React from "react";
 import { SmartDateTimePicker } from "../src/smart-datetime-picker";
 
 const meta = {
-  title: "Inputs/SmartDatetimePicker",
+  title: "Molecules/SmartDatetimePicker",
   component: SmartDateTimePicker,
   tags: ["autodocs"],
   parameters: {

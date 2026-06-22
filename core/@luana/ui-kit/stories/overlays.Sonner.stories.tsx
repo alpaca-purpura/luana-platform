@@ -5,7 +5,7 @@ import { Toaster } from "../src/sonner";
 import { Button } from "../src/button";
 
 const meta = {
-  title: "Overlays/Sonner",
+  title: "Molecules/Sonner",
   component: Toaster,
   tags: ["autodocs"],
   parameters: {

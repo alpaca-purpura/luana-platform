@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs";
 import { FloatingAutosaveIndicator } from "../src/FloatingAutosaveIndicator";
 
 const meta = {
-  title: "Autosave/FloatingAutosaveIndicator",
+  title: "Molecules/FloatingAutosaveIndicator",
   component: FloatingAutosaveIndicator,
   tags: ["autodocs"],
   parameters: {

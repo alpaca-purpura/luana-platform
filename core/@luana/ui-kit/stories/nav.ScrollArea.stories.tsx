@@ -17,7 +17,7 @@ const PACIENTES = [
 ];
 
 const meta = {
-  title: "Navigation/ScrollArea",
+  title: "Atoms/ScrollArea",
   component: ScrollArea,
   tags: ["autodocs"],
   parameters: {

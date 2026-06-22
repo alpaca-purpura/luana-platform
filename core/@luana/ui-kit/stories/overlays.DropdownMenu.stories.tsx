@@ -12,7 +12,7 @@ import {
 import { Button } from "../src/button";
 
 const meta = {
-  title: "Overlays/DropdownMenu",
+  title: "Molecules/DropdownMenu",
   component: DropdownMenu,
   tags: ["autodocs"],
   parameters: {

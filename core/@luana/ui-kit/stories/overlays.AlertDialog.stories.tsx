@@ -14,7 +14,7 @@ import {
 import { Button } from "../src/button";
 
 const meta = {
-  title: "Overlays/AlertDialog",
+  title: "Organisms/AlertDialog",
   component: AlertDialog,
   tags: ["autodocs"],
   parameters: {
