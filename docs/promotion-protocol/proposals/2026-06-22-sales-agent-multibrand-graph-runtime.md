@@ -63,7 +63,12 @@ esc_17:                           # NEW wall — discovered in Tier 2.4 pre-flig
     from state → bridges to the async service (event-loop footgun: no asyncio.run inside the async stack) →
     returns a dict. Add an EXECUTION test (call handler as node_tool_executor does) + an arch test (every EP-3
     handler is a plain sync callable, not StructuredTool/coroutine). builder-agentic flagship (R23, HIPAA).
-  status: pending
+  status: fixed                  # ★ b13c6455 (Tier 2.4a) — brand-side structured_tool_adapter wraps the 9
+                                 # StructuredTools as sync (state,db)->dict; run_async bridge (thread+fresh loop);
+                                 # pilot share_doctor_profile native-sync. arch+execution tests GREEN; live-verified
+                                 # via the REAL merged registry + real dev DB → real doctor URL. Two design
+                                 # assumptions overridden empirically: state["_db"] is None at inbound (adapter makes
+                                 # its own session); the 9 tools' DI resolvers were never wired (graceful degrade now).
   learning: docs/learnings/2026-06-22-ep3-tool-handler-abi-mismatch.md
 # ★ phase_2 is NOT mergeable-for-execution until ESC-17 is fixed: the dispatch/advertise/scope seam is live
 # (a tool is found + advertised + stage-gated) but the handlers can't be CALLED. proposal stays `accepted`

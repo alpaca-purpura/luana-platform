@@ -169,7 +169,21 @@ TDD (RED first) → impl → ruff → adversarial subagent review → net-new-re
   §4 — DIVERGES from the design's blanket "delete", surfaced w/ rationale). Deleted genuinely-orphan
   `sales_agent/prompts/` (loaders, zero callers) + `sales_agent/personas/` (5 yaml, no loader); live
   voice path is BrandVoicePort slot-5. Backend reloads healthy; zero dangling imports.
-- **Tier 2.4** (OLA-2 tool handlers) — BLOCKED by ESC-17, split into 2.4a → 2.4b (below). PAUSED + escalated.
+- **Tier 2.4a** — DONE `b13c6455` (ESC-17 fix). Brand-side sync `(state, db) -> dict` adapter
+  (`sales_agent/tool_bridge.py::structured_tool_adapter` wraps the 9 async StructuredTools;
+  `run_async` bridges in a dedicated thread+loop, no cross-loop asyncpg trap). Pilot
+  `share_doctor_profile` (native sync, public read, no bridge). Arch test (every EP-3 handler
+  is sync callable — was RED w/ 9 offenders, now GREEN) + execution test (dispatch as
+  `fn(state, db)` w/o TypeError). **Live-verified:** `share_doctor_profile` via the REAL merged
+  registry + real dev DB → real URL `dev-app.vitalialat.com/d/sanare-principal/dra-ana-garcia-mendoza`
+  (Ana Garcia Mendoza); `screening_questions` (was TypeError) → graceful error dict; graph runs
+  end-to-end (webhook smoke); stage-scope correct (share in discovery/presentation only).
+  Net-new regression 0 (fixed 1 pre-existing stale placeholder test from 846388a6). The
+  LLM-driven multi-turn dispatch (lead must reach discovery stage) is the END-STATE F demo +
+  2.4b tool-trajectory goldens — not a 2.4a blocker.
+- **Tier 2.4b** (OLA-2 business tools) — NEXT. `VitaliaSchedulerProvider` + `match_service_and_specialist`
+  + `book_appointment` (+ `share_doctor_profile` already landed in 2.4a) + eval goldens. All as
+  native sync `(state, db) -> dict` handlers (the 2.4a pilot is the pattern).
 - **Tier 3** (Base split) — PENDING (likely escalate w/ sub-phases; blast radius ×4).
 
 ### ESC-17 — EP-3 tool handler ABI mismatch (registered ≠ executable) 🔴 NEW (2026-06-22)
@@ -190,6 +204,16 @@ The adapter: extract args from `state` (state-driven convention) → bridge to t
 event-loop-already-running if `asyncio.run` inside the async stack → use a sync session or thread-offload, per
 03-arch-agentic §2.1) → return a plain dict. HIPAA-sensitive (booking/PHI) → builder-agentic flagship + a
 focused mini-design.
+
+**✅ RESOLVED `b13c6455` (Tier 2.4a).** Two empirical findings overrode the design assumptions:
+(1) `state["_db"]` is **never seeded** by the orchestrator (it's `None` at inbound) — so the design's
+"cleanest bridge = sync adapter over the passed `db: Session`" premise was false; the adapter makes its own
+session. (2) The async bridge uses a **dedicated thread with a fresh event loop** (`tool_bridge.run_async`) so a
+DB session opened inside connects within that loop (no cross-loop asyncpg trap), robust whether or not a loop is
+running. The pilot `share_doctor_profile` sidesteps the bridge entirely (native sync, public read). Also found:
+the 9 StructuredTools' DI resolvers were **never wired at lifespan** — so they never worked end-to-end through
+any path (ESC-17 + unwired DI); wiring them is 2.4b/follow-up, but the adapters now degrade gracefully (error
+dict) instead of crashing the graph.
 
 ### Revised Tier 2.4 plan (sub-phased)
 

@@ -41,7 +41,23 @@ This is the **embudo pattern again** (`2026-06-04-embudo-imagined-contract-never
 green in isolation, the contract between them never exercised live. And the **arch-green ≠ runtime** lesson
 (`verification-real-not-200`): "dispatchable" verified structurally, not by ejercising a real dispatch.
 
-## The fix (sub-phased — NOT yet done)
+## ✅ Resolution (Tier 2.4a · `b13c6455`)
+
+Fixed brand-side (hexagonal — the engine ABI is the port). `sales_agent/tool_bridge.py::structured_tool_adapter`
+wraps each async StructuredTool as a sync `(state, db) -> dict` handler; `run_async` bridges to the async tool in
+a **dedicated thread with a fresh event loop** (a DB session opened inside connects within that loop → no
+cross-loop asyncpg trap). The pilot `share_doctor_profile` is written native-sync (public read, no bridge).
+Arch test (every EP-3 handler is a plain sync callable) + execution test (dispatch as `fn(state, db)` w/o
+TypeError). **Live-verified** via the real merged registry + real dev DB → real doctor URL.
+
+Two design assumptions were overridden by *verifying before building* (the lesson recursing on itself):
+1. The design said the bridge could reuse the `db: Session` the engine passes — but `state["_db"]` is **never
+   seeded** at inbound (it's `None`). The adapter makes its own session.
+2. The 9 StructuredTools' DI service resolvers (`set_*_service_resolver`) were **never wired at lifespan** → the
+   tools never worked end-to-end through *any* path (ESC-17 *and* unwired DI). The adapters now degrade
+   gracefully (error dict) instead of crashing; wiring the resolvers is 2.4b/follow-up.
+
+## The fix (sub-phased — original plan, kept for history)
 
 The engine dispatch ABI is the **port**; brands must register **adapters** shaped to it (hexagonal). The brand
 must register a sync `(state, db) -> dict` callable that (1) extracts the tool's args from `state`

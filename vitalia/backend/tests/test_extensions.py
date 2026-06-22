@@ -380,13 +380,18 @@ def test_ep3_sales_agent_tools_post_wave_3_includes_t_infra_2_baseline() -> None
 
 
 def test_ep3_t_infra_2_baseline_handlers_still_placeholders() -> None:
-    """EP-3 T-infra-2 baseline (4 placeholders) sigue raising NotImplementedError.
+    """EP-3 T-infra-2 baseline (4 placeholders) degrade gracefully (status=unavailable).
 
     Wave 3 (vitalia-copilot-tools-impl) reemplazó SOLO los 7 nuevos tools reales
     (4 Valeria + 3 Adrián). Los 4 T-infra-2 originales (prepaid_payment_check,
     treatment_followup_check, medical_consent_request,
     appointment_reschedule_with_doctor) permanecen placeholders gated a
     sub-stories futuras (Slice 1 follow-up).
+
+    Tier-2 (846388a6) cambió el placeholder: en vez de raise NotImplementedError
+    (que crashearía el grafo vivo si el LLM lo despacha), devuelve un dict
+    {"status": "unavailable", ...} — degradación elegante. Este test refleja ese
+    contrato post-846388a6 (antes assert-eaba el raise, quedó stale).
     """
     from src.modules.vitalia.extensions import register_all
 
@@ -400,11 +405,15 @@ def test_ep3_t_infra_2_baseline_handlers_still_placeholders() -> None:
         "vitalia.appointment_reschedule_with_doctor",
     }
     records = registry.get_all("EP-3")
+    seen = set()
     for rec in records:
         if rec.name in t_infra_2_baseline:
             tool_def = rec.payload
-            with pytest.raises(NotImplementedError):
-                tool_def.handler()
+            result = tool_def.handler()
+            assert isinstance(result, dict), f"{rec.name} placeholder must return a dict"
+            assert result.get("status") == "unavailable", f"{rec.name} must degrade gracefully"
+            seen.add(rec.name)
+    assert seen == t_infra_2_baseline, f"missing baseline placeholders: {t_infra_2_baseline - seen}"
 
 
 def test_ep13_medical_guardrails_count_four_post_t_infra_2() -> None:
