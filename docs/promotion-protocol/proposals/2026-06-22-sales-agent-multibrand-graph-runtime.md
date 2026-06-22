@@ -1,0 +1,116 @@
+---
+proposal_id: 2026-06-22-sales-agent-multibrand-graph-runtime
+state: under_review              # proposed | under_review | accepted | rejected | migrated
+opened_date: 2026-06-22
+opened_by: /pm-luana
+ratified_by: null                # Chris — pendiente APPROVED/REJECTED
+ratified_date: null
+
+# Origen — NO es un brand-pattern-lift; es engine-hardening surfaced por live-verify
+origin_learnings:
+  - vitalia/docs/product/stories/vitalia-fase2-adrian-canal-inbound/chris-input.md   # G live-verify 2026-06-22 (ESC-4/5/6)
+  - vitalia/docs/product/stories/vitalia-fase2-adrian-canal-inbound/03-arch.md        # § Engine-boundary escalations (ESC-1/2/3)
+origin_brands: [vitalia]          # 1ra marca que ejerce el grafo sales_agent en un proceso de marca
+
+# Target — 2 engine packages
+target_package: core/luana-core-sales-agent
+target_secondary_package: core/luana-core-platform   # ESC-4 (LeadModel relationship)
+target_module: >-
+  sales-agent: application/tools/scheduling/providers.py · application/agents/sales/tools.py ·
+  application/tools/registry.py · infrastructure/prompts/base.py · infrastructure/models/prompt_version_model.py
+  · platform: infrastructure/models/crm.py
+target_ep: EP-3 extension (sales_agent_tool_register gana stage_scope + dispatch real)
+
+# Impact assessment
+semver_bump: minor               # additivo (nuevas APIs de registro + columna) + bugfix; sin romper contrato existente
+breaking_change: false
+brands_affected_consumers: [vitalia, nicolify, comunify, lupulo]   # todas consumen el engine sales_agent
+brands_at_risk_regression: [vitalia, nicolify, comunify, lupulo]   # engine compartido → downstream regression obligatoria
+migration_required: true         # ESC-6 agrega columna prompt_versions.tenant_id (idempotente + backfill)
+
+# Lift plan
+lift_estimated_effort: "3-5 días (engine story: architect engine → build → downstream regression ×4 marcas)"
+lift_owner: /dev-team
+lift_worktree: "core efímero wip/core-sales-agent-multibrand (NO editar core desde hub de marca — invisible al venv, learning 2026-06-16)"
+arch_test_downstream_required: true
+migration_notes_required: true
+---
+
+# Promotion Proposal — sales_agent engine multibrand-capable (grafo ejecutable en una marca)
+
+## 1. Qué se promueve (engine-hardening, no feature-lift)
+
+El engine `core/luana-core-sales-agent` **nunca se ejerció dentro de un proceso de marca** — el loop inbound
+nunca se cableó en ninguna brand (cap deprecada slice-1). Al cablearlo en vitalia (`vitalia-fase2-adrian-canal-inbound`,
+OLA-1 construida + verde en aislamiento) y ejercer el grafo **live** contra el stack dev (mensaje Telegram real),
+salieron **6 muros de engine** que impiden que el grafo corra en una marca. Son bugs/limitaciones latentes del
+engine, **cero brand-fixable** (la fix canónica es en `core/`). Este lift los cierra + expone el contrato que toda
+marca necesita para cablear su trabajador sin más engine edits.
+
+**Origen:** live-verify G de `vitalia-fase2-adrian-canal-inbound` (2026-06-22, ratificado Chris abrir el lift).
+3 muros (ESC-1/2/3) los halló el `/architect` en el prior-art re-scan (book/match/share gated); 3 más (ESC-4/5/6)
+los halló la ejecución live del grafo (mensaje llega + dispatch + buffer OK tras arreglar Redis, pero el grafo crashea).
+
+## 2. Por qué cross-brand (no brand-specific)
+
+Las 4 marcas activas consumen el MISMO engine sales_agent. Ninguna corre el grafo hoy (vitalia es la 1ra en
+intentarlo). Estos muros bloquearían a CUALQUIER marca que cablee su agente de ventas. Por eso es engine, no vitalia.
+
+| Brand | Aplicabilidad | Razón |
+|---|---|---|
+| vitalia | origen + 1er consumidor | cablea el loop Adrián ahora |
+| nicolify | consumidor futuro | Christian (SDR) corre el mismo engine — mismos muros |
+| comunify | consumidor futuro | agente de ventas creator-economy, mismo engine |
+| lupulo | consumidor futuro | idem cuando bootstrap |
+
+## 3. Los 6 muros (path:line verificados · análisis técnico)
+
+| # | Path:line | Síntoma | Fix |
+|---|---|---|---|
+| **ESC-1** | `core/luana-core-sales-agent/.../application/tools/scheduling/providers.py:447` | `scheduler_provider_for_tenant` hace `_ = tenant_id # reserved` → siempre `SCHEDULER_PROVIDERS["internal"]`; un provider de marca registrado no routea | routear por `tenant_config.scheduler_provider`; `register_scheduler_provider()` ya existe (436) |
+| **ESC-2** | `core/luana-core-sales-agent/.../application/agents/sales/tools.py:107` + `nodes.py:402` | `TOOL_REGISTRY` dict estático; el grafo despacha `TOOL_REGISTRY.get(name)` sin mergear tools EP-3 de marca → book/match/share no dispatchan | `register_tool_from_extension` + dispatch desde registry que incluye extension tools. **Desbloquea OLA-2 (book/match/share)** |
+| **ESC-3** | `core/luana-core-sales-agent/.../application/tools/registry.py:56` | `STAGE_TOOL_SCOPE` hardcodeado → tool names nuevos no surfacean por stage | `get_tools_for_stage` mergea stage-scope de la extensión EP-3 |
+| **ESC-4** | `core/luana-core-platform/.../infrastructure/models/crm.py:209` | `LeadModel.messages = relationship("MessageModel")` string PELADO → ambiguo (engine MessageModel vs `vitalia/.../crm` MessageModel, mismo Base) → `InvalidRequestError: Multiple classes found for path "MessageModel"` → mapper init falla → "Could not fetch tenant" cascada | relationship con path **module-qualified** (lo dice SQLAlchemy). Verificar consumers |
+| **ESC-5** | `core/luana-core-sales-agent/.../infrastructure/prompts/base.py:32` | `templates_dir` default `"src/modules/sales_agent/..."` (layout monolítico pre-multibrand); el real es `modules/{brand}/sales_agent/...` → `TemplateNotFound: message_completeness.j2` | path multibrand-aware (config/param por marca, no default monolítico) |
+| **ESC-6** | `core/luana-core-sales-agent/.../infrastructure/models/prompt_version_model.py` | `PromptVersion` sin `tenant_id` → `has no attribute 'tenant_id'` al cargar prompts DB | columna `tenant_id` + migración idempotente (+ backfill) |
+
+**Cascada observada live:** ESC-4 rompe el mapper init → tenant=None → cae a carga de prompts por archivo → ESC-5
+(path mal) → `TemplateNotFound`. ESC-6 rompe la carga DB de prompts (el fallback que ESC-4 fuerza). ESC-1/2/3 gatean
+book/match/share. El blocker primario es **ESC-4** (sin él nada downstream corre).
+
+## 4. Contrato que el lift expone (para cablear marcas sin más engine edits)
+
+1. `register_scheduler_provider(VitaliaSchedulerProvider)` + `scheduler_provider_for_tenant` elige por `tenant_config.scheduler_provider`.
+2. EP-3 `sales_agent_tool_register` acepta `stage_scope`; el grafo despacha el tool por nombre desde un registry que incluye extension tools.
+3. Protocol `SchedulerProvider` queda **sync** (`db: Session`) — el brand provider hace el bridge a sus services async.
+4. **CERO cambio al `AgentState` TypedDict** — las keys de marca viven en overlay/`metadata_info`.
+5. Prompts resuelven por marca + DB con `tenant_id`.
+6. Relationships del engine resuelven sin ambigüedad cuando una marca define modelos homónimos (`MessageModel`, `LeadModel`, …).
+
+## 5. Verificación (technical · por-efecto · arch test por ESC)
+
+- ESC-1 → `test_scheduler_provider_per_tenant.py` (provider de marca routea por tenant).
+- ESC-2 → `test_extension_tool_dispatchable.py` (tool EP-3 dispatcha por el grafo).
+- ESC-3 → stage-scope de la extensión surfacea en `get_tools_for_stage`.
+- ESC-4 → relationship resuelve con 2 `MessageModel` registrados en el Base.
+- ESC-5 → prompt carga en layout `modules/{brand}/sales_agent`.
+- ESC-6 → `prompt_versions.tenant_id` presente + carga DB OK.
+- **Efecto runtime real (el bar honesto):** el grafo sales_agent corre end-to-end en vitalia — mensaje Telegram real → reply de Adrián, leído de logs + fila conversación/trace/costo en DB. NO "arch tests verdes".
+- **Downstream regression (R3):** suites de las 4 marcas verdes tras el lift (`auditor-downstream-regression`). El engine es shared — un cambio al relationship/registry/prompt path puede romper consumers.
+
+## 6. Semver + migración
+
+- **minor** sobre `core/luana-core-sales-agent` (+ `core/luana-core-platform` para ESC-4): additivo (APIs de registro nuevas) + bugfix (relationship/prompt path) + columna nueva. Sin romper contrato existente → opt-in por marca para los provider/tools; los fixes (ESC-4/5/6) aplican a todos (son correcciones).
+- **Migración** (ESC-6): `prompt_versions.tenant_id` idempotente (`IF NOT EXISTS`) + backfill. `migration_notes` obligatorio.
+
+## 7. Relación con otras proposals
+
+- `2026-05-19-purge-nicolify-hardcodes-sales-agent.md` — antecedente (hardcodes de marca en el engine sales_agent). Mismo espíritu multibrand-cleanup; este lift es el siguiente paso (ejecución del grafo).
+- `2026-06-16-copilot-chat-brand-mountable.md` — patrón hermano (hacer un engine agéntico montable por marca).
+- T-LIFT-1 en `vitalia-fase2-adrian-canal-inbound/06-tickets.yaml` — este proposal ES la realización de ese ticket (crecido de ESC-1/2/3 → ESC-1..6).
+
+## 8. Recomendación /pm-luana
+
+**APPROVED.** Es el camino crítico real: sin este lift el grafo sales_agent no corre en NINGUNA marca (vitalia lo probó, falla). El código de marca de OLA-1 ya está construido + verde esperándolo; su valor (Adrián que descubre/recomienda/agenda/responde) está 100% gated por esto. Riesgo: toca engine compartido por 4 marcas → la downstream regression (R3) es el guardrail. Esfuerzo realista 3-5 días (engine story completa). **Pendiente ratificación de Chris** (no marco `accepted` sin su APPROVED — anti-pattern del promotion gate).
+
+**Primer paso si Chris ratifica:** crear worktree core efímero `wip/core-sales-agent-multibrand` → `/architect` (engine) produce el ready package del lift (arch + validators por ESC + tickets) → `/dev-team` construye en el worktree → downstream regression ×4 → migrate. Luego vitalia OLA-1 ejerce el grafo live (cierra el G de canal-inbound) + se desbloquea OLA-2.
