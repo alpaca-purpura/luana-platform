@@ -87,7 +87,7 @@ test.describe(
       ).toBeVisible();
     });
 
-    test("FE-1-c: Mateo está presente en el Ribbon con label 'Operar'", async ({
+    test("FE-1-c: Mateo está presente en el Ribbon con label 'Atender'", async ({
       shellPage,
     }) => {
       const pom = new RibbonPage(shellPage);
@@ -100,12 +100,12 @@ test.describe(
         "Mateo debe ser visible en el ribbon",
       ).toBeVisible();
 
-      // Mateo's tab label must be "Operar" (per AGENT_CATALOG.mateo.tabLabel v1.2)
+      // Mateo's tab label must be "Atender" (per AGENT_CATALOG.mateo.tabLabel v1.3 — was "Operar")
       const mateoText = await mateoTab.textContent();
       expect(
         mateoText,
-        `Mateo tab debe contener label "Operar", got: "${mateoText}"`,
-      ).toContain("Operar");
+        `Mateo tab debe contener label "Atender", got: "${mateoText}"`,
+      ).toContain("Atender");
     });
 
     test("FE-1-d: NO existe tab Valeria en el Ribbon (Valeria es sidebar only)", async ({

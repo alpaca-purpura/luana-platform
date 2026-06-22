@@ -5,7 +5,7 @@
  *
  * v1.2 changes (2026-05-30):
  *   - AGENT_RIBBON_ORDER: [lisa, mateo, adrian, lucas, camila] (Valeria OUT, Mateo IN)
- *   - AGENT_CATALOG.mateo: tabLabel="Operar", defaultSubtab="agenda"
+ *   - AGENT_CATALOG.mateo: tabLabel="Atender" (v1.3, was "Operar"), defaultSubtab="agenda"
  *   - AGENT_CATALOG.valeria: sidebar supervisor only — NOT in ribbon
  *   - RIBBON_SUBTABS.mateo: [{agenda}, {pacientes}] (migrated from valeria)
  *   - RIBBON_SUBTABS.valeria: [] (empty — valeria is sidebar, not ribbon tab)
@@ -124,7 +124,7 @@ export const AGENT_CATALOG: Record<AgentSlug, AgentDescriptor> = {
     thumbnail: "/agents/mateo/thumbnail.png",
     transparent: "/agents/mateo/transparent.png",
     initial: "M",
-    tabLabel: "Operar",
+    tabLabel: "Atender",
     defaultSubtab: "agenda",
   },
 };
@@ -138,15 +138,18 @@ export const AGENT_SLUGS: AgentSlug[] = Object.keys(
 /**
  * Canonical tab order in the Ribbon.
  * v1.2 (2026-05-30 paradigm-map-zones T-5):
- *   Mateo IN (Operar — agenda + pacientes).
- *   Valeria OUT — supervisor sidebar only (not a ribbon tab).
+ *   Mateo IN (Atender — agenda + pacientes). Valeria OUT — supervisor sidebar.
+ * v1.3 (2026-06-22): reordered to the value-chain — Mi Clínica · Atraer · Vender ·
+ *   Atender · Mantener → [lisa, lucas, adrian, mateo, camila]. Mateo's tabLabel
+ *   "Operar" → "Atender" (clinical-warm, no surgical connotation). Slug UNCHANGED
+ *   (mateo) → zero impact on routes/caps/code. Presentation-only.
  * spec_anchor: 03-arch-fe.md § F6 + 02-impact.md § 5 + 06-tickets.yaml T-5
  */
 export const AGENT_RIBBON_ORDER = [
   "lisa",
-  "mateo",
-  "adrian",
   "lucas",
+  "adrian",
+  "mateo",
   "camila",
 ] as const satisfies readonly AgentSlug[];
 
@@ -230,7 +233,7 @@ export const RIBBON_SUBTABS: Record<RibbonTabSlug, readonly SubTabMeta[]> = {
     { id: "servicios", label: "Servicios", icon: "🩺" },
     { id: "compliance", label: "Compliance", icon: "🛡️" },
   ],
-  /** Mateo: Operar — agenda + pacientes del día (migrated from valeria v1.2). */
+  /** Mateo: Atender — agenda + pacientes del día (migrated from valeria v1.2). */
   mateo: [
     { id: "agenda", label: "Agenda", icon: "📆" },
     { id: "pacientes", label: "Pacientes", icon: "👥" },
@@ -316,7 +319,7 @@ export const SHIPPED_STATIC_SUBTABS: ReadonlySet<RibbonSubtabKey> = new Set<Ribb
  *
  * Examples:
  *   isValidAgent("lisa")      → true (ribbon agent)
- *   isValidAgent("mateo")     → true (ribbon agent, Operar — v1.2)
+ *   isValidAgent("mateo")     → true (ribbon agent, Atender — v1.3)
  *   isValidAgent("config")    → true (config/plataforma tab special slug)
  *   isValidAgent("valeria")   → false (supervisor sidebar — not in ribbon v1.2)
  *   isValidAgent("foo")       → false (unknown slug)

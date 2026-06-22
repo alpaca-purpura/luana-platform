@@ -72,8 +72,8 @@ describe("arch: agent-catalog ribbon taxonomy v1.2 — Mateo=Operar, Valeria=sid
     expect(SHIPPED_STATIC_SUBTABS.has("valeria.agenda")).toBe(false);
   });
 
-  it("AGENT_CATALOG.mateo.tabLabel is 'Operar' (replaces 'Tecnología')", () => {
-    expect(AGENT_CATALOG.mateo.tabLabel).toBe("Operar");
+  it("AGENT_CATALOG.mateo.tabLabel is 'Atender' (v1.3 — renamed from 'Operar')", () => {
+    expect(AGENT_CATALOG.mateo.tabLabel).toBe("Atender");
   });
 
   it("AGENT_CATALOG.mateo.defaultSubtab is 'agenda'", () => {

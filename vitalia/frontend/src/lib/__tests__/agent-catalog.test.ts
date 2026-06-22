@@ -172,9 +172,9 @@ describe("AGENT_CATALOG — tabLabel + defaultSubtab (F1-S7 new fields)", () => 
     expect(AGENT_CATALOG.camila.defaultSubtab).toBe("voz");
   });
 
-  it("AGENT_CATALOG.mateo.tabLabel === 'Operar' + defaultSubtab === 'agenda' (v1.2 — Mateo is now Operar)", () => {
-    // v1.2 (2026-05-30): Mateo is the Operar specialist (agenda + pacientes del día)
-    expect(AGENT_CATALOG.mateo.tabLabel).toBe("Operar");
+  it("AGENT_CATALOG.mateo.tabLabel === 'Atender' + defaultSubtab === 'agenda' (v1.3 — 'Operar' renamed)", () => {
+    // v1.3 (2026-06-22): "Operar" → "Atender" (clinical-warm, no surgical connotation). Slug unchanged.
+    expect(AGENT_CATALOG.mateo.tabLabel).toBe("Atender");
     expect(AGENT_CATALOG.mateo.defaultSubtab).toBe("agenda");
   });
 
@@ -211,13 +211,13 @@ describe("AGENT_CATALOG — tabLabel + defaultSubtab (F1-S7 new fields)", () => 
 // ──────────────────────────────────────────────────────────────────────────────
 
 describe("AGENT_RIBBON_ORDER — canonical ribbon tab order (v1.2 paradigm-map-zones T-5)", () => {
-  it("AGENT_RIBBON_ORDER deep-equals ['lisa', 'mateo', 'adrian', 'lucas', 'camila'] in canonical order (v1.2)", () => {
-    // v1.2 (2026-05-30): Mateo IN (Operar), Valeria OUT (supervisor sidebar)
+  it("AGENT_RIBBON_ORDER deep-equals ['lisa', 'lucas', 'adrian', 'mateo', 'camila'] in canonical value-chain order (v1.3)", () => {
+    // v1.3 (2026-06-22): reordered to value-chain — Mi Clínica · Atraer · Vender · Atender · Mantener
     expect(AGENT_RIBBON_ORDER).toEqual([
       "lisa",
-      "mateo",
-      "adrian",
       "lucas",
+      "adrian",
+      "mateo",
       "camila",
     ]);
   });
@@ -238,10 +238,11 @@ describe("AGENT_RIBBON_ORDER — canonical ribbon tab order (v1.2 paradigm-map-z
     // Runtime check: verify it's array-like and not mutable via normal API
     // (TypeScript const assertion enforces readonly at compile time; here we verify shape at runtime)
     expect(Array.isArray(AGENT_RIBBON_ORDER)).toBe(true);
-    // Verify the canonical 5 v1.2 values
+    // Verify the canonical 5 v1.3 values (value-chain order)
     expect(AGENT_RIBBON_ORDER[0]).toBe("lisa");
     expect(AGENT_RIBBON_ORDER[4]).toBe("camila");
-    expect(AGENT_RIBBON_ORDER[1]).toBe("mateo");
+    expect(AGENT_RIBBON_ORDER[1]).toBe("lucas");
+    expect(AGENT_RIBBON_ORDER[3]).toBe("mateo");
   });
 
   it("all entries in AGENT_RIBBON_ORDER exist in AGENT_CATALOG", () => {
@@ -368,15 +369,15 @@ describe("extractAgentFromPath — XSS payload sanitization (SC-6)", () => {
 // ──────────────────────────────────────────────────────────────────────────────
 
 describe("tabLabel — Spanish neutro LatAm verbatim (SC-8)", () => {
-  it("all 5 ribbon tabLabels are short Spanish neutro strings (1-3 words, no accented imperatives) — v1.2 order", () => {
-    // v1.2 (2026-05-30): AGENT_RIBBON_ORDER = [lisa, mateo, adrian, lucas, camila]
+  it("all 5 ribbon tabLabels are short Spanish neutro strings (1-3 words, no accented imperatives) — v1.3 value-chain order", () => {
+    // v1.3 (2026-06-22): AGENT_RIBBON_ORDER = [lisa, lucas, adrian, mateo, camila]
     // Verify tabLabels are the expected exact strings (Spanish neutro LatAm per spec § Microcopy)
     // Each is a noun/infinitive verb — no imperative voseo forms
     const expectedLabels: string[] = [
       "Mi Clínica",  // lisa
-      "Operar",      // mateo (v1.2)
-      "Vender",      // adrian
       "Atraer",      // lucas
+      "Vender",      // adrian
+      "Atender",     // mateo (v1.3 — was "Operar")
       "Mantener",    // camila
     ];
     const ribbonLabels = AGENT_RIBBON_ORDER.map(
@@ -408,9 +409,9 @@ describe("tabLabel — Spanish neutro LatAm verbatim (SC-8)", () => {
     expect(AGENT_CATALOG.adrian.tabLabel).toBe("Vender");
   });
 
-  it("mateo tabLabel is exactly 'Operar' (v1.2 — Mateo is the Operar specialist)", () => {
-    // v1.2 (2026-05-30): Mateo took the 'Operar' label (was valeria's label before v1.2)
-    expect(AGENT_CATALOG.mateo.tabLabel).toBe("Operar");
+  it("mateo tabLabel is exactly 'Atender' (v1.3 — 'Operar' renamed, no surgical connotation)", () => {
+    // v1.3 (2026-06-22): "Operar" → "Atender". Slug unchanged (mateo).
+    expect(AGENT_CATALOG.mateo.tabLabel).toBe("Atender");
   });
 
   it("camila tabLabel is exactly 'Mantener'", () => {

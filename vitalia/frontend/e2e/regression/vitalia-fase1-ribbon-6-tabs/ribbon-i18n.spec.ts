@@ -39,7 +39,7 @@ const TENANT_ID = process.env["E2E_TENANT_ID"] ?? "vitalia-test-tenant";
  */
 const EXPECTED_TAB_LABELS = {
   lisa: "Mi Clínica",
-  mateo: "Operar",
+  mateo: "Atender", // v1.3 (2026-06-22): renamed from "Operar" (no surgical connotation)
   adrian: "Vender",
   lucas: "Atraer",
   camila: "Mantener",
@@ -169,7 +169,7 @@ test.describe("SC-8 — i18n Spanish neutro LatAm + tildes correctas", () => {
 
     // Verify none of the tab labels have been corrupted/truncated (v1.2 ribbon order)
     expect(lisaText).toContain("Mi Clínica");
-    expect(await pom.getTab("mateo").textContent()).toContain("Operar");
+    expect(await pom.getTab("mateo").textContent()).toContain("Atender");
     expect(await pom.getTab("lucas").textContent()).toContain("Atraer");
     expect(await pom.getTab("adrian").textContent()).toContain("Vender");
     expect(await pom.getTab("camila").textContent()).toContain("Mantener");
