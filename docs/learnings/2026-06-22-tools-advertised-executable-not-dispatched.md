@@ -60,6 +60,29 @@ with goldens, then tune — not a blind prompt change.
   protocol (larger engine change); (c) model selection for the specialist role.
 - The structural gap (#3) is a genuine fix but must land WITH the goldens so its effect is measured.
 
+## Measured outcome (third pass — lever applied + live-measured)
+
+Built a **live-dispatch measurement** (the goldens-driven gate the synthetic pass^k runner lacks): K fresh-chat
+webhook trials with a "who attends / share the profile" message → count real `share/match` dispatches in logs.
+(The existing `test_pass_k_evaluation.py` is a *synthetic* grader — it scores the SCRIPTED golden turns, never
+runs the graph live; `tool-trajectory` just checks `expected_tools_trajectory` is non-empty. So it cannot catch
+this — the embudo. A live trajectory eval is the missing piece.)
+
+Applied lever (a): `_extension_tools_hint` now renders each brand tool as a **concrete imperative
+`[TOOL_REQUEST]` example** (args derived dynamically from the tool schema, hexagonal) + a stronger "USALA"
+header — in the shared `STATIC_TOOLS_HINT` slot, so it reaches all 3 specialists (no per-template edit needed;
+cache-safe, 65 compose tests green). Committed `98304184` → promoted to main `b84aacdf` + sync-all.
+
+**Result: 0/4 → 1/4 dispatches.** Real improvement, but **below the pass^k bar (0.5)**. The text-`[TOOL_REQUEST]`
+protocol on deepseek caps here — concrete examples help but don't make it reliable.
+
+**Conclusion: reliable autonomous dispatch needs native function-calling** (pass `tools=` to the LLM call,
+parse `tool_calls` from the structured response, drop the text-`[TOOL_REQUEST]` parsing) — a **core agent-loop
+refactor** touching the specialist LLM call site + response parsing + the `[TOOL_REQUEST]` prompt instructions,
+shared by ALL brands. Stake-asymmetric → ESCALATED to Chris as its own focused builder-agentic effort, gated by
+the live-dispatch eval (target ≥0.5 pass^k). The concrete-example lever stays (strictly-better; it's the
+tool-description form native-calling also consumes).
+
 ## Refs
 
 - `vitalia/docs/product/stories/vitalia-fase2-adrian-canal-inbound/demo-script.md` § F-path finding (the live evidence + the seam-exercise proof)
