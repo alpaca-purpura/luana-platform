@@ -47,6 +47,13 @@
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
   --radius: 0.625rem;
+  /* Radius scale — mirrors vitalia tailwind.config.ts borderRadius. Without these
+   * the @theme only ports --radius, so rounded-control/md/sm/lg fall back (control
+   * → no radius → SQUARE buttons). Values = vitalia's exact mapping. */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-control: calc(var(--radius) - 2px);
 
   /* Agent color utilities — the REAL vitalia 6-agent palette (mirrored from
    * vitalia globals.css so the catalog renders the exact production colors).
