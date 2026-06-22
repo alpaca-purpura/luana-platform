@@ -219,6 +219,22 @@ def get_tool_registry() -> ToolRegistry:
     return _tool_registry
 
 
+def _sanitize_tool_name(name: str) -> str:
+    """Make a tool name valid for OpenAI/DeepSeek function-calling.
+
+    Providers require function names to match ``^[a-zA-Z0-9_-]+$`` — a DOT is
+    rejected with a 400. Brand EP-3 tools are namespaced ``{brand}.{tool}``, so
+    swap ``.`` → ``-`` (both allowed). No engine/brand tool name contains a
+    literal ``-``, so :func:`desanitize_tool_name` reverses it losslessly.
+    """
+    return name.replace(".", "-")
+
+
+def desanitize_tool_name(name: str) -> str:
+    """Reverse :func:`_sanitize_tool_name` so the dispatcher looks up the real name."""
+    return name.replace("-", ".")
+
+
 def extension_tool_schemas(stage: str | None = None) -> list[dict[str, Any]]:
     """OpenAI function schemas for the brand EP-3 tools — for NATIVE function-calling.
 
@@ -238,7 +254,7 @@ def extension_tool_schemas(stage: str | None = None) -> list[dict[str, Any]]:
             {
                 "type": "function",
                 "function": {
-                    "name": name,
+                    "name": _sanitize_tool_name(name),
                     "description": tool.description or name,
                     "parameters": tool.input_schema
                     or {"type": "object", "properties": {}},

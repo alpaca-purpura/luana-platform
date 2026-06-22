@@ -4,6 +4,8 @@ import json
 import re
 from typing import Any
 
+import structlog
+
 from luana_core_sales_agent.application.orchestrator.state import AgentState
 from luana_core_sales_agent.application.prompts.compose import (
     SpecialistRole,
@@ -23,7 +25,10 @@ from luana_core_sales_agent.domain.tuning import (
     SUPERVISOR_MESSAGE_WINDOW,
 )
 from luana_core_sales_agent.infrastructure.monitoring.tracing import trace_node
-from luana_core_sales_agent.application.tools.registry import extension_tool_schemas
+from luana_core_sales_agent.application.tools.registry import (
+    desanitize_tool_name,
+    extension_tool_schemas,
+)
 from luana_core_sales_agent.infrastructure.prompts.base import prompt_loader
 from luana_core_llm.factory import LLMFactory
 
@@ -83,7 +88,10 @@ def _specialist_content(
             block = (
                 "[TOOL_REQUEST: "
                 + json.dumps(
-                    {"tool": tc.get("name", ""), "args": tc.get("args") or {}},
+                    {
+                        "tool": desanitize_tool_name(tc.get("name", "")),
+                        "args": tc.get("args") or {},
+                    },
                     ensure_ascii=False,
                 )
                 + "]"
@@ -487,6 +495,12 @@ def node_tool_executor(state: AgentState) -> dict[str, Any]:
                 "next_node": "respond",
             }
 
+    structlog.get_logger().info(
+        "sales_agent.tool_dispatched",
+        tool=tool_name,
+        dedup_verdict=str(verdict),
+        user_id=str(state.get("user_id")),
+    )
     try:
         result = tool_fn(state, db=state.get("_db"))
         result_text = json.dumps(result, ensure_ascii=False)
