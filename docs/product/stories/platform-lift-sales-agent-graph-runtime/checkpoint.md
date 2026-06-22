@@ -14,14 +14,18 @@ cap_change_type: fix                  # bugfix + additivo de engine (relationshi
 parent_story: null
 predecessor_story: vitalia-fase2-adrian-canal-inbound   # OLA-1 construida en wip/vitalia; su G live-verify surfaceó ESC-4/5/6
 
-state: developed                      # ★ TRANSITION developing → developed (Phase 1 build GREEN + verified)
-phase: AWAIT_CHRIS_VERIFY             # technical-story: no demo UI; el "verify" de Chris = ratificar el lift antes de /auditor + merge. autonomous_mode false → NO auto-handoff.
+state: done                           # ★ TRANSITION reviewing → done (/pm-luana merge, auditor APPROVED, Chris ratified)
+phase: MERGED
+done_at: 2026-06-22
+merge_artifact: 07-merge.md
+audit_verdict: APPROVED               # T-ALL-review.md (8/8 checks, 0 regresión, platform downstream 294/0)
 build_commit: 5120881a                # feat(sales-agent): engine lift Phase 1 (ESC-4/5/6 + T-DEBT1)
 dod_live_verified_skip_reason: "technical-story user_visible:false; el efecto runtime real (grafo en vitalia · mensaje Telegram→reply de Adrián) se ejerce POST merge+sync a vitalia — lo verifica Chris. In-worktree DoD = arch tests por ESC GREEN (independientemente re-corridos por el orchestrator) + diffs = los proven del architect + platform suite verde (ESC-4 downstream)."
 chris_verify:
-  required: true                      # Chris ratifica el lift (stake-asimétrico engine) antes de /auditor + migrate
-  signoff: null
+  required: true
+  signoff: {by: Chris, date: 2026-06-22, result: SATISFIED, notes: "Ratifica Phase 1 sobre evidencia mecánica (3 fixes spike-proven + 4 arch tests GREEN re-corridos + platform suite verde + diffs == proven + arquitectura multimarca revisada: EP-3/puertos limpios, Phase 2 cierra el cableado). Autoriza chain auditor→done→merge→propagar.", open_items: []}
   rounds: []
+reconciled: true                      # zero-drift: el build committeado == el plan proven verbatim (orchestrator verificó diff por diff). spec/arch == realidad, sin scope-delta que reconciliar.
 map_zone: infraestructura             # caja = motor-agentico (runtime del trabajador, no feature)
 module: sales_agent
 cross_module_scope: [sales_agent, platform-crm]   # core/luana-core-sales-agent + core/luana-core-platform (ESC-4)
