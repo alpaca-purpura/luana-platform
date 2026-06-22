@@ -41,6 +41,9 @@ from src.modules.vitalia.inbox.api.router import router as inbox_router
 from src.modules.vitalia.marketing.api.routes import router as marketing_router
 from src.modules.vitalia.offer.api.servicios_router import router as servicios_router
 from src.modules.vitalia.payments.api.charge_router import router as charge_router
+from src.modules.vitalia.sales_agent.api.routers.operator_instruction_router import (
+    router as operator_instruction_router,
+)
 from src.modules.vitalia.scheduling.api.agenda_router import router as agenda_router
 from src.modules.vitalia.scheduling.api.notify_router import router as notify_router
 
@@ -110,6 +113,10 @@ app.include_router(account_router, prefix="/api/v1/clinics/account", tags=["acco
 # Route: POST /api/v1/connections/telegram/webhook
 # Secret validation + update_id dedup + tenant resolve + engine dispatch.
 app.include_router(telegram_router, prefix="/api/v1/connections/telegram", tags=["connections"])
+# T-BE-3 vitalia-fase2-adrian-canal-inbound: Operator instruction endpoint for Adrián.
+# Route: POST /api/v1/adrian/conversations/{conversation_id}/instruction
+# Sets per-conversation steering instruction persisted to metadata_info JSONB.
+app.include_router(operator_instruction_router, prefix="/api/v1/adrian", tags=["adrian"])
 
 
 class HealthResponse(BaseModel):
