@@ -20,6 +20,10 @@
 @custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
 
 @source "../src";
+/* Shell stories author LITERAL agent-color classes (bg-agent-*, text-agent-*, …) in
+ * stories/_shell-fixtures.tsx — the JIT must scan them or the colors silently purge
+ * (same trap as the chart-black bug). Brand src is agnostic (zero color literals). */
+@source "../stories";
 
 /* ── Token → utility mapping (Tailwind v4 CSS-first, replaces tailwind.config.ts) ── */
 @theme inline {
@@ -145,6 +149,31 @@
  * popover clears any sticky bar. (Mirrors the brand globals.css fix.) */
 [data-radix-popper-content-wrapper] {
   z-index: 85;
+}
+
+/* TypingIndicator dots — the `.typing-dot` keyframe lives in each brand's globals.css
+ * (the kit only ships the markup). Mirrored verbatim from vitalia globals.css so the
+ * Shell/Chat/TypingIndicator story animates as it does in the real app. */
+@keyframes typing-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+.typing-dot {
+  animation: typing-dot 1.2s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
 }
 
 body {
