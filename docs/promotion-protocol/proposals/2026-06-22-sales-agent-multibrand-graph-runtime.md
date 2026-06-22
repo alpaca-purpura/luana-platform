@@ -35,13 +35,20 @@ esc_7:                           # NEW wall — same onion class as ESC-4/5/6, s
 brand_adoption:
   vitalia: "049_vitalia_prompt_versions_tenant_id (ESC-6 brand-authored migration, wip/vitalia, applied to dev DB)"
 phase_2:
-  status: pending                # ESC-1/2/3 NOT done — book/match/share still gated
-  escs: [ESC-1, ESC-2, ESC-3]    # scheduler resolver per-tenant · EP-3 tool dispatch · STAGE_TOOL_SCOPE merge
+  status: in_progress            # engine wiring (ESC-1/2/3) DONE on wip/vitalia; OLA-2 tool handlers pending (Tier 2.4)
+  escs:
+    ESC-1: done                  # 3aff15af — scheduler_provider_for_tenant resolves tenants.config_json
+    ESC-2: done                  # 64c0e3e1 (stateful ToolRegistry + merged dispatch) + e43015ee (prompt advertises)
+    ESC-3: done                  # 64c0e3e1 stage-scope (ExtensionTool.stage_scope) + is_extension_tool_in_stage
+  remaining: >-
+    Tier 2.4 — implement the OLA-2 tool HANDLERS (book_appointment / match_service_and_specialist /
+    share_doctor_profile) + the 4 _not_implemented_yet placeholders (T-tools-1..4) consuming vitalia
+    services via their ports. The dispatch/advertise/scope seam is now LIVE (a registered brand tool is
+    dispatchable + advertised + stage-gated); what's left is the brand-side business logic of the tools.
   next: >-
-    Re-promote brand-first from vitalia: wire a real tool (book/match/share) in
-    vitalia/.../sales_agent/tools + register via EP-3; it will register but the graph won't dispatch it
-    (the ESC-1/2/3 wall). That observed wall justifies a NEW promotion proposal for the engine dispatch
-    wiring (canal-inbound OLA-2). Until then this proposal is migrated for Phase 1 only.
+    Read canal-inbound 03-arch.md + 06-tickets.yaml + 04-validators.yaml for the exact contracts of
+    book/match/share (OLA-2) + T-tools-1..4. Build TDD + live-verify each, then promote core SHAs to main
+    + sync-all + downstream regression ×4, then mark this proposal migrated.
 phasing: >-
   Phase 1 (runtime · ESC-4/5/6) → grafo corre + Adrián responde (TESTEABLE: mensaje Telegram → reply).
   Phase 2 (features · ESC-1/2/3) → book/match/share (desbloquea OLA-2). Chris testea tras Phase 1.

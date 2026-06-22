@@ -143,3 +143,33 @@ Chris asked, minus the big refactor). Schedule **Tier 2** as the focused follow-
 Phase 2; it's where "each brand owns its tools/nodes" becomes real). **Tier 3** is a deliberate future ADR.
 
 Doing Tier 1+2 together is possible but larger; Tier 3 should not be bundled (blast radius across 4 brands).
+
+## 5. Progress log (execution, /pm-vitalia self-paced loop 2026-06-22)
+
+Hub `wip/vitalia`, `SCOPE_GATE_SKIP=1` for core/ edits (Chris ratified in-hub lift). Each step:
+TDD (RED first) → impl → ruff → adversarial subagent review → net-new-regression=0 → live-verify
+(synthetic Telegram webhook) → commit by pathspec → push.
+
+- **Tier 1** — DONE (pre-loop): `44e1d4af` core, `1120381d` vitalia, `4a8ff847` docs. Graph runs
+  end-to-end; Adrián replies; messages/agent_traces/sales_agent_llm_call/leads written.
+- **Tier 2 seam** — DONE (pre-loop): `64c0e3e1` stateful ToolRegistry + merged dispatch; `846388a6`
+  vitalia lifespan wires ExtensionPointRegistry(adapter)+register_all → 13 EP-3 tools enter the
+  engine singleton.
+- **Tier 2.1** — DONE `e43015ee`: prompt tools-hint advertises brand EP-3 tools (compose.py renders
+  `extension_tools()` into the cacheable STATIC_TOOLS_HINT slot, sorted, stage-independent →
+  cache-safe; advertised==dispatchable since dispatch is `merged_tools()`, stage-agnostic). NOT
+  stage-filtered (would break the prefix + mismatch dispatch). 8 tests; live-verified (Adrián 4-chunk
+  reply; only the expected synthetic-chat 400).
+- **Tier 2.2** — DONE `3aff15af` (ESC-1): `scheduler_provider_for_tenant` resolves
+  `tenants.config_json['scheduler_provider']` against the registry; brand registers via existing
+  `register_scheduler_provider`. Resilient fallback to `internal` (missing/unknown/malformed/db-error).
+  Vitalia behaviour-preserving (still internal). 6 tests; scheduling-dir net-new failures 0.
+- **Tier 2.3** — DONE `833fece3`: state_overlay.py KEPT (real keys + test) with corrected docstring
+  (no engine `register_state_extension` — keys live in the plain state dict / metadata_info per ratified
+  §4 — DIVERGES from the design's blanket "delete", surfaced w/ rationale). Deleted genuinely-orphan
+  `sales_agent/prompts/` (loaders, zero callers) + `sales_agent/personas/` (5 yaml, no loader); live
+  voice path is BrandVoicePort slot-5. Backend reloads healthy; zero dangling imports.
+- **Tier 2.4** (OLA-2 tool handlers) — PENDING. Reading canal-inbound 03-arch/06-tickets/04-validators.
+- **Tier 3** (Base split) — PENDING (likely escalate w/ sub-phases; blast radius ×4).
+- **Governance** (migrations 049-pattern + seed can_use_platform_keys + uv lock fastembed) — PENDING.
+- **Promote+sync** (make promote-to-main + sync-all + downstream ×4 + proposal→migrated) — PENDING.
