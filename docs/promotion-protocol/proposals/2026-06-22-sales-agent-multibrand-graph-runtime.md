@@ -1,10 +1,13 @@
 ---
 proposal_id: 2026-06-22-sales-agent-multibrand-graph-runtime
-state: under_review              # proposed | under_review | accepted | rejected | migrated
+state: accepted                  # proposed | under_review | accepted | rejected | migrated
 opened_date: 2026-06-22
 opened_by: /pm-luana
-ratified_by: null                # Chris — pendiente APPROVED/REJECTED
-ratified_date: null
+ratified_by: Chris               # APPROVED 2026-06-22
+ratified_date: 2026-06-22
+phasing: >-
+  Phase 1 (runtime · ESC-4/5/6) → grafo corre + Adrián responde (TESTEABLE: mensaje Telegram → reply).
+  Phase 2 (features · ESC-1/2/3) → book/match/share (desbloquea OLA-2). Chris testea tras Phase 1.
 
 # Origen — NO es un brand-pattern-lift; es engine-hardening surfaced por live-verify
 origin_learnings:
