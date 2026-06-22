@@ -195,3 +195,18 @@ body {
   background: hsl(var(--background));
   color: hsl(var(--foreground));
 }
+
+/* ─── Pointer affordance on every interactive element ──────────────────────── */
+/* Mirror of vitalia globals.css (Chris UI #4). Tailwind v4 dropped the opinionated
+   cursor:pointer on <button>; restore the hand on all enabled clickables so the
+   catalog matches the solution's behavior contract. Disabled elements keep their
+   own not-allowed cursor. */
+button:not(:disabled):not([aria-disabled="true"]),
+[role="button"]:not([aria-disabled="true"]),
+[role="radio"]:not([aria-disabled="true"]),
+[role="tab"]:not([aria-disabled="true"]),
+label[for],
+summary,
+a[href] {
+  cursor: pointer;
+}
