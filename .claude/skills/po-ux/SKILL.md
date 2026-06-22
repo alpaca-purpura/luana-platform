@@ -68,9 +68,11 @@ Si invocado vía `/pm-{brand}` handoff, el brand viene en el handoff. Si invocad
 
 ## ★ Design System Canon — HARD GATE (cement 2026-06-08, ratificado Chris)
 
-> **SSoT:** `docs/architecture/luana-platform/design-system-canon.md` (contratos + **ejemplos de código**). Doctrina: `ADR-014`. Auto-reforzado por `.claude/rules/frontend-visual-fidelity.md § Design System Canon`.
+> **SSoT:** `docs/architecture/luana-platform/design-system-canon.md` (contratos + **ejemplos de código** · **§5 = Storybook SSoT visual**). Doctrina: `ADR-014`. Auto-reforzado por `.claude/rules/frontend-visual-fidelity.md § Design System Canon + § Storybook`.
 
-**Antes de dibujar cualquier wireframe/mockup, cargá el canon.** El mockup se **COMPONE del canon** — NO se inventan primitivas ni layout a mano. El mockup ratificado debe ser EXACTAMENTE lo que `/dev-team` construye ("lo que ves = lo que se programa"). Aplica a TODAS las marcas.
+**Antes de dibujar cualquier wireframe/mockup: (1) cargá el canon, (2) PARTÍ DE STORYBOOK** (`core/@luana/ui-kit` · `build-storybook` → `storybook-static/`, o dev `:6007` · cada story = el componente REAL). El mockup se **COMPONE del HTML renderizado de las stories** (iframe `…/iframe.html?id=<story>&viewMode=story`) — **NO se inventa CSS ni se copia `_shared.css`** (mecanismo MUERTO, canon §5). El mockup ratificado debe ser EXACTAMENTE lo que `/dev-team` construye ("lo que ves en Storybook = lo que se programa"). Aplica a TODAS las marcas.
+>
+> **No limitarse a Storybook:** si falta una pieza o hay algo genuinamente mejor, **PROPONELO** en el spec (mockup + justificación + test del 2º consumidor) → si se usa, se **PROMUEVE a `@luana/ui-kit` + story** (vía `core-ds-*`/`/pm-luana`) para reuso futuro. Storybook es el piso, no el techo.
 
 Checklist canon (parte del gate Step 5 — sin esto NO `refined`):
 
@@ -79,9 +81,9 @@ Checklist canon (parte del gate Step 5 — sin esto NO `refined`):
 - [ ] **`EntityPicker`** con buscador + paginado + lazy (no cargar todo) cuando hay selección de entidad escalable.
 - [ ] **`Select` canónico** (no `<select>` nativo) · **page-primitives** (no `<div>` de layout) · **tokens** (no arbitrary).
 - [ ] **`EntityInfoCard` Opción B** para cajas de entidad · **autosave** = 1 píldora flotante + barrita de agente.
-- [ ] Mockup cita `design-system-canon.md` + las piezas que compone (en `§ Componentes`).
+- [ ] Mockup **parte de Storybook** (cita las stories `@luana/ui-kit` que compone, por id) + cita `design-system-canon.md`. Pieza net-new → marcada PROMOTE con plan de promoción (en `§ Componentes`).
 
-**Anti-pattern (bloquea refined):** mockup que inventa un layout/primitiva que el canon ya define, o que no cita el canon. Lo que ya existe se **modifica** al canon (punto de partida nuevo 2026-06-08), no se replica como estaba.
+**Anti-pattern (bloquea refined):** mockup que **inventa CSS / no parte de Storybook / copia `_shared.css`** (MUERTO), que inventa un layout/primitiva que el canon ya define, o que no cita el canon. Pieza shared net-new sin plan de promoción a `@luana/ui-kit` = isla futura. Lo que ya existe se **modifica** al canon (punto de partida nuevo 2026-06-08), no se replica como estaba.
 
 ## ★ Step 0.5 — Anti-duplication refining (MANDATORY 2026-05-27)
 
@@ -313,7 +315,7 @@ Cerrá con dos líneas explícitas: **Huecos detectados** (Bif/RN sin SC) y **SC
 
 > **★ Antes de dibujar (cement 2026-06-03 · disciplina mockup):** declarar la **zona/caja** (árbol `paradigm-arquitectura.md`) → el **shell** que aplica (del `{brand}/docs/architecture/SHELL-DESIGN-CONTRACT.md`; shell inexistente → generarlo con el design-system actual). El mockup vive DENTRO del shell, en la ruta real del user, con **átomos reales escogidos y nombrados** (`components/ui/` + `@luana/ui-kit`, ver § Componentes) — NO inventar primitivas (disciplina D1 `frontend-visual-fidelity.md`). "Lo que ves = lo que se programa".
 >
-> **El mockup nace DESPUÉS de la FIRMA 1 funcional (W0.5-bis · funcional-primero).** No hay "mockup borrador en RONDA 1": en RONDA 1 sólo hay la tabla de campos. Recién con lo funcional firmado se dibuja el mockup creativo (paso 4) — shell completo + hoja + TODOS los campos conversados + TODOS los átomos, **componiendo del design-system-canon** — y se itera hasta el mockup **FINAL** (✍ FIRMA 2 = única firma final, con estados + validaciones + microcopy + átomos finales). El mockup **puede mejorar** lo escrito. En stories shell Vitalia aplica además el gate mockup-per-component (`vitalia/.claude/rules/shell-mockup-per-component.md`).
+> **El mockup nace DESPUÉS de la FIRMA 1 funcional (W0.5-bis · funcional-primero).** No hay "mockup borrador en RONDA 1": en RONDA 1 sólo hay la tabla de campos. Recién con lo funcional firmado se dibuja el mockup creativo (paso 4) — shell completo + hoja + TODOS los campos conversados + TODOS los átomos, **partiendo de Storybook** (el HTML renderizado de las stories `@luana/ui-kit` · canon §5) — y se itera hasta el mockup **FINAL** (✍ FIRMA 2 = única firma final, con estados + validaciones + microcopy + átomos finales). El mockup **puede mejorar** lo escrito (proponer pieza nueva → promover al kit). El viejo gate per-component HTML mockup (`shell-mockup-per-component.md` / ADR-vitalia-003) quedó **SUPERSEDED** por Storybook: la ratificación visual se hace navegando el componente REAL, no un `.html` espejo.
 
 UNO de los siguientes (no requiere los tres):
 

@@ -46,7 +46,7 @@ Homologar la UI como **un design system de 5 capas, compartido cross-brand en `c
 | **Tailwind lockeado** | eslint `no-arbitrary-value` (o theme restringido) → spacing/radius/fuente SOLO de la escala. Prohíbe `text-[13px]`, `gap-[7px]`, etc. | **el más alto + el más rápido** (mata los 368 de un saque + frena drift nuevo) |
 | **Arch-test FE** | prohíbe `<div>` de layout donde existe una primitiva; prohíbe hex/px hardcoded; ratchet shrink-only | sostiene la capa 3 |
 | **`frontend-visual-fidelity` D1 → mecánico** | deja de ser juicio del auditor, pasa a lint/arch-test | quita la carga del criterio humano |
-| **Showcase / Storybook** | el builder VE el set canónico de primitivas | descubribilidad |
+| **Storybook = SSoT visual** (`core/@luana/ui-kit` · `build-storybook` → `storybook-static/`, o dev `:6007`) | el catálogo de los componentes REALES — "lo que ves en Storybook = lo que se programa". UX **parte** de Storybook (HTML de las stories), el architect **cita la story**, el builder **construye desde** ella; lo net-new se **promueve** de vuelta al kit + story (cero `_shared.css`/mockup-kit · esos quedan SUPERSEDED). Bucle completo: `design-system-canon.md § 5`. | descubribilidad + propose/promote loop (cero drift) |
 | **Skills dev-team + auditor** | primitivas = único lego permitido; auditor verifica composición, no estilo a mano | refuerzo de proceso |
 | **Arch-test dark-wiring** (cement 2026-06-16) | por marca, asserta el contrato dark del kit: `dark:` → `[data-theme="dark"]`/`.dark` (no `prefers-color-scheme`) + `@source` escanea `ui-kit/src` completo (canon §2.10) | caza la regresión silenciosa que ningún gate cross-brand cubría (origen nicolify ds-adoption) |
 

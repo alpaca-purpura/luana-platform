@@ -43,6 +43,8 @@ Todo ticket que toca `{brand}/frontend/src/**` (TODAS las marcas) **construye DE
 
 **Lo que YA existe se MODIFICA al canon** (punto de partida nuevo 2026-06-08), no se deja como estaba. Si una primitiva del canon aún no está en `@luana/ui-kit` (programa en build), implementala según el ejemplo del canon §6 (NO una versión a mano divergente). `builder-frontend` carga el canon vía la rule antes de tocar FE. `auditor-frontend` rechaza el build que no compone del canon.
 
+**★ Storybook = SSoT visual (cement 2026-06-22 · canon §5):** `builder-frontend` **parte de la story de Storybook que `/architect` citó** en `03-arch.md § FE` (`@luana/ui-kit` · la lee — controles + estados — antes de codear) y construye DESDE el kit. Si la story introduce una **primitiva shared net-new**, el builder la **PROMUEVE a `core/@luana/ui-kit` + agrega su story** (deliverable, antes del merge) y la feature la consume vía import — **NUNCA** re-implementación local que driftea. `auditor-frontend` verifica que el net-new se promovió con story (si no, CHANGES_REQUESTED).
+
 ## Step 0 — Bootstrap + state transition
 
 ```bash

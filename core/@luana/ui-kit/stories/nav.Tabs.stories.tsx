@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../src/tabs";
 
 const meta = {
-  title: "Navigation/Tabs",
+  title: "Organisms/Tabs",
   component: Tabs,
   tags: ["autodocs"],
   parameters: {

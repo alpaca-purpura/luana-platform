@@ -25,7 +25,7 @@ const PanelContent = () => (
 );
 
 const meta = {
-  title: "Lista / Detalle/EntityWorkspaceLayout",
+  title: "Organisms/EntityWorkspaceLayout",
   component: EntityWorkspaceLayout,
   tags: ["autodocs"],
   parameters: {

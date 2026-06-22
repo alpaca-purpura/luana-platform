@@ -9,13 +9,21 @@
 
 El FE construido debe **(1) reutilizar el design system existente, (2) parecerse al mockup en lo que la historia scopea, y (3) NO exceder la historia**. Tres disciplinas, una verificación (Playwright + auditor).
 
+### D0 — Storybook = SSoT visual (partir de la story citada · cement 2026-06-22)
+
+**Antes que nada**, el diseño/build **parte de Storybook** (`core/@luana/ui-kit` — el catálogo de los componentes REALES; SSoT visual, canon §5):
+- `/po-ux` compone el mockup desde el **HTML renderizado** de las stories (`storybook-static/` o iframe `…/iframe.html?id=<story>&viewMode=story`) — misma base que el build, cero CSS inventado, cero `_shared.css` (mecanismo MUERTO).
+- `/architect` **cita en `03-arch.md § FE` la story exacta** a usar (+ link). Una pieza net-new se marca `PROMOTE`.
+- `builder-frontend` lee la story citada (controles + todos los estados) **antes** de escribir código y construye desde `@luana/ui-kit`.
+- **Promover de vuelta:** si la historia introduce una primitiva shared genuinamente nueva, se **implementa en `core/@luana/ui-kit` + se agrega su story** (deliverable del ticket, antes del merge) y la feature la consume vía import. NUNCA una re-implementación local que driftea. "No limitarse a Storybook": proponer lo mejor → promoverlo → el catálogo crece para futuras historias.
+
 ### D1 — Design system first (átomos/moléculas, NO reinventar)
 
-Antes de crear cualquier elemento visual, el builder MUST buscar y reutilizar, en orden:
-1. **Átomos** — primitivas Shadcn en `{brand}/frontend/src/components/ui/` (Button, Input, Card, Dialog, Select, Badge, …). NUNCA reinventar una primitiva que ya existe.
+Tras partir de Storybook (D0), el builder MUST buscar y reutilizar, en orden:
+1. **Átomos** — primitivas de `@luana/ui-kit` / Shadcn en `{brand}/frontend/src/components/ui/` (Button, Input, Card, Dialog, Select, Badge, …). NUNCA reinventar una primitiva que ya existe.
 2. **Tokens** — `@luana/design-tokens` (colores, spacing, radios, tipografía) + Tailwind theme del brand. NUNCA hardcodear hex/px que ya son token.
 3. **Moléculas compartidas** — `{brand}/frontend/src/components/shared/` (composiciones cross-feature ya definidas).
-4. **Solo si nada sirve** → crear el componente en la feature (`features/{m}/components/`), construido CON átomos (no desde cero con `<div>` crudos).
+4. **Solo si nada sirve** → **proponer la pieza nueva + promoverla a `@luana/ui-kit` + story** (D0, reuso futuro); si es genuinamente single-use de la feature, crearla en `features/{m}/components/` CON átomos (no desde cero con `<div>` crudos) y marcarla como promotion-candidate al 2º consumidor.
 
 ```bash
 # Gate pre-crear componente visual (builder + auditor):
@@ -62,10 +70,13 @@ await expect(page.getByText('Aún no hay reservas')).toBeVisible();
 
 ## Auditor-frontend — categoría Visual fidelity
 
-`auditor-frontend` verifica: (a) átomos/moléculas reutilizados, cero primitiva reinventada · (b) tokens usados, cero hex/px hardcodeado fuera de token · (c) FSD boundaries (`frontend-fsd.md`) · (d) elementos clave del mockup presentes (vía Playwright visual + screenshot) · (e) scope: NO se construyó fuera de la historia · (f) Spanish neutro. Carril A self-fix aplica a fidelidad cubierta por test existente (swap a átomo, token, estado faltante).
+`auditor-frontend` verifica: (a) átomos/moléculas reutilizados **desde `@luana/ui-kit` (composición contra Storybook)**, cero primitiva reinventada · (b) tokens usados, cero hex/px hardcodeado fuera de token · (c) FSD boundaries (`frontend-fsd.md`) · (d) elementos clave del mockup presentes (vía Playwright visual + screenshot) · (e) scope: NO se construyó fuera de la historia · (f) Spanish neutro · (g) **promote check: una primitiva shared net-new se promovió a `@luana/ui-kit` + story** (no quedó local que driftea) → si no, CHANGES_REQUESTED. Carril A self-fix aplica a fidelidad cubierta por test existente (swap a átomo, token, estado faltante).
 
 ## Anti-patterns prohibidos
 
+- ❌ Diseñar/maquetar UI sin **partir de Storybook** (inventar CSS o copiar `_shared.css`/mockup-kit — MUERTOS, canon §5)
+- ❌ Primitiva shared net-new que queda **local en `features/{m}/`** sin promover a `@luana/ui-kit` + story (drift · futuras historias no la reusan)
+- ❌ `/architect` que NO cita la story de Storybook (el builder improvisa sin saber qué lego usar)
 - ❌ Reinventar un átomo Shadcn que ya existe en `components/ui/`
 - ❌ Hardcodear color/spacing/radius que ya es token de `@luana/design-tokens`
 - ❌ `<div className="...">` crudos componiendo algo que es un átomo/molécula existente
@@ -79,9 +90,10 @@ await expect(page.getByText('Aún no hay reservas')).toBeVisible();
 
 | Layer | Mecanismo | Status |
 |---|---|---|
-| 1 | `/architect` FE: `02-design-ui.md` elementos clave + `04-validators § playwright_visual_scope` (story_scope vs out_of_mockup_scope) | ⏳ architect references/fe.md update |
-| 2 | `builder-frontend` step: design-system-first gate + mockup adherence + scope discipline | ⏳ builder-frontend update |
-| 3 | `auditor-frontend` categoría Visual fidelity | ⏳ auditor-frontend update |
+| 0 | **Storybook = SSoT visual** (canon §5): po-ux parte de las stories · architect cita la story · builder construye desde ella · net-new se promueve al kit + story · auditor verifica composición + promote | ✅ cement 2026-06-22 (canon §5 + rule § Storybook + skills/agents) |
+| 1 | `/architect` FE: cita la story de Storybook + `04-validators § playwright_visual_scope` (story_scope vs out_of_mockup_scope) | ✅ SKILL.md § canon binding + architect-orchestrator design_rule 24 |
+| 2 | `builder-frontend` step: Storybook-first (D0) + design-system-first gate + mockup adherence + scope + promote net-new | ✅ technical_design step 1 |
+| 3 | `auditor-frontend` categoría Visual fidelity (composición desde Storybook + promote check) | ✅ Cat 16 |
 | 4 | Playwright visual assertions scoped (`04-validators § visual`) | ✅ schema existe (reforzar scoping) |
 | 5 | `chrome-devtools-verify` live visual check pre-cierre FE | ✅ reinstaurado |
 

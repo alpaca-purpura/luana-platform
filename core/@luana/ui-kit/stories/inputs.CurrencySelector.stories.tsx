@@ -4,7 +4,7 @@ import * as React from "react";
 import { CurrencySelector } from "../src/currency-selector";
 
 const meta = {
-  title: "Inputs/CurrencySelector",
+  title: "Molecules/CurrencySelector",
   component: CurrencySelector,
   tags: ["autodocs"],
   parameters: {

@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs";
 import { DetailLayout, FormLayout } from "../src/layout/layouts";
 
 const meta = {
-  title: "Layout/DetailLayout",
+  title: "Templates/DetailLayout",
   component: DetailLayout,
   tags: ["autodocs"],
   parameters: {

@@ -17,7 +17,7 @@ import { Button } from "../src/button";
 import { Textarea } from "../src/textarea";
 
 const meta = {
-  title: "Forms/Form",
+  title: "Organisms/Form",
   component: Form,
   tags: ["autodocs"],
   parameters: {

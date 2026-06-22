@@ -14,13 +14,22 @@ description: Visual fidelity FE — D1 design-system-first + D2 mockup adherence
 
 El FE construido debe cumplir tres disciplinas (una verificación vía Playwright + auditor):
 
-- **D1 — Design system first:** reutilizar átomos Shadcn (`components/ui/`) → tokens `@luana/design-tokens` → moléculas compartidas (`components/shared/`) → solo si nada sirve, crear en `features/{m}/components/` CON átomos. NUNCA reinventar una primitiva existente.
+- **D1 — Design system first (desde Storybook):** el diseño y el build **parten del set de Storybook** (`@luana/ui-kit` — SSoT visual, ver § Storybook abajo) → tokens `@luana/design-tokens` → moléculas compartidas → solo si nada sirve, **proponer + promover** una pieza nueva al kit (no crearla local-y-olvidada). NUNCA reinventar una primitiva existente.
 - **D2 — Mockup adherence:** parecerse al mockup en jerarquía visual, layout, estados (default/hover/loading/empty/error/success) y microcopy. Fidelidad = "un humano reconoce que es la misma pantalla", no pixel-perfect.
 - **D3 — Scope discipline:** implementar SOLO lo que scopean los scenarios de `01-spec.md` + deliverables del ticket. Lo demás del mockup NO se construye en esta story.
 
 ## ★ Design System Canon (binding HARD — cement 2026-06-08, ratificado Chris)
 
 > **SSoT:** `docs/architecture/luana-platform/design-system-canon.md` (contratos + ejemplos de código). Doctrina: `ADR-014`. **Toda hoja user-reachable, en TODAS las marcas, se ARMA del canon — no se maqueta a mano ni se reinventa una primitiva.**
+
+### ★★ Storybook = SSoT visual (cement 2026-06-22, ratificado Chris · canon §5)
+
+El catálogo de componentes **REALES** vive en **Storybook** (`core/@luana/ui-kit` · `pnpm --filter @luana/ui-kit build-storybook` → `storybook-static/`, o dev `:6007`). **Es la ÚNICA fuente de verdad visual** — "lo que ves en Storybook = lo que se programa". **MUERTOS (SUPERSEDED):** `_shared.css` espejo · mockup-kit CSS · `preview.html` · el protocolo per-brand `shell-mockup-per-component.md` (ADR-vitalia-003). **El bucle (los 5 actores):**
+1. **Partir** de Storybook — el TSX se consume como **HTML renderizado** (`storybook-static/` o iframe `…/iframe.html?id=<story>&viewMode=story`) → misma base que el build. NO inventar CSS ni copiar `_shared.css`.
+2. **No limitarse** — si falta algo o hay algo genuinamente mejor, se **PROPONE** (Storybook es el piso, no el techo).
+3. **Promover de vuelta** — lo que se usa y prueba bien se **PROMUEVE a `@luana/ui-kit` + su story** (vía `core-ds-*` / promotion gate `/pm-luana`) para reuso de futuras historias. Una pieza net-new que queda en `features/{m}/` sin promover = **deuda** (la caza el auditor).
+
+Detalle + el bucle por actor: `design-system-canon.md § 5`.
 
 **D1 se concreta así (deja de ser criterio, pasa a contrato verificable):**
 
@@ -37,10 +46,10 @@ El FE construido debe cumplir tres disciplinas (una verificación vía Playwrigh
 
 | Actor | Gate |
 |---|---|
-| `/po-ux` | El mockup **compone del canon** (no inventa primitivas/layout). Cita `design-system-canon.md`. Sin eso → NO `refined`. |
-| `/architect` | `03-arch.md` referencia los contratos del canon + `04-validators.yaml` declara los gates mecánicos (eslint no-arbitrary + arch-test no-div-layout). |
-| `builder-frontend` (`/dev-team`) | Construye **desde** `@luana/ui-kit` (único lego). Reinventar primitiva / `<select>` nativo / arbitrary = **rechazo**. |
-| `auditor-frontend` (`/auditor`) | Verifica **composición** (se usó el canon), no estilo a mano. Hoja con list/detail a mano, `<select>` nativo, `<div>` de layout, arbitrary, o franja N3 en card redondeada → **CHANGES_REQUESTED**. |
+| `/po-ux` | **Parte de Storybook** (consume el HTML de las stories para componer el mockup, no inventa CSS ni copia `_shared.css`) + compone del canon. Pieza que falta o mejor → la **PROPONE** (con plan de promoción). Cita `design-system-canon.md § 5`. Sin eso → NO `refined`. |
+| `/architect` | `03-arch.md § FE` **cita la story de Storybook a usar (+ link)**; net-new se marca `PROMOTE` (deliverable = crear el componente en `@luana/ui-kit` + story antes del merge) + `04-validators.yaml` declara los gates mecánicos (eslint no-arbitrary + arch-test no-div-layout). |
+| `builder-frontend` (`/dev-team`) | Construye **desde la story citada** (`@luana/ui-kit` = único lego). Una primitiva shared net-new → **se PROMUEVE al kit + story** (no re-implementación local que driftea). Reinventar primitiva / `<select>` nativo / arbitrary = **rechazo**. |
+| `auditor-frontend` (`/auditor`) | Verifica **composición** contra Storybook (se usó el kit, no estilo a mano) **+ que el net-new se promovió al kit con story** (no quedó local). Hoja con list/detail a mano, `<select>` nativo, `<div>` de layout, arbitrary, franja N3 en card redondeada, o primitiva shared local sin promover → **CHANGES_REQUESTED**. |
 
 > **Migración (cement 2026-06-08):** punto de partida NUEVO. Lo que ya existe se **modifica** al canon (no se deja como estaba). Las stories de build/adopción (`core-ds-*`, `{brand}-ds-adoption`) lo materializan en `@luana/ui-kit` + lint + arch-test; mientras tanto, **toda hoja nueva o tocada nace/queda homologada al canon**.
 
@@ -58,6 +67,9 @@ El FE construido debe cumplir tres disciplinas (una verificación vía Playwrigh
 - ❌ **Cablear list/detail a mano** en vez de `EntityWorkspaceLayout` · franja N3 en card redondeada en vez de tercer-ribbon full-bleed (canon §2.1-2.2)
 - ❌ **`<select>` nativo** (usar `Select` canónico) · **arbitrary-values** spacing/radius/font-size/color (usar tokens) · `<div>` de layout donde hay page-primitive (canon §2.5, §2.7, §0)
 - ❌ `/po-ux` mockup o `/dev-team` build que NO compone del `design-system-canon.md` (binding HARD)
+- ❌ **Diseñar/maquetar UI sin partir de Storybook** — inventar CSS o copiar `_shared.css`/mockup-kit (mecanismos MUERTOS, canon §5)
+- ❌ **Pieza shared net-new que queda local** en `features/{m}/components/` sin promover a `@luana/ui-kit` + story (drift garantizado · futuras historias no la reusan)
+- ❌ `/architect` que NO cita la story de Storybook a usar (builder improvisa sin saber qué lego)
 
 ## Referencias
 

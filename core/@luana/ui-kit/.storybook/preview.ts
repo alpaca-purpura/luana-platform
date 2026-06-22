@@ -14,6 +14,16 @@ const preview: Preview = {
     nextjs: {
       appDirectory: true,
     },
+    // Viewport presets so shell stories can demo tablet/mobile. The shell reads
+    // window.matchMedia (≥1024 inline split · <1024 supervisor drawer) → the iframe
+    // width triggers the breakpoint; the viewport tool resizes that iframe.
+    viewport: {
+      options: {
+        mobile: { name: "Mobile (390)", styles: { width: "390px", height: "844px" }, type: "mobile" },
+        tablet: { name: "Tablet (834)", styles: { width: "834px", height: "1112px" }, type: "tablet" },
+        desktop: { name: "Desktop (1280)", styles: { width: "1280px", height: "820px" }, type: "desktop" },
+      },
+    },
     backgrounds: {
       default: "surface",
       values: [
