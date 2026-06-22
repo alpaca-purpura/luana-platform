@@ -150,10 +150,8 @@ export const DrawerMovil: Story = {
     useShellStore: useShellMobile,
     chatSlot: makeChatSlot(useShellMobile),
   },
-  parameters: {
-    // El drawer solo monta con isMobile (matchMedia max-width:1023) + mobileDrawerOpen.
-    // En el smoke (1280) renderiza el aside desktop sin crashear; para VER el drawer,
-    // redimensioná Chrome a <1024 (portal a document.body sobre el backdrop).
-    viewport: { defaultViewport: "mobile1" },
-  },
+  // El drawer solo monta con isMobile (matchMedia max-width:1023) + mobileDrawerOpen.
+  // El viewport global achica el iframe → isMobile true. En el smoke (1280) renderiza
+  // el aside desktop sin crashear; en el viewport tool / resize se ve el drawer (portal).
+  globals: { viewport: { value: "mobile" } },
 };

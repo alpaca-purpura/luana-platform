@@ -2,14 +2,10 @@ import type { Meta, StoryObj } from "@storybook/nextjs";
 import type { ReactNode } from "react";
 
 import { TopBarShell } from "../src";
-import { useDemoShellStore } from "./_shell-fixtures";
+import { DemoLogo, useDemoShellStore } from "./_shell-fixtures";
 
 /** Demo brand slots (a real brand injects LogoMark + ThemeToggle + TenantSwitcher). */
-const LOGO_SLOT: ReactNode = (
-  <span className="text-base font-semibold tracking-tight text-foreground">
-    <span className="text-primary">●</span> Clínica Demo
-  </span>
-);
+const LOGO_SLOT: ReactNode = <DemoLogo />;
 
 const RIGHT_CLUSTER_SLOT: ReactNode = (
   <>
@@ -85,4 +81,19 @@ export const Interactivo: Story = {
 export const Skeleton: Story = {
   name: "Skeleton (SSR, store-free)",
   args: { variant: "skeleton" },
+};
+
+export const Movil: Story = {
+  name: "Móvil (hamburguesa)",
+  args: { variant: "interactive", useShellStore: useDemoShellStore },
+  globals: { viewport: { value: "mobile" } },
+  parameters: {
+    layout: "fullscreen",
+    docs: {
+      description: {
+        story:
+          "En <1024 el TopBar muestra la hamburguesa (abre el drawer del supervisor). El logo y el cluster de marca se compactan.",
+      },
+    },
+  },
 };
