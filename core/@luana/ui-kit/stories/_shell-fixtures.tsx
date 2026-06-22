@@ -236,3 +236,18 @@ export const DEMO_SUBSUBTABS_BY_KEY: Record<string, ShellSubSubTabMeta[]> = {
     { id: "logo", label: "Logo", icon: "🔖" },
   ],
 };
+
+/**
+ * ★ Build a clean subTabsByAgent Record — keyed ONLY by real slugs.
+ *
+ * MUST be a function, NOT an exported object: react-docgen-typescript stamps
+ * `displayName` + `__docgenInfo` as enumerable props on every exported OBJECT, so
+ * an exported Record gets phantom keys → `Object.entries(...)` (which SubTabsBar
+ * does) → `tabs.map is not a function`. The caller assigns the RESULT to a local
+ * (non-exported) const, which is never stamped. ShellLayout/AppPanelSlot pass THIS.
+ */
+export function buildCleanSubtabs(): Record<string, ShellSubTabMeta[]> {
+  return Object.fromEntries(
+    DEMO_RIBBON_ORDER.map((slug) => [slug, DEMO_SUBTABS_BY_AGENT[slug]]),
+  );
+}

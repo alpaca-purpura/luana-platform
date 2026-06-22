@@ -232,3 +232,21 @@ Chrome los 4 de riesgo (Ribbon color+activo · SubTabsBar · SubSubTabsBar · Su
 + **Shell/** (Ribbon/SubTabsBar/SubSubTabsBar/SupervisorCollapsedStrip/SupervisorHistory/TopBarShell/StatusDot/
 TogglePill/PlaceholderCard, inc-3). Tras tu OK armo inc-4 = **ShellLayout** completo (el composite con todo integrado) +
 SupervisorSidebar (3 estados) + AppPanelSlot. ¿Promuevo lo platform-only a main ahora o al cierre?
+
+### 2026-06-22 · SHELL increment 4 (ShellLayout + SupervisorSidebar + AppPanelSlot) — SET COMPLETO, UP para review
+
+**Chris (decisión 12 · go inc-4) · ✓ APLICADO** — "Arrancá inc-4 ya" (sin esperar su review de 1+2+3).
+
+**/dev-team · ✓ APLICADO** — cerré el shell con el ensamblaje final (autoreado por mí, integración intrincada). 3 stories,
+12 estados: `ShellLayout` (Valeria-chat default · Lisa color+N3 · Diego color · cerrado tira-avatar · chat+historial) ·
+`SupervisorSidebar` (A-tira / B-chat / C-historial / drawer-móvil) · `AppPanelSlot` (Valeria sin-N3 / Lisa con-N3 /
+skeleton). **El render-gate cazó un bug real** (8/247 rojas): exportar el clean-subtabs como objeto desde el fixture lo
+hacía estampar por react-docgen (mismo trap de inc-3) → lo convertí a función `buildCleanSubtabs()` (resultado a const
+local no-exportado). Cosmético: `splitGroupId` propio por story (el ancho del split bleedeaba entre stories). **No confié
+en el smoke — Chrome screenshot de cada estado** confirmó contenido real (composite entero · color por agente · N3 ·
+tira-avatar · estado-C 3-columnas · drawer móvil 414px · AppPanelSlot N1+N2+N3). render-smoke **247/247** · tsc **0**.
+
+**/dev-team · 💡 PROPONE** — **AWAIT Chris (review COMPLETO):** el set Storybook está **100%** en :6007 (todos los Shell/* +
+los 63 no-shell). **Precondición del harness-update cumplida.** Tras tu OK: (1) capturo el harness-update al CIL vía
+`/harness-issue` (po-ux/ux-agentico/architect parten de Storybook) · (2) T-1 catálogo + T-3 drift-lint · (3) promuevo lo
+platform-only a main. ¿Promuevo ahora o al cierre? ¿Arranco T-1/T-3 o esperás tu review primero?
