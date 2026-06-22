@@ -114,6 +114,57 @@ This is a focused builder-agentic continuation (stake-asymmetric, graph-behavior
 mechanism) is held on wip/vitalia as its foundation; the concrete-example lever (`98304184`) is on main and
 helps the text fallback. End-state demo now dispatches ~30% of the time (vs 0%) — not yet reliable.
 
+## Root cause located + FIXED (fifth pass — native dispatch reliable)
+
+The fourth-pass conclusion ("real bottleneck = multi-agent graph routing") was **WRONG**.
+Direct, probe-instrumented live measurement found native function-calling **never ran in the
+live graph at all** — three wiring bugs in the `fe02df19` foundation masked it entirely.
+The "~30%" was pure text-`[TOOL_REQUEST]` fallback; the isolated "3/3" used un-namespaced
+names so it never hit the real blocker.
+
+**The three bugs (all engine, all in the native-calling path):**
+
+1. **`MultiRoleLLMRouter` did not override `generate_with_tools`.** The live specialist service
+   IS the router (`_get_llm_service` → `MultiRoleLLMRouter`), which inherited `BaseLLMService`'s
+   **text-only fallback** → `bind_tools` was never called, brand tools never offered to the LLM.
+   Fix: router override delegates to `self._resolve(role).generate_with_tools(...)` (`router.py`).
+2. **Dotted tool names → DeepSeek/OpenAI 400.** EP-3 tools are namespaced `{brand}.{tool}`
+   (`vitalia.share_doctor_profile`); the providers require function names to match
+   `^[a-zA-Z0-9_-]+$` — a **dot is rejected**. Every native call 400'd and silently fell back to
+   text. Fix: `_sanitize_tool_name` (`.`→`-`, both valid) in `extension_tool_schemas` +
+   `desanitize_tool_name` before registry dispatch in `nodes._specialist_content` (`registry.py`,
+   `nodes.py`). No tool name contains a literal `-`, so the round-trip is lossless.
+3. **The live-dispatch metric undercounted.** The brand tool only logs on the data-success path;
+   a dispatch with an unseeded `service_intent` (e.g. "blanqueamiento dental") returns `not_found`
+   **without logging** → real dispatches looked like zero. Fix: a durable `sales_agent.tool_dispatched`
+   seam log in `node_tool_executor` (fires once per execution, post per-turn dedup, regardless of
+   data outcome) + per-conversation rate = distinct `user_id`.
+
+Once the dot was sanitized, **all three models (deepseek-reasoner / deepseek-chat / kimi) emit
+`tool_calls` reliably with the FULL persona prompt** — the reasoner "narrates instead of calling"
+symptom was the 400-fallback, not a model limitation. **No supervisor-routing change, no persona
+rework, no model swap, no prompt directive was needed** (all experimented with and reverted —
+the qualifier dispatches fine with tools bound).
+
+**Measured (live, durable seam metric, default REASONING model, no extra levers):**
+- explicit "recomendame el especialista y mandame el link" → **20/20 conversations dispatched (1.00)**
+- softer "quiero hacerme una limpieza dental, ¿qué recomiendan?" → **12/12 (1.00)**
+- share-focused "pasame el perfil del odontólogo con su link" → **8/12 (0.67)** (≈0.89 among processed)
+
+vs **0** before. Bar (≥0.5 pass^k) met robustly across phrasings. Tools: `router.py` +
+`registry.py` + `nodes.py`; regression tests `test_router_litellm_dispatch.py::...delegates_to_provider`
++ `test_extension_tool_schemas.py`; live harness `core/luana-core-sales-agent/scripts/live_dispatch_eval.sh`.
+
+**Durable lesson — append to the dispatch ladder:**
+> registered → advertised → executable → **wired through the runtime service (not just the leaf
+> provider)** → **the tool NAME is provider-valid** → autonomously dispatched.
+> "Isolated `bind_tools` works 3/3" ≠ "it runs live": the live service may be a wrapper/router that
+> doesn't expose the native method, and a namespaced tool name a unit test never sends will 400 in prod.
+> A "graph routing / persona" conclusion drawn while the mechanism silently falls back is a phantom —
+> instrument the actual call (did it take the native branch? how many `tool_calls` came back? did the
+> provider 400?) before tuning behavior. The live-trajectory eval is what exposed it; the synthetic
+> pass^k runner never could.
+
 ## Refs
 
 - `vitalia/docs/product/stories/vitalia-fase2-adrian-canal-inbound/demo-script.md` § F-path finding (the live evidence + the seam-exercise proof)
