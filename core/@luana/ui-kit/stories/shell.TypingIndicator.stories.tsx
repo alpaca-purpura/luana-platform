@@ -60,9 +60,9 @@ export const VariosAgentes: Story = {
       <TypingIndicator agent={DEMO_AGENTS.valeria} getAgentClasses={getDemoAgentClasses} />
       <TypingIndicator agent={DEMO_AGENTS.lisa} getAgentClasses={getDemoAgentClasses} />
       <TypingIndicator
-        agent={DEMO_AGENTS.beta}
+        agent={DEMO_AGENTS.adrian}
         getAgentClasses={getDemoAgentClasses}
-        text="Diego está revisando los leads nuevos de Instagram…"
+        text="Adrián está revisando los leads nuevos de Instagram…"
       />
     </div>
   ),

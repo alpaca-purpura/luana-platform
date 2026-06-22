@@ -56,13 +56,13 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const ValeriaActiva: Story = {
-  name: "Valeria activa",
-  args: { pathname: "/clinica/valeria/resumen" },
+export const MateoActivo: Story = {
+  name: "Mateo activo (Operar)",
+  args: { pathname: "/clinica/mateo/agenda" },
 };
 
 export const LisaActiva: Story = {
-  name: "Lisa activa",
+  name: "Lisa activa (Mi Clínica)",
   args: { pathname: "/clinica/lisa/marca" },
 };
 

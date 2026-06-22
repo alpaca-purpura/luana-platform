@@ -61,7 +61,7 @@ export const ConMensajes: Story = {
   parameters: {
     docs: {
       description: {
-        story: "Bot + user + delegación (Valeria→Sofía) + indicador de escritura, los 4 roles que el componente resuelve.",
+        story: "Bot + user + delegación (Valeria→Mateo) + indicador de escritura, los 4 roles que el componente resuelve.",
       },
     },
   },

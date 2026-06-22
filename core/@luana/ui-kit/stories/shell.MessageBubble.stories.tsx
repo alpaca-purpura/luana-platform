@@ -74,14 +74,14 @@ export const Conversacion: Story = {
         role="user"
         time="09:15"
         userBubbleBgClass="bg-agent-valeria"
-        content="¿Para cuándo tiene disponibilidad Sofía?"
+        content="¿Qué disponibilidad tiene Mateo en la agenda?"
       />
       <MessageBubble
         role="bot"
         agent={DEMO_AGENTS.valeria}
         time="09:15"
-        footerLabel="Sofía (vía Valeria)"
-        content="Sofía tiene el jueves 25 a las 10:30 o el viernes 26 a las 16:00. ¿Cuál le ofrezco?"
+        footerLabel="Mateo (vía Valeria)"
+        content="Mateo tiene el jueves 25 a las 10:30 o el viernes 26 a las 16:00. ¿Cuál le ofrezco?"
       />
       <MessageBubble
         role="user"
@@ -95,7 +95,7 @@ export const Conversacion: Story = {
     docs: {
       description: {
         story:
-          "Una conversación corta. Nota `footerLabel` para marcar un mensaje delegado (\"Sofía (vía Valeria)\") sin cambiar el color del supervisor.",
+          "Una conversación corta. Nota `footerLabel` para marcar un mensaje delegado (\"Mateo (vía Valeria)\") sin cambiar el color del supervisor.",
       },
     },
   },

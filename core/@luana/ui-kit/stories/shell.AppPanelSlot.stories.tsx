@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs";
 
 import { AppPanelSlot, PlaceholderCard } from "../src";
 import {
-  DEMO_AGENTS_ARRAY,
+  DEMO_AGENTS_ALL,
   DEMO_RIBBON_ORDER,
   DEMO_SUBSUBTABS_BY_KEY,
   buildCleanSubtabs,
@@ -26,7 +26,7 @@ const meta = {
   title: "Shell/AppPanelSlot",
   component: AppPanelSlot,
   args: {
-    agentCatalog: DEMO_AGENTS_ARRAY,
+    agentCatalog: DEMO_AGENTS_ALL,
     ribbonOrder: DEMO_RIBBON_ORDER,
     // ★ CLEAN record (docgen-pollution-safe) — SubTabsBar does Object.entries.
     subTabsByAgent: SUBTABS,
@@ -79,21 +79,21 @@ const DemoContent = () => (
   </div>
 );
 
-export const Valeria: Story = {
-  name: "Valeria (Resumen · sin N3)",
+export const Mateo: Story = {
+  name: "Mateo · Agenda (sin N3)",
   args: { children: <DemoContent /> },
   parameters: {
     nextjs: {
       navigation: {
-        pathname: "/clinica/valeria/resumen",
-        segments: [["tenantId", "clinica"], "valeria", "resumen"],
+        pathname: "/clinica/mateo/agenda",
+        segments: [["tenantId", "clinica"], "mateo", "agenda"],
       },
     },
   },
 };
 
 export const Lisa: Story = {
-  name: "Lisa (Marca · con N3 Identidad/Voz/Logo)",
+  name: "Lisa · Marca (con N3 Identidad/Voz y tono/Presencia)",
   args: { children: <DemoContent /> },
   parameters: {
     nextjs: {
@@ -110,8 +110,8 @@ export const SinContenido: Story = {
   parameters: {
     nextjs: {
       navigation: {
-        pathname: "/clinica/beta/leads",
-        segments: [["tenantId", "clinica"], "beta", "leads"],
+        pathname: "/clinica/adrian/inbox",
+        segments: [["tenantId", "clinica"], "adrian", "inbox"],
       },
     },
   },

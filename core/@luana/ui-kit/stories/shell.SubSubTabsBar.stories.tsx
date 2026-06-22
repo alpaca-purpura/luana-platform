@@ -6,7 +6,7 @@ import { DEMO_AGENTS, DEMO_SUBSUBTABS_BY_KEY } from "./_shell-fixtures";
 /**
  * Story consumes the REAL SubSubTabsBar from src/. It reads the URL via
  * next/navigation (mocked by @storybook/nextjs) and renders the N3-static strip
- * for the active "agent.subtab" key (here lisa.marca → Identidad/Voz/Logo).
+ * for the active "agent.subtab" key (here lisa.marca → Identidad/Voz y tono/Presencia).
  *
  * ★ Props passed LITERALLY via `render` (not args): Controls deep-clones the
  *   Record's nested arrays into index-objects → `.map is not a function`.
@@ -29,7 +29,7 @@ const meta = {
         component: [
           "## Cuándo usarlo",
           "",
-          "El `SubSubTabsBar` es la **navegación N3-static**: cuando una sub-tab agrupa 3+ vistas conceptualmente discretas (ej. Marca → Identidad / Voz / Logo), se exponen como una tercera franja en la cabecera con su propia ruta (`/{agente}/{subtab}/{subsubtab}`). Se oculta solo si la sub-tab no declara N3, o si la ruta es un detalle de entidad (ahí manda `EntitySubNavBar`).",
+          "El `SubSubTabsBar` es la **navegación N3-static**: cuando una sub-tab agrupa 3+ vistas conceptualmente discretas (ej. Marca → Identidad / Voz y tono / Presencia), se exponen como una tercera franja en la cabecera con su propia ruta (`/{agente}/{subtab}/{subsubtab}`). Se oculta solo si la sub-tab no declara N3, o si la ruta es un detalle de entidad (ahí manda `EntitySubNavBar`).",
           "",
           "## Cuándo NO / alternativa",
           "",
@@ -53,13 +53,13 @@ const Demo = () => (
 );
 
 export const LisaMarca: Story = {
-  name: "Lisa · Marca (Voz activa)",
+  name: "Lisa · Marca (Voz y tono activa)",
   render: () => <Demo />,
   parameters: {
     nextjs: {
       navigation: {
-        pathname: "/clinica/lisa/marca/voz",
-        segments: [["tenantId", "clinica"], "lisa", "marca", "voz"],
+        pathname: "/clinica/lisa/marca/voz-y-tono",
+        segments: [["tenantId", "clinica"], "lisa", "marca", "voz-y-tono"],
       },
     },
   },

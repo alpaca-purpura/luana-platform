@@ -11,7 +11,7 @@ import {
   type ShellTestIds,
 } from "../src";
 import {
-  DEMO_AGENTS_ARRAY,
+  DEMO_AGENTS_ALL,
   DEMO_RIBBON_ORDER,
   DEMO_SUBSUBTABS_BY_KEY,
   buildCleanSubtabs,
@@ -101,7 +101,7 @@ const meta = {
     supervisorName: "Valeria",
     supervisorSlug: "valeria",
     supervisorInitial: "V",
-    agentCatalog: DEMO_AGENTS_ARRAY,
+    agentCatalog: DEMO_AGENTS_ALL,
     ribbonOrder: DEMO_RIBBON_ORDER,
     subTabsByAgent: SUBTABS,
     subSubTabsByKey: DEMO_SUBSUBTABS_BY_KEY,
@@ -143,16 +143,18 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  name: "Valeria (chat · default)",
+  name: "Mateo · Agenda (landing default)",
   // ★ distinct splitGroupId per story: useDefaultLayout persists the split width by
   // this key, and a shared key would let the history story's wider split bleed into
   // every other story (non-deterministic catalog widths).
-  args: { pathname: "/clinica/valeria/resumen", splitGroupId: "sb-shell-default" },
+  // pathname = el landing real de vitalia (mateo/agenda) — Valeria es el supervisor
+  // del sidebar, NO un tab del ribbon.
+  args: { pathname: "/clinica/mateo/agenda", splitGroupId: "sb-shell-default" },
   parameters: {
     nextjs: {
       navigation: {
-        pathname: "/clinica/valeria/resumen",
-        segments: [["tenantId", "clinica"], "valeria", "resumen"],
+        pathname: "/clinica/mateo/agenda",
+        segments: [["tenantId", "clinica"], "mateo", "agenda"],
       },
     },
   },
@@ -171,14 +173,14 @@ export const LisaActiva: Story = {
   },
 };
 
-export const DiegoActivo: Story = {
-  name: "Diego activo (color)",
-  args: { pathname: "/clinica/beta/leads", splitGroupId: "sb-shell-diego" },
+export const AdrianActivo: Story = {
+  name: "Adrián · Inbox (color cian)",
+  args: { pathname: "/clinica/adrian/inbox", splitGroupId: "sb-shell-adrian" },
   parameters: {
     nextjs: {
       navigation: {
-        pathname: "/clinica/beta/leads",
-        segments: [["tenantId", "clinica"], "beta", "leads"],
+        pathname: "/clinica/adrian/inbox",
+        segments: [["tenantId", "clinica"], "adrian", "inbox"],
       },
     },
   },
@@ -187,7 +189,7 @@ export const DiegoActivo: Story = {
 export const SupervisorCerrado: Story = {
   name: "Supervisor cerrado (tira-avatar)",
   args: {
-    pathname: "/clinica/valeria/resumen",
+    pathname: "/clinica/mateo/agenda",
     useShellStore: useShellDemoClosed,
     splitGroupId: "sb-shell-cerrado",
   },
@@ -195,8 +197,8 @@ export const SupervisorCerrado: Story = {
   parameters: {
     nextjs: {
       navigation: {
-        pathname: "/clinica/valeria/resumen",
-        segments: [["tenantId", "clinica"], "valeria", "resumen"],
+        pathname: "/clinica/mateo/agenda",
+        segments: [["tenantId", "clinica"], "mateo", "agenda"],
       },
     },
   },
@@ -204,13 +206,13 @@ export const SupervisorCerrado: Story = {
 
 export const ChatConHistorial: Story = {
   name: "Chat + historial",
-  args: { pathname: "/clinica/valeria/resumen", splitGroupId: "sb-shell-historial" },
+  args: { pathname: "/clinica/mateo/agenda", splitGroupId: "sb-shell-historial" },
   decorators: [seedAfterHydrate(useShellDemo, { supervisorOpen: "chat", historyOpen: true })],
   parameters: {
     nextjs: {
       navigation: {
-        pathname: "/clinica/valeria/resumen",
-        segments: [["tenantId", "clinica"], "valeria", "resumen"],
+        pathname: "/clinica/mateo/agenda",
+        segments: [["tenantId", "clinica"], "mateo", "agenda"],
       },
     },
   },

@@ -48,19 +48,21 @@
   --color-ring: hsl(var(--ring));
   --radius: 0.625rem;
 
-  /* Agent color utilities — generic slugs the kit references (brand-agnostic). A real
-   * brand overrides the values per agent; here they get distinct demo hues so the
-   * color-per-agent contract (canon § 2.8) is visible in Storybook. */
-  --color-agent-alfa: hsl(var(--agent-alfa));
-  --color-agent-alfa-soft: hsl(var(--agent-alfa-soft));
-  --color-agent-beta: hsl(var(--agent-beta));
-  --color-agent-beta-soft: hsl(var(--agent-beta-soft));
-  --color-agent-supervisora: hsl(var(--agent-supervisora));
-  --color-agent-supervisora-soft: hsl(var(--agent-supervisora-soft));
+  /* Agent color utilities — the REAL vitalia 6-agent palette (mirrored from
+   * vitalia globals.css so the catalog renders the exact production colors).
+   * Valeria = supervisor (sidebar) · Lisa/Mateo/Adrián/Lucas/Camila = ribbon. */
   --color-agent-valeria: hsl(var(--agent-valeria));
   --color-agent-valeria-soft: hsl(var(--agent-valeria-soft));
   --color-agent-lisa: hsl(var(--agent-lisa));
   --color-agent-lisa-soft: hsl(var(--agent-lisa-soft));
+  --color-agent-mateo: hsl(var(--agent-mateo));
+  --color-agent-mateo-soft: hsl(var(--agent-mateo-soft));
+  --color-agent-adrian: hsl(var(--agent-adrian));
+  --color-agent-adrian-soft: hsl(var(--agent-adrian-soft));
+  --color-agent-lucas: hsl(var(--agent-lucas));
+  --color-agent-lucas-soft: hsl(var(--agent-lucas-soft));
+  --color-agent-camila: hsl(var(--agent-camila));
+  --color-agent-camila-soft: hsl(var(--agent-camila-soft));
 }
 
 /* ── Token values — light (Shadcn surface, mirrored from a brand globals.css :root) ── */
@@ -86,17 +88,19 @@
   --ring: 198 99% 49%;
   --radius: 0.625rem;
 
-  /* Agent demo hues (generic slugs) */
-  --agent-alfa: 156 100% 41%;
-  --agent-alfa-soft: 156 80% 92%;
-  --agent-beta: 24 95% 53%;
-  --agent-beta-soft: 24 90% 92%;
-  --agent-supervisora: 287 53% 37%;
-  --agent-supervisora-soft: 287 53% 90%;
-  --agent-valeria: 287 53% 37%;
-  --agent-valeria-soft: 287 53% 90%;
-  --agent-lisa: 156 100% 41%;
+  /* Agent palette — REAL vitalia values (globals.css :root). */
+  --agent-lisa: 156 100% 41%; /* #00D084 verde */
   --agent-lisa-soft: 156 80% 92%;
+  --agent-mateo: 53 99% 51%; /* #FEE209 amarillo */
+  --agent-mateo-soft: 53 90% 90%;
+  --agent-adrian: 198 99% 49%; /* #01B2F8 cian */
+  --agent-adrian-soft: 197 90% 89%;
+  --agent-lucas: 0 0% 7%; /* #111111 negro */
+  --agent-lucas-soft: 0 0% 92%;
+  --agent-camila: 244 84% 32%; /* #180D95 azul marino */
+  --agent-camila-soft: 244 53% 92%;
+  --agent-valeria: 287 53% 37%; /* #7B2D91 púrpura (supervisora) */
+  --agent-valeria-soft: 287 53% 90%;
 
   /* Chart series palette — recharts reads var(--chart-N) directly via ChartContainer's
    * generated --color-* vars (canon: consumer never uses hex). Without these the bars/lines
@@ -131,11 +135,15 @@
   --input: 240 4% 20%;
   --ring: 198 99% 49%;
 
-  --agent-alfa-soft: 156 60% 15%;
-  --agent-beta-soft: 24 70% 18%;
-  --agent-supervisora-soft: 287 40% 25%;
-  --agent-valeria-soft: 287 40% 25%;
+  /* Agent palette — REAL vitalia dark values (globals.css .dark). */
   --agent-lisa-soft: 156 60% 15%;
+  --agent-mateo-soft: 53 80% 18%;
+  --agent-adrian-soft: 198 60% 20%;
+  --agent-lucas-soft: 0 0% 20%;
+  --agent-camila-soft: 244 50% 20%;
+  --agent-valeria-soft: 287 40% 25%;
+  /* Dark contrast fix (globals.css): camila #180d95 unreadable on dark soft → lighten. */
+  --agent-camila: 244 80% 78%;
 
   --chart-1: 198 90% 55%;
   --chart-2: 287 50% 60%;
