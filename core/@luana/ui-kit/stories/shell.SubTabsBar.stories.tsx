@@ -72,14 +72,14 @@ const Demo = () => (
   />
 );
 
-export const Valeria: Story = {
-  name: "Valeria (Agenda activa)",
+export const Mateo: Story = {
+  name: "Mateo (Agenda activa)",
   render: () => <Demo />,
   parameters: {
     nextjs: {
       navigation: {
-        pathname: "/clinica/valeria/agenda",
-        segments: [["tenantId", "clinica"], "valeria", "agenda"],
+        pathname: "/clinica/mateo/agenda",
+        segments: [["tenantId", "clinica"], "mateo", "agenda"],
       },
     },
   },

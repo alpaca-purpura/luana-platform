@@ -47,10 +47,10 @@ export const Mantener: Story = {
 };
 
 export const Multiplicar: Story = {
-  name: "Delega en Diego (Multiplicar)",
+  name: "Delega en Camila (Multiplicar)",
   args: {
     fromAgent: DEMO_AGENTS.valeria,
-    toAgent: DEMO_AGENTS.beta,
+    toAgent: DEMO_AGENTS.camila,
     mode: "Multiplicar",
   },
 };
@@ -67,7 +67,7 @@ export const EnHilo: Story = {
       />
       <DelegateMarker
         fromAgent={DEMO_AGENTS.valeria}
-        toAgent={DEMO_AGENTS.beta}
+        toAgent={DEMO_AGENTS.adrian}
         mode="Reactivar"
         getAgentClasses={getDemoAgentClasses}
       />

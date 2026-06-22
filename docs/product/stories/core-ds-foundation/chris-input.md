@@ -250,3 +250,20 @@ tira-avatar · estado-C 3-columnas · drawer móvil 414px · AppPanelSlot N1+N2+
 los 63 no-shell). **Precondición del harness-update cumplida.** Tras tu OK: (1) capturo el harness-update al CIL vía
 `/harness-issue` (po-ux/ux-agentico/architect parten de Storybook) · (2) T-1 catálogo + T-3 drift-lint · (3) promuevo lo
 platform-only a main. ¿Promuevo ahora o al cierre? ¿Arranco T-1/T-3 o esperás tu review primero?
+
+### 2026-06-22 · Chris: "pon los avatares reales + nombres reales de los módulos, lo más real a lo que tenemos"
+
+**Chris (decisión 13) · ✓ APLICADO** — recorrer el shell y dejar el catálogo demo **idéntico a producción**.
+
+**/dev-team · ✓ APLICADO** — reemplacé el fixture genérico (alfa/beta/Sofía/Diego, hues inventadas) por el catálogo
+REAL de vitalia (espejo de `agent-catalog.ts` + `shell-routes.ts` + `globals.css` + avatares `public/agents/`):
+6 agentes reales (Valeria supervisora + Lisa/Mateo/Adrián/Lucas/Camila) · nombres/roles/tabLabels/sub-tabs/N3 reales ·
+avatares PNG reales (copiados a `stories/assets`, servidos vía `staticDirs /sb-assets`) · colores reales (preview.css
+espejo de los tokens `--agent-*`, light+dark, contraste mateo/lucas → `text-foreground`). El kit sigue brand-agnostic
+(RN-2): esto es DATA de demo en `stories/`, no `src/`. **★ Bug cazado entrando con Chrome (no por el smoke):** el chat
+del supervisor salía "Lisa" porque `agentCatalog` era el array de ribbon (5, sin Valeria) y el lookup caía al primero →
+fix `DEMO_AGENTS_ALL` (6, supervisora incluida; ribbon sigue 5, = producción). render-smoke **247/247** + tsc **0** +
+Chrome de cada estado (Valeria supervisora correcta · color por agente real · N3 real). Commit pathspec.
+
+**/dev-team · 💡 PROPONE** — Storybook dev de nuevo arriba en **:6007** con los avatares + nombres reales. Recorrelo y
+tirame los comentarios. (Mismas decisiones pendientes: promote ahora/cierre · T-1/T-3 ahora o tras tu review.)

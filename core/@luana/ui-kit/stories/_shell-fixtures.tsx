@@ -2,10 +2,11 @@
  * Shared demo fixtures for the Shell organism stories (core-ds-foundation T-2).
  *
  * The shell kit is brand-agnostic (RN-2): the brand injects its agent catalog +
- * a getAgentClasses() fn at mount. These fixtures mirror that contract so the
- * color-per-agent rendering (canon §2.8) is visible in Storybook, using the
- * generic agent slugs that .storybook/preview.css defines
- * (agent-alfa / -beta / -supervisora / -valeria / -lisa).
+ * a getAgentClasses() fn at mount. These fixtures mirror that contract using the
+ * REAL vitalia 6-agent catalog (Valeria supervisor + Lisa/Mateo/Adrián/Lucas/Camila),
+ * so the catalog renders as close to production as possible — names, roles, colors
+ * (preview.css mirrors vitalia globals.css), sub-tabs and real avatar thumbnails
+ * (served at /sb-assets). This is DEMO data in stories/, NOT kit src (RN-2 intact).
  *
  * ★ getAgentClasses MUST return LITERAL class strings (a switch, never a
  *   template like `bg-agent-${slug}`). Tailwind v4 JIT only emits classes it
@@ -32,63 +33,87 @@ import {
   type SsrSafeHydration,
 } from "@luana/hooks/create-ssr-safe-persisted-store";
 
-/** Demo team — a supervisor (Valeria) + specialists, brand-agnostic hues. */
+/**
+ * Real Vitalia team — supervisor (Valeria) + 5 ribbon specialists. Mirrors
+ * vitalia/frontend/src/lib/agent-catalog.ts (names, roles, colorTokens, tabLabels,
+ * defaultSubtab) + real avatar thumbnails (served at /sb-assets via staticDirs) so
+ * the catalog renders as close to production as possible. The kit itself stays
+ * brand-agnostic (RN-2) — this is DEMO data in stories/, not src.
+ */
 export const DEMO_AGENTS: Record<string, ShellAgentDescriptor> = {
   valeria: {
     slug: "valeria",
     name: "Valeria",
-    role: "Coordinadora del equipo",
+    role: "Tu secretaria virtual · coordinadora general",
     colorToken: "agent-valeria",
     colorSoftToken: "agent-valeria-soft",
     initial: "V",
+    thumbnail: "/sb-assets/agents/valeria/thumbnail.png",
     tabLabel: "Valeria",
-    defaultSubtab: "resumen",
+    defaultSubtab: "agenda",
   },
   lisa: {
     slug: "lisa",
     name: "Lisa",
-    role: "Marca y contenido",
+    role: "Estratega de marca y oferta",
     colorToken: "agent-lisa",
     colorSoftToken: "agent-lisa-soft",
     initial: "L",
-    tabLabel: "Lisa",
+    thumbnail: "/sb-assets/agents/lisa/thumbnail.png",
+    tabLabel: "Mi Clínica",
     defaultSubtab: "marca",
   },
-  alfa: {
-    slug: "alfa",
-    name: "Sofía",
-    role: "Agenda y reservas",
-    colorToken: "agent-alfa",
-    colorSoftToken: "agent-alfa-soft",
-    initial: "S",
-    tabLabel: "Sofía",
+  mateo: {
+    slug: "mateo",
+    name: "Mateo",
+    role: "Operaciones · agenda y pacientes del día",
+    colorToken: "agent-mateo",
+    colorSoftToken: "agent-mateo-soft",
+    initial: "M",
+    thumbnail: "/sb-assets/agents/mateo/thumbnail.png",
+    tabLabel: "Operar",
     defaultSubtab: "agenda",
   },
-  beta: {
-    slug: "beta",
-    name: "Diego",
-    role: "Captación y leads",
-    colorToken: "agent-beta",
-    colorSoftToken: "agent-beta-soft",
-    initial: "D",
-    tabLabel: "Diego",
-    defaultSubtab: "leads",
+  adrian: {
+    slug: "adrian",
+    name: "Adrián",
+    role: "Closer · califica leads y reactiva oportunidades",
+    colorToken: "agent-adrian",
+    colorSoftToken: "agent-adrian-soft",
+    initial: "A",
+    thumbnail: "/sb-assets/agents/adrian/thumbnail.png",
+    tabLabel: "Vender",
+    defaultSubtab: "inbox",
   },
-  supervisora: {
-    slug: "supervisora",
-    name: "Supervisora",
-    role: "Supervisión general",
-    colorToken: "agent-supervisora",
-    colorSoftToken: "agent-supervisora-soft",
-    initial: "S",
-    tabLabel: "Supervisora",
-    defaultSubtab: "resumen",
+  lucas: {
+    slug: "lucas",
+    name: "Lucas",
+    role: "Estratega Growth · viraliza y consigue leads",
+    colorToken: "agent-lucas",
+    colorSoftToken: "agent-lucas-soft",
+    initial: "L",
+    thumbnail: "/sb-assets/agents/lucas/thumbnail.png",
+    tabLabel: "Atraer",
+    defaultSubtab: "lanzar",
+  },
+  camila: {
+    slug: "camila",
+    name: "Camila",
+    role: "Fidelización · sube CLTV y monitorea satisfacción",
+    colorToken: "agent-camila",
+    colorSoftToken: "agent-camila-soft",
+    initial: "C",
+    thumbnail: "/sb-assets/agents/camila/thumbnail.png",
+    tabLabel: "Mantener",
+    defaultSubtab: "voz",
   },
 };
 
 /**
  * Brand-injected class resolver — LITERAL switch (see file header). Returns the
- * Tailwind class bundle the chrome atoms render (accent bg/text/border + soft bg).
+ * Tailwind class bundle the chrome atoms render. Mirrors vitalia's getAgentClasses:
+ * accentText uses the SubTab contrast exceptions (mateo/lucas → text-foreground,
+ * because yellow/near-black fail WCAG AA on their own -soft bg).
  */
 export function getDemoAgentClasses(slug: string): AgentClassBundle {
   switch (slug) {
@@ -99,26 +124,35 @@ export function getDemoAgentClasses(slug: string): AgentClassBundle {
         accentText: "text-agent-lisa",
         accentBorder: "border-agent-lisa",
       };
-    case "alfa":
+    case "mateo":
       return {
-        accentBg: "bg-agent-alfa",
-        softBg: "bg-agent-alfa-soft",
-        accentText: "text-agent-alfa",
-        accentBorder: "border-agent-alfa",
+        accentBg: "bg-agent-mateo",
+        softBg: "bg-agent-mateo-soft",
+        // #FEE209 yellow on its soft bg fails AA → text-foreground (vitalia D20).
+        accentText: "text-foreground",
+        accentBorder: "border-agent-mateo",
       };
-    case "beta":
+    case "adrian":
       return {
-        accentBg: "bg-agent-beta",
-        softBg: "bg-agent-beta-soft",
-        accentText: "text-agent-beta",
-        accentBorder: "border-agent-beta",
+        accentBg: "bg-agent-adrian",
+        softBg: "bg-agent-adrian-soft",
+        accentText: "text-agent-adrian",
+        accentBorder: "border-agent-adrian",
       };
-    case "supervisora":
+    case "lucas":
       return {
-        accentBg: "bg-agent-supervisora",
-        softBg: "bg-agent-supervisora-soft",
-        accentText: "text-agent-supervisora",
-        accentBorder: "border-agent-supervisora",
+        accentBg: "bg-agent-lucas",
+        softBg: "bg-agent-lucas-soft",
+        // #111111 near-black on its soft bg fails AA → text-foreground (vitalia D18).
+        accentText: "text-foreground",
+        accentBorder: "border-agent-lucas",
+      };
+    case "camila":
+      return {
+        accentBg: "bg-agent-camila",
+        softBg: "bg-agent-camila-soft",
+        accentText: "text-agent-camila",
+        accentBorder: "border-agent-camila",
       };
     case "valeria":
     default:
@@ -156,12 +190,12 @@ const SEED_CONVERSATIONS: ShellConversationMeta[] = [
   { id: "c3", title: "Campaña blanqueamiento", meta: "8 mensajes", group: "this_week" },
 ];
 
-/** A coherent demo conversation (agenda/turnos → delegación a Sofía). */
+/** A coherent demo conversation (agenda/turnos → delegación a Mateo·Operar). */
 const SEED_MESSAGES: ShellChatMessage[] = [
   { id: "m1", role: "bot", agent: "valeria", time: "09:14", content: "Buen día. Tienes 3 turnos sin confirmar para hoy." },
   { id: "m2", role: "user", time: "09:15", content: "Confírmalos y avísame si alguno se cae." },
-  { id: "m3", role: "delegate", fromAgent: "valeria", toAgent: "alfa", delegateMode: "Mantener" },
-  { id: "m4", role: "bot", agent: "alfa", time: "09:15", content: "Confirmé 2 de 3. La paciente de las 16:00 pidió reprogramar; te dejé 3 opciones de horario." },
+  { id: "m3", role: "delegate", fromAgent: "valeria", toAgent: "mateo", delegateMode: "Mantener" },
+  { id: "m4", role: "bot", agent: "mateo", time: "09:15", content: "Confirmé 2 de 3. La paciente de las 16:00 pidió reprogramar; te dejé 3 opciones de horario." },
   { id: "m5", role: "thinking", agent: "valeria", content: "Valeria está preparando el resumen del día…" },
 ];
 
@@ -201,39 +235,82 @@ export const useDemoChatStoreNoConvos = makeDemoChatStore("sb-demo-no-convos", [
 
 /* ── Nav fixtures (Ribbon / SubTabsBar / SubSubTabsBar) ─────────────────────── */
 
-/** Ribbon order + array form (Ribbon takes the catalog as an array). */
-export const DEMO_RIBBON_ORDER: string[] = ["valeria", "lisa", "alfa", "beta"];
+/**
+ * Ribbon order — the REAL vitalia order (Valeria is the supervisor sidebar, NOT a
+ * ribbon tab): Lisa · Mateo · Adrián · Lucas · Camila. Mirrors AGENT_RIBBON_ORDER.
+ */
+export const DEMO_RIBBON_ORDER: string[] = ["lisa", "mateo", "adrian", "lucas", "camila"];
+/** Ribbon-only catalog (5 agents, in ribbon order) — what the Ribbon iterates. */
 export const DEMO_AGENTS_ARRAY: ShellAgentDescriptor[] = DEMO_RIBBON_ORDER.map(
   (slug) => DEMO_AGENTS[slug],
 );
+/**
+ * FULL catalog (all 6, supervisor first) — what ShellLayout/AppPanelSlot pass as
+ * `agentCatalog`. The supervisor (Valeria) is NOT in the ribbon but MUST be in the
+ * catalog: ShellLayoutClient looks her up by supervisorSlug for the chat panel
+ * (`agentCatalog.find(slug==="valeria") ?? agentCatalog[0]` — without her it falls
+ * back to the first ribbon agent). Mirrors vitalia (agentCatalog=6, ribbonOrder=5).
+ */
+export const DEMO_AGENTS_ALL: ShellAgentDescriptor[] = [
+  DEMO_AGENTS.valeria,
+  ...DEMO_AGENTS_ARRAY,
+];
 
-/** Sub-tabs per agent (N2). Spanish neutro labels + emoji icons. */
+/**
+ * Sub-tabs per agent (N2) — REAL vitalia RIBBON_SUBTABS (names + emoji icons).
+ * 5 ribbon agents; Valeria has none (sidebar-only).
+ */
 export const DEMO_SUBTABS_BY_AGENT: Record<string, ShellSubTabMeta[]> = {
-  valeria: [
-    { id: "resumen", label: "Resumen", icon: "📋" },
-    { id: "agenda", label: "Agenda", icon: "📅" },
-    { id: "tareas", label: "Tareas", icon: "✅" },
-  ],
   lisa: [
-    { id: "marca", label: "Marca", icon: "🎨" },
-    { id: "contenido", label: "Contenido", icon: "📝" },
+    { id: "marca", label: "Marca", icon: "🏥" },
+    { id: "staff", label: "Staff", icon: "👨‍⚕️" },
+    { id: "servicios", label: "Servicios", icon: "🩺" },
+    { id: "compliance", label: "Compliance", icon: "🛡️" },
   ],
-  alfa: [
-    { id: "agenda", label: "Agenda", icon: "📅" },
-    { id: "reservas", label: "Reservas", icon: "🎟️" },
+  mateo: [
+    { id: "agenda", label: "Agenda", icon: "📆" },
+    { id: "pacientes", label: "Pacientes", icon: "👥" },
   ],
-  beta: [
-    { id: "leads", label: "Leads", icon: "🧲" },
-    { id: "campanas", label: "Campañas", icon: "📣" },
+  adrian: [
+    { id: "inbox", label: "Inbox", icon: "💬" },
+    { id: "embudo", label: "Embudo", icon: "🎯" },
+    { id: "recuperar", label: "Recuperar", icon: "🧊" },
+    { id: "outbound", label: "Outbound", icon: "📣" },
+    { id: "propuestas", label: "Propuestas", icon: "💼" },
+  ],
+  lucas: [
+    { id: "lanzar", label: "Lanzar", icon: "🚀" },
+    { id: "envuelo", label: "En vuelo", icon: "📡" },
+    { id: "recursos", label: "Recursos", icon: "📚" },
+    { id: "resultados", label: "Resultados", icon: "📈" },
+    { id: "mercado", label: "Mercado", icon: "🌍" },
+  ],
+  camila: [
+    { id: "voz", label: "Voz del paciente", icon: "🎤" },
+    { id: "reactivar", label: "Reactivar", icon: "🪃" },
+    { id: "multiplicar", label: "Multiplicar", icon: "🤝" },
+    { id: "reputacion", label: "Reputación", icon: "📊" },
   ],
 };
 
-/** Sub-sub-tabs por "agent.subtab" (N3-static). Sólo lisa.marca en el demo. */
+/**
+ * Sub-sub-tabs por "agent.subtab" (N3-static) — REAL vitalia AGENT_SUBSUBTABS.
+ * lisa.marca · lisa.servicios · config.cuenta.
+ */
 export const DEMO_SUBSUBTABS_BY_KEY: Record<string, ShellSubSubTabMeta[]> = {
   "lisa.marca": [
-    { id: "identidad", label: "Identidad", icon: "🎨" },
-    { id: "voz", label: "Voz", icon: "🗣️" },
-    { id: "logo", label: "Logo", icon: "🔖" },
+    { id: "identidad", label: "Identidad", icon: "🏥" },
+    { id: "voz-y-tono", label: "Voz y tono", icon: "🎙️" },
+    { id: "presencia", label: "Presencia", icon: "📍" },
+  ],
+  "lisa.servicios": [
+    { id: "catalogo", label: "Catálogo", icon: "📋" },
+    { id: "escalera", label: "Escalera", icon: "🪜" },
+  ],
+  "config.cuenta": [
+    { id: "datos", label: "Datos", icon: "🏢" },
+    { id: "preferencias", label: "Preferencias", icon: "⚙️" },
+    { id: "responsable", label: "Responsable", icon: "🔐" },
   ],
 };
 
