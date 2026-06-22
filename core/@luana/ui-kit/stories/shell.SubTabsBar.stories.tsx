@@ -86,13 +86,52 @@ export const Mateo: Story = {
 };
 
 export const Lisa: Story = {
-  name: "Lisa (Marca activa)",
+  name: "Lisa (Marca activa · 4 sub-tabs)",
   render: () => <Demo />,
   parameters: {
     nextjs: {
       navigation: {
         pathname: "/clinica/lisa/marca",
         segments: [["tenantId", "clinica"], "lisa", "marca"],
+      },
+    },
+  },
+};
+
+export const Adrian: Story = {
+  name: "Adrián (Inbox activa · 5 sub-tabs)",
+  render: () => <Demo />,
+  parameters: {
+    nextjs: {
+      navigation: {
+        pathname: "/clinica/adrian/inbox",
+        segments: [["tenantId", "clinica"], "adrian", "inbox"],
+      },
+    },
+  },
+};
+
+export const Lucas: Story = {
+  name: "Lucas (Lanzar activa · 5 sub-tabs)",
+  render: () => <Demo />,
+  parameters: {
+    nextjs: {
+      navigation: {
+        pathname: "/clinica/lucas/lanzar",
+        segments: [["tenantId", "clinica"], "lucas", "lanzar"],
+      },
+    },
+  },
+};
+
+export const Camila: Story = {
+  name: "Camila (Voz del paciente activa · 4 sub-tabs)",
+  render: () => <Demo />,
+  parameters: {
+    nextjs: {
+      navigation: {
+        pathname: "/clinica/camila/voz",
+        segments: [["tenantId", "clinica"], "camila", "voz"],
       },
     },
   },

@@ -44,14 +44,19 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+// validSlugs incluye "config" (la caja Plataforma también tiene N3: config.cuenta).
+const VALID_SLUGS = [...Object.keys(DEMO_AGENTS), "config"];
+
 const Demo = () => (
   <SubSubTabsBar
     subSubTabsByKey={DEMO_SUBSUBTABS_BY_KEY}
-    validSlugs={Object.keys(DEMO_AGENTS)}
+    validSlugs={VALID_SLUGS}
     onNavigate={() => {}}
   />
 );
 
+// ★ Sólo 3 combos agent.subtab declaran N3-static en vitalia (lisa.marca,
+//   lisa.servicios, config.cuenta). El resto NO tiene N3 → la franja no se pinta.
 export const LisaMarca: Story = {
   name: "Lisa · Marca (Voz y tono activa)",
   render: () => <Demo />,
@@ -60,6 +65,32 @@ export const LisaMarca: Story = {
       navigation: {
         pathname: "/clinica/lisa/marca/voz-y-tono",
         segments: [["tenantId", "clinica"], "lisa", "marca", "voz-y-tono"],
+      },
+    },
+  },
+};
+
+export const LisaServicios: Story = {
+  name: "Lisa · Servicios (Catálogo activa)",
+  render: () => <Demo />,
+  parameters: {
+    nextjs: {
+      navigation: {
+        pathname: "/clinica/lisa/servicios/catalogo",
+        segments: [["tenantId", "clinica"], "lisa", "servicios", "catalogo"],
+      },
+    },
+  },
+};
+
+export const ConfigCuenta: Story = {
+  name: "Plataforma · Mi cuenta (Datos activa)",
+  render: () => <Demo />,
+  parameters: {
+    nextjs: {
+      navigation: {
+        pathname: "/clinica/config/cuenta/datos",
+        segments: [["tenantId", "clinica"], "config", "cuenta", "datos"],
       },
     },
   },
