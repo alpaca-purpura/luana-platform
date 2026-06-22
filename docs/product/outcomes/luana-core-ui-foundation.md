@@ -80,6 +80,16 @@ Chris reportó (2026-06-07) que el dev-team genera cada interfaz "a su forma" �
 
 **Arranque limpio (nueva conversación):** `docs/architecture/luana-platform/design-system-homologation-HANDOFF.md`.
 
+## ★ Status update 2026-06-21 (core-ds-foundation SCAFFOLDED · inventory-first)
+
+`core-ds-foundation` **scaffolded** (`docs/product/stories/core-ds-foundation/` — antes solo nombrada acá, sin folder). Disparador: refinando el mockup de la story vitalia D11 (`vitalia-fase2-mateo-nueva-cita`, /po-ux) se confirmó que el inventario del DS **no es accesible ni mantenible** (catálogo hand-narrado sin sync · 9 `_shared.css` divergentes · drift-lint FE inexistente) → causa raíz del "local" proliferante. Chris ratificó **inventory-first → full core-ds-foundation**.
+
+**Refinamiento del scope (sobre el §2026-06-07):** Fase 0 ABSORBE explícitamente la **maquinaria de inventario** además del tokens-lock: (1) **catálogo generado** desde `@luana/ui-kit/src/index.ts` → md/json que leen skill+cockpit+architect+po-ux; (2) **mockup-kit** canónico (mockups `@import`, fin de la copia de `_shared.css`); (3) **drift-lint** = `no-arbitrary-value` + arch-test FE no-reinvento. Estas 3 hacen MANTENIBLE el inventario antes de promover.
+
+**Deltas de componentes (del audit D11) que Fase 1 absorbe:** `SegmentedControl`/`ToggleGroup` (consolida `.toggle-pill`+`.segmented`) · `EntityRow`/`EntityChip` (consolida patient-chip+doc-suggest+typeahead-item) · `PageHeader` con back-slot · REUSAR `Badge` para avail/dur (no crear) · `AvailabilityStrip` = **vitalia-shared** (no core aún, ≥2 consumers D11+D12 · /pm-vitalia owna) · `ComputedField` flag.
+
+**Estado:** `state=refining` phase=AWAIT_CHRIS_RATIFY_SCOPE. Próximo: Chris ratifica scope → `/architect` (ready package, empezando por Fase 0 que ya está des-gateada, outcome L79). Handoffs: /pm-vitalia (parkea D11 + ownea AvailabilityStrip) · /harness-issue (captura hallazgo inventario al CIL).
+
 ---
 
 
