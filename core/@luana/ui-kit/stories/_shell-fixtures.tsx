@@ -24,6 +24,8 @@ import {
   type ShellChatMessage,
   type ShellChatStoreApi,
   type ShellConversationMeta,
+  type ShellSubTabMeta,
+  type ShellSubSubTabMeta,
 } from "../src";
 import {
   createSsrSafePersistedStore,
@@ -163,13 +165,17 @@ const SEED_MESSAGES: ShellChatMessage[] = [
   { id: "m5", role: "thinking", agent: "valeria", content: "Valeria está preparando el resumen del día…" },
 ];
 
-function makeDemoChatStore(name: string, seed: ShellChatMessage[]) {
+function makeDemoChatStore(
+  name: string,
+  seed: ShellChatMessage[],
+  convos: ShellConversationMeta[] = SEED_CONVERSATIONS,
+) {
   return createSsrSafePersistedStore<ShellChatStoreApi & SsrSafeHydration>(
     (set, get) => ({
       _hasHydrated: true, // stories treat the store as ready (no useStoreHydration call)
       setHasHydrated: (v) => set({ _hasHydrated: v }),
       messages: seed,
-      conversations: SEED_CONVERSATIONS,
+      conversations: convos,
       activeAgent: "valeria",
       status: "idle",
       sendMessage: (content) =>
@@ -190,3 +196,43 @@ function makeDemoChatStore(name: string, seed: ShellChatMessage[]) {
 /** Seeded demo chat (a full conversation) + an empty one (empty state). */
 export const useDemoChatStore = makeDemoChatStore("sb-demo-chat", SEED_MESSAGES);
 export const useDemoChatStoreEmpty = makeDemoChatStore("sb-demo-chat-empty", []);
+/** No archived conversations — for the SupervisorHistory empty state (SC-13). */
+export const useDemoChatStoreNoConvos = makeDemoChatStore("sb-demo-no-convos", [], []);
+
+/* ── Nav fixtures (Ribbon / SubTabsBar / SubSubTabsBar) ─────────────────────── */
+
+/** Ribbon order + array form (Ribbon takes the catalog as an array). */
+export const DEMO_RIBBON_ORDER: string[] = ["valeria", "lisa", "alfa", "beta"];
+export const DEMO_AGENTS_ARRAY: ShellAgentDescriptor[] = DEMO_RIBBON_ORDER.map(
+  (slug) => DEMO_AGENTS[slug],
+);
+
+/** Sub-tabs per agent (N2). Spanish neutro labels + emoji icons. */
+export const DEMO_SUBTABS_BY_AGENT: Record<string, ShellSubTabMeta[]> = {
+  valeria: [
+    { id: "resumen", label: "Resumen", icon: "📋" },
+    { id: "agenda", label: "Agenda", icon: "📅" },
+    { id: "tareas", label: "Tareas", icon: "✅" },
+  ],
+  lisa: [
+    { id: "marca", label: "Marca", icon: "🎨" },
+    { id: "contenido", label: "Contenido", icon: "📝" },
+  ],
+  alfa: [
+    { id: "agenda", label: "Agenda", icon: "📅" },
+    { id: "reservas", label: "Reservas", icon: "🎟️" },
+  ],
+  beta: [
+    { id: "leads", label: "Leads", icon: "🧲" },
+    { id: "campanas", label: "Campañas", icon: "📣" },
+  ],
+};
+
+/** Sub-sub-tabs por "agent.subtab" (N3-static). Sólo lisa.marca en el demo. */
+export const DEMO_SUBSUBTABS_BY_KEY: Record<string, ShellSubSubTabMeta[]> = {
+  "lisa.marca": [
+    { id: "identidad", label: "Identidad", icon: "🎨" },
+    { id: "voz", label: "Voz", icon: "🗣️" },
+    { id: "logo", label: "Logo", icon: "🔖" },
+  ],
+};
