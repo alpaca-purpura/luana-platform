@@ -216,3 +216,19 @@ vacío (empty state). Spanish neutro.
 increment 3 = **Ribbon/RibbonTab/SubTabsBar/SubSubTabsBar + Supervisor (Sidebar/CollapsedStrip/History) + TopBarShell/
 StatusDot/TogglePill** (nav + chrome · menos store, más routing). El más complejo (`ShellLayout` con store+routing
 decorator integrado) lo dejo de último (increment 4). ¿Promuevo lo platform-only a main ahora o al cierre?
+
+### 2026-06-22 · Chris: "seguí con inc-3 y luego reviso todo yo" — inc-3 DONE
+
+**Chris (decisión 11) · ✓ APLICADO** — "seguí con el increment 3 y luego hago el review yo mismo de todo".
+
+**/dev-team · ✓ APLICADO** — inc-3 = 9 stories (Ribbon · SubTabsBar · SubSubTabsBar · SupervisorCollapsedStrip ·
+SupervisorHistory · TopBarShell · StatusDot · TogglePill · PlaceholderCard). SupervisorSidebar + AppPanelSlot van en
+inc-4 (ensamblaje, se ejercen vía ShellLayout). **El render-smoke cazó un bug real:** `react-docgen-typescript` estampa
+`displayName`/`__docgenInfo` enumerables en los objetos exportados del fixture → SubTabsBar (que hace Object.entries)
+crasheaba. Lo diagnostiqué con un probe en Chrome + lo arreglé (Record limpio desde el array de slugs). Verifiqué con
+Chrome los 4 de riesgo (Ribbon color+activo · SubTabsBar · SubSubTabsBar · SupervisorHistory). render-smoke 235/235.
+
+**/dev-team · 💡 PROPONE** — **AWAIT Chris (tu review completo):** revisá TODO en :6007 — grupos **Shell/Chat** (inc-1+2)
++ **Shell/** (Ribbon/SubTabsBar/SubSubTabsBar/SupervisorCollapsedStrip/SupervisorHistory/TopBarShell/StatusDot/
+TogglePill/PlaceholderCard, inc-3). Tras tu OK armo inc-4 = **ShellLayout** completo (el composite con todo integrado) +
+SupervisorSidebar (3 estados) + AppPanelSlot. ¿Promuevo lo platform-only a main ahora o al cierre?
