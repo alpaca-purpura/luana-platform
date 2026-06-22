@@ -155,6 +155,13 @@ from src.modules.vitalia.sales_agent.tools import (
     send_payment_link,
 )
 
+# OLA-2 "comparte" / "recomienda" — native sync (state, db)->dict tools (no async
+# bridge: public marketing data, sync DB read). share = ESC-17 pilot (2.4a); match
+# recommends the specialist for a service (2.4b).
+from src.modules.vitalia.sales_agent.tools.match_service_and_specialist import (
+    match_service_and_specialist,
+)
+
 # T-inbox-agentic-1 / T-inbox-be-6 — Adrián retract_last_message (Slice 1 inbox).
 # Real LangChain @tool decorated async fn (R23 Opus production, SHA 532228f).
 # T-inbox-be-6 mounts this tool into EP-3 so the sales_agent runtime can dispatch it.
@@ -168,9 +175,6 @@ from src.modules.vitalia.sales_agent.tools.retract_last_message import (
 from src.modules.vitalia.sales_agent.tools.send_proactive_reengagement import (
     send_proactive_reengagement,
 )
-
-# OLA-2 "comparte" — native sync (state, db)->dict tool (no async bridge needed:
-# public marketing data, sync DB read). The ESC-17 pilot.
 from src.modules.vitalia.sales_agent.tools.share_doctor_profile import (
     share_doctor_profile,
 )
@@ -765,6 +769,35 @@ def register_all(registry: ExtensionPointRegistry) -> None:
                 "required": [],
             },
             handler=share_doctor_profile,  # native sync (state, db)->dict — ESC-17 ABI
+            tool_groups=("discovery", "presentation"),
+        ),
+    )
+
+    # ───────────────────────────────────────────────────────────────────────
+    # EP-3 — match_service_and_specialist (OLA-2 "recomienda" · Tier 2.4b)
+    # ───────────────────────────────────────────────────────────────────────
+    # Per 03-arch-agentic.md § 2.2 — service_intent → product (offer) → linked
+    # doctors (offer_service_specialist_links) → primary + callbacks. NATIVE sync
+    # (state, db)->dict (public marketing data, sync DB read). discovery/presentation.
+
+    registry.sales_agent_tool_register(
+        ToolDef(
+            name=_ns("match_service_and_specialist"),
+            description=(
+                "Recommend the specialist(s) for a service the lead is interested in. "
+                "Pass service_intent (free text, e.g. 'blanqueamiento dental', 'botox'). "
+                "Returns the matched service + a primary specialist (with public profile URL "
+                "when shareable) + callback specialists. Use in discovery/presentation when "
+                "the lead names a treatment or asks who does it. Never returns PHI."
+            ),
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "service_intent": {"type": "string"},
+                },
+                "required": ["service_intent"],
+            },
+            handler=match_service_and_specialist,  # native sync (state, db)->dict — ESC-17 ABI
             tool_groups=("discovery", "presentation"),
         ),
     )
