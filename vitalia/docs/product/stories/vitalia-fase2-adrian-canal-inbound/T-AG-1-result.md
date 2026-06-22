@@ -79,4 +79,5 @@ TESTS: `tests/modules/vitalia/sales_agent/test_{operator_instruction_bridge,stat
 `tests/agentic_evals/sales_agent/goldens/otro/*.yaml` (5) · `.../personas/otro_*.yaml` (5)
 DOCS: story `T-AG-1-impl-log.md` + `T-AG-1-result.md` + `chris-input.md` · `docs/process/harness-backlog.md` (HB-92)
 
-**Commit SHA:** see chris-input.md (committed by pathspec, pushed to wip/vitalia).
+**Commit SHA:** `52dab5b6` (brand work, by pathspec) + `c818a325` (HB-92 harness capture, transversal).
+Pushed to `wip/vitalia` (`2daf7379..c818a325`). All pre-commit gates green (incl. cap cross_check_3 HARD).
