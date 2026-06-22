@@ -8,9 +8,15 @@ Per 03-arch-agentic.md § 2.2 + 02-design-agentic.md § 2.2:
 Adrián consumes engine ``core/luana-core-sales-agent/`` LangGraph DIRECTLY.
 NO parallel graph in vitalia (§3 NO se toca per sales-agent-expert).
 
-This module defines the brand-specific state extension keys that vitalia
-adds onto the engine state schema via the engine's
-``register_state_extension()`` API (consumed, NOT modified — engine read-only).
+This module defines the brand-specific state keys that vitalia writes into the
+engine's runtime state dict. The engine ``AgentState`` is a ``TypedDict`` and the
+live state object is a plain ``dict`` — brands EXTEND it by composition (writing
+these keys / nesting them under ``metadata_info``), NOT via any engine registration
+API. There is intentionally NO ``engine.register_state_extension()`` and NO change to
+the engine ``AgentState`` TypedDict (ratified contract — multibrand-graph-runtime
+proposal §4: "CERO cambio al AgentState TypedDict — las keys de marca viven en
+overlay/metadata_info"). This TypedDict is the brand-side **type contract** that gives
+vitalia code type-safety when it reads/writes those keys; the engine never imports it.
 
 Keys added (Adrián 3-tools MVP):
 - ``clinic_id`` — MANDATORY for Vitalia turns (HIPAA-lite dual filter)
@@ -66,12 +72,13 @@ VitaliaComplianceLevel = Literal["hipaa_lite"]
 class VitaliaSalesAgentStateExtension(TypedDict, total=False):
     """Brand-specific state keys for vitalia Adrián sales_agent.
 
-    Composed onto the engine sales_agent state schema via
-    ``engine.register_state_extension(VitaliaSalesAgentStateExtension)``.
+    These keys are written into the engine's runtime state ``dict`` by the inbound
+    adapter + brand tools (directly or under ``metadata_info``) — there is NO engine
+    registration step and NO change to the engine ``AgentState`` TypedDict (ratified
+    contract §4). This TypedDict only documents + type-checks the brand keys.
 
     All fields are ``total=False`` (optional) to allow gradual population
-    during the conversation lifecycle. The engine merges these keys into
-    the canonical state dict at orchestrator init.
+    during the conversation lifecycle.
 
     Per .claude/rules/tenant-isolation.md + hipaa-lite.md cardinal:
     ``clinic_id`` MUST be populated by the inbound webhook adapter BEFORE
