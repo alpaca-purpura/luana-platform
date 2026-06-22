@@ -156,3 +156,19 @@ el batch FINAL (data/specialized/molecules: calendar/chart/table/slider/progress
 timezone-select/smart-datetime-picker/rich-select/form/CollapsibleSection/detail-panel/inline-editable/
 loading-button/field-info/highlighted-text/brand-icons + el **shell organism** Ribbon/ShellLayout/etc. — más
 complejo, quizá pase propia) o querés revisar los 44 primero?
+
+### 2026-06-22 · Batch 4 (FINAL no-shell, 19 stories) — verificado 200/200 + chart fix + 1 src bug cazado
+
+**/dev-team (builder sonnet + yo verificando con Chrome) · ✓ APLICADO** — escrito el batch FINAL no-shell (19
+stories). **63 componentes totales en Storybook.** No confié en el GREEN del builder: corrí yo el render-smoke
+(**200/200 render clean**) + spot-check con Chrome de los render-riesgosos (chart/table/calendar/sonner). El Chrome
+cazó 2 cosas que el smoke NO ve (montar sin crashear ≠ rendear bien):
+- **chart con barras NEGRAS** → `preview.css` no tenía `--chart-1..5` (la story está bien, usa `var(--chart-N)`
+  como manda el canon). Lo arreglé en `.storybook/preview.css` (config, NO src). Re-verificado: barras cian+púrpura ✓.
+- **calendar con días apretados** → **src bug Tailwind v4** (`h-[--cell-size]` sintaxis v3, rota en v4; afecta la
+  app real). `forbidden_to_touch: src/**` → NO lo toqué, ticket aparte (checkpoint § Src bugs).
+
+**/dev-team · 💡 PROPONE** — **AWAIT Chris:** revisá los 63 en Storybook :6007 (per-component). Después arranco el
+**SHELL organism** como pase propio (createShellStore + decorator de store/routing — el más complejo). 3 src bugs de
+`@luana/ui-kit` flaggeados (calendar v4 · timezone-select tsc · jest-dom tsconfig) → `/pm-luana` triage, ticket aparte.
+¿Y los ~8 commits platform-only sin promover: `make promote-to-main + sync-all` ahora o batcheo al cierre?
