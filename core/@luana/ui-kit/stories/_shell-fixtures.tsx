@@ -329,3 +329,28 @@ export function buildCleanSubtabs(): Record<string, ShellSubTabMeta[]> {
     DEMO_RIBBON_ORDER.map((slug) => [slug, DEMO_SUBTABS_BY_AGENT[slug]]),
   );
 }
+
+/* ── Brand slots (logo / right cluster) — what a brand injects into TopBarShell ── */
+
+/**
+ * DemoLogo — the REAL vitalia brand logo (served at /sb-assets/brand via staticDirs)
+ * with a CSS-only light/dark swap, mirroring vitalia's LogoMark atom. A brand injects
+ * its own logo as `logoSlot`; here the catalog shows the production mark so the TopBar
+ * reads like the real app. Plain <img> (not next/image) — simplest for the catalog.
+ */
+export function DemoLogo() {
+  return (
+    <span className="inline-flex items-center" aria-label="Clínica Demo inicio">
+      <img
+        src="/sb-assets/brand/vitalia-logo.png"
+        alt=""
+        className="block h-8 w-auto dark:hidden"
+      />
+      <img
+        src="/sb-assets/brand/vitalia-logo-dark.png"
+        alt=""
+        className="hidden h-8 w-auto dark:block"
+      />
+    </span>
+  );
+}

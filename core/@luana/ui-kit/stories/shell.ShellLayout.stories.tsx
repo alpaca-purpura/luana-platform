@@ -14,6 +14,7 @@ import {
   DEMO_AGENTS_ALL,
   DEMO_RIBBON_ORDER,
   DEMO_SUBSUBTABS_BY_KEY,
+  DemoLogo,
   buildCleanSubtabs,
   getDemoAgentClasses,
   useDemoChatStore,
@@ -51,6 +52,8 @@ const SUBTABS = buildCleanSubtabs();
 const useShellDemo = createShellStore({ storageKey: "sb-shell-demo", version: 1 });
 // Closed needs its OWN key — it persists supervisorOpen:"closed".
 const useShellDemoClosed = createShellStore({ storageKey: "sb-shell-demo-closed", version: 1 });
+// Mobile drawer: own key — persists mobileDrawerOpen:true.
+const useShellDemoMobile = createShellStore({ storageKey: "sb-shell-demo-mobile", version: 1 });
 
 /** Re-apply a demo state on the frame AFTER ShellLayoutClient's hydrate merge. */
 function seedAfterHydrate(store: ShellStore, patch: Partial<ShellStoreState>): Decorator {
@@ -63,9 +66,7 @@ function seedAfterHydrate(store: ShellStore, patch: Partial<ShellStoreState>): D
   };
 }
 
-const LOGO_SLOT: ReactNode = (
-  <span className="select-none text-sm font-bold text-foreground">Clínica Demo</span>
-);
+const LOGO_SLOT: ReactNode = <DemoLogo />;
 
 const RIGHT_CLUSTER_SLOT: ReactNode = (
   <div className="flex items-center gap-2">
@@ -234,6 +235,62 @@ export const ChatConHistorial: Story = {
   name: "Chat + historial",
   args: { pathname: "/clinica/mateo/agenda", splitGroupId: "sb-shell-historial" },
   decorators: [seedAfterHydrate(useShellDemo, { supervisorOpen: "chat", historyOpen: true })],
+  parameters: {
+    nextjs: {
+      navigation: {
+        pathname: "/clinica/mateo/agenda",
+        segments: [["tenantId", "clinica"], "mateo", "agenda"],
+      },
+    },
+  },
+};
+
+/* ── Responsive (<1024) ──────────────────────────────────────────────────────────
+ * Below lg the supervisor leaves the inline split (panel collapses to 0) and becomes
+ * a drawer; the app panel takes the full width. The breakpoint is window.matchMedia,
+ * so these stories set the viewport global (resizes the iframe). In the headless
+ * render-smoke (fixed 1280) they render the desktop layout without crashing; open them
+ * in the viewport tool — or resize — to see the responsive shell.
+ */
+export const Tablet: Story = {
+  name: "Tablet (834 · supervisor → drawer)",
+  args: { pathname: "/clinica/mateo/agenda", splitGroupId: "sb-shell-tablet" },
+  globals: { viewport: { value: "tablet" } },
+  parameters: {
+    nextjs: {
+      navigation: {
+        pathname: "/clinica/mateo/agenda",
+        segments: [["tenantId", "clinica"], "mateo", "agenda"],
+      },
+    },
+  },
+};
+
+export const Movil: Story = {
+  name: "Móvil (390 · app a pantalla completa)",
+  args: { pathname: "/clinica/mateo/agenda", splitGroupId: "sb-shell-movil" },
+  globals: { viewport: { value: "mobile" } },
+  parameters: {
+    nextjs: {
+      navigation: {
+        pathname: "/clinica/mateo/agenda",
+        segments: [["tenantId", "clinica"], "mateo", "agenda"],
+      },
+    },
+  },
+};
+
+export const MovilDrawerAbierto: Story = {
+  name: "Móvil · drawer del supervisor abierto",
+  args: {
+    pathname: "/clinica/mateo/agenda",
+    splitGroupId: "sb-shell-movil-drawer",
+    useShellStore: useShellDemoMobile,
+  },
+  globals: { viewport: { value: "mobile" } },
+  // Drawer monta sólo con isMobile (matchMedia <1024) + mobileDrawerOpen. Seed
+  // post-hydrate (la persistencia lo pisa a false en mount).
+  decorators: [seedAfterHydrate(useShellDemoMobile, { mobileDrawerOpen: true })],
   parameters: {
     nextjs: {
       navigation: {
