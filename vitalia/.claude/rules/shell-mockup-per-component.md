@@ -1,5 +1,7 @@
 # Vitalia — Shell Mockup-per-Component Protocol
 
+> **⚠️ SUPERSEDED 2026-06-22 (ratificado Chris) — por Storybook = SSoT visual** (`docs/architecture/luana-platform/design-system-canon.md § 5` + `.claude/rules/frontend-visual-fidelity.md § Storybook`). El mockup HTML por-componente (`.html` espejo) ya **NO** es el mecanismo: el diseño + la ratificación visual **parten de Storybook** (`core/@luana/ui-kit`, el componente REAL); lo net-new se **propone + promueve** al kit + su story. Este protocolo queda como referencia histórica — **NO aplicarlo en stories nuevas**.
+
 **Overlay:** extiende `.claude/rules/` raíz Luana platform (refuerza `frontend-fsd.md` + paradigm v4 § Conv 1 DISCOVERY workflow).
 **Brand:** vitalia (Salud + Bienestar — shell-organism agéntico)
 **Scope:** stories Vitalia Fase 1+2 que construyen componentes UI shell-organism.

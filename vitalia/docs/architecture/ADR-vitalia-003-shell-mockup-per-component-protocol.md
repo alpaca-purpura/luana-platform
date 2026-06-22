@@ -1,7 +1,8 @@
 ---
 id: ADR-vitalia-003
 title: Protocolo mockup-per-component como gate bloqueante pre-/architect (shell-organism)
-status: Accepted
+status: Superseded
+superseded_by: "Storybook = SSoT visual — design-system-canon.md § 5 (2026-06-22, ratificado Chris)"
 date: 2026-05-22
 deciders: [/po-ux, /pm-vitalia, Chris]
 brand: vitalia
