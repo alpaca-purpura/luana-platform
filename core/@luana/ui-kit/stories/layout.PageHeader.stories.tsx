@@ -5,7 +5,7 @@ import { PageHeader } from "../src/layout/page";
 import { Button } from "../src/button";
 
 const meta = {
-  title: "Layout/PageHeader",
+  title: "Templates/PageHeader",
   component: PageHeader,
   tags: ["autodocs"],
   parameters: {

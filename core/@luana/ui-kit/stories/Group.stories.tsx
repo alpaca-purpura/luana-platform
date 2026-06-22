@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs";
 import { Group, GroupHeader, WhatForChip } from "../src/Group";
 
 const meta = {
-  title: "Group/Group",
+  title: "Molecules/Group",
   component: Group,
   tags: ["autodocs"],
   parameters: {

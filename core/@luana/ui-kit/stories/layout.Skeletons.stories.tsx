@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs";
 import { ListPageSkeleton, FormPageSkeleton } from "../src/layout/skeletons";
 
 const meta = {
-  title: "Layout/Skeletons",
+  title: "Templates/Skeletons",
   component: ListPageSkeleton,
   tags: ["autodocs"],
   parameters: {

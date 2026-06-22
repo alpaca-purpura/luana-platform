@@ -70,6 +70,8 @@ Si el flow diseñado requiere modificar engine (`core/luana-core-*/`) → STOP, 
 | Accessibility WCAG | Voice fidelity + persona robustness |
 | Output: `01-spec.md` UNIFICADO | Output: `02-design-agentic.md` (consume `01-spec.md` previo de `/po`) |
 
+> **Componentes UI dentro de un flujo agéntico** (burbujas, cards, botones del chat): **NO se inventan** — salen de **Storybook** (`core/@luana/ui-kit`, SSoT visual · canon §5 + `.claude/rules/frontend-visual-fidelity.md`). Si el flujo necesita una pieza UI nueva, se delega a `/po-ux` (que parte de Storybook) o se propone para promover al kit + story. Cero CSS a mano en el diseño agéntico.
+
 ## Inputs obligatorios
 
 1. `<brand>` (REQUIRED, ver sección arriba)

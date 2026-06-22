@@ -12,7 +12,7 @@ import {
 } from "../src/form";
 
 const meta = {
-  title: "Inputs/RichSelect",
+  title: "Molecules/RichSelect",
   component: RichSelect,
   tags: ["autodocs"],
   parameters: {

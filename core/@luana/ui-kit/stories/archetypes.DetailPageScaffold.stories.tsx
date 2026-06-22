@@ -21,7 +21,7 @@ const subnav = (
 );
 
 const meta = {
-  title: "Archetypes/DetailPageScaffold",
+  title: "Templates/Archetypes/DetailPageScaffold",
   component: DetailPageScaffold,
   tags: ["autodocs"],
   parameters: {

@@ -5,7 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../src/popover";
 import { Button } from "../src/button";
 
 const meta = {
-  title: "Overlays/Popover",
+  title: "Molecules/Popover",
   component: Popover,
   tags: ["autodocs"],
   parameters: {

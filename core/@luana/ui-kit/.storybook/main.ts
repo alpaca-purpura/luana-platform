@@ -16,6 +16,10 @@ import type { StorybookConfig } from "@storybook/nextjs";
  */
 const config: StorybookConfig = {
   stories: ["../stories/**/*.stories.@(ts|tsx)"],
+  // Demo avatar assets (real vitalia agent thumbnails) served at /sb-assets so the
+  // shell catalog stories render the production faces. Self-contained: the PNGs live
+  // in stories/assets (copied, not referenced cross-package).
+  staticDirs: [{ from: "../stories/assets", to: "/sb-assets" }],
   addons: ["@storybook/addon-docs", "@storybook/addon-a11y"],
   framework: {
     name: "@storybook/nextjs",

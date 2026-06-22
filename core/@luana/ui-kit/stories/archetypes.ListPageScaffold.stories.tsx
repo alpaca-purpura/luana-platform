@@ -44,7 +44,7 @@ const header = (
 );
 
 const meta = {
-  title: "Archetypes/ListPageScaffold",
+  title: "Templates/Archetypes/ListPageScaffold",
   component: ListPageScaffold,
   tags: ["autodocs"],
   parameters: {

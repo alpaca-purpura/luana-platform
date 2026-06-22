@@ -16,7 +16,7 @@ const SearchInput = () => (
 );
 
 const meta = {
-  title: "Layout/Toolbar",
+  title: "Templates/Toolbar",
   component: Toolbar,
   tags: ["autodocs"],
   parameters: {

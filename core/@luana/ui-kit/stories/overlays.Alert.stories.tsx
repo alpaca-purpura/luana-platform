@@ -4,7 +4,7 @@ import { AlertCircle, CheckCircle2, Info } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "../src/alert";
 
 const meta = {
-  title: "Overlays/Alert",
+  title: "Molecules/Alert",
   component: Alert,
   tags: ["autodocs"],
   parameters: {

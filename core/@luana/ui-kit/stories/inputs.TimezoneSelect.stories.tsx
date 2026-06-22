@@ -4,7 +4,7 @@ import * as React from "react";
 import { TimezoneSelect } from "../src/timezone-select";
 
 const meta = {
-  title: "Inputs/TimezoneSelect",
+  title: "Molecules/TimezoneSelect",
   component: TimezoneSelect,
   tags: ["autodocs"],
   parameters: {

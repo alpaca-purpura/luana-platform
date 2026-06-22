@@ -10,7 +10,7 @@ import {
 import { Button } from "../src/button";
 
 const meta = {
-  title: "Overlays/Tooltip",
+  title: "Molecules/Tooltip",
   component: Tooltip,
   tags: ["autodocs"],
   parameters: {

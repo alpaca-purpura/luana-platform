@@ -433,12 +433,15 @@ Referencias:
 
 > SSoT: `.claude/rules/frontend-visual-fidelity.md`. Carril A self-fix aplica (swap a átomo/token/estado cubierto por test existente).
 
-- [ ] **Design-system-first:** reutiliza átomos `components/ui/` + moléculas `components/shared/` + tokens (SSoT `{brand}/frontend/src/app/globals.css` + `tailwind.config.ts` — NO `@luana/design-tokens`, que solo exporta z-index). Si existe `{brand}-design-system` (ej. `vitalia-design-system`), ése es el inventario autoritativo a contrastar. NINGUNA primitiva reinventada, NINGÚN hex/px hardcodeado que ya es token. (Reinventar átomo → FAIL, también cae en Cat 13 mirror.)
+- [ ] **Storybook-first / composición (SSoT visual · canon §5):** el FE se **compuso desde `@luana/ui-kit`** (las stories que `/architect` citó), no a mano. Reutiliza átomos `components/ui/` + moléculas `components/shared/` + tokens (SSoT `{brand}/frontend/src/app/globals.css` + `tailwind.config.ts` — NO `@luana/design-tokens`, que solo exporta z-index). El catálogo navegable de referencia = **Storybook** (`core/@luana/ui-kit`). NINGUNA primitiva reinventada, NINGÚN hex/px hardcodeado que ya es token. (Reinventar átomo → FAIL, también cae en Cat 13 mirror.)
+- [ ] **Promote check (net-new shared):** si la historia introdujo una primitiva shared genuinamente nueva, verificá que se **promovió a `core/@luana/ui-kit` + su story** (no quedó local en `features/{m}/` que driftea). Pieza shared local sin promover → CHANGES_REQUESTED.
 - [ ] **Mockup adherence:** elementos clave del mockup (`01-spec § Wireframes` + `mockups/`) presentes + estados (empty/loading/error/success) renderizados. Verificación: Playwright visual scoped (`04-validators § visual`) o `chrome-devtools-verify`.
 - [ ] **Scope discipline:** NO se construyó fuera de lo que scopean los scenarios de `01-spec.md` (el mockup puede mostrar de más; exceso = scope creep + posible isla).
 
 **FAIL** if:
 - Primitiva Shadcn reinventada (componente nuevo que duplica `components/ui/` existente) — también cae Cat 13 mirror
+- **UI maquetada a mano / con CSS inventado en vez de compuesta desde `@luana/ui-kit` (Storybook SSoT, canon §5)** — o copia de `_shared.css`/mockup-kit (MUERTO)
+- **Primitiva shared net-new dejada local** en `features/{m}/` sin promover a `@luana/ui-kit` + story (drift garantizado)
 - Token hardcodeado (hex/px literal para valor que ya es token CSS/Tailwind)
 - Scope creep visual: se construyó UI fuera de lo que scopean los scenarios de `01-spec.md` (exceso visible = posible isla)
 - Ausencia de estados required (default/loading/empty/error) en surface async user-facing

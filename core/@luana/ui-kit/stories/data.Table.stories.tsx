@@ -12,7 +12,7 @@ import {
 import { Badge } from "../src/badge";
 
 const meta = {
-  title: "Data/Table",
+  title: "Organisms/Table",
   component: Table,
   tags: ["autodocs"],
   parameters: {

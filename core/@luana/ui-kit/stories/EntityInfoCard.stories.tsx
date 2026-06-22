@@ -12,7 +12,7 @@ import {
  * Data is realistic LatAm clinic content (doctors), Spanish neutro.
  */
 const meta = {
-  title: "Lista / Detalle/EntityInfoCard",
+  title: "Organisms/EntityInfoCard",
   component: EntityInfoCard,
   tags: ["autodocs"],
   parameters: {
@@ -45,7 +45,7 @@ export const Default: Story = {
     title: "Dra. Valentina Suárez",
     subtitle: "Cardiología",
     initials: "VS",
-    accentClass: "border-t-agent-alfa",
+    accentClass: "border-t-agent-lisa",
     metrics: [
       { label: "Pacientes", value: "248" },
       { label: "Agenda hoy", value: "12" },
@@ -71,7 +71,7 @@ export const WithIcon: Story = {
     title: "Consultorio Odontológico Sonríe",
     subtitle: "Sucursal Palermo · Buenos Aires",
     icon: <Stethoscope className="h-6 w-6" />,
-    accentClass: "border-t-agent-beta",
+    accentClass: "border-t-agent-adrian",
     metrics: [
       { label: "Profesionales", value: "6" },
       { label: "Turnos/sem.", value: "184" },

@@ -14,7 +14,7 @@ import { Input } from "../src/input";
 import { Label } from "../src/label";
 
 const meta = {
-  title: "Overlays/Sheet",
+  title: "Organisms/Sheet",
   component: Sheet,
   tags: ["autodocs"],
   parameters: {
