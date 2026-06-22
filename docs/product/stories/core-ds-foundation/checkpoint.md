@@ -2,8 +2,9 @@
 story_id: core-ds-foundation
 type: platform-engineering                          # engine @luana/ui-kit + harness (catálogo/mockup-kit/lint). NO brand UI.
 owner: /pm-luana
-state: refining
-phase: AWAIT_CHRIS_RATIFY_SCOPE                     # scope consolidado escrito; Chris ratifica → /architect ready package
+state: developing
+phase: AWAIT_CHRIS_VERIFY                            # T-2 batch 1+2+3 = 44 componentes en Storybook :6007 (136/136 render-smoke verde, verificado por mí); falta batch final (data/specialized/molecules/shell)
+next_action: "Chris revisa los 44 en Storybook :6007 (Docs OK) · y/o continúo el batch final (~20 + shell organism)"
 parent_outcome: luana-core-ui-foundation           # docs/product/outcomes/luana-core-ui-foundation.md (§2026-06-07 ya la nombra)
 release: null                                       # engine/infra — no entra en release de marca
 cap_target: null                                    # infra del design system, no capability de producto
@@ -13,9 +14,10 @@ created: 2026-06-21
 priority: HIGH
 estimated_effort: Fase 0 (machinery) ~3-5 días · Fase 1 (componentes+showcase) ~2 sem · Fase 2 (arch-test) ~2-3 días
 
-# Contrato visual YA ratificado (no hay nuevo mockup gate)
+# Contrato visual ratificado (canon = contratos) + per-component visual-review gate (ratificado Chris 2026-06-21)
 visual_contract: design-system-canon.md (ratified Chris 2026-06-08) + vitalia-ds-showcase/mockups/showcase.html
-ratified_visual_by_chris: true                      # el showcase + canon SON la ratificación visual del DS
+ratified_visual_by_chris: true                      # el showcase + canon ratificaron los CONTRATOS del DS
+per_component_visual_review_gate: true              # ADD 2026-06-21: cada pieza nueva/consolidada se revisa en el mockup-kit ANTES de build (ADR-003 + R-FID). Ver § Visual-review gate. NO sustituye el canon — lo concreta pieza por pieza.
 
 dependencies:
   hard: []                                          # Fase 0 (machinery) no depende de nada de feature
@@ -72,6 +74,51 @@ de "local" + UX no uniforme cross-brand. Chris ratificó **inventory-first → f
 - 🟡 **vitalia-shared (NO core aún, NO features/mateo local):** `AvailabilityStrip`/day-timeline — nace en vitalia (D11 AC-8 + D12 vista-semana = ≥2 consumers), lift-candidate al 2º brand. **/pm-vitalia** lo owna (handoff).
 - 🟡 **ADAPT + flag (1 consumer, no abstraer):** `ComputedField` (disabled Input + hint) — promotion-candidate al 2º consumer.
 
+## Visual-review gate (per-component · Batch 1→2→3 · ratificado Chris 2026-06-21)
+
+Cada pieza **nueva o consolidada** del shared se revisa VISUALMENTE en el mockup-kit **ANTES** de construirla
+en `@luana/ui-kit` (ADR-003 mockup-per-component + R-FID). El canon ratificó los *contratos*; este gate ratifica
+cada *render concreto*. Las piezas se etiquetan **EXISTS / MODIFY / CREATE / REUSE / ADAPT** para que la revisión
+sea "mirar + tocar", no "aprobar un rebuild". **Cardinal:** MODIFICAR lo existente, NO reinventar · crear SOLO lo
+que falta · cero abstracción especulativa (nada de interface/factory/config para 1 uso).
+
+Orden — un artefacto reviewable por batch:
+
+- **BATCH 1 — mockup-kit (el sustrato; primero).** `[MODIFY/consolidar]` unificar los **9 `_shared.css`** divergentes
+  en UN mockup-kit canónico (mejor como base + dedup), espejo de `vitalia/frontend/src/app/globals.css`, **derivado
+  de la fuente única de tokens** (`@luana/design-tokens`, no copia → no driftea). Chris lo aprueba **una vez** → es el
+  lienzo del resto. Cero tokens/clases inventadas.
+- **BATCH 2 — layout-primitives (MAYORÍA EXISTE → review-only, casi cero build).** PageContainer · PageHeader ·
+  PageSection · PageContentStack · Toolbar · FilterBar · EmptyState · ErrorState · Pagination · DetailLayout ·
+  FormLayout · skeletons · page-archetypes · EntityWorkspaceLayout · EntitySubNavBar · EntityInfoCard · EntityPicker ·
+  Select · Badge · Avatar. Se revisan **todos juntos** en la `/showcase` viva (o render del mockup-kit) — una pantalla,
+  confirmar. Polish cosmético solo si Chris lo flagea. **NO se reconstruyen.** Único `[MODIFY]`: **`PageHeader` → slot
+  de back-affordance** (D11 "hoja alcanzada desde un padre"; **NO es `EntitySubNavBar`**; add de prop, no componente nuevo).
+- **BATCH 3 — deltas D11 (lo nuevo · review UNO POR UNO con su mockup ANTES de construir):**
+  - `SegmentedControl`/`ToggleGroup` `[CREATE/consolidar]` — reemplaza `.toggle-pill` (Día/Semana/Mes) + `.segmented` (Canal). Crear una, matar dos.
+  - `EntityRow`/`EntityChip` `[CREATE/consolidar]` — cubre patient-chip + doc-suggest rows + typeahead items. **Antes de crear: chequear si es extraíble del item-render de `EntityPicker`** (no duplicar).
+  - avail-chip + dur-badge `[REUSE · cero create]` — variantes semánticas de `Badge`/status-pill. Literal usar `Badge`.
+  - `AvailabilityStrip`/day-timeline `[CREATE · vitalia-shared, NO core aún]` — genuinamente nuevo, UN molecule. Nace en vitalia (≥2 consumers D11+D12), **`/pm-vitalia` owna**, lift-candidate después.
+  - `ComputedField` `[ADAPT · sin abstracción]` — disabled Input + hint inline. Extraer a componente recién al 2º uso.
+
+## ★ Harness update — DEFERIDO (aplicar cuando TODO el set esté en Storybook · pedido Chris 2026-06-22 "OJO")
+
+Cuando Storybook cubra **absolutamente todos** los componentes, actualizar el harness para que el flujo de
+diseño funcional/UX/discovery sepa que Storybook EXISTE y parta SIEMPRE de la misma base:
+
+- **`/po-ux` + `/ux-agentico` + quien toque diseño/UI**: el SSoT visual = Storybook. Para armar un mockup, NO
+  se inventa CSS ni se copia `_shared.css` — se **parte del HTML renderizado de las stories** (vía
+  `build-storybook` → `storybook-static/` · cada story es DOM real). El componente es TSX pero po-ux lo consume
+  **como HTML** para componer el mockup → misma base que el build.
+- **`/architect`**: al cerrar el spec, cita **qué componente/story usar + cómo** (link a la story) → el ready
+  package nombra el lego exacto. "Lo que ves en Storybook = lo que se programa".
+- **Mecanismo a definir** (parte del harness update): cómo exactamente po-ux toma el HTML de una story
+  (storybook-static export · iframe `viewMode=story` · addon que exporte HTML). Resolver al aplicar.
+- **Reemplaza/reencuadra**: `shell-mockup-per-component.md` (vitalia+nicolify · hoy = `_shared.css` espejo CSS) +
+  `frontend-visual-fidelity.md` D1 + skills po-ux/ux-agentico/architect. Es un cambio cross-harness → va al CIL
+  (`/harness-issue` → harness-backlog) y se ejecuta en lote, NUNCA mid-build (regla HLP).
+- **Precondición HARD:** set Storybook COMPLETO (este es el gate para arrancar el harness update).
+
 ## Handoffs requeridos (anti-creep — `/pm-luana` NO los ejecuta)
 
 - **/pm-vitalia** — parkear D11 (anotar soft-dep nueva → core-ds-foundation en `vitalia/.../vitalia-fase2-mateo-nueva-cita/checkpoint.md`) · ownear `AvailabilityStrip` vitalia-shared + `{brand}-ds-adoption`.
@@ -80,4 +127,8 @@ de "local" + UX no uniforme cross-brand. Chris ratificó **inventory-first → f
 
 ## Bitácora
 
-- **2026-06-21 — /pm-luana: scaffold.** Story creada (no existía). Disparada por el audit UI de D11 (/po-ux) + ratificación de Chris "inventory-first → full core-ds-foundation". Scope = Fase 0 machinery (catálogo + mockup-kit + drift-lint + tokens-lock) primero + Fase 1 componentes (incl. deltas D11) + Fase 2 arch-test. Contrato durable = `design-system-canon.md`. state=refining, phase=AWAIT_CHRIS_RATIFY_SCOPE. **Próximo:** Chris ratifica el scope consolidado → `/architect` ready package (empezando por Fase 0).
+- **2026-06-21 — /pm-luana: scaffold.** Story creada (no existía). Disparada por el audit UI de D11 (/po-ux) + ratificación de Chris "inventory-first → full core-ds-foundation". Scope = Fase 0 machinery (catálogo + mockup-kit + drift-lint + tokens-lock) primero + Fase 1 componentes (incl. deltas D11) + Fase 2 arch-test. Contrato durable = `design-system-canon.md`. state=refining, phase=AWAIT_CHRIS_RATIFY_SCOPE.
+- **2026-06-22 — /dev-team (verify loop): Batch 2 (16 stories) + Docs-addon fix + render-gate real + 1 crash fixeado.** Construido el page/layout lego (layout-primitives + archetypes + Group + autosave). **Bugs reales cazados entrando yo a Storybook con Chrome (no confiando en el "GREEN" del builder):** (1) pestaña Docs en blanco para TODOS → faltaba `@storybook/addon-docs` (SB10 ya no lo bundlea) · fix `9f56820a`; (2) `archetypes-listpagescaffold--con-contenido` CRASHEABA (`title.charAt` con title undefined — la story pasaba `name=` en vez de `title=` a EntityInfoCard) · fix `9127b111`. **El gate no los cazaba:** `build-storybook EXIT=0` + el `_smoke` viejo (solo index.json/registration) daban verde; `@storybook/test-runner` muere en SB10 (channel error). Reescribí `_smoke_storybook.mjs` como **render-smoke headless real** (chromium carga cada story, falla en pageerror/React-render-error; sin el falso-positivo del template oculto de SB). **69/69 stories rendean limpio.** Gate durable en 04-validators (`sb_render_smoke`). Learning (verificación real ≠ build verde, extiende verification-real-not-200) → capturar al cierre. **Pendiente:** ~30 componentes restantes (átomos/overlays/data/specialized/shell) en próximos batches, ya con el render-gate confiable.
+- **2026-06-22 — /architect: Fase 0 ready package cerrado (approach corregido · componentes REALES).** Chris eligió **Storybook en `@luana/ui-kit`** como host de render vivo. Package reducido (technical-story): `06-tickets.yaml` (T-1 catálogo generado del source real · T-2 Storybook render-real centerpiece · T-3 drift-lint no-arbitrary + arch-test no-reinvento) + `04-validators.yaml` (verification_nature: técnica · verificación-por-efecto). **Storybook = la superficie del per-component visual-review gate** (Batch 1 base · Batch 2 review-only navegando Storybook · Batch 3 deltas como stories nuevas antes de merge) — reemplaza el preview.html CSS muerto. Catálogo = índice máquina (no duplica props · viven en Storybook autodocs). tokens-scale = verify-only (ya existe). **state=refined→ready.** **Próximo:** /dev-team build (T-2 centerpiece).
+- **2026-06-22 — /architect: mockup-kit CSS = approach EQUIVOCADO (revertido).** Construí un `kit.css` brand-agnostic var()-based (consolidando los 9 `_shared.css`) + `tokens.vitalia.css` + `preview.html`. **Chris lo rechazó (correcto):** es un **espejo CSS estático** que re-implementa (`.ecard`/`.epicker`/`.entitynav`) componentes que YA EXISTEN como código real (`EntityInfoCard`/`EntityPicker`/`EntityWorkspaceLayout` en `@luana/ui-kit`) → duplicación + "foto del momento" que driftea. NO renderiza los componentes reales. Es exactamente el "el HTML miente" que el canon §5/§6.8 quiere MATAR, no consolidar. **Archivos removidos.** El error: traté "9 _shared.css → 1" como el objetivo, cuando el objetivo real es **eliminar el espejo y renderizar/catalogar los componentes REALES**. Recon válido que sobrevive: los componentes Fase 1 (Entity*/Picker/archetypes/layout/TogglePill/autosave) + tokens-scale (`@luana/design-tokens` 0.2.0) YA EXISTEN → Fase 0 real = catálogo de lo REAL + render vivo de lo REAL (no un mirror). **AWAIT Chris:** elegir el host de render vivo (showcase route vs Storybook vs catálogo-solo-ahora) → produzco el ready package Fase 0 correcto.
+- **2026-06-21 — /pm-luana: scope ratificado + visual-review gate registrado.** Chris ratificó el scope consolidado **as-is** + el **per-component visual-review gate** (Batch 1→2→3, ADR-003 + R-FID — cada pieza nueva/consolidada se ve en el mockup-kit antes de build; ver § Visual-review gate). Reconcilia el viejo "no hay nuevo mockup gate": el canon ratificó los contratos, este gate los concreta pieza por pieza. **state=refining→refined, phase=READY_FOR_ARCHITECT.** Decisión de promote: `558cd564` (scaffold, pure platform/docs, cero `{brand}/**`) se **batchea** al cierre de sesión (`make promote-to-main + sync-all`) junto con los commits platform/docs de esta sesión. **Próximo:** `/architect <brand>: platform` → ready package empezando por **Fase 0** (des-gated). Spec-equivalente = `design-system-canon.md` + `design-system-inventory-best-of-best.md` + este checkpoint (esta story NO tiene 01-spec.md, es platform-engineering). Fase 1 sigue gated tras shell-lift + stories abiertas; cada ticket de componente Fase 1 lleva el visual-review gate.
