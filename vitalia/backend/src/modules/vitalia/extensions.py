@@ -143,6 +143,12 @@ from src.modules.vitalia.copilot.tools import (
     simulate_personality,
 )
 from src.modules.vitalia.offer.biblioteca_seed import MEDICAL_SERVICES_V1_PRESETS
+
+# ESC-17 (Tier 2.4a) — the engine sales graph dispatches tools SYNC as
+# `tool_fn(state, db)`. Vitalia's real EP-3 handlers are async StructuredTools →
+# NOT callable that way. `structured_tool_adapter` wraps each one as a sync
+# (state, db)->dict handler (the engine ABI is the port; the brand adapts).
+from src.modules.vitalia.sales_agent.tool_bridge import structured_tool_adapter
 from src.modules.vitalia.sales_agent.tools import (
     reschedule_appointment,
     screening_questions,
@@ -161,6 +167,12 @@ from src.modules.vitalia.sales_agent.tools.retract_last_message import (
 # throttle/compliance gate/audit log/outbox event handled by the service.
 from src.modules.vitalia.sales_agent.tools.send_proactive_reengagement import (
     send_proactive_reengagement,
+)
+
+# OLA-2 "comparte" — native sync (state, db)->dict tool (no async bridge needed:
+# public marketing data, sync DB read). The ESC-17 pilot.
+from src.modules.vitalia.sales_agent.tools.share_doctor_profile import (
+    share_doctor_profile,
 )
 
 # Module-level smoke: each registry exposes at least one slot (Slice 1 floor).
@@ -414,7 +426,7 @@ def register_all(registry: ExtensionPointRegistry) -> None:
                 },
                 "required": ["draft_id", "tenant_id"],
             },
-            handler=extract_tenant_context,
+            handler=structured_tool_adapter(extract_tenant_context),  # ESC-17: sync (state,db)->dict adapter
             tool_groups=("wizard", "copilot", "onboarding"),
         ),
     )
@@ -441,7 +453,7 @@ def register_all(registry: ExtensionPointRegistry) -> None:
                 },
                 "required": ["draft_id", "tenant_id", "slot_id", "value"],
             },
-            handler=confirm_slot,
+            handler=structured_tool_adapter(confirm_slot),  # ESC-17: sync (state,db)->dict adapter
             tool_groups=("wizard", "copilot", "onboarding"),
         ),
     )
@@ -463,7 +475,7 @@ def register_all(registry: ExtensionPointRegistry) -> None:
                 },
                 "required": ["tenant_id", "profile_partial", "scenario"],
             },
-            handler=simulate_personality,
+            handler=structured_tool_adapter(simulate_personality),  # ESC-17: sync (state,db)->dict adapter
             tool_groups=("wizard", "copilot", "personality_preview"),
         ),
     )
@@ -485,7 +497,7 @@ def register_all(registry: ExtensionPointRegistry) -> None:
                 },
                 "required": ["draft_id", "tenant_id", "user_id"],
             },
-            handler=complete_onboarding,
+            handler=structured_tool_adapter(complete_onboarding),  # ESC-17: sync (state,db)->dict adapter
             tool_groups=("wizard", "copilot", "onboarding"),
         ),
     )
@@ -522,7 +534,7 @@ def register_all(registry: ExtensionPointRegistry) -> None:
                 },
                 "required": ["lead_id", "vertical", "tenant_id", "clinic_id"],
             },
-            handler=screening_questions,
+            handler=structured_tool_adapter(screening_questions),  # ESC-17: sync (state,db)->dict adapter
             tool_groups=("sales_agent", "vertical_medical", "screening"),
         ),
     )
@@ -559,7 +571,7 @@ def register_all(registry: ExtensionPointRegistry) -> None:
                     "clinic_id",
                 ],
             },
-            handler=send_payment_link,
+            handler=structured_tool_adapter(send_payment_link),  # ESC-17: sync (state,db)->dict adapter
             tool_groups=("sales_agent", "vertical_medical", "payment", "booking"),
         ),
     )
@@ -590,7 +602,7 @@ def register_all(registry: ExtensionPointRegistry) -> None:
                     "clinic_id",
                 ],
             },
-            handler=reschedule_appointment,
+            handler=structured_tool_adapter(reschedule_appointment),  # ESC-17: sync (state,db)->dict adapter
             tool_groups=("sales_agent", "vertical_medical", "scheduling", "rescheduling"),
         ),
     )
@@ -666,7 +678,7 @@ def register_all(registry: ExtensionPointRegistry) -> None:
                     "triggered_by_user_id",
                 ],
             },
-            handler=send_proactive_reengagement,
+            handler=structured_tool_adapter(send_proactive_reengagement),  # ESC-17: sync (state,db)->dict adapter
             tool_groups=("sales_agent", "vertical_medical", "fidelizacion", "re_engagement"),
         ),
     )
@@ -719,8 +731,41 @@ def register_all(registry: ExtensionPointRegistry) -> None:
                     "reason",
                 ],
             },
-            handler=retract_last_message,
+            handler=structured_tool_adapter(retract_last_message),  # ESC-17: sync (state,db)->dict adapter
             tool_groups=("sales_agent", "vertical_medical", "inbox", "retract"),
+        ),
+    )
+
+    # ───────────────────────────────────────────────────────────────────────
+    # EP-3 — share_doctor_profile (OLA-2 "comparte" · ESC-17 pilot)
+    # ───────────────────────────────────────────────────────────────────────
+    # Per 03-arch-agentic.md § 2.2 — Adrián shares a doctor's PUBLIC profile URL
+    # (/d/{clinic_slug}/{public_slug}). NATIVE sync (state, db)->dict handler
+    # (public marketing data, sync DB read) — the cleanest EP-3 ABI shape, no
+    # async bridge. tool_groups double as the stage scope (discovery/presentation).
+
+    registry.sales_agent_tool_register(
+        ToolDef(
+            name=_ns("share_doctor_profile"),
+            description=(
+                "Share the PUBLIC profile link of a clinic doctor (the doctor's public "
+                "page /d/{clinic}/{doctor}). Use when the lead asks who will attend them, "
+                "or to build trust by presenting the specialist. Only doctors marked "
+                "'visible in landing' are shareable. Optional args: doctor_id (specific "
+                "doctor) or specialty/service_intent (match by specialty). Returns the URL "
+                "+ doctor name — never PHI."
+            ),
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "doctor_id": {"type": ["string", "null"], "format": "uuid"},
+                    "specialty": {"type": ["string", "null"]},
+                    "service_intent": {"type": ["string", "null"]},
+                },
+                "required": [],
+            },
+            handler=share_doctor_profile,  # native sync (state, db)->dict — ESC-17 ABI
+            tool_groups=("discovery", "presentation"),
         ),
     )
 
