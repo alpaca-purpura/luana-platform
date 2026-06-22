@@ -38,8 +38,43 @@ make dev-app-vitalia                   # dev-app.vitalialat.com (Chrome DevTools
 ## D5 · Plomería scheduling (SC-10) — sin el book agentic (lift-gated)
 - Vía API/seed creá un hold con TTL corto → corré el sweep → el turno se libera + el `availability_slot` vuelve a libre + evento al inbox. *(El disparo desde el grafo = OLA 2.)*
 
-## Fuera de esta demo (OLA 2 · lift /pm-luana)
-`book_appointment` / `match_service_and_specialist` / `share_doctor_profile` — bloqueados por ESC-1/2/3 (engine TOOL_REGISTRY no mergea EP-3 · scheduler resolver hardcodea 'internal' · STAGE_TOOL_SCOPE hardcoded). Se construyen cuando el lift aterrice.
+## OLA 2 — tools de marca (ACTUALIZADO 2026-06-22 · post lift loop)
+
+El lift (ESC-1/2/3) está DONE + ESC-17 (ABI handler) FIXED. Estado real de los 3 verbos:
+
+| Verbo | Tool | Estado | Efecto real probado |
+|---|---|---|---|
+| **comparte** | `vitalia.share_doctor_profile` | ✅ **LIVE** | URL pública real `https://dev-app.vitalialat.com/d/sanare-principal/dra-ana-garcia-mendoza` |
+| **recomienda** | `vitalia.match_service_and_specialist` | ✅ **LIVE** | "limpieza dental" → "Limpieza dental profunda" → Ana + URL; "botox" → "Botox facial" → Ana; inexistente → not_found |
+| **agenda** | `vitalia.book_appointment` | 🟡 wired, **bloqueado ESC-19** | scheduling create-lane incompleta + 2 tablas appointment (ver proposal esc_19) |
+
+### Verificar que share/match EJECUTAN (seam real, determinístico)
+Ejerce el seam como el grafo (`node_tool_executor` → `merged_tools()[name](state, db)`), registry real + DB dev real:
+```bash
+docker exec luana-dev-vitalia_backend_dev-1 bash -lc "cd /workspace/vitalia/backend && /workspace/.venv/bin/python - <<'PY'
+from luana_core_extension_sdk._adapters import _SalesAgentToolRegistryAdapter
+from luana_core_extension_sdk.extension_points import ExtensionPointRegistry
+from luana_core_sales_agent.application.tools.registry import ToolRegistry
+from src.modules.vitalia.extensions import register_all
+tr=ToolRegistry(); reg=ExtensionPointRegistry(sales_agent_tool_registry_adapter=_SalesAgentToolRegistryAdapter(tr)); register_all(reg)
+m=tr.merged_tools(); T='e69a691d-070e-5caf-a053-6e74642ec100'
+print(m['vitalia.match_service_and_specialist']({'tenant_id':T,'_pending_tool':{'args':{'service_intent':'limpieza dental'}}}, db=None))
+print(m['vitalia.share_doctor_profile']({'tenant_id':T,'_pending_tool':{'args':{'specialty':'Odontologia'}}}, db=None))
+PY"
+```
+Esperado: ambos `status: success` con la URL/recomendación real. **Prueba que los tools de marca de Adrián ejecutan de verdad** (bar tool-execution del end-state CUMPLIDO).
+
+### ★ F-path finding (2026-06-22) — advertised + executable ≠ autonomously dispatched
+En el demo de chat real, el **LLM no despachó** share/match: 3 turnos explícitos (incl.
+"recomendame el especialista y mandame el link de su perfil"), **0 `[TOOL_REQUEST]`
+emitidos**, respuestas conversacionales (a veces off-topic). Los tools están advertised
+(`_extension_tools_hint` los renderiza) + executable (arriba), pero el specialist LLM
+(DeepSeek/Kimi, protocolo `[TOOL_REQUEST]` por texto) **no los llama** para estos intents.
+→ Gap de **comportamiento agéntico**: el gate real del end-state autónomo es el LLM
+emitiendo el tool-call en conversación. Tuning = persona/prompt + eval goldens
+`tool-trajectory`/`G-objection-trust` (hoy deferred) + posible model routing —
+**sales-agent-expert flagship, stake-asimétrico, FOLLOW-UP** (NO hack de prompt sin goldens).
+Extiende `verification-real-not-200` + embudo.
 
 ## Ya live-verificado por el build (no necesitás re-correr)
 - 5 goldens agentic vs **Postgres real** (honor-mode · screening-gate DERIVAR_EMERGENCIA · objection-trust · ethical no-dark-patterns · operator-instruction steering) — T-AG-1.

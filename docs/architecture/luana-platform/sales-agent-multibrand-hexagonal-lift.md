@@ -214,6 +214,14 @@ TDD (RED first) → impl → ruff → adversarial subagent review → net-new-re
     cleanly; revisit after ESC-19.
   - **END-STATE note:** "recomienda" (match) + "comparte" (share) are LIVE real brand tools — the loop's
     tool-execution bar is already met. "agenda" (book) waits on the ESC-19 scheduling decision.
+  - ★★ **F-path finding (2026-06-22) — autonomous dispatch is the next rung.** Verifying the *end-state*
+    (Adrián dispatches share/match in a real chat) showed the LLM emits **0 `[TOOL_REQUEST]`** across 3
+    explicit Telegram turns — tools advertised + executable, but the specialist LLM (DeepSeek/Kimi, text
+    `[TOOL_REQUEST]` protocol) doesn't call them. New rung: registered → advertised → executable →
+    **autonomously dispatched**. The last rung is an agentic-behavior property tuned + verified by eval
+    goldens (`tool-trajectory`/`G-objection-trust`, currently deferred) — sales-agent-expert flagship,
+    stake-asymmetric, FOLLOW-UP (no prompt hack without goldens). Evidence + seam-exercise proof in the
+    story `demo-script.md` § F-path finding; learning `docs/learnings/2026-06-22-tools-advertised-executable-not-dispatched.md`.
 - **Tier 3** (Base split) — PENDING (likely escalate w/ sub-phases; blast radius ×4).
 
 ### ESC-17 — EP-3 tool handler ABI mismatch (registered ≠ executable) 🔴 NEW (2026-06-22)
