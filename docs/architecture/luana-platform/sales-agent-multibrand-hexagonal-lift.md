@@ -169,7 +169,41 @@ TDD (RED first) → impl → ruff → adversarial subagent review → net-new-re
   §4 — DIVERGES from the design's blanket "delete", surfaced w/ rationale). Deleted genuinely-orphan
   `sales_agent/prompts/` (loaders, zero callers) + `sales_agent/personas/` (5 yaml, no loader); live
   voice path is BrandVoicePort slot-5. Backend reloads healthy; zero dangling imports.
-- **Tier 2.4** (OLA-2 tool handlers) — PENDING. Reading canal-inbound 03-arch/06-tickets/04-validators.
+- **Tier 2.4** (OLA-2 tool handlers) — BLOCKED by ESC-17, split into 2.4a → 2.4b (below). PAUSED + escalated.
 - **Tier 3** (Base split) — PENDING (likely escalate w/ sub-phases; blast radius ×4).
+
+### ESC-17 — EP-3 tool handler ABI mismatch (registered ≠ executable) 🔴 NEW (2026-06-22)
+
+Discovered in Tier 2.4 pre-flight (verify-before-build). The engine dispatch
+(`agents/sales/nodes.py::node_tool_executor`) calls every tool as **`tool_fn(state, db=state.get("_db"))`** —
+sync, positional `state`, args read FROM state (the LLM's `[TOOL_REQUEST]` args are ignored except for dedup).
+All engine tools match: `def tool_check_schedule(state, db=None) -> dict`. But **all 9 of vitalia's "real" EP-3
+handlers are LangChain `@tool` StructuredTools** (async, Pydantic `args_schema`). Empirically
+`screening_questions(state, db=None)` → `TypeError: 'StructuredTool' object is not callable`. So every brand
+tool **errors on dispatch and never executes** (the 4 `_not_implemented_yet` plain-fn placeholders are the only
+callable ones — they degrade gracefully). 846388a6's "real tools dispatchable" was *present in `merged_tools()`*,
+not *callable under the engine ABI* — **registered ≠ executable** (arch-green ≠ runtime; embudo pattern).
+Learning: `docs/learnings/2026-06-22-ep3-tool-handler-abi-mismatch.md`.
+
+**Fix = the brand registers sync `(state, db) -> dict` ADAPTERS (the engine ABI is the port; brand adapts).**
+The adapter: extract args from `state` (state-driven convention) → bridge to the async service (footgun:
+event-loop-already-running if `asyncio.run` inside the async stack → use a sync session or thread-offload, per
+03-arch-agentic §2.1) → return a plain dict. HIPAA-sensitive (booking/PHI) → builder-agentic flagship + a
+focused mini-design.
+
+### Revised Tier 2.4 plan (sub-phased)
+
+- **2.4a — EP-3 handler ABI (ESC-17 fix).** Define the `(state, db) -> dict` brand-adapter contract + the
+  state→args extraction map. Convert the existing 9 vitalia tools to register sync adapters (keep the
+  StructuredTools as the inner impl, or unwrap to plain async services). Add an **execution** test that calls a
+  registered handler exactly as `node_tool_executor` does and asserts a non-error result; add an arch test that
+  every EP-3 handler is a plain sync callable (not StructuredTool/coroutine). Live-verify: force a real tool
+  dispatch via webhook + read logs for the tool result (not just `processing_response_chunks`). **Owner:
+  builder-agentic (R23 flagship).**
+- **2.4b — OLA-2 tools (depends on 2.4a).** `VitaliaSchedulerProvider` (sync Protocol, async-bridge) +
+  `match_service_and_specialist` + `share_doctor_profile` (trivial) + `book_appointment` (portable base
+  `agentic/tools/appointment_reschedule_with_doctor.py::propose_and_book`; deprecate that duplicate route) +
+  eval goldens (book-happy/no-isla/consulta/race/hold-expira). Deps verified present: doctor model + public
+  `/d/[clinica-slug]/[doctor-slug]` route + `offer_service_specialist_links` + scheduling create-appointment.
 - **Governance** (migrations 049-pattern + seed can_use_platform_keys + uv lock fastembed) — PENDING.
 - **Promote+sync** (make promote-to-main + sync-all + downstream ×4 + proposal→migrated) — PENDING.

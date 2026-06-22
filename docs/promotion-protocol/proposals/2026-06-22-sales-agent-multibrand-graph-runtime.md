@@ -46,9 +46,28 @@ phase_2:
     services via their ports. The dispatch/advertise/scope seam is now LIVE (a registered brand tool is
     dispatchable + advertised + stage-gated); what's left is the brand-side business logic of the tools.
   next: >-
-    Read canal-inbound 03-arch.md + 06-tickets.yaml + 04-validators.yaml for the exact contracts of
-    book/match/share (OLA-2) + T-tools-1..4. Build TDD + live-verify each, then promote core SHAs to main
-    + sync-all + downstream regression ×4, then mark this proposal migrated.
+    Fix ESC-17 (handler ABI) FIRST (sub-phase 2.4a), then build book/match/share (2.4b), then promote.
+esc_17:                           # NEW wall — discovered in Tier 2.4 pre-flight (verify-before-build), 2026-06-22
+  severity: critical              # END-STATE blocker: no brand tool actually executes
+  class: "registered != executable (arch-green != runtime · embudo pattern)"
+  package: core/luana-core-sales-agent  # the ABI; the wrong-shaped handlers are brand-side (vitalia/extensions.py)
+  problem: >-
+    node_tool_executor dispatches `tool_fn(state, db=state.get("_db"))` (sync, state-driven). Every engine tool
+    matches (`def tool_x(state, db=None) -> dict`). But all 9 of vitalia's "real" EP-3 handlers are LangChain
+    @tool StructuredTools (async, Pydantic args). Empirically `screening_questions(state, db=None)` raises
+    `TypeError: 'StructuredTool' object is not callable` → dispatch's except returns {"status":"error"} → the
+    tool never runs. The 4 `_not_implemented_yet` plain-fn placeholders are the only callable EP-3 handlers.
+    846388a6's "real tools dispatchable" verified registry-presence, not ABI-callability.
+  fix: >-
+    Brand registers sync `(state, db) -> dict` ADAPTERS (engine ABI = port; brand adapts). Adapter extracts args
+    from state → bridges to the async service (event-loop footgun: no asyncio.run inside the async stack) →
+    returns a dict. Add an EXECUTION test (call handler as node_tool_executor does) + an arch test (every EP-3
+    handler is a plain sync callable, not StructuredTool/coroutine). builder-agentic flagship (R23, HIPAA).
+  status: pending
+  learning: docs/learnings/2026-06-22-ep3-tool-handler-abi-mismatch.md
+# ★ phase_2 is NOT mergeable-for-execution until ESC-17 is fixed: the dispatch/advertise/scope seam is live
+# (a tool is found + advertised + stage-gated) but the handlers can't be CALLED. proposal stays `accepted`
+# (NOT migrated) — runtime bar (a real brand tool executes live) still unmet, same lesson as ESC-7.
 phasing: >-
   Phase 1 (runtime · ESC-4/5/6) → grafo corre + Adrián responde (TESTEABLE: mensaje Telegram → reply).
   Phase 2 (features · ESC-1/2/3) → book/match/share (desbloquea OLA-2). Chris testea tras Phase 1.
