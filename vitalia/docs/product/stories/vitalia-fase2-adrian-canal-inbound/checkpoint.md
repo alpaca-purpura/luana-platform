@@ -9,10 +9,11 @@ capability: adrian.inbox      # EXTIENDE la cap del inbox (loop inbound la activ
 state: developed          # 2026-06-21: OLA 1 (carril cero-engine) construido — T-BE-1/2/3 + T-AG-1 + T-FE-1 pushed, suites combinadas GREEN
 phase: AWAIT_CHRIS_VERIFY  # ★ G · proceso v5 — Chris ejerce el loop Telegram live ANTES del auditor (no auto-handoff)
 architecture_pattern: ADR-vitalia-004
-last_modified: 2026-06-21
+last_modified: 2026-06-22
 ratified_by_chris: true   # diseño v3 (02-design-agentic) + spec v6 (01-spec) ratificados Chris 2026-06-21
 autonomous_mode: false    # agentic + PHI = stake-asimétrico; gate G (Chris-verify live Telegram) obligatorio
-arch_verdict: BLOCKED-PARTIAL   # 03-arch.md § Engine-boundary escalations (ESC-1/2/3) — ver next_action
+arch_verdict: BLOCKED-PARTIAL   # 03-arch.md § Engine-boundary escalations — ver next_action
+engine_lift_phase1: code-merged-runtime-BLOCKED   # ★ 2026-06-22 (/pm-vitalia, reconciled tras live-verify): Phase 1 lift (ESC-4/5/6) en main ff0b9345 + sync wip/vitalia + migración 049 aplicada + 6/6 ESC arch tests GREEN + container tiene PromptVersion.tenant_id. PERO Chris escribió al bot y NO responde → el grafo NO corre: ESC-7 (engine core/luana-core-platform crm.py:214 LeadModel.appointments→"AppointmentModel" colgado, clase inexistente en vitalia → configure_mappers crashea → cascada "Could not fetch tenant"). El G SIGUE BLOQUEADO. arch-verde ≠ runtime (mi marca anterior "destrabado" fue prematura). ESC-7 = engine fix → /pm-luana (brand no toca core). Puede haber más capas onion. Phase 2 (ESC-1/2/3 · OLA-2) sigue gated aparte.
 reconciled: false         # /pm-vitalia lo pone true en R (tras tu signoff) — precondición del auditor
 chris_verify:
   required: true
@@ -26,9 +27,9 @@ dod_evidence:
   - action: "set-instruction endpoint + honor-mode bridge ejercidos (integración) (T-BE-3)"
     observed: "instrucción persiste metadata_info + bridge resume_objective (HB-92 gap cerrado) · audit row · 0 outbound al lead"
     backend_log: "24/24 tests GREEN + audit_sync/response_model arch PASS"
-  pending_chris_G:
-    - "loop Telegram round-trip real (SC-1): mensaje real → reply Adrián + fila conversación + trace + costo (needs bot dev nicolify_dev_bot + tunnel)"
-    - "scheduling sweep/slot-marking live (SC-10) contra Postgres dev con migración 047/048 aplicada"
+pending_chris_G:
+  - "loop Telegram round-trip real (SC-1): mensaje real → reply Adrián + fila conversación + trace + costo (needs bot dev nicolify_dev_bot + tunnel)"
+  - "scheduling sweep/slot-marking live (SC-10) contra Postgres dev con migración 047/048 aplicada"
 chris_decision_2026-06-21: "OLA 1 build-local-ya + OLA 2 lift-en-paralelo (ratificado Chris vía /architect). /dev-team builda carril cero-engine T-BE-1/2/3+T-AG-1+T-FE-1 → G → auditor → merge slice 1. T-LIFT-1 (ESC-1/2/3) → /pm-luana en worktree core efímero (lane paralela). T-AG-2/3/4/5 esperan el lift → slice 2."
 channel_scope: telegram-first   # Chris 2026-06-04 — WhatsApp/IG = follow-up (sin API hoy)
 gateway_improvement: out-of-scope   # mejora del LLM gateway = item /pm-luana aparte (toca engine)
