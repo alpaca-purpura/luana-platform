@@ -29,13 +29,18 @@ class PromptLoader:
 
     def __init__(
         self,
-        templates_dir: str = "src/modules/sales_agent/infrastructure/prompts/templates",
+        templates_dir: str | None = None,
     ) -> None:
         """Initialize instance."""
         # 1. Configurar File System Loader (Fallback)
-        base_path = Path.cwd()
-        self.templates_dir = templates_dir
-        full_path = str(base_path / templates_dir)
+        # Default: templates shipped WITH the engine package — cwd-independent, multibrand-safe.
+        # Override (explicit param): absolute as-is, relative resolved against cwd (back-compat).
+        if templates_dir is None:
+            full_path = str(Path(__file__).resolve().parent / "templates")
+        else:
+            _p = Path(templates_dir)
+            full_path = str(_p if _p.is_absolute() else Path.cwd() / _p)
+        self.templates_dir = full_path
 
         self.fs_env = Environment(
             loader=FileSystemLoader(full_path),

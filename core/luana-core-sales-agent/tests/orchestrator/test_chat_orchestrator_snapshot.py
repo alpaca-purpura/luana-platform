@@ -24,7 +24,7 @@ from __future__ import annotations
 import pytest
 from luana_core_platform.domain.messages import IncomingMessage
 
-from tests.modules.sales_agent.orchestrator._chat_flow_snapshot_helpers import (
+from tests.orchestrator._chat_flow_snapshot_helpers import (
     TENANT_ID,
     FlowCapture,
     assert_matches_snapshot,
