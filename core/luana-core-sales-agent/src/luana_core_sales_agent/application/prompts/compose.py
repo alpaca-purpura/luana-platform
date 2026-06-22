@@ -240,19 +240,60 @@ def _extension_tools_hint() -> str:
     lines: list[str] = [
         "# Herramientas de marca",
         "",
-        "Estas herramientas las provee la marca para su vertical. Llámalas por su "
-        "nombre EXACTO (incluye el prefijo de marca, p. ej. `vitalia.xxx`) con el "
-        "mismo bloque `[TOOL_REQUEST: {...}]`. Aplican las mismas reglas duras: nunca "
-        "inventes argumentos; si el tool falla, comunícalo con honestidad.",
+        "Estas herramientas las provee la marca para su vertical. **Si el prospecto pide "
+        "o necesita algo que una de estas herramientas cubre, USALA en vez de responder "
+        "de memoria** — terminá tu mensaje con UN bloque `[TOOL_REQUEST: {...}]` usando el "
+        "nombre EXACTO (con prefijo de marca). Leé la descripción para saber cuándo aplica. "
+        "Nunca inventes el nombre; si el tool falla, comunicálo con honestidad.",
         "",
     ]
     for name in sorted(tools):
         # Collapse internal whitespace/newlines so a multi-line description can't
         # break the one-bullet-per-tool markdown (purely cosmetic; the value is
         # static per-process either way, so cache stability never depended on it).
-        desc = " ".join((tools[name].description or "").split())
+        tool = tools[name]
+        desc = " ".join((tool.description or "").split())
         lines.append(f"- `{name}` — {desc}" if desc else f"- `{name}`")
+        # Concrete imperative example (matches the proven specialist_closer pattern —
+        # models follow few-shot examples far more reliably than abstract directives).
+        # Args derived DYNAMICALLY from the tool's own input_schema (brand-agnostic:
+        # the engine never hardcodes a brand tool's args), minus state-injected keys
+        # (tenant_id/clinic_id/lead_id/… come from state, not the LLM). Static per
+        # process → cache-safe.
+        example_args = _example_tool_args(getattr(tool, "input_schema", None))
+        lines.append(
+            f'  Ejemplo: [TOOL_REQUEST: {{"tool": "{name}", "args": {example_args}}}]'
+        )
     return "\n".join(lines)
+
+
+# Args the engine injects from per-turn state — the LLM must NOT supply them, so they
+# are excluded from the rendered example (mirror of tool_bridge authoritative/fallback
+# keys; keep in sync if those change).
+_STATE_INJECTED_ARG_KEYS: frozenset[str] = frozenset(
+    {"tenant_id", "clinic_id", "lead_id", "user_id", "conversation_id"},
+)
+
+
+def _example_tool_args(input_schema: dict | None) -> str:
+    """Render a minimal JSON example of the LLM-supplied args for a brand tool.
+
+    Brand-agnostic: reads the tool's own ``input_schema.properties``, drops the
+    state-injected keys, and shows up to 3 remaining arg names with ``"<...>"``
+    placeholders. Empty → ``{}`` (the tool is fully state-driven). Stable per
+    process (the schema is fixed at registration) → cache-safe.
+    """
+    props: dict = {}
+    if isinstance(input_schema, dict):
+        raw = input_schema.get("properties")
+        if isinstance(raw, dict):
+            props = raw
+    llm_keys = [k for k in props if k not in _STATE_INJECTED_ARG_KEYS]
+    if not llm_keys:
+        return "{}"
+    shown = llm_keys[:3]
+    body = ", ".join(f'"{k}": "<...>"' for k in shown)
+    return "{" + body + "}"
 
 
 def _compose_tools_hint() -> str:
