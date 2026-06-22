@@ -142,9 +142,21 @@ Reemplaza el `<select>` nativo del browser (feo, no-tokenizado). Componente cust
 
 ---
 
-## 5. `/showcase` route (mecanismo durable · R-FID)
+## 5. Storybook = SSoT visual (render vivo · R-FID · cement 2026-06-22, ratificado Chris)
 
-El showcase durable = una **ruta en la app real** (`/showcase` o Storybook) que renderiza los **componentes REALES** de `@luana/ui-kit` → "lo que ves ES lo que es" **por construcción** + guard de regresión visual. El `.html` estático (`vitalia-ds-showcase`) es el **espejo derivado** que se usó para ratificar la dirección; se reemplaza por el route al construir Fase 1. (R-FID, ADR-014.)
+El catálogo de los **componentes REALES** vive en **Storybook** (`core/@luana/ui-kit`), construido con `pnpm --filter @luana/ui-kit build-storybook` → `storybook-static/` (HTML real: cada story = DOM del componente real que la marca consume vía `@luana/ui-kit`) o servido en dev (`pnpm --filter @luana/ui-kit storybook --port 6007`). **Es la ÚNICA fuente de verdad visual de la plataforma** — "lo que ves en Storybook = lo que se programa", por construcción (cero drift). Cada story trae tab **Docs** (props reales + "Cuándo usarlo"/"Cuándo NO").
+
+**SUPERSEDED (mecanismos muertos — el "HTML que miente" que esto mata):** `_shared.css` espejo · mockup-kit CSS · `preview.html` estático · `vitalia-ds-showcase/*.html` · el protocolo per-brand `shell-mockup-per-component.md` (ADR-vitalia-003). Ya no se maqueta a mano ni se copia CSS: se parte del componente REAL renderizado.
+
+### El bucle de diseño UI (los 5 actores lo siguen — binding)
+
+1. **Partir de Storybook.** `/po-ux` y `/ux-agentico`, al maquetar, **arrancan del set de Storybook** — el TSX se consume como **HTML renderizado** (`storybook-static/` o iframe `…/iframe.html?id=<story>&viewMode=story`) para componer el mockup desde la **misma base que el build**. NO se inventa CSS ni se copia `_shared.css`.
+2. **No limitarse (Storybook es el piso, no el techo).** Si falta una pieza, o existe algo genuinamente **mejor**, se **PROPONE** (mockup + justificación + test del 2º consumidor). El catálogo no congela el diseño: lo encauza.
+3. **Promover de vuelta.** Lo que se usa y prueba bien se **PROMUEVE a `@luana/ui-kit` + su story** (vía `core-ds-*` / promotion gate `/pm-luana`) para que **futuras historias lo reusen**. Cero "local" que driftee — una pieza net-new que queda en `features/{m}/` sin promover es deuda.
+4. **`/architect` cita la story.** El ready package (`03-arch.md § FE` + `04-validators.yaml`) **nombra qué story usar + link**; una pieza net-new se marca `PROMOTE` (deliverable del ticket = crear el componente en `@luana/ui-kit` + su story ANTES del merge).
+5. **`builder-frontend` construye DESDE la story citada** (único lego = `@luana/ui-kit`) + promueve el net-new al kit con story. **`auditor-frontend` verifica composición** contra Storybook + que el net-new se promovió con story (no quedó local) → si no, CHANGES_REQUESTED.
+
+> SSoT enforce-able de este bucle: `.claude/rules/frontend-visual-fidelity.md` (lo citan los 5 actores). (R-FID, ADR-014 §5.)
 
 ---
 

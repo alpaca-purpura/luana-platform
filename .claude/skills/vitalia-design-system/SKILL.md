@@ -79,7 +79,7 @@ Cuando un componente/sub-tab aterriza dentro del shell, el wrapper de contexto (
 | ValeriaChat completo | `vitalia/docs/archive/2026/stories/vitalia-fase1-valeria-chat-skeleton/mockups/valeria-chat-sample.html` |
 | ValeriaRail (collapsed) | `vitalia/docs/archive/2026/stories/vitalia-fase1-valeria-rail-history/mockups/valeria-rail.html` |
 
-SSoT del por qué: `vitalia/.claude/rules/shell-mockup-per-component.md § Shell wrapper fidelity`.
+SSoT visual (cement 2026-06-22): **Storybook** (`core/@luana/ui-kit`, canon §5) — el shell vive en `@luana/ui-kit`; navegá las stories `Shell/*` para el componente REAL. El viejo `shell-mockup-per-component.md § Shell wrapper fidelity` (mockups `.html`) quedó **SUPERSEDED** por Storybook.
 
 ## 5 · Catálogo de agentes — colores + assets (★★ v1.2 2026-05-30)
 
@@ -97,7 +97,7 @@ Cada agente especialista: `--agent-{slug}` + `--agent-{slug}-soft`. Cada dir de 
 
 ## 6 · Gates de proceso (cumplir, no re-litigar)
 
-- **ADR-vitalia-003** (`shell-mockup-per-component.md`): componente UI nuevo → mockup HTML por-componente ratificado por Chris ANTES de `refining→refined`. `/architect` REFUSE sin `ratified_visual_by_chris: true`.
+- **ADR-vitalia-003** (`shell-mockup-per-component.md`): **SUPERSEDED 2026-06-22 por Storybook (canon §5).** La ratificación visual ya NO es un mockup HTML por-componente — se hace **partiendo de Storybook** (`@luana/ui-kit`, el componente REAL) y promoviendo lo net-new al kit + story. Ver `.claude/rules/frontend-visual-fidelity.md § Storybook`.
 - **ADR-vitalia-004** (`shell-feature-architecture-mandatory.md`): sub-tab nueva → patrón de 9 secciones; `01-spec.md`/`03-arch.md`/`checkpoint.md` citan `architecture_pattern: ADR-vitalia-004`.
 - **ADR-vitalia-006**: SSR-safe persisted store (zustand persist).
 
