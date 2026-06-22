@@ -560,6 +560,7 @@ Si 03-arch.md NO flipea defaults: marcar `[x] No aplica — 03-arch.md no flipea
 21. **TDD-mandatory** — every contract section lists the test surface that must go RED first.
 22. **`structlog`, no `print`/`logging`** in any contract Python snippet.
 23. **Idempotency on writes** — POST/PUT routes that may retry MUST specify idempotency key strategy (header, dedup table, or natural key).
+24. **Storybook = SSoT visual (FE · canon §5)** — `03-arch.md § FE` MUST cite, per component, the Storybook story to use (`@luana/ui-kit`, story id + `…/iframe.html?id=<story>` link) — "what you see in Storybook = what gets built". A genuinely-new shared primitive (not yet in the kit) is marked **`PROMOTE`**: the building ticket's deliverable includes creating it in `core/@luana/ui-kit` + a story BEFORE merge (Notarized in `Integration design (CONN)`), never a local re-implementation that drifts. Net-new is allowed (Storybook is the floor, not the ceiling) but must be promoted. FE surface without a cited story → not `ready`. (`.claude/rules/frontend-visual-fidelity.md § Storybook`.)
 </design_rules>
 
 <anti_cross_brand_pollution>

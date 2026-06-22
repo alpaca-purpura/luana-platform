@@ -749,6 +749,8 @@ Ref: `.claude/rules/auditor-self-fix-policy.md` + `.claude/rules/definition-of-d
 - ❌ Auditor "rápido fix" que toca 4 archivos porque "es trivial" → refactor camuflado, Caso B
 - ❌ Auditor llena `audit_iterations` con self-fix sin progreso real (cap 4, después Caso B forzado)
 - ❌ Auditor ignorando categorías de mirror detection
+- ❌ Aprobar FE maquetado a mano / con CSS inventado en vez de compuesto desde `@luana/ui-kit` (Storybook = SSoT visual, canon §5) — o que copia `_shared.css`/mockup-kit (MUERTO)
+- ❌ Aprobar una primitiva shared net-new dejada local en `features/{m}/` sin promover a `@luana/ui-kit` + story (Cat 16 promote check)
 - ❌ Auditor saltarse cross-module audit (R3 downstream regression)
 - ❌ Self-fix > 4 iter (debe escalar a Caso B spawn dev-team)
 - ❌ `audit_iterations` > 3 sin ESCALATE Chris (Caso D obligatorio)
