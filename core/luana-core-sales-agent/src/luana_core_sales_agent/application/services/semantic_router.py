@@ -19,6 +19,7 @@ knowledge_builder don't move.
 from __future__ import annotations
 
 import logging
+import os
 from typing import TYPE_CHECKING, Self
 
 import numpy as np
@@ -33,6 +34,13 @@ if TYPE_CHECKING:
     from uuid import UUID
 
 logger = logging.getLogger(__name__)
+
+# ESC-15/16 (2026-06-22): embedding-model cache dir is env-configurable (was hardcoded
+# "/app/model_cache" — a dead path outside the brand container, forcing a runtime HF
+# download that blocked the event loop). Brands point FASTEMBED_CACHE_PATH at a persistent
+# volume (model baked/pre-cached at build) so the model loads from disk, never downloads
+# at request time. Default keeps the legacy path for back-compat.
+_EMBEDDING_CACHE_DIR = os.environ.get("FASTEMBED_CACHE_PATH") or "/app/model_cache"
 
 
 class SemanticRouter:
@@ -66,14 +74,14 @@ class SemanticRouter:
         try:
             cls._model = TextEmbedding(
                 model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
-                cache_dir="/app/model_cache",
+                cache_dir=_EMBEDDING_CACHE_DIR,
             )
         except Exception as e:  # noqa: BLE001 — agent resilience
             logger.warning(
                 "Could not load multilingual model, falling back to default: %s",
                 e,
             )
-            cls._model = TextEmbedding(cache_dir="/app/model_cache")
+            cls._model = TextEmbedding(cache_dir=_EMBEDDING_CACHE_DIR)
 
     @classmethod
     def _initialize_system_routes(cls) -> None:

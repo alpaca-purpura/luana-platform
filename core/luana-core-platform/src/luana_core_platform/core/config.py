@@ -6,7 +6,7 @@ import re
 import warnings
 from functools import lru_cache
 
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings
 
 from luana_core_platform.core.enums import AIProvider, ModelRole, PromptSource
@@ -201,8 +201,10 @@ class Settings(BaseSettings):
     # Redis — empty tolerated; get_redis_client() degrades gracefully to None
     REDIS_URL: str = ""  # e.g. redis://redis:6379/0
 
-    # Qdrant — empty under brands that configure via QDRANT_HOST/PORT instead
-    QDRANT_URL: str = ""  # e.g. http://qdrant:6333
+    # Qdrant — brands may set QDRANT_URL directly, OR QDRANT_HOST/QDRANT_PORT (derived below).
+    QDRANT_URL: str = ""  # e.g. http://qdrant:6333 — explicit wins over HOST/PORT
+    QDRANT_HOST: str = ""  # e.g. qdrant — engine derives QDRANT_URL from HOST/PORT when URL empty
+    QDRANT_PORT: int = 6333
     QDRANT_API_KEY: str = ""  # Optional if running locally without auth, but required for prod
     # Brand-specific — MUST override en {brand}/.env.dev (e.g., visionarias_knowledge for nicolify
     # legacy, vitalia_knowledge, comunify_knowledge, etc.). Engine no asume brand (proposal
@@ -211,6 +213,19 @@ class Settings(BaseSettings):
     QDRANT_COLLECTION_HYBRID: str = ""
     QDRANT_VECTOR_SIZE: int = 3072  # Default for text-embedding-3-large
     QDRANT_SPARSE_MODEL: str = "Qdrant/bm25"  # or "prithivida/Splade_PP_en_v1"
+
+    @model_validator(mode="after")
+    def _derive_qdrant_url(self) -> "Settings":
+        """Derive QDRANT_URL from QDRANT_HOST/QDRANT_PORT when not set explicitly.
+
+        ESC (2026-06-22): brands configure Qdrant via QDRANT_HOST/QDRANT_PORT but the engine
+        vector clients read QDRANT_URL; without reconciliation the URL stays "" →
+        QdrantClient(url="") → RAG silently misconfigured. Single canonical accessor:
+        explicit QDRANT_URL wins; otherwise compose http://{host}:{port}.
+        """
+        if not self.QDRANT_URL and self.QDRANT_HOST:
+            self.QDRANT_URL = f"http://{self.QDRANT_HOST}:{self.QDRANT_PORT}"
+        return self
 
     # ── Database ─────────────────────────────────────────────────────────
     # DATABASE_URL is the CANONICAL multibrand env (matches each brand's

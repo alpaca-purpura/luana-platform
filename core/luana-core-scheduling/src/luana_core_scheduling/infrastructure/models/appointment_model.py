@@ -39,4 +39,10 @@ class AppointmentModel(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-    lead = relationship("LeadModel", back_populates="appointments")
+    # ESC-7 (2026-06-22 · multibrand-graph-runtime): one-directional (was
+    # back_populates="appointments"). The reverse side LeadModel.appointments was removed
+    # from engine CRM because platform→scheduling is the wrong coupling direction (platform
+    # must not navigate into scheduling, and the bare-string target crashed configure_mappers
+    # in brand processes that import crm but not scheduling). scheduling→platform IS an allowed
+    # dependency, so AppointmentModel keeps a read-only nav to LeadModel with no back_populates.
+    lead = relationship("LeadModel")

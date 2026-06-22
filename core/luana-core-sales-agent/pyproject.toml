@@ -15,7 +15,7 @@ dependencies = [
     "jinja2>=3.1",                 # prompts templates (specialist_*, supervisor_routing.j2)
     "tiktoken>=0.7",               # token counter
     "litellm>=1.40",
-    "fastembed>=0.2.0",            # T-12 batch 4 — semantic_router.py local embeddings for intent classification
+    "fastembed==0.5.1",            # T-12 batch 4 — semantic_router.py local embeddings. PINNED (ESC-16 2026-06-22): >=0.2.0 floated to 0.8.0 whose ONNX layout drops model_optimized.onnx → NoSuchFile. 0.5.1 ships the expected layout for paraphrase-multilingual-MiniLM-L12-v2.
     "luana-core-platform",
     "luana-core-iam",
     "luana-core-observability",
