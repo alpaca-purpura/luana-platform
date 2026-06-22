@@ -10,6 +10,35 @@ import "./preview.css";
  * - a11y enabled globally (kit components must stay accessible across all brands).
  */
 const preview: Preview = {
+  // Brand theme switcher — swaps the surface + shape token set (colores + formas)
+  // per brand. The decorator sets [data-brand] on <html>; preview.css carries one
+  // token block per brand. Same components, brand tokens → brand look.
+  globalTypes: {
+    brand: {
+      description: "Marca — tokens de superficie + forma (colores + radios)",
+      toolbar: {
+        title: "Marca",
+        icon: "paintbrush",
+        items: [
+          { value: "vitalia", title: "Vitalia · cian #01B2F8 · control 8px" },
+          { value: "nicolify", title: "Nicolify · indigo #635BFF · control pill" },
+        ],
+        dynamicTitle: true,
+      },
+    },
+  },
+  initialGlobals: { brand: "vitalia" },
+  decorators: [
+    (Story, context) => {
+      if (typeof document !== "undefined") {
+        document.documentElement.setAttribute(
+          "data-brand",
+          String(context.globals.brand ?? "vitalia"),
+        );
+      }
+      return Story();
+    },
+  ],
   parameters: {
     nextjs: {
       appDirectory: true,
