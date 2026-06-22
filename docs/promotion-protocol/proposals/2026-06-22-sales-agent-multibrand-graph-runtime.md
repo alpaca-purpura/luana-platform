@@ -1,10 +1,47 @@
 ---
 proposal_id: 2026-06-22-sales-agent-multibrand-graph-runtime
-state: accepted                  # proposed | under_review | accepted | rejected | migrated
+state: accepted                  # proposed | under_review | accepted | rejected | migrated — Phase 1 NOT migrated: runtime bar unmet (ESC-7)
 opened_date: 2026-06-22
 opened_by: /pm-luana
 ratified_by: Chris               # APPROVED 2026-06-22
 ratified_date: 2026-06-22
+
+# Phase 1 status (ESC-4/5/6) — reconciled by /pm-vitalia 2026-06-22 after vitalia live-verify
+phase_1:
+  engine_code: merged            # ff0b9345 → main (auditor APPROVED + 07-merge); ESC-4/5/6 fixes present
+  arch_tests: green              # 6/6 ESC arch tests GREEN vs synced engine
+  vitalia_adoption: done         # 049_vitalia_prompt_versions_tenant_id applied to dev DB; container engine carries PromptVersion.tenant_id
+  runtime_bar: BLOCKED           # ★ the graph still does NOT run end-to-end → NOT migrated (proposal §5 bar = runtime, not arch-green)
+  blocker: ESC-7
+# ★ Lesson: marking this `migrated` on arch-green was premature (verification-real-not-200). The proposal's own
+# §5 bar is "el grafo corre end-to-end en vitalia... NO arch tests verdes". Live-verify (Chris wrote to the bot)
+# surfaced ESC-7 → reverted to `accepted`. `migrated` ONLY after Adrián replies live.
+esc_7:                           # NEW wall — same onion class as ESC-4/5/6, surfaced once ESC-4 stopped masking it
+  package: core/luana-core-platform
+  file: src/luana_core_platform/infrastructure/models/crm.py
+  line: 214-218
+  problem: >-
+    LeadModel.appointments = relationship("AppointmentModel", foreign_keys="AppointmentModel.lead_id") references a
+    bare class name that no brand registers (vitalia has AppointmentClinicMapModel/AppointmentPaymentModel/
+    VitaliaAvailabilitySlotModel, none named AppointmentModel, none with lead_id). configure_mappers() fails on the
+    unresolvable target → "name 'AppointmentModel' is not defined" → whole ORM init crashes → "Could not fetch
+    tenant" cascade → graph cannot run. The relationship is UNUSED by the graph (grep empty); the comment admits
+    "AppointmentModel remains stub-targeted (Story 8 lift pending)" — a lift that never landed.
+  fix: >-
+    Engine (core, /pm-luana — brand cannot edit core). Minimal: remove the dead `appointments` relationship from
+    engine LeadModel (unused + dangling). Then re-exercise the graph in vitalia until Adrián replies — there may be
+    further onion layers (e.g. SaleModel.offer→ProductModel import order) that only surface once ESC-7 clears.
+  status: pending
+brand_adoption:
+  vitalia: "049_vitalia_prompt_versions_tenant_id (ESC-6 brand-authored migration, wip/vitalia, applied to dev DB)"
+phase_2:
+  status: pending                # ESC-1/2/3 NOT done — book/match/share still gated
+  escs: [ESC-1, ESC-2, ESC-3]    # scheduler resolver per-tenant · EP-3 tool dispatch · STAGE_TOOL_SCOPE merge
+  next: >-
+    Re-promote brand-first from vitalia: wire a real tool (book/match/share) in
+    vitalia/.../sales_agent/tools + register via EP-3; it will register but the graph won't dispatch it
+    (the ESC-1/2/3 wall). That observed wall justifies a NEW promotion proposal for the engine dispatch
+    wiring (canal-inbound OLA-2). Until then this proposal is migrated for Phase 1 only.
 phasing: >-
   Phase 1 (runtime · ESC-4/5/6) → grafo corre + Adrián responde (TESTEABLE: mensaje Telegram → reply).
   Phase 2 (features · ESC-1/2/3) → book/match/share (desbloquea OLA-2). Chris testea tras Phase 1.
