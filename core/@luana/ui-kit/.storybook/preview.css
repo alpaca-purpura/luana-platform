@@ -1,0 +1,138 @@
+/*
+ * @luana/ui-kit Storybook — Tailwind v4 wiring (story core-ds-foundation T-2).
+ *
+ * Self-contained, brand-agnostic. Does NOT import any brand's globals.css (cross-brand
+ * coupling banned) — instead it reproduces the canonical token contract here so the kit
+ * renders in Storybook exactly as it does inside a brand shell.
+ *
+ * Per design-system-canon.md § 2.10 (dark-mode wiring HARD contract):
+ *   1. @import "tailwindcss"
+ *   2. @custom-variant dark — v4-pure 1-liner (no tailwind.config.ts in this package)
+ *   3. @source "../src" — FULL kit src so the JIT scanner sees every kit class
+ *      (a narrow @source silently purges dark:/arbitrary utilities → tsc green, visual broken)
+ *   4. @theme inline — maps the HSL token vars to color utilities (bg-card, text-foreground,
+ *      bg-agent-*, …). Without this mapping the tokens exist but `bg-card` generates nothing.
+ *   5. :root / dark token values (mirrored from a brand globals.css :root + .dark blocks)
+ */
+
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
+@source "../src";
+
+/* ── Token → utility mapping (Tailwind v4 CSS-first, replaces tailwind.config.ts) ── */
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --radius: 0.625rem;
+
+  /* Agent color utilities — generic slugs the kit references (brand-agnostic). A real
+   * brand overrides the values per agent; here they get distinct demo hues so the
+   * color-per-agent contract (canon § 2.8) is visible in Storybook. */
+  --color-agent-alfa: hsl(var(--agent-alfa));
+  --color-agent-alfa-soft: hsl(var(--agent-alfa-soft));
+  --color-agent-beta: hsl(var(--agent-beta));
+  --color-agent-beta-soft: hsl(var(--agent-beta-soft));
+  --color-agent-supervisora: hsl(var(--agent-supervisora));
+  --color-agent-supervisora-soft: hsl(var(--agent-supervisora-soft));
+  --color-agent-valeria: hsl(var(--agent-valeria));
+  --color-agent-valeria-soft: hsl(var(--agent-valeria-soft));
+  --color-agent-lisa: hsl(var(--agent-lisa));
+  --color-agent-lisa-soft: hsl(var(--agent-lisa-soft));
+}
+
+/* ── Token values — light (Shadcn surface, mirrored from a brand globals.css :root) ── */
+:root {
+  --background: 0 0% 100%;
+  --foreground: 240 10% 4%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 4%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 10% 4%;
+  --primary: 198 99% 49%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 240 5% 96%;
+  --secondary-foreground: 240 6% 10%;
+  --muted: 240 5% 96%;
+  --muted-foreground: 240 4% 46%;
+  --accent: 287 53% 37%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 6% 90%;
+  --input: 240 6% 90%;
+  --ring: 198 99% 49%;
+  --radius: 0.625rem;
+
+  /* Agent demo hues (generic slugs) */
+  --agent-alfa: 156 100% 41%;
+  --agent-alfa-soft: 156 80% 92%;
+  --agent-beta: 24 95% 53%;
+  --agent-beta-soft: 24 90% 92%;
+  --agent-supervisora: 287 53% 37%;
+  --agent-supervisora-soft: 287 53% 90%;
+  --agent-valeria: 287 53% 37%;
+  --agent-valeria-soft: 287 53% 90%;
+  --agent-lisa: 156 100% 41%;
+  --agent-lisa-soft: 156 80% 92%;
+}
+
+/* ── Token values — dark ── */
+.dark,
+[data-theme="dark"] {
+  --background: 240 10% 4%;
+  --foreground: 0 0% 98%;
+  --card: 240 8% 8%;
+  --card-foreground: 0 0% 98%;
+  --popover: 240 8% 8%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 198 99% 49%;
+  --primary-foreground: 240 10% 4%;
+  --secondary: 240 4% 16%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 240 4% 16%;
+  --muted-foreground: 240 5% 65%;
+  --accent: 287 53% 50%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 63% 31%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 4% 20%;
+  --input: 240 4% 20%;
+  --ring: 198 99% 49%;
+
+  --agent-alfa-soft: 156 60% 15%;
+  --agent-beta-soft: 24 70% 18%;
+  --agent-supervisora-soft: 287 40% 25%;
+  --agent-valeria-soft: 287 40% 25%;
+  --agent-lisa-soft: 156 60% 15%;
+}
+
+/* Radix poppers render Content as position:static inside a position:fixed wrapper — a
+ * z-index on the Content is inert. Put it on the positioned wrapper so the EntityPicker
+ * popover clears any sticky bar. (Mirrors the brand globals.css fix.) */
+[data-radix-popper-content-wrapper] {
+  z-index: 85;
+}
+
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
