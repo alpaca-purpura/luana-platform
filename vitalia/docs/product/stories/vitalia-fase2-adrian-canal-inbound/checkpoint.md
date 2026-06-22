@@ -6,10 +6,30 @@ map_zone: agentes
 map_box: adrian
 module: sales_agent           # heart = trigger del runtime; cross-module connections (receivers) + inbox (feed)
 capability: adrian.inbox      # EXTIENDE la cap del inbox (loop inbound la activa)
-state: refined
+state: developed          # 2026-06-21: OLA 1 (carril cero-engine) construido — T-BE-1/2/3 + T-AG-1 + T-FE-1 pushed, suites combinadas GREEN
+phase: AWAIT_CHRIS_VERIFY  # ★ G · proceso v5 — Chris ejerce el loop Telegram live ANTES del auditor (no auto-handoff)
 architecture_pattern: ADR-vitalia-004
-last_modified: 2026-06-05
-ratified_by_chris: true
+last_modified: 2026-06-21
+ratified_by_chris: true   # diseño v3 (02-design-agentic) + spec v6 (01-spec) ratificados Chris 2026-06-21
+autonomous_mode: false    # agentic + PHI = stake-asimétrico; gate G (Chris-verify live Telegram) obligatorio
+arch_verdict: BLOCKED-PARTIAL   # 03-arch.md § Engine-boundary escalations (ESC-1/2/3) — ver next_action
+reconciled: false         # /pm-vitalia lo pone true en R (tras tu signoff) — precondición del auditor
+chris_verify:
+  required: true
+  signoff: null           # → {by: Chris, date, result: SATISFIED|SATISFIED_WITH_FOLLOWUPS|REJECTED, notes, open_items}
+  rounds: []
+dod_live_verified: partial   # agentic core (5 goldens) live vs Postgres real; loop Telegram round-trip = tu verify en G (needs bot dev + tunnel)
+dod_evidence:
+  - action: "5 goldens agentic ejercidos contra el grafo + Postgres real (T-AG-1)"
+    observed: "honor-mode (decide/consulta/pausa) · screening-gate DERIVAR_EMERGENCIA → no bookea+escala · objection-trust → bio sin overpromise · ethical no-dark-patterns · operator-instruction steerea el siguiente turno (SC-8)"
+    backend_log: "5/5 goldens GREEN, pass^k OK; sin PHI en trazas; tenant-scoped"
+  - action: "set-instruction endpoint + honor-mode bridge ejercidos (integración) (T-BE-3)"
+    observed: "instrucción persiste metadata_info + bridge resume_objective (HB-92 gap cerrado) · audit row · 0 outbound al lead"
+    backend_log: "24/24 tests GREEN + audit_sync/response_model arch PASS"
+  pending_chris_G:
+    - "loop Telegram round-trip real (SC-1): mensaje real → reply Adrián + fila conversación + trace + costo (needs bot dev nicolify_dev_bot + tunnel)"
+    - "scheduling sweep/slot-marking live (SC-10) contra Postgres dev con migración 047/048 aplicada"
+chris_decision_2026-06-21: "OLA 1 build-local-ya + OLA 2 lift-en-paralelo (ratificado Chris vía /architect). /dev-team builda carril cero-engine T-BE-1/2/3+T-AG-1+T-FE-1 → G → auditor → merge slice 1. T-LIFT-1 (ESC-1/2/3) → /pm-luana en worktree core efímero (lane paralela). T-AG-2/3/4/5 esperan el lift → slice 2."
 channel_scope: telegram-first   # Chris 2026-06-04 — WhatsApp/IG = follow-up (sin API hoy)
 gateway_improvement: out-of-scope   # mejora del LLM gateway = item /pm-luana aparte (toca engine)
 parallel_safe: true
@@ -34,9 +54,8 @@ reuse_map_summary: >-
   REUSE adapters connections whatsapp/instagram (hoy solo OUTBOUND) — agregar INBOUND receiver ·
   NEW Telegram adapter (no existe) · EXTIEND inbox: el loop nutre activity stream + respeta modo
 spawned_at: 2026-06-04
-next_action: "/architect vitalia vitalia-fase2-adrian-canal-inbound → spawn arch-{agentic,be,fe} → ready package (03-arch + 04-validators + 05-guidelines + 06-tickets). 01-spec v3 + 02-design-agentic v1 ratificados. NOTA architect: (1) target CERO edición engine — si hay gap escalar /pm-luana; (2) FE delta = composer instrucción-mode sobre componente shipped del inbox → decidir si requiere mockup-per-component (ADR-vitalia-003); (3) BUILD espera dep hard adrian-inbox (developing)."
-phase: AGENTIC_DESIGN_RATIFIED
-last_artifact: 02-design-agentic.md
+next_action: "★ G · AWAIT_CHRIS_VERIFY (2026-06-21). OLA 1 (carril cero-engine) CONSTRUIDO + pushed: T-BE-1 (Telegram channel e27f6cbd) · T-BE-2 (scheduling slot-mark+hold-TTL+sweep ad039b0e) · T-BE-3 (honor-mode bridge + set-instruction cdfbaaa6) · T-AG-1 flagship (state_overlay + operator-instruction wiring + persona tuning + 5 goldens 52dab5b6; cerró HB-92: engine lee checkpoint.resume_objective, no metadata_info → OperatorInstructionBridge) · T-FE-1 (composer modo-instrucción 6375cb0d). Migración collision 047×2 fixed → 047 hold / 048 telegram. Suites combinadas GREEN (BE arch 361 + connections + scheduling + sales_agent + inbox/crm regression 429 · FE 2589 · tsc clean). Cap sales_agent.honor-mode-bridge creada (planned, taxonomía a confirmar en R). CHRIS: ejercé el loop Telegram live (demo-script.md) → firmá chris_verify.signoff. Luego /pm-vitalia reconcile (R, reconciled:true + confirmar cap taxonomy + ledger) → /auditor → merge slice 1. EN PARALELO (OLA 2): /pm-luana T-LIFT-1 (ESC-1/2/3 lift) en worktree core efímero → desbloquea T-AG-2/3/4/5 (book/match/share)."
+last_artifact: T-FE-1-result.md
 
 # Schema v2 migration (cement 2026-05-27)
 release: F3
@@ -158,9 +177,27 @@ Origen: Chris preguntó cómo Adrián entiende la necesidad del paciente + prese
 
 **Cadena de bloqueo del match:** `lisa-servicios` (catálogo Offer Studio + link servicio↔doctor) → cablear doctores clínicos al conocimiento de Adrián (tool brand-level, NO el `team` de Brand Studio que ve hoy) → canal-inbound consume el match. **Gap a asignar hogar:** el "wire doctores+servicios → Adrián" (¿en lisa-servicios? ¿slice agentic propio? ¿dentro de canal-inbound?) — pendiente `/architect`/Chris.
 
+## Scope-add ratificado Chris 2026-06-21 — `book_appointment` (cerrar el gap "agendar")
+
+**Origen:** Chris retoma la story (deps reportadas cumplidas: staff + servicios construidos) y pide validar si Adrián ya puede "agendar reuniones" desde el loop. **Hallazgo (grep verbatim):**
+
+- **Motor de agendar EXISTE + LIVE:** `BookingService.create_booking` (`vitalia/backend/src/modules/vitalia/application/services/booking_service.py:176`) con advisory locks · cap `booking/prepaid-booking-advisory-locks` (status live) · endpoint `api/routes.py:376`.
+- **NO cableado a Adrián:** el grafo `sales_agent` (que el loop dispara) solo expone `screening_questions` · `send_payment_link` · `reschedule_appointment`. Ninguna **crea** turno. `reschedule` mueve uno existente; `send_payment_link` **requiere `appointment_id` ya existente** (no puede ser entrada). El `tool_groups: booking` de RN-3b está **hueco** del lado de Adrián.
+- **Tool que SÍ agenda existe en OTRA surface:** `agentic/tools/appointment_reschedule_with_doctor.py` acción `propose_and_book` → `BookingService.create_booking`, pero cableada al agente `agentic`/copilot (cap `agentic.eval-goldens-slice-1`, Story 11), NO al grafo de Adrián.
+
+**Decisión Chris:** el book va **dentro de canal-inbound** (dueña del runtime de Adrián + ya declara el `booking` group). 
+
+**Fix (cero duplicación):** tool fina `book_appointment` en `sales_agent/tools/` que delega vía DI a `BookingService.create_booking` existente + bindeo al grafo de Adrián. Flujo prepago natural: `match_service_and_specialist` → `list_slots` → **`book_appointment` (hold)** → `send_payment_link` (seña) → confirma al pagar. `list_slots`/`propose_and_book` de `agentic/tools/` = referencia portable.
+
+**A refinar (/po → /ux-agentico):** RN/AC/scenarios del paso agendar · fuente de slots disponibles por doctor (toca modelo disponibilidad de `lisa-doctores` — recurrencia/vista-mes cambiaron; ver story `vitalia-scheduling-mateo-review`) · guarda-por-modo (decide ejecuta el book · consulta deja propuesta sin holdear) · idempotencia del hold · qué pasa si el slot se ocupa entre propose y book (advisory lock 409).
+
+## Dependencias — estado 2026-06-21
+
+Chris reporta `lisa-servicios` + `adrian-inbox` **construidos** → BUILD desbloqueado. Verificar `state: done` de ambos en el handoff a `/architect` (no asumir). El match servicio→especialista (in-scope desde 2026-06-05) + el nuevo book comparten la fuente de datos doctores/servicios.
+
 ## Próximo paso
 
-`/po` refina `01-spec.md` (agentic-story) → `/ux-agentico` diseña el flujo turn-by-turn inbound + state machine + honor-modo + eval policy. ANTES: correr la verificación pendiente.
+`/po` pliega `book_appointment` al `01-spec.md` (RN/AC/scenarios + guarda-por-modo) → `/ux-agentico` folda el paso al flujo turn-by-turn + state machine. Re-ratificar Chris → `refining → refined` → `/architect`.
 
 ## Referencias
 

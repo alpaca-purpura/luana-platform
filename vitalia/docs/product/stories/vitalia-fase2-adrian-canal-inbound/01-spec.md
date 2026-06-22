@@ -3,7 +3,7 @@ story_id: vitalia-fase2-adrian-canal-inbound
 brand: vitalia
 type: agentic-story
 state: refining
-po_version: 4
+po_version: 6
 architecture_pattern: ADR-vitalia-004
 channel_scope: telegram-first
 agent_owner: adrian
@@ -12,7 +12,7 @@ map_box: adrian
 module: sales_agent
 cap_target: adrian.inbox
 cap_change_type: extend
-ratified_by_chris: true
+ratified_by_chris: true    # spec v5.1 book_appointment (lane scheduling vivo) ratificado Chris 2026-06-21 · story sigue refining hasta diseño /ux-agentico
 ---
 
 # 01-spec — canal-inbound (Adrián) · el loop autónomo de atención por Telegram
@@ -74,6 +74,9 @@ Update Telegram entrante
 │   │   ├── ráfaga: 3 mensajes en <6s → debounce los coalesce → 1 turno → 1 respuesta [SC-3b]
 │   │   ├── happy: califica + responde (sin PHI) → outbound Telegram + activity event [SC-1]
 │   │   ├── califica → manda payment_link / propone reagendar [SC-7]
+│   │   ├── matchea servicio+especialista → propone slots REALES → lead elige → aparta turno (hold sin-pago) + manda seña [SC-9]
+│   │   │   ├── hold sin-pago vence (TTL config Adrián) → slot vuelve a libre + aviso al inbox [SC-10]
+│   │   │   └── slot tomado en carrera (advisory lock 409) → Adrián NO falla, re-propone el próximo libre [SC-12]
 │   │   ├── pide diagnóstico/resultados (PHI) → ComplianceService bloquea → deriva a portal [SC-4a]
 │   │   ├── prompt-injection ("ignora instrucciones…") → rechaza + ESCALA (RN-3) [SC-4b]
 │   │   └── tool falla / paciente pide humano → ESCALA (banner + pausa) [SC-edge-escala]
@@ -411,6 +414,14 @@ trial_policy:
 | tenant · RN-8 | SC-6 | update bot A → solo data A |
 | tools acción · RN-3b/AC-12 | SC-7 | decide → payment_link real enviado por Telegram + idempotente · consulta → 0 envío (borrador) |
 | instrucción operador · RN-13/14/15/AC-13 | SC-8 | setear instrucción → lead no la ve + persiste + el siguiente reply de Adrián la refleja (live) |
+| agendar/book · RN-19/AC-15 | SC-9 | decide → match → proponer slots reales → lead elige → fila booking status sin-pago + advisory lock + seña enviada (live, leer logs) |
+| hold vence · RN-20/AC-16 | SC-10 | apartar sin pago → esperar TTL → sweep libera el slot (fila status expirado/cancelado) + evento al inbox |
+| consulta→propuesta · RN-21/AC-17 | SC-11 | consulta → propuesta de slot en borrador, CERO fila booking, cero outbound |
+| carrera slot · RN-22/AC-18 | SC-12 | ocupar el slot entre propose y book → 409 SlotTakenError → Adrián re-propone otro, sin error al lead |
+| slots reales · RN-23/AC-19 | SC-9 | list_slots lee availability_slots libres (has_confirmed_appointment=False) de los doctores del servicio matcheado |
+| cero isla · RN-26 | SC-9 | el turno de Adrián aparece en la agenda de Mateo (origin=proactivo_adrian) + marca el slot ocupado (verificar live en la agenda) |
+| screening ético · RN-27 | (eval golden) | DERIVAR_EMERGENCIA → Adrián NO agenda, deriva + escala; OK_PROCEED → puede agendar |
+| dirigido-a-objetivo · RN-28 | (eval personas) | leads no-lineales (no-sabe / preguntón / miedoso / desconfiado / apurado) → guiados a la cita por razonamiento, sin if-chains, sin dark patterns |
 | regresión inbox · RN-12 | (regression suite) | Las SC del inbox shipped corren verdes sin tocarse |
 
 ## § Regression scope (★ obligatorio — Chris) — el inbox NO se rompe
@@ -467,3 +478,194 @@ Detalle de cimientos: `00-research-data-foundation.md`. Decisión: **secuenciar 
   antes del BUILD. `/architect` decide el **hogar del wiring** doctores→agente (lisa-servicios / slice
   propio / dentro de canal-inbound). El detalle fino de RN-17 (ranking de callbacks, criterios de match)
   se cierra cuando lisa-servicios defina el modelo servicio↔doctor.
+
+## § Agendar el turno (book_appointment) (★ scope-add · Chris 2026-06-21)
+
+> Cierra el gap **"agendar reuniones"**: Adrián, tras el match, **aparta el turno** desde el loop —
+> el eslabón que faltaba para que el inbound capte→agende→cobre sin recepción.
+>
+> **★ Lane correcto (anti-duplicación · Chris 2026-06-21):** el turno de Adrián aterriza en el **sistema
+> de agenda VIVO** (`scheduling`, el de Mateo), NO en el store deprecado. La cadena ya existe entera:
+> **Servicio** (`offer.lisa-servicios`, live) **→ Doctor** (`offer_service_specialist_links` migr 045, live)
+> **→ Disponibilidad** (`clinics` rrule → `availability_slots` 90d con flag `has_confirmed_appointment`,
+> cap `clinics.lisa-doctores`, live) **→ Crear turno** (`scheduling/create_appointment_service` con
+> **`origin="proactivo_adrian"`** — ya existe en el enum `AppointmentOrigin` para exactamente esto).
+>
+> **NO usar `BookingService`/`vitalia_bookings`:** ese motor (cap `booking/prepaid-booking-advisory-locks`)
+> está **`status: deprecated`** — lo reemplazó `valeria-agenda` (la agenda de Mateo). Escribir ahí = isla
+> (Mateo no lo ve) + slot no se marca ocupado. Su lógica advisory-lock + hold-prepay es **referencia de
+> patrón a portar**, no store a reusar.
+>
+> **Slots libres ya modelados:** `availability_slots.has_confirmed_appointment=False` = libre. La resta
+> disponibilidad−ocupación NO es net-new; se lee de la superficie de `clinics` (`availability-occurrences`),
+> filtrada por los doctores ligados al servicio matcheado. *(El `get_available_slots` de `api/routes.py:337`
+> es un STUB del módulo deprecado — ignorarlo.)*
+>
+> **Net-new real (chico, todo en `scheduling`, CERO engine):** **(a)** marcar `availability_slot.
+> has_confirmed_appointment=True` al crear el turno — hoy `create_appointment_service` NO lo hace
+> (gap/posible bug de la agenda actual: crear no bloquea el slot → riesgo doble-booking incluso a mano);
+> **(b)** status **hold-pendiente-pago + TTL/sweep** que libere el turno+slot si no se paga la seña
+> (concepto que la agenda viva no tiene; el deprecado sí lo tenía — portar el patrón); **(c)** la **tool de
+> Adrián** que invoca `create_appointment_service(origin=proactivo_adrian)` + bindeo al grafo del sales_agent.
+> `/architect` decide: tool fina nueva en `sales_agent/tools/` vs revivir la rica `appointment_reschedule_
+> with_doctor` (hoy EP-3 `_not_implemented_yet`) + dedup de las dos rutas de reschedule; advisory-lock/
+> race-safety sobre el create de la agenda (verificar si ya lo cubre el unique constraint del slot / el 409).
+
+- **RN-19 · Agendar = crear turno en la agenda viva, apartado sin pago.** En `Adrián decide`, tras el
+  match (RN-16/17) y un slot elegido por el lead, Adrián **crea el turno** vía
+  `scheduling/create_appointment_service` con **`origin="proactivo_adrian"`** (lane VIVO de Mateo — consumir
+  vía DI/port, NUNCA el `BookingService` deprecado). El turno nace en estado **hold-pendiente-pago**
+  (sin-pago). Inmediatamente Adrián encadena el `payment_link` (seña) sobre ese `appointment_id`.
+- **RN-20 · Hold con vencimiento (config Adrián).** El turno apartado sin seña **vence** pasado un TTL:
+  el turno se cancela/expira y el slot vuelve a estar libre (`has_confirmed_appointment` → False) + se
+  emite evento al inbox. El TTL es un **parámetro de configuración de Adrián por-tenant** (la clínica lo
+  ajusta; default sugerido **30 min**), no hardcoded. Mecanismo: sweep/job que libera holds vencidos.
+  *(net-new — la agenda viva no tiene hold-TTL; portar el patrón del `BookingService` deprecado, no su store.)*
+- **RN-21 · Guarda por modo (hereda RN-3b/RN-10).** En `Adrián consulta` o pausado, el book **NO** se
+  ejecuta: Adrián deja la **propuesta de slot** en el borrador (no crea turno, no holdea, no manda seña)
+  hasta firma humana. Solo en `decide` aparta + envía.
+- **RN-22 · Carrera de slot (anti doble-booking).** Dos creates sobre el mismo `(doctor, slot)` → solo uno
+  gana; el segundo recibe conflicto (409). Adrián **NO falla el turno**: informa que se ocupó y **re-propone**
+  el próximo slot libre (callbacks del match / siguiente hueco). El lead nunca ve un error técnico.
+  *(El `BookingService` deprecado tenía advisory-lock por `(doctor_id, slot)`; `/architect` confirma la
+  garantía atómica en el lane vivo — unique constraint del `availability_slot` / advisory-lock portado.)*
+- **RN-23 · Slots reales, no inventados.** `list_slots` propone **solo huecos reales** leídos de la
+  superficie de disponibilidad VIVA de `clinics` (`availability_slots` materializados de la recurrencia
+  rrule de lisa-doctores) donde `has_confirmed_appointment=False`, **filtrados por los doctores ligados al
+  servicio matcheado** (`offer_service_specialist_links`). **Prohibido** el generador naive 9-17 y el stub
+  `get_available_slots` del módulo deprecado. Respeta tenant + clinic + zona horaria del tenant.
+- **RN-24 · Idempotencia del book.** Doble book del mismo `(paciente, doctor, slot)` en ventana corta (ej.
+  reentrega de update Telegram) → **un solo turno**, no duplica (idempotencia en el create del lane vivo).
+- **RN-25 · Glass-box + audit del book.** El apartado, el vencimiento y la re-propuesta emiten activity/
+  trace event **sanitizado** (RN-6) + audit row (la agenda ya escribe audit sync en create); el inbox los
+  muestra cronológicos. Datos comerciales (servicio, doctor, slot), NUNCA PHI clínica (RN-5).
+- **RN-26 · Cero isla — el turno aparece en la agenda de Mateo + marca el slot.** Como `origin=proactivo_
+  adrian`, el turno creado por Adrián es visible en la agenda de Mateo (`scheduling.mateo-agenda`) con su
+  badge de origen, y **marca `availability_slot.has_confirmed_appointment=True`** para que no se vuelva a
+  ofrecer ni se pueda doble-bookear. *(★ gap actual: `create_appointment_service` hoy NO marca el slot —
+  cerrarlo en este scope; corrige también el create manual de Mateo. Posible item de `vitalia-scheduling-
+  mateo-review`.)*
+- **RN-27 · Screening ético precede al agendado (REUSE `screening_questions`).** Antes de apartar un turno en
+  verticales de riesgo, Adrián respeta el `screening_outcome` (ya shipped): `OK_PROCEED` → puede agendar ·
+  `DERIVAR_DOCTOR` → deriva a consulta médica antes de tratar (no agenda el tratamiento) · `DERIVAR_EMERGENCIA`
+  (ej. ideación suicida en psicología, síntoma urgente) → **STOP booking + escala humano** (emergency_protocol
+  de la persona). El agendado NUNCA pasa por encima de una derivación de seguridad. Cero recreación: el motor
+  de screening + outcomes + emergency_protocol ya existen.
+- **RN-28 · Atención dirigida-a-objetivo, NO flujo fijo.** Adrián opera como **agente que guía a la cita**, no
+  como un chatbot con pasos. Los leads no van en línea recta: no saben qué servicio quieren, son preguntones,
+  dudan, comparan, tienen miedo. Adrián **descubre la necesidad** (sin diagnosticar), **orienta**, **recomienda
+  al especialista con rationale**, **despeja objeciones** (diagnostica la hesitación real + valida + reduce
+  riesgo — no rebate), **anima sin dark patterns** (proactivo + ético: cero urgencia falsa/presión) y **cierra
+  agendando** — en el orden que el lead imponga. Esto **MONTA sobre el supervisor + especialistas + rutas de
+  objeción del engine** (qualifier/product_expert/closer + `objection_*` + `objection_history`) y los rails de
+  seguridad médica ya shipped (`slot_4_medical_safety_rails` + personas). Prohibido resolver el flujo con
+  cadenas de `if`/heurística hardcodeada (bar no-`if`s). Detalle del mapeo objetivo→engine + escenarios reales
+  del lead: `02-design-agentic.md` §§ 1-3.
+
+> **★ Reuso del agendado (anti-duplicación · ver `02-design-agentic.md` §§ 0,2,4,15):** el book NO se construye
+> de cero. **MONTA sobre el subsistema de agendamiento agéntico del engine (S8):** tools `get_available_slots`
+> + `create_booking_link`/estado `scheduled_meetings` + `verify_booking_status` sobre el patrón `SchedulerProvider`
+> (Strategy) + workers `appointment_reminder_engine` (T-24h/T-1h/post-cita, **no-show gratis**) + `verify_pending_
+> bookings` (reconcilia hold→confirmado→no-show) + `follow_up_engine`/`frozen_detection` (momentum/se-enfría). El
+> delta brand = un **`VitaliaSchedulerProvider`** (envuelve el lane scheduling vivo) + `match_service_and_specialist`
+> + `share_doctor_profile`. `/architect` lo aterriza sin tocar engine (gap → `/pm-luana`).
+
+- **AC-15** · En `decide`, lead elige un slot propuesto → se crea una **fila booking** `status: sin-pago`
+  con advisory lock + se envía el `payment_link` de seña por Telegram. Verificado LIVE (leer logs + DB).
+- **AC-16** · Un turno apartado sin seña, pasado el TTL configurado, **se libera** (status expirado) y el
+  slot vuelve a aparecer disponible + el inbox recibe el evento. Verificado ejerciendo el vencimiento.
+- **AC-17** · En `Adrián consulta`/pausado, el book queda como **propuesta en el borrador**: cero fila
+  booking, cero outbound, cero hold, hasta firma humana.
+- **AC-18** · Slot tomado en carrera → Adrián re-propone otro slot libre; sin doble booking, sin error
+  visible al lead (advisory lock + 409 manejado).
+- **AC-19** · `list_slots` devuelve únicamente huecos reales (disponibilidad rrule − ocupación); jamás
+  propone un horario fuera de la disponibilidad del doctor ni uno ya ocupado.
+
+### SC-9 — happy-action: `decide` → match → propone slots reales → aparta + seña
+```gherkin
+Given una conversación en "Adrián decide" por Telegram con un lead calificado
+  And el doctor "Dra. Rojas" con disponibilidad publicada (rrule) y el servicio "Blanqueamiento" linkeado
+When el paciente dice "dale, quiero el turno con la Dra. Rojas el jueves"
+Then Adrián consulta list_slots y propone SOLO huecos reales del jueves (disponibilidad − turnos tomados)
+  And al elegir el lead un slot, Adrián ejecuta book → fila booking status "sin-pago" + advisory lock
+  And encadena payment_link sobre ese appointment_id y envía la seña por Telegram
+  And emite activity + trace + audit sanitizados (servicio/doctor/slot, sin PHI)
+```
+`Covers: [Bif "decide→book", RN-19, RN-23, RN-24, RN-25, AC-15, AC-19]`
+graders:
+- type: tool_calls
+  required: ["book_appointment", "payment_link"]   # nombres finales los fija /architect
+  forbidden: ["send_medical_summary"]
+  max_calls_total: 4
+- type: state_check
+  target: scheduling_appointment
+  query: "1 appointment row origin=proactivo_adrian, estado hold-pendiente-pago, tenant+clinic scoped, visible en la agenda de Mateo"
+- type: state_check
+  target: availability_slot
+  query: "el availability_slot del turno queda has_confirmed_appointment=True (no se vuelve a ofrecer)"
+- type: state_check
+  target: telegram_outbound
+  expect: "1 send con el link de seña"
+- type: state_check
+  target: sales_agent_trace_event
+  expect: { tool_calls_count_gte: 1, phi_in_payload: false }
+
+### SC-10 — edge: hold sin-pago vence y libera el slot
+```gherkin
+Given un turno apartado por Adrián en status "sin-pago" cuyo TTL configurado venció (no se pagó la seña)
+When corre el sweep de vencimiento de holds
+Then el turno pasa a status expirado/cancelado y el slot vuelve a estar disponible
+  And se emite un evento al inbox ("turno liberado por falta de pago")
+  And un nuevo list_slots vuelve a ofrecer ese horario
+```
+`Covers: [Bif "hold vence", RN-20, AC-16]`
+graders:
+- type: state_check
+  target: scheduling_appointment
+  query: "appointment hold pasa a expirado/cancelado tras TTL; su availability_slot vuelve a has_confirmed_appointment=False y reaparece en list_slots"
+- type: contract_test
+  path: "vitalia/backend/tests/modules/vitalia/scheduling/test_hold_expiry_sweep.py"
+
+### SC-11 — negative→consulta: book queda como propuesta (no holdea)
+```gherkin
+Given una conversación en "Adrián consulta" (proposal_required=true)
+When el lead acepta un slot propuesto
+Then Adrián deja la propuesta de turno en el BORRADOR (banner de propuesta en el inbox)
+  And NO crea fila booking, NO holdea el slot, NO manda seña, hasta que el humano firma
+```
+`Covers: [Bif "consulta", RN-21, AC-17]`
+graders:
+- type: tool_calls
+  forbidden: ["book_appointment", "telegram_send"]
+- type: state_check
+  target: scheduling_appointment
+  expect: "0 appointment rows (queda en borrador, sin crear turno ni marcar slot)"
+
+### SC-12 — edge-race: slot tomado entre propose y book → re-propone
+```gherkin
+Given Adrián propuso un slot y el lead lo aceptó
+When otro actor (recepción u otro lead) toma ese mismo slot justo antes del book
+Then el advisory lock devuelve SlotTakenError (409)
+  And Adrián NO falla el turno: informa que se ocupó y re-propone el próximo slot libre
+  And no se crea doble booking
+```
+`Covers: [Bif "carrera slot", RN-22, AC-18]`
+graders:
+- type: state_check
+  target: scheduling_appointment
+  query: "exactly 1 appointment for the contested slot (the winner); availability_slot taken once; Adrián's turn surfaces a re-proposal"
+- type: llm_rubric
+  rubric: docs/specs/rubrics/tool-trajectory.md
+  assertions: ["ante slot ocupado, ofrece un horario alternativo sin error técnico"]
+  threshold: 0.8
+
+> **Dependencia + secuencia:** el book consume el match (RN-16/17) → comparte la dep dura `lisa-servicios`
+> (catálogo + link servicio↔doctor `offer_service_specialist_links`) y la disponibilidad viva de
+> `lisa-doctores` (`availability_slots` rrule). `/architect` declara, **todo brand-local cero engine,
+> apuntando al lane VIVO `scheduling` (NUNCA el `BookingService` deprecado):** (1) `list_slots` = leer
+> `availability_slots` libres (`has_confirmed_appointment=False`) filtrados por doctores del servicio
+> matcheado; (2) **cerrar el gap**: que crear turno marque `has_confirmed_appointment=True` (corrige también
+> el create manual de Mateo) + garantía atómica anti doble-booking; (3) status hold-pendiente-pago + TTL/sweep
+> + param config de Adrián per-tenant; (4) tool de Adrián sobre `create_appointment_service(origin=proactivo_
+> adrian)` (fina nueva vs revivir la rica EP-3) + dedup de las dos rutas de reschedule. Coordinar con
+> `vitalia-scheduling-mateo-review` (toca la misma agenda).
