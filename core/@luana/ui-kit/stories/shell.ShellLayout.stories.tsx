@@ -186,6 +186,32 @@ export const AdrianActivo: Story = {
   },
 };
 
+export const LucasActivo: Story = {
+  name: "Lucas · Lanzar (color negro)",
+  args: { pathname: "/clinica/lucas/lanzar", splitGroupId: "sb-shell-lucas" },
+  parameters: {
+    nextjs: {
+      navigation: {
+        pathname: "/clinica/lucas/lanzar",
+        segments: [["tenantId", "clinica"], "lucas", "lanzar"],
+      },
+    },
+  },
+};
+
+export const CamilaActiva: Story = {
+  name: "Camila · Voz del paciente (color azul marino)",
+  args: { pathname: "/clinica/camila/voz", splitGroupId: "sb-shell-camila" },
+  parameters: {
+    nextjs: {
+      navigation: {
+        pathname: "/clinica/camila/voz",
+        segments: [["tenantId", "clinica"], "camila", "voz"],
+      },
+    },
+  },
+};
+
 export const SupervisorCerrado: Story = {
   name: "Supervisor cerrado (tira-avatar)",
   args: {

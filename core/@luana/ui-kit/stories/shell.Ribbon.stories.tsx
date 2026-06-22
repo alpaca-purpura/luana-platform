@@ -66,6 +66,21 @@ export const LisaActiva: Story = {
   args: { pathname: "/clinica/lisa/marca" },
 };
 
+export const AdrianActivo: Story = {
+  name: "Adrián activo (Vender)",
+  args: { pathname: "/clinica/adrian/inbox" },
+};
+
+export const LucasActivo: Story = {
+  name: "Lucas activo (Atraer)",
+  args: { pathname: "/clinica/lucas/lanzar" },
+};
+
+export const CamilaActiva: Story = {
+  name: "Camila activa (Mantener)",
+  args: { pathname: "/clinica/camila/voz" },
+};
+
 export const PlataformaActiva: Story = {
   name: "Plataforma activa",
   args: { pathname: "/clinica/config" },
