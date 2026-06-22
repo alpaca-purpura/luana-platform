@@ -214,6 +214,53 @@ _TOOLS_HINT: str = (
 )
 
 
+def _extension_tools_hint() -> str:
+    """Render brand-registered (EP-3) tools into the cacheable tools-hint.
+
+    Tier-2 (multibrand-graph-runtime 2026-06-22). Reads the process-singleton
+    ``ToolRegistry``. Brand tools register ONCE at FastAPI lifespan (never per-turn),
+    so this render is stage-independent and byte-stable across turns — it can live in
+    the cacheable ``STATIC_TOOLS_HINT`` slot without poisoning the prompt cache. Sorted
+    by name for determinism. Empty registry → ``""`` (engine-only output byte-identical,
+    back-compat).
+
+    # ponytail: NOT stage-filtered. Dispatch (node_tool_executor → merged_tools) is
+    # itself stage-agnostic, so "advertised == dispatchable" means the full registered
+    # set; stage-filtering here would also break the cacheable prefix (current_state
+    # varies per turn — see test_build_specialist_system_prompt cache-safety guards).
+    """
+    from luana_core_sales_agent.application.tools.registry import (  # noqa: PLC0415
+        get_tool_registry,
+    )
+
+    tools = get_tool_registry().extension_tools()
+    if not tools:
+        return ""
+
+    lines: list[str] = [
+        "# Herramientas de marca",
+        "",
+        "Estas herramientas las provee la marca para su vertical. Llámalas por su "
+        "nombre EXACTO (incluye el prefijo de marca, p. ej. `vitalia.xxx`) con el "
+        "mismo bloque `[TOOL_REQUEST: {...}]`. Aplican las mismas reglas duras: nunca "
+        "inventes argumentos; si el tool falla, comunícalo con honestidad.",
+        "",
+    ]
+    for name in sorted(tools):
+        # Collapse internal whitespace/newlines so a multi-line description can't
+        # break the one-bullet-per-tool markdown (purely cosmetic; the value is
+        # static per-process either way, so cache stability never depended on it).
+        desc = " ".join((tools[name].description or "").split())
+        lines.append(f"- `{name}` — {desc}" if desc else f"- `{name}`")
+    return "\n".join(lines)
+
+
+def _compose_tools_hint() -> str:
+    """Engine tools-hint ⊕ brand extension tools-hint (cacheable slot 2 content)."""
+    brand = _extension_tools_hint()
+    return f"{_TOOLS_HINT}\n\n{brand}" if brand else _TOOLS_HINT
+
+
 def _render_static_specialist_body(role: SpecialistRole) -> str:
     """Render the specialist Jinja template with NO state kwargs.
 
@@ -381,7 +428,7 @@ def build_specialist_system_prompt(state: AgentState, role: SpecialistRole) -> s
     """
     fragments: dict[PromptFragment, str] = {
         PromptFragment.STATIC_IDENTITY: _BASE_IDENTITY,
-        PromptFragment.STATIC_TOOLS_HINT: _TOOLS_HINT,
+        PromptFragment.STATIC_TOOLS_HINT: _compose_tools_hint(),
         PromptFragment.SALES_PLAYBOOK_HINT: _render_static_specialist_body(role),
         PromptFragment.AGENT_IDENTITY: state.get("agent_identity") or "",
         PromptFragment.BRAND_VOICE: state.get("brand_voice") or "",
