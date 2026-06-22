@@ -17,7 +17,16 @@ engine_lift_phase1: graph-runs-CONVERSATIONAL-ok__tool-exec-BLOCKED-esc17   # �
 reconciled: false         # /pm-vitalia lo pone true en R (tras tu signoff) — precondición del auditor
 chris_verify:
   required: true
-  signoff: null           # → {by: Chris, date, result: SATISFIED|SATISFIED_WITH_FOLLOWUPS|REJECTED, notes, open_items}
+  signoff:                # ★ Chris firmó OLA-1 (carril texto inbound) — 2026-06-22
+    by: Chris
+    date: 2026-06-22
+    result: SATISFIED_WITH_FOLLOWUPS   # OLA-1 texto satisfecho; el followup (OLA-2 tools) es un SLICE SEPARADO, no un defecto de OLA-1
+    scope: OLA-1 (carril texto inbound — honor-mode · screening-gate · objection-trust · operator-instruction)
+    basis: "grafo live-verified (webhook → Adrián responde, reply generado) + ratificación explícita de Chris ('Firmo'). El round-trip de TEXTO por @nicolify_dev_bot está operativo (tunnel 200, semantic_check→llm_call→processing_response_chunks)."
+    notes: "NO cubre el demo de un tool de marca real — eso está gated por ESC-17/Tier 2.4a (ABI handler roto). El signoff es del carril texto OLA-1, que es funcional e independiente."
+    open_items:
+      - "ESC-17 / Tier 2.4a: ningún tool de marca ejecuta (ABI handler EP-3 roto) — sub-fase siguiente, builder-agentic flagship"
+      - "OLA-2 (match/share/book) = slice 2, depende de 2.4a"
   rounds: []
 dod_live_verified: partial   # agentic core (5 goldens) live vs Postgres real; loop Telegram round-trip = tu verify en G (needs bot dev + tunnel)
 dod_evidence:
@@ -55,7 +64,7 @@ reuse_map_summary: >-
   REUSE adapters connections whatsapp/instagram (hoy solo OUTBOUND) — agregar INBOUND receiver ·
   NEW Telegram adapter (no existe) · EXTIEND inbox: el loop nutre activity stream + respeta modo
 spawned_at: 2026-06-04
-next_action: "★ G parcialmente destrabado (2026-06-22 lift loop). El grafo CORRE y Adrián responde conversacionalmente (live-verified, synthetic webhook) → el round-trip Telegram de TEXTO ya es ejercible por Chris (demo-script.md) para firmar chris_verify.signoff sobre el carril OLA-1 (honor-mode/screening-gate/objection-trust/operator-instruction). PERO Adrián TODAVÍA no puede usar un tool de marca real (recommend/book/share) por ESC-17 (EP-3 handler ABI roto — ver engine_lift_phase1). NEXT (sub-fase 2.4a, builder-agentic flagship): arreglar el ABI → la marca registra adapters sync (state,db)->dict que extraen args del state + puentean al service async (footgun event-loop: nada de asyncio.run dentro del stack async). TDD: test de EJECUCIÓN que llama el handler como node_tool_executor + arch test (todo handler EP-3 es callable sync, no StructuredTool). Live-verify: forzar un dispatch real + leer el tool result en logs. LUEGO 2.4b: VitaliaSchedulerProvider + match/share/book (deps verificadas: doctor_model + ruta pública /d/[clinica-slug]/[doctor-slug] + offer_service_specialist_links + scheduling create-appointment) + goldens book-*. LUEGO governance (migraciones 049-pattern + seed can_use_platform_keys + uv lock fastembed) + promote core SHAs a main + sync-all + downstream ×4 → proposal migrated. Seam 2.1/2.2/2.3 ya en wip/vitalia (e43015ee/3aff15af/833fece3); ESC-17 capturado fe481dac."
+next_action: "★ OLA-1 FIRMADA por Chris 2026-06-22 (chris_verify.signoff = SATISFIED_WITH_FOLLOWUPS, carril texto). INMEDIATO /pm-vitalia: corré R (reconcile: reconciled:true + confirmá taxonomía de la cap sales_agent.honor-mode-bridge + marcá must_pass:false los validators de scope OLA-2 deferido) → AUTO-HANDOFF /auditor sobre el slice OLA-1 → si APPROVED, merge slice-1 (la story NO va a `done` global hasta OLA-2; respetá story-closure-gate + WIP cap). EN PARALELO, lift sales_agent (sub-fases): Tier 2.4a (ESC-17 ABI fix) → 2.4b (match/share/book) → governance → promote+sync. G parcialmente destrabado (2026-06-22 lift loop). El grafo CORRE y Adrián responde conversacionalmente (live-verified, synthetic webhook) → el round-trip Telegram de TEXTO ya es ejercible por Chris (demo-script.md) para firmar chris_verify.signoff sobre el carril OLA-1 (honor-mode/screening-gate/objection-trust/operator-instruction). PERO Adrián TODAVÍA no puede usar un tool de marca real (recommend/book/share) por ESC-17 (EP-3 handler ABI roto — ver engine_lift_phase1). NEXT (sub-fase 2.4a, builder-agentic flagship): arreglar el ABI → la marca registra adapters sync (state,db)->dict que extraen args del state + puentean al service async (footgun event-loop: nada de asyncio.run dentro del stack async). TDD: test de EJECUCIÓN que llama el handler como node_tool_executor + arch test (todo handler EP-3 es callable sync, no StructuredTool). Live-verify: forzar un dispatch real + leer el tool result en logs. LUEGO 2.4b: VitaliaSchedulerProvider + match/share/book (deps verificadas: doctor_model + ruta pública /d/[clinica-slug]/[doctor-slug] + offer_service_specialist_links + scheduling create-appointment) + goldens book-*. LUEGO governance (migraciones 049-pattern + seed can_use_platform_keys + uv lock fastembed) + promote core SHAs a main + sync-all + downstream ×4 → proposal migrated. Seam 2.1/2.2/2.3 ya en wip/vitalia (e43015ee/3aff15af/833fece3); ESC-17 capturado fe481dac."
 last_artifact: T-FE-1-result.md
 
 # Schema v2 migration (cement 2026-05-27)
