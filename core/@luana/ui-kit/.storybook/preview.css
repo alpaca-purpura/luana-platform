@@ -43,17 +43,16 @@
   --color-accent-foreground: hsl(var(--accent-foreground));
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-success-soft: hsl(var(--success-soft));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-warning-soft: hsl(var(--warning-soft));
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
   --radius: 0.625rem;
-  /* Radius scale — mirrors vitalia tailwind.config.ts borderRadius. Without these
-   * the @theme only ports --radius, so rounded-control/md/sm/lg fall back (control
-   * → no radius → SQUARE buttons). Values = vitalia's exact mapping. */
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-control: calc(var(--radius) - 2px);
 
   /* Agent color utilities — the REAL vitalia 6-agent palette (mirrored from
    * vitalia globals.css so the catalog renders the exact production colors).
@@ -70,6 +69,18 @@
   --color-agent-lucas-soft: hsl(var(--agent-lucas-soft));
   --color-agent-camila: hsl(var(--agent-camila));
   --color-agent-camila-soft: hsl(var(--agent-camila-soft));
+}
+
+/* ── Radius scale — PLAIN @theme (NOT inline) ────────────────────────────────
+ * inline bakes the calc expression into rounded-* and ignores per-brand overrides;
+ * plain @theme makes rounded-{sm,md,lg,control} reference var(--radius-*) at runtime
+ * → the brand switcher's [data-brand] --radius-control override works (nicolify pill).
+ * Mirrors vitalia tailwind.config.ts borderRadius; nicolify overrides --radius-control. */
+@theme {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-control: calc(var(--radius) - 2px);
 }
 
 /* ── Token values — light (Shadcn surface, mirrored from a brand globals.css :root) ── */
@@ -90,6 +101,16 @@
   --accent-foreground: 0 0% 100%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 98%;
+  /* Semantic status tokens — success (verde) + warning (ámbar). Values mirrored from
+   * vitalia globals.css (--vitalia-success #16A34A / --vitalia-warning #D97706) so the
+   * catalog renders production-faithful status colors. NAMES are the cross-brand contract
+   * (color-names.ts: success, warning); each brand paints its own VALUE in globals.css. */
+  --success: 142 76% 36%; /* #16A34A — pago confirmado, status verde, al día */
+  --success-foreground: 0 0% 100%;
+  --success-soft: 142 76% 92%;
+  --warning: 33 91% 44%; /* #D97706 — pago pendiente, atención requerida */
+  --warning-foreground: 0 0% 100%;
+  --warning-soft: 33 91% 92%;
   --border: 240 6% 90%;
   --input: 240 6% 90%;
   --ring: 198 99% 49%;
@@ -138,6 +159,13 @@
   --accent-foreground: 0 0% 98%;
   --destructive: 0 63% 31%;
   --destructive-foreground: 0 0% 98%;
+  /* Semantic status tokens — dark (brighter fills so they read on the dark surface). */
+  --success: 142 70% 45%;
+  --success-foreground: 240 10% 4%;
+  --success-soft: 142 40% 16%;
+  --warning: 33 90% 52%;
+  --warning-foreground: 240 10% 4%;
+  --warning-soft: 33 50% 18%;
   --border: 240 4% 20%;
   --input: 240 4% 20%;
   --ring: 198 99% 49%;
@@ -157,6 +185,61 @@
   --chart-3: 156 70% 50%;
   --chart-4: 43 74% 60%;
   --chart-5: 24 85% 60%;
+}
+
+/* ── Brand theme switcher (toolbar global `brand` · preview.ts decorator sets
+ *    [data-brand] on <html>). Default brand = vitalia (the :root blocks above).
+ *    Each brand below = a SNAPSHOT of its globals.css surface + shape tokens
+ *    (colores + formas). Same components, brand tokens → brand look:
+ *    vitalia = cian #01B2F8 + control 8px · nicolify = indigo #635BFF + control PILL.
+ *    NOTE: the agent palette (bg-agent-*) follows the loaded demo catalog (vitalia);
+ *    a full per-brand shell catalog (nicolify agents abel/brenda/…) is future work. ── */
+[data-brand="nicolify"] {
+  --background: 0 0% 100%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --primary: 243 100% 68%; /* indigo #635BFF */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 215 20% 96%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 215 20% 96%;
+  --muted-foreground: 215 16% 47%;
+  --accent: 271 81% 65%; /* púrpura #A855F7 */
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 215 20% 91%;
+  --input: 215 20% 91%;
+  --ring: 243 100% 68%;
+  --radius: 0.625rem;
+  --radius-pill: 9999px;
+  --radius-control: var(--radius-pill); /* nicolify controls = pill */
+  --radius-lg: 0.75rem;
+}
+.dark[data-brand="nicolify"],
+[data-theme="dark"][data-brand="nicolify"] {
+  --background: 240 20% 9%;
+  --foreground: 215 20% 95%;
+  --card: 240 16% 12%;
+  --card-foreground: 215 20% 95%;
+  --popover: 240 16% 12%;
+  --popover-foreground: 215 20% 95%;
+  --primary: 243 100% 72%;
+  --primary-foreground: 240 20% 9%;
+  --secondary: 240 12% 18%;
+  --secondary-foreground: 215 20% 95%;
+  --muted: 240 12% 18%;
+  --muted-foreground: 215 12% 60%;
+  --accent: 271 70% 68%;
+  --accent-foreground: 215 20% 95%;
+  --destructive: 0 63% 35%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 10% 22%;
+  --input: 240 10% 22%;
+  --ring: 243 100% 72%;
 }
 
 /* Radix poppers render Content as position:static inside a position:fixed wrapper — a
