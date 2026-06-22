@@ -14,7 +14,7 @@ import { Input } from "../src/input";
 import { Label } from "../src/label";
 
 const meta = {
-  title: "Overlays/Dialog",
+  title: "Organisms/Dialog",
   component: Dialog,
   tags: ["autodocs"],
   parameters: {

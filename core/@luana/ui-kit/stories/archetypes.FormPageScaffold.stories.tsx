@@ -13,7 +13,7 @@ const header = (
 );
 
 const meta = {
-  title: "Archetypes/FormPageScaffold",
+  title: "Templates/Archetypes/FormPageScaffold",
   component: FormPageScaffold,
   tags: ["autodocs"],
   parameters: {

@@ -23,7 +23,7 @@ const leaves: EntitySubNavLeaf[] = [
 ];
 
 const meta = {
-  title: "Lista / Detalle/EntitySubNavBar",
+  title: "Organisms/EntitySubNavBar",
   component: EntitySubNavBar,
   tags: ["autodocs"],
   parameters: {

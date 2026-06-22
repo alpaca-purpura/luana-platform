@@ -9,7 +9,7 @@ import {
 import { Button } from "../src/button";
 
 const meta = {
-  title: "Navigation/Collapsible",
+  title: "Molecules/Collapsible",
   component: Collapsible,
   tags: ["autodocs"],
   parameters: {

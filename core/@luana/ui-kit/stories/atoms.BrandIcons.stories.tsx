@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs";
 import { BrandIcon } from "../src/brand-icons";
 
 const meta = {
-  title: "Atoms/BrandIcons",
+  title: "Foundations/Iconos de marca",
   component: BrandIcon,
   tags: ["autodocs"],
   parameters: {

@@ -19,7 +19,7 @@ import {
 } from "../src/chart";
 
 const meta = {
-  title: "Data/Chart",
+  title: "Organisms/Chart",
   component: ChartContainer,
   tags: ["autodocs"],
   parameters: {

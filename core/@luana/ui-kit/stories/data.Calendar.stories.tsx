@@ -4,7 +4,7 @@ import * as React from "react";
 import { Calendar } from "../src/calendar";
 
 const meta = {
-  title: "Data/Calendar",
+  title: "Organisms/Calendar",
   component: Calendar,
   tags: ["autodocs"],
   parameters: {

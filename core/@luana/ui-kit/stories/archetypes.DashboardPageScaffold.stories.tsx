@@ -11,7 +11,7 @@ const header = (
 );
 
 const meta = {
-  title: "Archetypes/DashboardPageScaffold",
+  title: "Templates/Archetypes/DashboardPageScaffold",
   component: DashboardPageScaffold,
   tags: ["autodocs"],
   parameters: {

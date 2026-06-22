@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs";
 import { PageSection } from "../src/layout/page";
 
 const meta = {
-  title: "Layout/PageSection",
+  title: "Templates/PageSection",
   component: PageSection,
   tags: ["autodocs"],
   parameters: {

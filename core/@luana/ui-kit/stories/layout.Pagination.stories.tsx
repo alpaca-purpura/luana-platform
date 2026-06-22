@@ -4,7 +4,7 @@ import * as React from "react";
 import { Pagination } from "../src/layout/pagination";
 
 const meta = {
-  title: "Layout/Pagination",
+  title: "Molecules/Pagination",
   component: Pagination,
   tags: ["autodocs"],
   parameters: {

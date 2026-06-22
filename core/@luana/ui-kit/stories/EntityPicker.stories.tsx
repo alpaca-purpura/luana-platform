@@ -51,7 +51,7 @@ const searchFn: EntitySearchFn<EntityPickerItem> = async ({ q, cursor, limit }) 
 };
 
 const meta = {
-  title: "Lista / Detalle/EntityPicker",
+  title: "Organisms/EntityPicker",
   component: EntityPicker,
   tags: ["autodocs"],
   // Meta-level default satisfies the required `searchFn` for every story; the

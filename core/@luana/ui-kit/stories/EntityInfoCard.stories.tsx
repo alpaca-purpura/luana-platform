@@ -12,7 +12,7 @@ import {
  * Data is realistic LatAm clinic content (doctors), Spanish neutro.
  */
 const meta = {
-  title: "Lista / Detalle/EntityInfoCard",
+  title: "Organisms/EntityInfoCard",
   component: EntityInfoCard,
   tags: ["autodocs"],
   parameters: {
