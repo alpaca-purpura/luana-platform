@@ -341,3 +341,51 @@ async def test_no_active_checkpoint_logs_but_does_not_raise() -> None:
     # Audit + activity still fire even when no checkpoint exists
     mocks["audit_writer"].write.assert_awaited_once()
     mocks["activity_repo"].create.assert_awaited_once()
+
+
+# ---------------------------------------------------------------------------
+# T-AG-1 — agentic bridge wiring: on set, mirror into the engine turn seam
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_set_instruction_applies_bridge_to_turn_seam_when_present() -> None:
+    """T-AG-1/SC-8: when an OperatorInstructionBridge is injected, set_instruction
+    applies it (mirrors metadata_info['operator_instructions'] → resume_objective)
+    so the very next Adrián turn injects [INSTRUCCION DEL OPERADOR].
+
+    The bridge is OPTIONAL (back-compat with T-BE-3's 4-arg construction); when
+    present it is invoked with the resolved (tenant_id, lead_id).
+    """
+    svc, mocks = _make_service()
+    bridge = AsyncMock()
+    bridge.apply_for_turn = AsyncMock(return_value=True)
+    svc._bridge_to_turn = bridge  # injected post-construction in this back-compat test
+
+    await svc.set_instruction(
+        tenant_id=TENANT_ID,
+        clinic_id=CLINIC_ID,
+        conversation_id=CONV_ID,
+        instruction=INSTRUCTION_TEXT,
+        actor_user_id=USER_ID,
+    )
+
+    bridge.apply_for_turn.assert_awaited_once()
+    kwargs = bridge.apply_for_turn.await_args.kwargs
+    assert kwargs["tenant_id"] == TENANT_ID
+    assert kwargs["lead_id"] == LEAD_ID
+
+
+@pytest.mark.asyncio
+async def test_bridge_is_optional_back_compat() -> None:
+    """Back-compat: without a bridge, set_instruction still works (T-BE-3 contract)."""
+    svc, mocks = _make_service()
+    # No bridge injected (default None) — must not raise.
+    await svc.set_instruction(
+        tenant_id=TENANT_ID,
+        clinic_id=CLINIC_ID,
+        conversation_id=CONV_ID,
+        instruction=INSTRUCTION_TEXT,
+        actor_user_id=USER_ID,
+    )
+    mocks["checkpoint_port"].set_operator_instruction.assert_awaited_once()

@@ -52,12 +52,18 @@ from src.modules.vitalia.sales_agent.api.dtos.operator_instruction_dtos import (
     SetOperatorInstructionRequest,
     SetOperatorInstructionResponse,
 )
+from src.modules.vitalia.sales_agent.application.services.operator_instruction_bridge import (
+    OperatorInstructionBridge,
+)
 from src.modules.vitalia.sales_agent.application.services.operator_instruction_service import (
     ConversationNotInDecideModeError,
     OperatorInstructionService,
 )
 from src.modules.vitalia.sales_agent.infrastructure.adapters.checkpoint_instruction_adapter import (
     CheckpointInstructionAdapter,
+)
+from src.modules.vitalia.sales_agent.infrastructure.adapters.checkpoint_instruction_bridge_adapter import (
+    CheckpointInstructionBridgeAdapter,
 )
 
 logger = structlog.get_logger()
@@ -147,12 +153,17 @@ async def set_operator_instruction(
     # Resolve auth context
     ctx = await _resolve_ctx(authorization, tenant_id, clinic_id, db)
 
-    # Build service with injected deps
+    # Build service with injected deps. T-AG-1: the OperatorInstructionBridge mirrors
+    # the persisted instruction into the engine's volatile resume_objective seam so the
+    # next Adrián turn injects [INSTRUCCION DEL OPERADOR] (SC-8 end-to-end wiring).
     svc = OperatorInstructionService(
         conv_repo=ConversationRepository(session=db),
         checkpoint_port=CheckpointInstructionAdapter(session=db),
         audit_writer=AsyncAuditWriter(session=db),
         activity_repo=ActivityEventRepository(session=db),
+        bridge_to_turn=OperatorInstructionBridge(
+            checkpoint_bridge_port=CheckpointInstructionBridgeAdapter(session=db),
+        ),
     )
 
     try:

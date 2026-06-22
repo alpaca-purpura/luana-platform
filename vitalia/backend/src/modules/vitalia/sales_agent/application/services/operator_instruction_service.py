@@ -35,6 +35,9 @@ from src.modules.vitalia.sales_agent.application.services.honor_mode_bridge impo
     HonorModeBridge,
     HonorModeDecision,
 )
+from src.modules.vitalia.sales_agent.application.services.operator_instruction_bridge import (
+    OperatorInstructionBridge,
+)
 
 logger = structlog.get_logger()
 
@@ -142,6 +145,7 @@ class OperatorInstructionService:
         checkpoint_port: CheckpointInstructionPort,
         audit_writer: AuditWriterPort,
         activity_repo: ActivityRepoPort,
+        bridge_to_turn: OperatorInstructionBridge | None = None,
     ) -> None:
         """Initialize with all collaborator ports injected.
 
@@ -150,12 +154,19 @@ class OperatorInstructionService:
             checkpoint_port: Writes to agent_state_checkpoints.metadata_info.
             audit_writer: HIPAA-lite sync audit writer (V-NF-3).
             activity_repo: NON-PHI activity event repository (RN-15).
+            bridge_to_turn: OPTIONAL agentic bridge (T-AG-1). When present, after
+                persisting the instruction the service mirrors it into the engine's
+                volatile ``resume_objective`` seam so the very next Adrián turn
+                injects ``[INSTRUCCION DEL OPERADOR]`` (closes the integration gap:
+                the engine reads ``resume_objective``, not the persistent JSONB key).
+                Optional for back-compat with T-BE-3's 4-arg construction.
         """
         self._conv_repo = conv_repo
         self._checkpoint_port = checkpoint_port
         self._audit_writer = audit_writer
         self._activity_repo = activity_repo
         self._bridge = HonorModeBridge()
+        self._bridge_to_turn = bridge_to_turn
 
     async def set_instruction(
         self,
@@ -257,6 +268,14 @@ class OperatorInstructionService:
                 # instruction text deliberately omitted (RN-15)
             },
         )
+
+        # 6. Agentic bridge (T-AG-1, optional): mirror the persistent instruction into
+        # the engine's volatile resume_objective seam so the NEXT Adrián turn injects
+        # [INSTRUCCION DEL OPERADOR] (slot 7 volatile, post CACHE_BOUNDARY). Best-effort
+        # — the bridge never raises (graceful-degradation); the instruction is already
+        # persisted in metadata_info regardless.
+        if self._bridge_to_turn is not None:
+            await self._bridge_to_turn.apply_for_turn(tenant_id=tenant_id, lead_id=lead_id)
 
         logger.info(
             "operator_instruction_set",
