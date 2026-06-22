@@ -205,17 +205,20 @@ class LeadModel(Base):
     # real model (real col is `user_id`, `lead_id` is a Python @property).
     # Restored back_populates="lead" pattern matching AISALESHT
     # shared/infrastructure/models/crm.py:201 LeadModel.messages SSoT.
-    # AppointmentModel remains stub-targeted (Story 8 lift pending).
     messages = relationship(
         "luana_core_sales_agent.infrastructure.models.message_model.MessageModel",
         back_populates="lead",
         cascade="all, delete-orphan",
     )
-    appointments = relationship(
-        "AppointmentModel",
-        foreign_keys="AppointmentModel.lead_id",
-        cascade="all, delete-orphan",
-    )
+    # ESC-7 (2026-06-22 · multibrand-graph-runtime): removed dead
+    #   appointments = relationship("AppointmentModel", foreign_keys="AppointmentModel.lead_id", ...)
+    # It referenced a bare class name no brand registers (the "Story 8 AppointmentModel lift"
+    # never landed) → configure_mappers() crashed on the unresolvable target ("name
+    # 'AppointmentModel' is not defined"), breaking the WHOLE ORM init in any brand process
+    # that runs the sales_agent graph (cascade → "Could not fetch tenant" → graph dead).
+    # The relationship was unused — no graph/orchestrator reads LeadModel.appointments.
+    # If lead↔appointment linkage is needed cross-brand later, the real fix is a registered
+    # engine AppointmentModel (the actual Story 8 lift), not a dangling string stub.
 
 
 # ── sale_model.py ────────────────────────────────────────────────────────────
@@ -261,7 +264,15 @@ class SaleModel(Base):
 
     # Relationships
     customer = relationship("CustomerProfileModel", backref="sales")
-    offer = relationship("ProductModel")
+    # ESC-8 (2026-06-22 · multibrand-graph-runtime): removed dead
+    #   offer = relationship("ProductModel")
+    # ProductModel (offer-studio) is intentionally NEVER imported into this layer — it is
+    # accessed via the port get_product_model_class() (links/ports/offer) to respect the
+    # platform→offer-studio boundary. So the ORM string target could never resolve ("failed
+    # to locate a name 'ProductModel'") and crashed configure_mappers() whenever SaleModel
+    # registered in a process running the sales_agent graph (cascade → "Could not fetch
+    # tenant" → graph dead). The relationship was unused: callers use the SaleModel.offer_id
+    # FK column (analytics) + the port, never SaleModel.offer navigation. offer_id untouched.
 
 
 # ── lifecycle_transition_model.py ────────────────────────────────────────────

@@ -256,13 +256,13 @@ class ChatOrchestrator:
             inbound_campaign_id: UUID | None = None
             try:
                 from luana_core_platform.core.config import settings as _cfg
-                from luana_core_platform.core.database import get_async_session_factory
+                from luana_core_platform.core.database import get_async_session_maker
                 from luana_core_platform.links.ports.campaigns import (
                     create_campaigns_lookup_port,
                 )
 
                 _port = create_campaigns_lookup_port()
-                async with get_async_session_factory()() as _a_session:
+                async with get_async_session_maker()() as _a_session:
                     _hit = await _port.find_recent_campaign_task_for_lead(
                         tenant_id=tenant_uuid,
                         lead_id=user.id,
