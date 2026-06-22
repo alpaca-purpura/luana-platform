@@ -1,5 +1,7 @@
 # Nicolify — Mockup-Base Protocol (cero alucinación UI)
 
+> **⚠️ SUPERSEDED 2026-06-22 (ratificado Chris) — por Storybook = SSoT visual** (`docs/architecture/luana-platform/design-system-canon.md § 5` + `.claude/rules/frontend-visual-fidelity.md § Storybook`). El mockup-base con `_shared.css` espejo (tokens copiados + wrapper VERBATIM + golden mockup↔React) es exactamente el "HTML que miente / copia que driftea" que Storybook mata. El diseño + ratificación visual **parten de Storybook** (`core/@luana/ui-kit`, el componente REAL); lo net-new se **propone + promueve** al kit + su story. Protocolo histórico — **NO aplicarlo en stories nuevas**.
+
 **Overlay:** extiende `.claude/rules/` raíz (refuerza `frontend-visual-fidelity.md` + `frontend-fsd.md`).
 **Brand:** nicolify · **Cement-date:** 2026-06-15 · **SSoT:** `nicolify/docs/architecture/ADR-nicolify-003-mockup-base-protocol.md`.
 **Mirror de:** `vitalia/.claude/rules/shell-mockup-per-component.md` (adaptado: sin PHI · guardrails agénticos).

@@ -17,7 +17,7 @@ Sin `architecture_pattern: ADR-nicolify-001` en el frontmatter de `01-spec.md` �
 ## Gates (de ADR-nicolify-001)
 
 - **G0 — 9 secciones**: routing route-group · FSD-Lite · client root · React Query+Zustand · RHF+Zod · DDD Inside-Out (SIN PhiRepositoryBase · CON guardrails `agent-revenue-engine.md` + tier gating) · migrations idempotent · telemetría `nicolify_growth_studio_event` · tests 4 capas.
-- **G1 — Mockup-per-component** (ADR-vitalia-003): componente shell nuevo → mockup HTML ratificado por Chris (`ratified_visual_by_chris: true`) ANTES de `refining→refined`. Wrapper portado verbatim de Vitalia re-temizado.
+- **G1 — ~~Mockup-per-component (ADR-vitalia-003)~~ → SUPERSEDED 2026-06-22 por Storybook = SSoT visual** (`design-system-canon.md § 5` + `.claude/rules/frontend-visual-fidelity.md § Storybook`). El gate ya NO es un mockup HTML por-componente: el diseño/ratificación visual **parte de Storybook** (`@luana/ui-kit`, el componente REAL) y lo net-new se **promueve** al kit + story. (El `ratified_visual_by_chris` se cumple navegando la story real, no un `.html` espejo.)
 - **G2 — SSR-safe store** (ADR-vitalia-006): `persist` → factory `createSsrSafePersistedStore` + `useStoreHydration` en chunk `dynamic({ssr:false})`. Skeleton store-free.
 - **G3 — Tailwind JIT-safe**: NUNCA template literals en class strings (usar `_agent-tw-classes.ts`).
 

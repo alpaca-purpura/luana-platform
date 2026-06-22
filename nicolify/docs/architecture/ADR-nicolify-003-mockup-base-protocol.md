@@ -1,7 +1,8 @@
 ---
 id: ADR-nicolify-003
 title: Protocolo mockup-base reusable (_shared.css + wrapper verbatim + visual golden) — gate pre-/architect
-status: Accepted
+status: Superseded
+superseded_by: "Storybook = SSoT visual — design-system-canon.md § 5 (2026-06-22, ratificado Chris)"
 date: 2026-06-15
 deciders: [Chris, /po-ux, /pm-nicolify]
 brand: nicolify
