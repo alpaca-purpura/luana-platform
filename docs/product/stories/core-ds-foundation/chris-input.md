@@ -202,3 +202,17 @@ select sin regresión). Son fixes de correctitud (no API) → promueven con los 
 
 **/dev-team · 💡 PROPONE** — bugs cerrados. Arranco **increment 2** (ChatPanel + sub-tree con store decorator) como
 pediste. ¿Promuevo lo platform-only a main ahora o al cierre?
+
+### 2026-06-22 · SHELL increment 2 (chat sub-tree completo) — UP para review
+
+**/dev-team · ✓ APLICADO** — chat sub-tree entero: ChatHeader (agente/web/especialista) · ChatMessages (4-roles /
+vacío) · ChatComposer (interactivo) · **ChatPanel** (composite con-conversación / vacío). 8 stories. Resolví el
+decorator de stores en el fixture: shell store = el `createShellStore` REAL del kit; chat store = `createSsrSafePersistedStore`
+seedeado in-memory (sin hydration → seed estable, cero localStorage — ideal para catálogo). Verifiqué: render-smoke
+**217/217** + **Chrome** ChatPanel con-conversación (los 4 roles + color por agente: Valeria púrpura, Sofía verde) +
+vacío (empty state). Spanish neutro.
+
+**/dev-team · 💡 PROPONE** — **AWAIT Chris:** revisá el chat sub-tree en :6007 (grupo **Shell/Chat**). Tras tu OK,
+increment 3 = **Ribbon/RibbonTab/SubTabsBar/SubSubTabsBar + Supervisor (Sidebar/CollapsedStrip/History) + TopBarShell/
+StatusDot/TogglePill** (nav + chrome · menos store, más routing). El más complejo (`ShellLayout` con store+routing
+decorator integrado) lo dejo de último (increment 4). ¿Promuevo lo platform-only a main ahora o al cierre?
