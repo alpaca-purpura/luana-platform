@@ -24,6 +24,42 @@ ESC-17 fixed *executable*. But a tool that is registered, advertised in the prom
 
 **Rule:** a tool seam's end-state is verified by an eval golden that asserts the agent *emits the tool-call for the triggering intent* — not by proving the handler executes when called directly. "I dispatched it by hand and it worked" ≠ "the agent uses it." Treat autonomous-dispatch as its own gate (deterministic via pass^k goldens), owned by sales-agent-expert / builder-agentic flagship (stake-asymmetric: a prompt nudge without goldens can overfit one phrasing and regress others).
 
+## Deeper diagnosis (2026-06-22, second pass — root located, fix path)
+
+Drilled into WHY the agent doesn't dispatch. Ruled out the cheap causes, located the real one:
+
+1. **Wiring is correct.** `build_specialist_system_prompt` (compose.py) assembles `STATIC_TOOLS_HINT`
+   (`_TOOLS_HINT ⊕ _extension_tools_hint()` — engine ⊕ brand tools, verified rendering share/match) +
+   the specialist body (`_render_static_specialist_body` → `prompt_loader.render("specialist_<role>")`).
+   The brand tools ARE in the runtime prompt the model receives.
+2. **No DB shadowing.** `prompt_versions` has 0 `specialist_*` rows → the file templates are what render
+   (not a stale DB override).
+3. **Structural gap (contributing, real).** Of the 3 specialist templates, only `specialist_closer.j2`
+   has tool guidance — and it's HARDCODED engine tools with **concrete imperative examples**
+   (`Para enviar link de pago: [TOOL_REQUEST: {"tool":"send_payment_link"}]`). `specialist_qualifier.j2`
+   (discovery) and `specialist_product_expert.j2` (presentation) — the stages where share/match are
+   scoped — have **zero** tool guidance. So the discovery/presentation specialists are never told they
+   can act.
+4. **Root: model + text-protocol.** Adding a *generic* tool-use directive to those specialists (verified
+   present in the runtime prompt) did NOT make deepseek emit `[TOOL_REQUEST]` (still 0). The closer works
+   because of **concrete few-shot examples**, not an abstract directive. So the deepseek specialist needs
+   either concrete per-tool examples or native function-calling to reliably tool-call via the text protocol.
+
+**Why no quick ship.** A generic directive (unverified) was REVERTED — shipping an agent-behavior change to
+4 brands without pass^k goldens is exactly the stake-asymmetric anti-pattern this learning warns about
+(LLM dispatch is stochastic — one webhook ≠ proof). "Best practices" for stochastic agent behavior = measure
+with goldens, then tune — not a blind prompt change.
+
+**Fix path (principled, gated by goldens — a focused builder-agentic effort):**
+- Build the `tool-trajectory` / `G-objection-trust` eval goldens (the measurement: does the agent emit the
+  tool-call for "who attends / recommend a specialist" at pass^k?).
+- Then iterate against them, cheapest lever first: (a) make `_extension_tools_hint` render each brand tool
+  as a **concrete imperative example** (hexagonal — derived dynamically from the brand tool's description,
+  no engine hardcoding; mirrors the closer's working pattern) + add the directive to qualifier/product_expert;
+  (b) if still flaky, **native function-calling** (`tools=` param) instead of the text `[TOOL_REQUEST]`
+  protocol (larger engine change); (c) model selection for the specialist role.
+- The structural gap (#3) is a genuine fix but must land WITH the goldens so its effect is measured.
+
 ## Refs
 
 - `vitalia/docs/product/stories/vitalia-fase2-adrian-canal-inbound/demo-script.md` § F-path finding (the live evidence + the seam-exercise proof)
