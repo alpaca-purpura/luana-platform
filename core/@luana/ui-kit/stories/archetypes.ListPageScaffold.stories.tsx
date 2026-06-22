@@ -10,12 +10,12 @@ import { Button } from "../src/button";
 import { EntityInfoCard } from "../src/EntityInfoCard";
 
 const mockDoctors = [
-  { id: "1", name: "Dra. Lucía Fernández", subtitle: "Cardiología · Lun a Vie" },
-  { id: "2", name: "Dr. Martín Rosas", subtitle: "Pediatría · Mar a Sab" },
-  { id: "3", name: "Dra. Paula Herrera", subtitle: "Dermatología · Lun Mié Vie" },
-  { id: "4", name: "Dr. Carlos Ibáñez", subtitle: "Traumatología · Lun a Jue" },
-  { id: "5", name: "Dra. Sofía Vargas", subtitle: "Ginecología · Mar Jue Sab" },
-  { id: "6", name: "Dr. Diego Méndez", subtitle: "Oncología · Mié a Vie" },
+  { id: "1", name: "Dra. Lucía Fernández", initials: "LF", subtitle: "Cardiología · Lun a Vie" },
+  { id: "2", name: "Dr. Martín Rosas", initials: "MR", subtitle: "Pediatría · Mar a Sab" },
+  { id: "3", name: "Dra. Paula Herrera", initials: "PH", subtitle: "Dermatología · Lun Mié Vie" },
+  { id: "4", name: "Dr. Carlos Ibáñez", initials: "CI", subtitle: "Traumatología · Lun a Jue" },
+  { id: "5", name: "Dra. Sofía Vargas", initials: "SV", subtitle: "Ginecología · Mar Jue Sab" },
+  { id: "6", name: "Dr. Diego Méndez", initials: "DM", subtitle: "Oncología · Mié a Vie" },
 ];
 
 const toolbar = (
@@ -78,7 +78,13 @@ export const ConContenido: Story = {
     header,
     toolbar,
     children: mockDoctors.map((d) => (
-      <EntityInfoCard key={d.id} name={d.name} subtitle={d.subtitle} />
+      <EntityInfoCard
+        key={d.id}
+        title={d.name}
+        initials={d.initials}
+        subtitle={d.subtitle}
+        onClick={() => {}}
+      />
     )),
     pagination: <Pagination page={1} pageCount={3} onPrev={() => {}} onNext={() => {}} />,
   },
