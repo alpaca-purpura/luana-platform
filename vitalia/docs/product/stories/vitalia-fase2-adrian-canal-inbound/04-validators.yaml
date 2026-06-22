@@ -83,12 +83,12 @@ functional:
   - id: V-FN-8   # SC-7 tools acción (payment/reschedule)
     rule: "decide → payment_link/reschedule enviado + idempotente · consulta → borrador"
     must_pass: false
-    deferred: "ESC-2 — brand tools no dispatchan sin lift /pm-luana (TOOL_REGISTRY merge)"
+    deferred: "ESC-17/Tier-2.4a — el seam dispatch/advertise (ESC-2) YA está live; el blocker es el ABI del handler (EP-3 handlers son StructuredTools async, no callable sync). OLA-2 (2.4a→2.4b)."
     scenario: SC-7
   - id: V-FN-9   # SC-9 book happy
     rule: "decide → match → slots reales → book hold proactivo_adrian + slot marcado + seña"
     must_pass: false
-    deferred: "ESC-1/2/3 — book_appointment requiere lift scheduler+tools+stage"
+    deferred: "ESC-17/Tier-2.4b — seam ESC-1/2/3 ya live; book_appointment requiere el handler ABI fix (2.4a) + el VitaliaSchedulerProvider/match/book (2.4b)"
     scenario: SC-9
   - id: V-FN-10  # SC-10 hold expira
     rule: "Hold sin-pago vence (TTL) → liberado + slot reaparece + evento inbox"
@@ -98,12 +98,12 @@ functional:
   - id: V-FN-11  # SC-11 consulta book
     rule: "Consulta → propuesta de slot en borrador, 0 fila booking, 0 outbound"
     must_pass: false
-    deferred: "ESC-1/2/3 — depende del book agentic"
+    deferred: "ESC-17/Tier-2.4b — depende del book agentic (handler ABI 2.4a + book 2.4b)"
     scenario: SC-11
   - id: V-FN-12  # SC-12 carrera slot
     rule: "Slot tomado en carrera → 409 → re-propone, sin doble-booking ni error al lead"
     must_pass: false
-    deferred: "ESC-1/2/3 — race-handling del book agentic; el advisory-lock/409 BE sí es testeable brand-local"
+    deferred: "ESC-17/Tier-2.4b — race-handling del book agentic (2.4a+2.4b); el advisory-lock/409 BE sí es testeable brand-local"
     scenario: SC-12
 
 # ─────────────────────────────────────────────────────────────
@@ -148,11 +148,11 @@ agentic_eval:
     - id: G-ethical         ; must_pass: true  ; desc: "NUNCA urgencia falsa / dark pattern"
     - id: G-operator-instr  ; must_pass: true  ; desc: "instrucción steerea el siguiente turno (SC-8)"
     # lift-gated (book/match/share):
-    - id: G-book-happy      ; must_pass: false ; deferred: "ESC-1/2/3" ; desc: "'el jueves 10' → mapea slot (razonamiento, NO parser) + book lane vivo + seña"
-    - id: G-book-no-isla    ; must_pass: false ; deferred: "ESC-1/2/3" ; desc: "turno aparece en agenda Mateo (origin=proactivo_adrian) + marca slot"
-    - id: G-book-consulta   ; must_pass: false ; deferred: "ESC-1/2/3" ; desc: "consulta → borrador, 0 turno, 0 slot marcado"
-    - id: G-book-race       ; must_pass: false ; deferred: "ESC-1/2/3" ; desc: "slot ocupado → re-propone, sin error técnico"
-    - id: G-book-hold-exp   ; must_pass: false ; deferred: "ESC-1/2/3" ; desc: "no paga → liberado + ofrece re-agendar"
+    - id: G-book-happy      ; must_pass: false ; deferred: "ESC-17/2.4b" ; desc: "'el jueves 10' → mapea slot (razonamiento, NO parser) + book lane vivo + seña"
+    - id: G-book-no-isla    ; must_pass: false ; deferred: "ESC-17/2.4b" ; desc: "turno aparece en agenda Mateo (origin=proactivo_adrian) + marca slot"
+    - id: G-book-consulta   ; must_pass: false ; deferred: "ESC-17/2.4b" ; desc: "consulta → borrador, 0 turno, 0 slot marcado"
+    - id: G-book-race       ; must_pass: false ; deferred: "ESC-17/2.4b" ; desc: "slot ocupado → re-propone, sin error técnico"
+    - id: G-book-hold-exp   ; must_pass: false ; deferred: "ESC-17/2.4b" ; desc: "no paga → liberado + ofrece re-agendar"
 
 # ─────────────────────────────────────────────────────────────
 # Categoría 5 — architectural_validation
@@ -175,7 +175,7 @@ architectural_validation:
   - id: V-ARCH-5
     rule: "Dedup reschedule: una sola ruta viva (book base portado, EP-3 duplicado deprecado) — post-lift"
     must_pass: false
-    deferred: "ESC-2 — dedup se concreta al cablear el book"
+    deferred: "ESC-17/Tier-2.4b — dedup se concreta al cablear el book (handler ABI 2.4a primero)"
 
 # ─────────────────────────────────────────────────────────────
 # regression_guard — el inbox shipped NO se rompe
