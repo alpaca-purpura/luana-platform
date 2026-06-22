@@ -83,6 +83,37 @@ shared by ALL brands. Stake-asymmetric → ESCALATED to Chris as its own focused
 the live-dispatch eval (target ≥0.5 pass^k). The concrete-example lever stays (strictly-better; it's the
 tool-description form native-calling also consumes).
 
+## Native function-calling (fourth pass — mechanism built, real bottleneck found)
+
+Built native function-calling (`fe02df19`, on wip/vitalia, NOT promoted): `llm.base.ToolCallResult`
++ `generate_with_tools` (additive, text fallback) · litellm provider `bind_tools` + `AIMessage.tool_calls`
+parsing · `tools/registry.extension_tool_schemas(stage)` (brand tools → OpenAI schemas, hexagonal) · the 3
+specialists offer their stage's brand tools natively, serializing native `tool_calls` → `[TOOL_REQUEST]` so
+the existing routing dispatches (no routing change). 0 net-new test failures; llm 67 green.
+
+**Feasibility: isolated `bind_tools` dispatches 3/3** (right tool + args, across deepseek-reasoner /
+deepseek-chat / kimi) — the native mechanism works perfectly. **But live graph dispatch ≈ 30%** (noisy K=5:
+text-examples 1/4, native 2/5, native+directive 1/5 — all within noise of ~30%).
+
+**The real bottleneck is NOT the tool mechanism — it is the multi-agent graph:**
+- The supervisor (NANO) routes turn-1 of a fresh conversation to the **qualifier** (discovery), whose role
+  prompt is "SPIN discovery — NO pitchees, máximo 1 pregunta, DA ANTES DE PEDIR" → it **asks a question
+  instead of acting**, even when the lead directly asks "who attends / share the profile". `product_expert`
+  (presentation) is the one that shares — but the conversation has to be routed there.
+- A generic "respond to direct requests with a tool" directive on qualifier/product_expert did NOT move the
+  needle (within K=5 noise) → reverted (don't ship unverified).
+
+**Conclusion — reliable autonomous dispatch (≥0.5 pass^k) needs, on top of native-calling:**
+1. **Supervisor-routing tuning** — route "who attends / show me the doctor / recommend a specialist" to a
+   tool-acting specialist (presentation) instead of qualifier (discovery-asks).
+2. **Specialist role-prompt rework** — so a direct request is honored with a tool without breaking the
+   discovery "don't pitch" discipline.
+3. **A larger-K live eval** (K≈15–30, ~15–30 min/run) — K=5 is too noisy to distinguish levers; the
+   routing/persona tuning MUST be measured against a stable eval, not single noisy runs.
+This is a focused builder-agentic continuation (stake-asymmetric, graph-behavior). Native-calling (the correct
+mechanism) is held on wip/vitalia as its foundation; the concrete-example lever (`98304184`) is on main and
+helps the text fallback. End-state demo now dispatches ~30% of the time (vs 0%) — not yet reliable.
+
 ## Refs
 
 - `vitalia/docs/product/stories/vitalia-fase2-adrian-canal-inbound/demo-script.md` § F-path finding (the live evidence + the seam-exercise proof)
