@@ -187,3 +187,18 @@ literal de clases).
 increment 2 = **ChatPanel** + sub-tree (`ChatHeader`/`ChatMessages`/`ChatComposer`) — éstos SÍ necesitan un decorator
 con store mock (`createShellStore` real + chat store mock zustand), por eso pasan aparte. ¿Promuevo los ~9 commits
 platform-only a main ahora o batcheo al cierre?
+
+### 2026-06-22 · Chris: "resolvé los 3 src bugs primero, cero bugs en el ui-kit" — RESUELTOS
+
+**Chris (decisión 10) · ✓ APLICADO** — "primero revisá los 3 src bugs, no podemos tener bugs y menos en el luana ui
+kit, resolvámoslo aquí, luego continuá con el increment 2". Levantó el `forbidden_to_touch: src/**` para estos bugs.
+
+**/dev-team · ✓ APLICADO (verify-first, no confié en el checkpoint)** — corrí tsc/grep ground-truth antes de tocar:
+(1) **calendar v4** `[--cell-size]`→`(--cell-size)` — y el **grep exhaustivo cazó el MISMO bug-class en 4 archivos más**
+(popover/select/dropdown/chart, breakage sutil que el render-smoke no ve) → los arreglé todos (cero bare `[--var]` en
+src); (2) **timezone** tsc → tsconfig lib/target ES2022; (3) **jest-dom** tsc → setup `/vitest` + `vitest.setup.ts` en
+`include`. **Verificado:** tsc **0** · vitest **289/289** · render-smoke **209/209** · Chrome (calendar grilla correcta +
+select sin regresión). Son fixes de correctitud (no API) → promueven con los commits DS, sin promotion proposal aparte.
+
+**/dev-team · 💡 PROPONE** — bugs cerrados. Arranco **increment 2** (ChatPanel + sub-tree con store decorator) como
+pediste. ¿Promuevo lo platform-only a main ahora o al cierre?
