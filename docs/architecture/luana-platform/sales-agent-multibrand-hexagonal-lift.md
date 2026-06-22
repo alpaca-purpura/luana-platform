@@ -187,24 +187,33 @@ TDD (RED first) → impl → ruff → adversarial subagent review → net-new-re
     primary = first shareable (visible+active+public_slug → public URL) + callbacks. **Live-verified** (real
     registry + real dev DB): "limpieza dental" → Ana + URL; "botox" → Ana; nonexistent → not_found.
   - `share_doctor_profile` — DONE in 2.4a (OLA-2 "comparte").
-  - **`book_appointment` + `VitaliaSchedulerProvider` — SUB-PHASED + ESCALATED to Chris (HIPAA write,
-    exceeds a safe single pass).** Why: (a) ★ **cross-loop trap CONFIRMED empirically** (2026-06-22) — a coro
-    using an AsyncSession from the *shared* engine pool via `run_async` works on call 1 but raises
-    `got Future attached to a different loop` on call 2. So the async-DB bridge for book needs a **NullPool
-    bridge engine** (fresh connection per checkout in the bridge loop) OR **main-loop submission**
-    (`run_coroutine_threadsafe`) — NOT the current fresh-loop+shared-pool path. The same fix is required before
-    wiring the 9 StructuredTools' (unwired) DI resolvers. (b) `create_appointment_service.create_appointment`
-    needs 4 injected deps (repo + audit_writer + growth_emitter + hold_service) + resolved `patient_id`
-    (lead→patient mapping), `doctor_id`, `slot_id`+start/end (slot resolution by LLM reasoning over availability),
-    idempotency `(patient,doctor,slot)`, advisory-lock 409→re-propose. (c) HIPAA-sensitive → builder-agentic
-    flagship (R23) + real-booking live-verify (appointment row + slot marking + idempotency + race). The
-    `share`/`match` reads sidestepped all this (sync, public data); book cannot. Mini-design: book handler =
-    sync `(state,db)->dict` → `run_async` over a NullPool bridge session → construct
-    `CreateAppointmentService(repo, audit_writer, growth_emitter, hold_service)` → `create_appointment(
-    origin="proactivo_adrian", slot_id=..., ...)`. Use the live scheduling lane (V-ARCH-2: NOT BookingService/
-    `propose_and_book` which is deprecated). + eval goldens (book-happy/no-isla/consulta/race/hold-expira).
+  - `book_appointment` (OLA-2 "agenda") — IMPLEMENTED + wired (`b834b130`), but **runtime BLOCKED on
+    ESC-19** (scheduling create-lane). What landed + works: the tool (sync `(state,db)->dict`, patient/lead =
+    `state["user_id"]` per `appointments.lead_id` FK, clinic from the doctor, idempotency per (lead,start),
+    `origin=proactivo_adrian`), the **run_async cross-loop fix** (see below), and **ESC-18** (below). book
+    degrades gracefully (error dict, no crash) until ESC-19 lands.
+  - ★ **run_async cross-loop bridge — FIXED (`b834b130`).** The trap was confirmed empirically (call-1 OK,
+    call-2 `got Future attached to a different loop`). Fix = `set_main_loop` (wired in `main.py` lifespan) +
+    `run_coroutine_threadsafe` so async-DB coros run on the loop that owns the shared pool. Unit test proves
+    submission. This also unblocks wiring the 9 StructuredTools' DI resolvers later.
+  - ★ **ESC-18 — FIXED (`b834b130`, engine `core/luana-core-scheduling`).** Removed the DEAD cross-registry
+    `AppointmentModel.lead = relationship("LeadModel")` (forward mirror of ESC-7's removed reverse; no
+    consumer). As a bare-string cross-registry target it crashed the FIRST `appointments` ORM query
+    (per-registry re-config can't locate `LeadModel`) — surfaced live by book (arch-green ≠ runtime, again).
+    FK `lead_id` kept. Net-new regression 0.
+  - ★★ **ESC-19 — NEW WALL, ESCALATED to Chris (scheduling-architecture decision; not hand-rollable).** book's
+    "agenda" cannot create a *visible* appointment because the scheduling create-lane is incomplete +
+    inconsistent: (1) `CreateAppointmentService.create_appointment` calls `repo.create()` + `repo.create_clinic_map()`
+    which **no repo implements** (only mock-tested — the embudo: service+mocks green, real repo missing); (2)
+    **two appointment tables** — engine `appointments` (ORM, what the create-service targets) has **0 rows**,
+    while brand `vitalia_appointments` (raw-SQL, what the agenda grid + 88 real rows live in) is the populated
+    one. So even a built create-repo writing the engine table = an **island** (anti-orphan: not visible in
+    Mateo's agenda). Resolving = a scheduling-domain decision (which table is canonical + reconcile) + building
+    the real create-repo, HIPAA-sensitive. OUT of sales_agent OLA-2 scope. `VitaliaSchedulerProvider` (engine
+    Protocol, event_slug-centric) is also deferred — its abstraction doesn't fit vitalia's doctor+slot model
+    cleanly; revisit after ESC-19.
   - **END-STATE note:** "recomienda" (match) + "comparte" (share) are LIVE real brand tools — the loop's
-    tool-execution bar is already met; book strengthens the "agenda" verb + a richer DB-write effect.
+    tool-execution bar is already met. "agenda" (book) waits on the ESC-19 scheduling decision.
 - **Tier 3** (Base split) — PENDING (likely escalate w/ sub-phases; blast radius ×4).
 
 ### ESC-17 — EP-3 tool handler ABI mismatch (registered ≠ executable) 🔴 NEW (2026-06-22)

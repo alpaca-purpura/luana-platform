@@ -41,14 +41,33 @@ phase_2:
     ESC-2: done                  # 64c0e3e1 (stateful ToolRegistry + merged dispatch) + e43015ee (prompt advertises)
     ESC-3: done                  # 64c0e3e1 stage-scope (ExtensionTool.stage_scope) + is_extension_tool_in_stage
   remaining: >-
-    Tier 2.4b — book_appointment + VitaliaSchedulerProvider only (the rest landed):
-    share_doctor_profile DONE (2.4a b13c6455), match_service_and_specialist DONE (dd950beb) — both
-    native-sync, live-verified vs real dev DB. book_appointment + VitaliaSchedulerProvider SUB-PHASED +
-    ESCALATED to Chris (HIPAA write + needs the cross-loop async-DB bridge fix — NullPool bridge engine or
-    main-loop submission; the current run_async fresh-loop+shared-pool path raises 'Future attached to a
-    different loop' on the 2nd async-DB call, confirmed empirically 2026-06-22). See lift doc § Tier 2.4b.
-    The 4 _not_implemented_yet placeholders + the 9 wrapped StructuredTools' DI resolvers stay unwired
-    (also gated on the same bridge fix).
+    Tier 2.4b status (b834b130): share_doctor_profile (b13c6455) + match_service_and_specialist (dd950beb)
+    DONE+LIVE. book_appointment WIRED + the run_async cross-loop bridge FIXED (set_main_loop + main-loop
+    submission) + ESC-18 FIXED (dead AppointmentModel.lead removed). book's "agenda" runtime is BLOCKED on
+    ESC-19 (below). VitaliaSchedulerProvider deferred (engine event_slug Protocol doesn't fit vitalia's
+    doctor+slot model; revisit post-ESC-19).
+esc_18:                           # FIXED b834b130
+  package: core/luana-core-scheduling
+  problem: >-
+    AppointmentModel.lead = relationship("LeadModel") — dead cross-registry bare-string (forward mirror of
+    ESC-7's removed reverse). Crashed the first appointments ORM query (per-registry configure can't locate
+    LeadModel). No consumer. Surfaced live by book_appointment.
+  fix: removed the relationship (FK lead_id kept). net-new regression 0.
+  status: fixed
+esc_19:                           # NEW — ESCALATED to Chris (scheduling-architecture decision)
+  severity: high                  # blocks book "agenda" runtime
+  package: vitalia/backend scheduling (NOT sales_agent — out of OLA-2 scope)
+  problem: >-
+    The scheduling create-appointment lane is incomplete + inconsistent. (1) CreateAppointmentService calls
+    repo.create()/repo.create_clinic_map() — NO repo implements them (mock-tested only; embudo). (2) Two
+    appointment tables: engine `appointments` (ORM, what create-service targets) = 0 rows; brand
+    `vitalia_appointments` (raw-SQL agenda grid) = 88 rows. A create writing the engine table = an island
+    (anti-orphan: invisible in Mateo's agenda).
+  fix: >-
+    Scheduling-domain decision (which table is canonical + reconcile) + build the real create-repo
+    (engine appointment + brand clinic_map OR vitalia_appointments). HIPAA-sensitive. Separate story/owner.
+  status: escalated
+  blocks: book_appointment "agenda" verb (the tool is wired + degrades gracefully until this lands)
   next: >-
     Fix ESC-17 (handler ABI) FIRST (sub-phase 2.4a), then build book/match/share (2.4b), then promote.
 esc_17:                           # NEW wall — discovered in Tier 2.4 pre-flight (verify-before-build), 2026-06-22
