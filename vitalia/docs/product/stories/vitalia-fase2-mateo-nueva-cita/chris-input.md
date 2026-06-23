@@ -171,6 +171,10 @@ Chris: "continuar la story hasta cerrarla". Step 0 closure-gate GREEN (única OP
 ### 2026-06-22 · 🤖 claude · `builder-backend` · T-BE-5 · ✓ APLICADO
 POST /api/v1/crm/patients + GET /api/v1/crm/patients?q= + find_by_phone() implementados. 35/35 unit GREEN + 361/361 CRM + 363/363 arch fitness. Commit: a2871456 (wip/vitalia).
 
+### 2026-06-22 · 🤖 claude · `builder-backend` · T-BE-5-BUGFIX (schemafix) · ✓ APLICADO
+ROOT CAUSE vivo: `vitalia_patients` no tenía columnas `channel_first` ni `notes` — patient_repository las referenciaba en INSERT + SELECT → 500 en GET /crm/patients y POST. Tests unitarios verdes porque mockean la DB.
+FIX: migración 051 (idempotente IF NOT EXISTS) + 4 tests de regresión integration (RED→GREEN). 365/365 CRM suite GREEN. Idempotencia verificada (re-run alembic upgrade = no-op). Artifact: T-BE-5-schemafix-result.md.
+
 ### 2026-06-22 · 🤖 claude · `builder-backend` · T-BE-4 · ✓ APLICADO
 create_appointment TOCTOU-safe + clinic_map mirror + origin reconcile. 4 cambios:
 1. exceptions.py: AppointmentOverlapError (409) + OutOfWorkingHoursError (422) — domain pure, no framework
