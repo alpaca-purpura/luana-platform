@@ -164,6 +164,9 @@ tickets:
   - id: T-FE-1
     title: "FE · ruta + hoja leaf + schema reconciliado + types availability"
     surface: frontend
+    state: pushed
+    commit_sha: "69794026"
+    tests_native: 2605/2605 vitest | tsc 0 errors | eslint 0 errors
     depends_on: [T-BE-1, T-BE-3, T-BE-4]
     description: >
       Ruta estática mateo/agenda/nueva-cita/{page,loading,error}.tsx (Server, SSR

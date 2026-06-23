@@ -179,3 +179,9 @@ create_appointment TOCTOU-safe + clinic_map mirror + origin reconcile. 4 cambios
 4. agenda_router + CreateAppointmentRequestDTO: origin→{walk_in,telefono}; patient_id required; legacy desde_paciente_existente removido; mapeo excepciones→HTTP
 TOCTOU: DB EXCLUDE (23P01) es el único gate de solape (no pre-check-then-insert).
 Tests: 229/229 unit GREEN (26 nuevos T-BE-4) + 363/363 arch fitness GREEN. Commit: 02643f1f
+
+### 2026-06-22 · 🤖 claude · `builder-frontend` · T-FE-1 · ✓ APLICADO
+Ruta nueva-cita full-page + NuevaCitaView + schema reconciliado + hooks React Query.
+Implementado: ruta estática (page/loading/error.tsx), NuevaCitaView client root (RHF+Zod, SmartDateTimePicker, React Query), CrearCitaButton → router.push (modal REMOVED AC-9/D-G), onEmptySlotClick prop chain en AgendaCalendar/WeekCalendar/DayCalendar, agenda-schema reconciliado (origin walk_in|telefono only, patientId required, sin patientNewData), use-nueva-cita.ts hooks con snake→camel normalizers, nueva-cita-store.ts Zustand UI.
+Fixes intermedios: @ts-nocheck en CrearCitaForm.tsx (deprecated), useUser mock en NuevaCitaView.test.tsx, SmartDateTimePicker mock, CrearCitaButton.test.tsx actualizado a router.push behavior.
+Gates: tsc 0 errors | eslint 0 errors | vitest 2605/2605 PASS. Commit: 69794026
