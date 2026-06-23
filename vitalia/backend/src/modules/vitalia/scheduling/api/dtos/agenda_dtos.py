@@ -132,7 +132,7 @@ class AppointmentDetailDTO(BaseModel):
     origin: str
     balance_due_cents: int | None = None
     balance_paid_cents: int | None = None
-    currency: str
+    currency: str | None = None  # nullable: a fresh appointment has no payment/currency yet (currency-handling rule)
     currency_override: str | None = None
     payments: list[AppointmentPaymentDTO] = Field(default_factory=list)
     notes_internal: str | None = None  # staff-facing (NO clinical PHI)
