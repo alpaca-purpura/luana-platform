@@ -317,6 +317,8 @@ class AgendaGridRepositoryImpl(CompoundScopeRepositoryBase):  # type: ignore[typ
         self,
         *,
         tenant_id: UUID,
+        clinic_id: UUID,
+        offer_id: UUID,
         patient_id: UUID,
         doctor_id: UUID,
         service_label: str,
@@ -331,19 +333,24 @@ class AgendaGridRepositoryImpl(CompoundScopeRepositoryBase):  # type: ignore[typ
         vitalia_appointments has no Python model (created via raw migration).
         Returns the new appointment_id UUID.
 
-        Dual scope: tenant_id bound; clinic_id lives in clinic_map (A12).
+        T-BE-4 bugfix: clinic_id and offer_id are NOT NULL in vitalia_appointments
+        (schema from mig 002) — they MUST be included in the INSERT.
+        clinic_id: comes from X-Clinic-ID header (dual filter — hipaa-lite.md).
+        offer_id: comes from the catalog offer selected by the user (FK, required).
         """
         appointment_id = uuid4()
         duration_minutes = int((end_time - start_time).total_seconds() // 60)
         stmt = text(
             "INSERT INTO vitalia_appointments "
-            "(id, tenant_id, patient_id, doctor_id, slot_iso, duration_minutes, "
+            "(id, tenant_id, clinic_id, offer_id, patient_id, doctor_id, slot_iso, duration_minutes, "
             " status, origin, notes_internal, currency, created_at) "
-            "VALUES (:id, :tenant_id, :patient_id, :doctor_id, :slot_iso, :dur, "
+            "VALUES (:id, :tenant_id, :clinic_id, :offer_id, :patient_id, :doctor_id, :slot_iso, :dur, "
             "        'SCHEDULED', :origin, :notes, :currency, NOW())"
         ).bindparams(
             bindparam("id", value=appointment_id),
             bindparam("tenant_id", value=tenant_id),
+            bindparam("clinic_id", value=clinic_id),
+            bindparam("offer_id", value=offer_id),
             bindparam("patient_id", value=patient_id),
             bindparam("doctor_id", value=doctor_id),
             bindparam("slot_iso", value=start_time),
@@ -357,6 +364,8 @@ class AgendaGridRepositoryImpl(CompoundScopeRepositoryBase):  # type: ignore[typ
             "appointment_created",
             appointment_id=str(appointment_id),
             tenant_id=str(tenant_id),
+            clinic_id=str(clinic_id),
+            offer_id=str(offer_id),
         )
         return appointment_id
 

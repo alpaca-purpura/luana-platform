@@ -513,6 +513,7 @@ class TestCreateAppointmentServiceSlotMarking:
         await service.create_appointment(
             tenant_id=TENANT_ID,
             clinic_id=CLINIC_ID,
+            offer_id=uuid4(),  # T-BE-4: required FK
             user_id=uuid4(),
             origin="proactivo_adrian",
             patient_id=uuid4(),
@@ -565,6 +566,7 @@ class TestCreateAppointmentServiceSlotMarking:
         result = await service.create_appointment(
             tenant_id=TENANT_ID,
             clinic_id=CLINIC_ID,
+            offer_id=uuid4(),  # T-BE-4: required FK
             user_id=uuid4(),
             origin="walk_in",
             patient_id=uuid4(),

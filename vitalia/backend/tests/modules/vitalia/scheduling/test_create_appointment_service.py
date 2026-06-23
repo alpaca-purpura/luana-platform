@@ -43,6 +43,7 @@ def _import_service():
 
 TENANT_ID = uuid4()
 CLINIC_ID = uuid4()
+OFFER_ID = uuid4()
 PATIENT_ID = uuid4()
 DOCTOR_ID = uuid4()
 APPT_ID = uuid4()
@@ -52,6 +53,7 @@ USER_ID = uuid4()
 def _make_create_request() -> dict:
     return {
         "origin": "walk_in",
+        "offer_id": OFFER_ID,  # T-BE-4 bugfix: required FK
         "patient_id": PATIENT_ID,
         "doctor_id": DOCTOR_ID,
         "service_label": "Limpieza dental",
@@ -294,6 +296,7 @@ class TestCreateAppointmentServiceMirrorColumns:
         await service.create_appointment(
             tenant_id=TENANT_ID,
             clinic_id=CLINIC_ID,
+            offer_id=OFFER_ID,
             user_id=USER_ID,
             origin="walk_in",
             patient_id=PATIENT_ID,
@@ -343,6 +346,7 @@ class TestCreateAppointmentServiceOverlap:
             await service.create_appointment(
                 tenant_id=TENANT_ID,
                 clinic_id=CLINIC_ID,
+                offer_id=OFFER_ID,
                 user_id=USER_ID,
                 origin="walk_in",
                 patient_id=PATIENT_ID,
@@ -374,6 +378,7 @@ class TestCreateAppointmentServiceOverlap:
             await service.create_appointment(
                 tenant_id=TENANT_ID,
                 clinic_id=CLINIC_ID,
+                offer_id=OFFER_ID,
                 user_id=USER_ID,
                 origin="walk_in",
                 patient_id=PATIENT_ID,
@@ -425,6 +430,7 @@ class TestCreateAppointmentServiceOutOfHours:
             await service.create_appointment(
                 tenant_id=TENANT_ID,
                 clinic_id=CLINIC_ID,
+                offer_id=OFFER_ID,
                 user_id=USER_ID,
                 origin="walk_in",
                 patient_id=PATIENT_ID,
@@ -459,6 +465,7 @@ class TestCreateAppointmentServiceOutOfHours:
         result = await service.create_appointment(
             tenant_id=TENANT_ID,
             clinic_id=CLINIC_ID,
+            offer_id=OFFER_ID,
             user_id=USER_ID,
             origin="walk_in",
             patient_id=PATIENT_ID,
@@ -498,6 +505,7 @@ class TestCreateAppointmentServiceRealPatientId:
         await service.create_appointment(
             tenant_id=TENANT_ID,
             clinic_id=CLINIC_ID,
+            offer_id=OFFER_ID,
             user_id=USER_ID,
             origin="walk_in",
             patient_id=real_patient_id,

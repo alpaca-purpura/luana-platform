@@ -33,6 +33,7 @@ CLINIC_ID = uuid4()
 USER_ID = uuid4()
 DOCTOR_ID = uuid4()
 PATIENT_ID = uuid4()
+OFFER_ID = uuid4()  # T-BE-4: required FK
 NEW_APPT_ID = uuid4()
 
 _PHI_HEADERS = {
@@ -124,6 +125,7 @@ async def test_create_appointment_walk_in_with_patient_id_returns_201() -> None:
                     "origin": "walk_in",
                     "patient_id": str(PATIENT_ID),
                     "doctor_id": str(DOCTOR_ID),
+                    "offer_id": str(OFFER_ID),
                     "service_label": "Extracción simple",
                     "start_time": "2026-05-27T09:00:00+00:00",
                     "end_time": "2026-05-27T09:30:00+00:00",
@@ -160,6 +162,7 @@ async def test_create_appointment_telefono_with_patient_id_returns_201() -> None
                     "origin": "telefono",
                     "patient_id": str(PATIENT_ID),
                     "doctor_id": str(DOCTOR_ID),
+                    "offer_id": str(OFFER_ID),
                     "service_label": "Control de seguimiento",
                     "start_time": "2026-05-27T10:00:00+00:00",
                     "end_time": "2026-05-27T10:30:00+00:00",
@@ -232,6 +235,7 @@ async def test_create_appointment_non_phi_role_forbidden() -> None:
                 "origin": "walk_in",
                 "patient_id": str(PATIENT_ID),
                 "doctor_id": str(DOCTOR_ID),
+                "offer_id": str(OFFER_ID),
                 "service_label": "Consulta",
                 "start_time": "2026-05-27T12:00:00+00:00",
                 "end_time": "2026-05-27T12:30:00+00:00",
@@ -268,6 +272,7 @@ async def test_create_appointment_overlap_returns_409() -> None:
                     "origin": "walk_in",
                     "patient_id": str(PATIENT_ID),
                     "doctor_id": str(DOCTOR_ID),
+                    "offer_id": str(OFFER_ID),
                     "service_label": "Consulta",
                     "start_time": "2026-05-27T09:00:00+00:00",
                     "end_time": "2026-05-27T09:30:00+00:00",
@@ -305,6 +310,7 @@ async def test_create_appointment_out_of_hours_returns_422() -> None:
                     "origin": "walk_in",
                     "patient_id": str(PATIENT_ID),
                     "doctor_id": str(DOCTOR_ID),
+                    "offer_id": str(OFFER_ID),
                     "service_label": "Consulta",
                     "start_time": "2026-05-27T07:00:00+00:00",
                     "end_time": "2026-05-27T07:30:00+00:00",
@@ -340,6 +346,7 @@ async def test_create_appointment_service_called_with_dual_filter() -> None:
                     "origin": "walk_in",
                     "patient_id": str(PATIENT_ID),
                     "doctor_id": str(DOCTOR_ID),
+                    "offer_id": str(OFFER_ID),
                     "service_label": "Consulta",
                     "start_time": "2026-05-27T13:00:00+00:00",
                     "end_time": "2026-05-27T13:30:00+00:00",

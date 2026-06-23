@@ -93,6 +93,7 @@ class CreateAppointmentService:
         *,
         tenant_id: UUID,
         clinic_id: UUID,
+        offer_id: UUID,
         user_id: UUID,
         origin: str,
         patient_id: UUID,
@@ -108,17 +109,22 @@ class CreateAppointmentService:
         """Create an appointment and its brand-local clinic_map entry.
 
         Dual persistence (A12):
-        - Engine appointment row (no clinic_id column on engine).
+        - Engine appointment row (vitalia_appointments, includes clinic_id + offer_id).
         - Brand-local clinic_map row (vitalia_appointment_clinic_map).
+
+        T-BE-4 bugfix: clinic_id and offer_id are NOT NULL in vitalia_appointments.
+        Both are now required params and threaded into repo.create().
 
         Args:
             tenant_id: Root tenant UUID.
-            clinic_id: Clinic UUID (stored in brand-local clinic_map only).
+            clinic_id: Clinic UUID — from X-Clinic-ID header (HIPAA dual filter).
+                       Also stored in vitalia_appointments (NOT NULL column).
+            offer_id: Catalog offer UUID — from FE selectedServiceId (NOT NULL column).
             user_id: Actor user UUID (staff creating the appointment).
             origin: AppointmentOrigin string (walk_in/telefono/proactivo_adrian/portal).
             patient_id: Patient UUID.
             doctor_id: Doctor UUID.
-            service_label: Human-readable service description.
+            service_label: Human-readable service description (denorm for display).
             start_time: Appointment start (UTC).
             end_time: Appointment end (UTC).
             notes_internal: Optional internal staff notes (PHI-adjacent — not returned).
@@ -153,9 +159,13 @@ class CreateAppointmentService:
             if avail.status == AvailabilityStatus.OUT_OF_HOURS:
                 raise OutOfWorkingHoursError()
 
-        # Step 1: Create engine appointment row
+        # Step 1: Create engine appointment row.
+        # T-BE-4 bugfix: clinic_id + offer_id are NOT NULL in vitalia_appointments.
+        # Both must be supplied explicitly — no DEFAULT in schema.
         appointment_id: UUID = await self._repo.create(
             tenant_id=tenant_id,
+            clinic_id=clinic_id,
+            offer_id=offer_id,
             patient_id=patient_id,
             doctor_id=doctor_id,
             service_label=service_label,

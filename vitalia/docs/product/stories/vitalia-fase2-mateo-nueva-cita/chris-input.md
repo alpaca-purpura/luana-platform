@@ -244,3 +244,18 @@ Bug #5 FIXED: inline "Crear paciente" submit (phone blank) now fires POST /crm/p
 **G5 GATE:** tsc 0 errors · eslint 0 errors · vitest 371/371 PASS (mateo feature suite).
 
 Files touched: `PatientPickerWithCreate.tsx` (schema + onClick) + its test file (regression guard).
+
+### 2026-06-23 · 🤖 claude · `builder-backend` · T-BE-4-notnull · ✓ APLICADO
+Root cause (bug6b): agenda_grid_repository_impl.create() INSERT omitía clinic_id + offer_id (ambos NOT NULL sin default en vitalia_appointments desde migration 002).
+Fix: clinic_id cableado desde X-Clinic-ID header → service → repo INSERT. offer_id agregado a CreateAppointmentRequestDTO (approach a: FK explícita, FE manda selectedServiceId). Audit completo de todas las NOT NULL del INSERT: clinic_id, offer_id, doctor_id, duration_minutes, patient_id, slot_iso, status, tenant_id — todas cubiertas.
+TDD: test_migration_053_notnull_clinic_offer.py (6 tests: schema gate + RED INSERT sin campo + GREEN INSERT completo). 242/242 scheduling tests GREEN (excl. test_migration_050_exclude.py — pre-existing asyncpg event-loop isolation, sin relación con T-BE-4). Ruff 0 errores + format clean + arch 50/51 (1 pre-existing: luana_core_sales_agent.inbound_mode_seam missing module, sin relación con este ticket). Commit: PENDIENTE.
+
+### 2026-06-23 · 🤖 claude · `/dev-team` · ⚠️ DUDA (happy path completo live · bug#5 era artefacto MCP · bugs #6/#6b en create + infra rota)
+Continué la live-verify y completé el camino feliz hasta el final:
+- **bug5 (inline create) RESUELTO** — el "no POST" era ARTEFACTO del click sintético de Chrome-MCP (no dispara onClick de React). Con native `.click()` → **POST /crm/patients 201** (vitalia_patients 29→30, paciente "Sofia" creado real). El fix `faa643f7` (phone ''→null) es correcto. La feature está sana.
+- **Camino feliz hasta el submit VERIFICADO live** (native-click): Botox → 29-jun 09:00 → free-doctors lista Dr.2464fad7 → chip "Médico disponible" → day-strip (AC-8) → reasignar 1-clic (AC-5) → buscar paciente por nombre (decrypt ILIKE) → seleccionar → "Crear cita" se habilita.
+- **bug6**: `POST /scheduling/appointments` → **500** `column notes_internal of vitalia_appointments does not exist`. FIXED `9feb302c` (migración 052 + test real-schema, scheduling 236/236).
+- **bug6b (BLOQUEANTE, NO resuelto)**: el INSERT de create_appointment NO incluye `clinic_id` ni `offer_id`, ambos **NOT NULL** en `vitalia_appointments` → la cita seguirá 500 (null violation). El payload FE manda `service_label` (no `offer_id`); `clinic_id` del contexto no está cableado. Es un gap de CONTRATO/integración (no solo una columna).
+- **★ patrón:** 3 de los 7 bugs son "el INSERT referencia columnas que no existen / no se llenan NOT NULL" — el create_appointment **nunca se ejerció contra el schema real**. Los unit (229/229) mockean la DB.
+- **infra rota (ajeno a la story):** `scripts/git-hooks/pre-commit` (la modificación +1655 sin commitear desde el inicio) tiene **marcadores de conflicto git** → rompió el sweep-guard HB-31 → contaminación cross-sesión (el builder de bug6 vio sus archivos barridos por otra sesión).
+- **`dod_live_verified: false`** — falta el cita-create 201 (núcleo). Recomendación: fix-loop holístico BE+FE del create (clinic_id del contexto + offer_id del payload FE + verificar TODAS las NOT NULL + test real-schema) + endurecer tests (repo real-schema + contract FE↔BE HB-42) + reparar el pre-commit. ¿Seguimos con ese fix-loop o tomamos stock?

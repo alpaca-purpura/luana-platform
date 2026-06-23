@@ -163,8 +163,16 @@ class CreateAppointmentRequestDTO(BaseModel):
     """Request body for POST /api/v1/scheduling/appointments.
 
     T-BE-4: patient_id is REQUIRED (real patient from CRM — T-BE-5 provides it).
+    T-BE-4 bugfix: offer_id is REQUIRED (catalog FK, NOT NULL in vitalia_appointments).
     origin is limited to walk_in | telefono (Mateo manual flow).
     desde_paciente_existente removed; patient_new_data removed (PHI bug fix).
+
+    Approach (a) — offer_id as explicit request field:
+        The FE store (nueva-cita-store.ts) holds selectedServiceId = offerId UUID,
+        emitted by ServicePicker.onChange({ offerId, durationMinutes }).
+        FE must include offer_id in the POST payload (see T-BE-4-notnull-result.md).
+        This is the clean correct contract: offer_id is the real FK; matching by
+        display label would be fragile and ambiguous.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -172,6 +180,7 @@ class CreateAppointmentRequestDTO(BaseModel):
     origin: Literal["walk_in", "telefono"]
     patient_id: UUID  # required — real patient_id from CRM (T-BE-5); no stub
     doctor_id: UUID
+    offer_id: UUID  # required — catalog offer FK (NOT NULL in schema); FE sends selectedServiceId
     service_label: str = Field(..., min_length=1, max_length=128)
     start_time: datetime
     end_time: datetime

@@ -519,7 +519,8 @@ async def create_appointment(
     try:
         detail = await service.create_appointment(
             tenant_id=tid,
-            clinic_id=cid,
+            clinic_id=cid,  # X-Clinic-ID header — HIPAA dual filter + NOT NULL
+            offer_id=body.offer_id,  # T-BE-4 bugfix: offer FK (NOT NULL), from FE selectedServiceId
             user_id=uid,
             origin=body.origin,
             patient_id=body.patient_id,
