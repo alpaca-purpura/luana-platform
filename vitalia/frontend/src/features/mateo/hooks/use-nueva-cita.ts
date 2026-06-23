@@ -160,6 +160,8 @@ export interface NuevaCitaPatientInlineCreateResponse {
 export interface CreateAppointmentPayload {
   origin: "walk_in" | "telefono";
   patientId: string;
+  /** offerId (UUID) of the selected service — real FK, required by BE (NOT NULL). */
+  offerId: string;
   doctorId: string;
   serviceLabel: string;
   startTime: string;
@@ -253,6 +255,7 @@ function serializeCreateAppointment(
   return {
     origin: payload.origin,
     patient_id: payload.patientId,
+    offer_id: payload.offerId,
     doctor_id: payload.doctorId,
     service_label: payload.serviceLabel,
     start_time: payload.startTime,

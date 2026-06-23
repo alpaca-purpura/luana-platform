@@ -225,7 +225,13 @@ export function NuevaCitaView({
 
   const onSubmit = React.useCallback(
     (data: CreateAppointmentRequestDTO) => {
-      createMutation.mutate(data as CreateAppointmentPayload, {
+      // offerId (real FK, NOT NULL in BE) comes from the selected service in the
+      // store, not from the RHF form (which carries serviceLabel for display).
+      const payload = {
+        ...data,
+        offerId: selectedServiceId ?? "",
+      } as CreateAppointmentPayload;
+      createMutation.mutate(payload, {
         onSuccess: () => {
           toast.success("Cita creada con éxito");
           reset();
@@ -240,7 +246,7 @@ export function NuevaCitaView({
         },
       });
     },
-    [createMutation, reset, router],
+    [createMutation, reset, router, selectedServiceId],
   );
 
   // ── Submit block: fail-closed RN-10 ──────────────────────────────────────

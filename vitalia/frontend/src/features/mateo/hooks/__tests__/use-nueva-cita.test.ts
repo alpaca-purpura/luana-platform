@@ -209,6 +209,7 @@ describe("useNuevaCitaCreate", () => {
     result.current.mutate({
       origin: "walk_in",
       patientId: "p-1",
+      offerId: "11111111-1111-1111-1111-111111111111",
       doctorId: "doc-1",
       serviceLabel: "Limpieza dental",
       startTime: "2026-07-01T10:00:00Z",
