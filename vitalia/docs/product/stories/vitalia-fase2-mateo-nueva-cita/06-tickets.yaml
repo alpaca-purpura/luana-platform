@@ -74,7 +74,7 @@ tickets:
     title: "BE-2 · endpoint disponibilidad (check + free-doctors + day-strip)"
     surface: backend
     state: pushed
-    commit_sha: "pending"
+    commit_sha: "be1063d1"
     depends_on: [T-BE-2]
     description: >
       domain availability_check (half-open overlap) + AvailabilityCheckService +
