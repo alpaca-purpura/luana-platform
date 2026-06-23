@@ -43,6 +43,8 @@ tickets:
   - id: T-BE-2
     title: "BE-3 · migración 050 EXCLUDE anti-solape (btree_gist) en clinic_map"
     surface: backend
+    state: pushed
+    commit_sha: "f6ba9ac5"
     depends_on: []
     description: >
       Migración idempotente 050: CREATE EXTENSION btree_gist; ADD COLUMN IF NOT

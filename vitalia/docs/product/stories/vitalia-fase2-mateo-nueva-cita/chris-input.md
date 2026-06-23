@@ -139,6 +139,20 @@ P-0 átomos primero (AskUserQuestion).
 Promotion proposal `docs/promotion-protocol/proposals/2026-06-22-ui-kit-nueva-cita-atoms.md` (accepted→migrated). Build ejecutado por builder (anti-creep: pm-luana no escribe core src) en `core/@luana/ui-kit`: FormActionBar (nuevo) + Badge success/warning + PageHeader back-pill + EntityPicker.createAction · tokens success/warning agregados (light+dark) · 4 stories + 18 tests · version 0.6.0→0.7.0. **Verificación independiente:** tsc exit 0, vitest 307 passed (0 regresiones). Kit resuelve por `main: src/index.ts` (source) y vitalia consume `workspace:*` → **consumible YA sin build step**. promotion_precursor.state: migrated en checkpoint → los 4 tickets FE están desbloqueados. Próximo: `/dev-team <brand>: vitalia` (BE + FE, 9 tickets). Heads-up portfolio (closure-gate scan): 3 stories abiertas de otras sesiones — vitalia-fase2-adrian-canal-inbound (developed) · nicolify-r0-design-system-adoption (developed) · nicolify-r1-abel-icp-buyer (reviewing).
 Retomé la story (refining/AWAIT_MOCKUP). Re-serví `mockups/nueva-cita.html` en :8890 + screenshot full-page. Pre-review: el mockup está fiel y completo — shell wrapper consistente (Ribbon Mateo ámbar + SubTabs Agenda/Mi día/Recordatorios + header N3 full-bleed con back-pill), hoja full-page 2-col (datos | disponibilidad), dropdown Médico (Select canónico) presente, mini-vista del día (AC-8), chip disponibilidad, galería 4 estados de bloqueo + "Médicos disponibles" (AC-5) + hoja crear-paciente (AC-10) + validaciones inline + 409 carrera (AC-6). **1 detalle a decidir antes de firmar:** la duración se muestra DOS veces — badge read-only "Duración: 30 min — viene del servicio" bajo Servicio + campo editable "Duración (min)" al lado de Fecha. Redundante. Recomiendo colapsar a UN solo control: el campo editable "Duración (min)" con helper "viene del servicio · editable". Espero decisión de Chris + revisión del mockup → FIRMA 2.
 
+### 2026-06-22 · 🤖 claude · `builder-backend` · ✓ APLICADO (T-BE-2 · pushed)
+**Migration 050 EXCLUDE anti-solape (btree_gist) — f6ba9ac5**
+
+DDL aplicado + verificado idempotente:
+- `CREATE EXTENSION IF NOT EXISTS btree_gist`
+- `ADD COLUMN IF NOT EXISTS start_time/end_time/status` (mirror desde `slot_iso+duration_minutes`)
+- Dedup pre-existing dev-seed conflicts (status='CANCELLED' en mirror para filas duplicadas)
+- `EXCLUDE USING gist (tenant_id=, clinic_id=, doctor_id=, tstzrange(start_time,end_time,'[)') &&) WHERE status<>'CANCELLED'`
+- `CREATE INDEX IF NOT EXISTS ix_acm_doctor_range`
+- Schema-mirror: `start_time/end_time/status` `mapped_column` en `AppointmentClinicMapModel`
+
+Gates: 363/363 arch + 193/193 unit + ruff 0 + format clean. Re-run upgrade = no-op.
+Test file: `tests/modules/vitalia/scheduling/test_migration_050_exclude.py` (integration markers).
+
 ### 2026-06-22 · 🤖 claude · `builder-backend` · ✓ APLICADO (T-BE-1 · pushed)
 **Paths modificados:**
 - `vitalia/backend/src/modules/vitalia/offer/api/dtos.py` — +1 field `initial_appt_duration_minutes: int | None = None` en `ServiceListItemDTO`
