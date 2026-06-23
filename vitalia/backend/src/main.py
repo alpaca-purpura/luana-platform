@@ -47,6 +47,7 @@ from src.modules.vitalia.sales_agent.api.routers.operator_instruction_router imp
     router as operator_instruction_router,
 )
 from src.modules.vitalia.scheduling.api.agenda_router import router as agenda_router
+from src.modules.vitalia.scheduling.api.availability_router import router as availability_router
 from src.modules.vitalia.scheduling.api.notify_router import router as notify_router
 
 
@@ -127,6 +128,8 @@ app.include_router(fidelizacion_router, prefix="/api/v1/vitalia/fidelizacion")
 app.include_router(marketing_router, prefix="/api/v1/vitalia/marketing")
 # T-6 F2-S1: Scheduling agenda router — 5 endpoints (grid, aggregates, detail, create, patch_status)
 app.include_router(agenda_router, prefix="/api/v1/scheduling")
+# T-BE-3 vitalia-fase2-mateo-nueva-cita: Availability endpoints (check + free-doctors + day-strip)
+app.include_router(availability_router, prefix="/api/v1/scheduling")
 # T-8 F2-S1: Scheduling notify — template-only WhatsApp + ComplianceService guard + audit log
 app.include_router(notify_router, prefix="/api/v1/scheduling")
 # T-7 F2-S1: Payments charge router — CobrarSaldo saga (payment + fiscal + audit + idempotency)

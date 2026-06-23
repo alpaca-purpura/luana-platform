@@ -137,6 +137,13 @@ KNOWN_NON_PHI_RBAC_ENDPOINTS: frozenset[str] = frozenset(
         # get_agenda_aggregates: returns integer counts per day (no patient identifiers).
         # Documented in agenda_router.py: "PHI-free: returns only integer counts per day."
         "get_agenda_aggregates",
+        # Availability endpoints (T-BE-3): return scheduling metadata only — NO PHI.
+        # conflict_label = time string only; doctor_label = professional display name.
+        # Per 03-arch-be.md § 7 PHI contract: "Availability = scheduling metadata only."
+        "_rbac_check",  # Helper function, not an endpoint handler
+        "check_availability",  # availability_router.py: AvailabilityCheckResponse (no PHI)
+        "list_free_doctors",  # availability_router.py: FreeDoctorsResponse (no PHI)
+        "get_day_strip",  # availability_router.py: DayStripResponse (start/end + kind only)
     ]
 )
 
