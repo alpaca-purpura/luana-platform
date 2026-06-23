@@ -415,6 +415,23 @@ test_construction_plan:
     - { scenario: "accessibility",    file: "../a11y/{story-id}.spec.ts", function: "test('axe-core wcag2aa pass'" }
     - { scenario: "i18n",             file: "../i18n/{story-id}.spec.ts", function: "test('renders correct currency per tenant'" }
 
+  # ── ★ Seam coverage (HB-95 · cobertura = colaborador real, no mock) ───────────
+  # Cada escenario que cruza una COSTURA declara la costura + el tipo de test que la
+  # ejerce DE VERDAD (no un unit mockeado). Gate: scripts/check_seam_coverage.py.
+  #   seam      ∈ code-db | fe-be | router | auth | component-shell
+  #   test_type ∈ integration-realdb | contract | router | e2e-live | live-verify
+  #   mapeo: code-db→integration-realdb · fe-be→contract · router→router(end-to-end)
+  #          · auth→live-verify(#37, NO unit-testeable) · component-shell→e2e-live(render real)
+  #   `unit-mocked`/`unit`/`mocked` PROHIBIDO para un escenario de costura.
+  #   `target` = path del test que toca el colaborador real (o "live" para la costura auth/#37).
+  # `target` = path WORKSPACE-ROOTED del test que toca el colaborador real (para que el gate lo resuelva).
+  seam_coverage:
+    - { sc: "SC-<happy-write>",  seam: code-db,         test_type: integration-realdb, target: "{brand}/backend/tests/modules/{brand}/{m}/test_<x>_realdb.py" }
+    - { sc: "SC-<fe-be>",        seam: fe-be,           test_type: contract,           target: "{brand}/backend/tests/modules/{brand}/{m}/test_<x>_contract.py" }
+    - { sc: "SC-<response-dto>", seam: router,          test_type: router,             target: "{brand}/backend/tests/modules/{brand}/{m}/test_<x>_router.py" }
+    - { sc: "SC-<auth-write>",   seam: auth,            test_type: live-verify,        target: "live (#37 dod_evidence)" }
+    - { sc: "SC-<form-in-shell>",seam: component-shell, test_type: e2e-live,           target: "{brand}/frontend/e2e/regression/{story-id}/<x>.spec.ts" }
+
   poms_required:
     - { file: "{m}-list-page.pom.ts",   methods: ["goto()", "filterBy(criteria)", "clickCreateButton()", "getRowCount() → number", "getRowByName(name)"] }
     - { file: "{m}-detail-page.pom.ts", methods: ["goto(id)", "fillForm(data)", "submit()", "getErrorMessage() → string|null"] }

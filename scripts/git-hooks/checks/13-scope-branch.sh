@@ -76,7 +76,7 @@ Acciones:
           "Transversal modelo staging blocked (branch=$CURRENT_BRANCH_SCOPE no toca modelo/protocolo)" \
           "El archivo es transversal al modelo (rules/skills/process/architecture/scripts git).
 Acciones:
-  1. Crear worktree dedicado: scripts/git/new-session.sh protocol exp <slug>
+  1. Crear worktree dedicado: scripts/git/new-session.sh protocol work <slug>
   2. O abandonar el cambio si no era intencional: git restore --staged $f"
       fi
       # BLOCK: core engine

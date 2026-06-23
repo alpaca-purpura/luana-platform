@@ -8,7 +8,7 @@ set -euo pipefail
 #
 # Args:
 #   BRAND    brand activa: vitalia | nicolify | comunify | lupulo
-#            o pseudo-brand: core (D12 — lifts engine + cambios al core)
+#            o pseudo-brand: core (D12 — lifts engine) | protocol (cross-cutting harness/modelo)
 #   TYPE     worktree type per BRAND:
 #              brand activa:
 #                canonical  → ~/Proyectos/luana-{brand}/                       branch wip/{brand}-{slug}
@@ -17,6 +17,8 @@ set -euo pipefail
 #                exp        → ~/Proyectos/luana-{brand}-exp-{slug}/            branch exp/{brand}-{slug}
 #              core:
 #                lift       → ~/Proyectos/luana-core-{slug}/                   branch wip/core-{slug}
+#              protocol:    (cross-cutting: .claude/**, docs/{process,architecture,specs}/**, scripts/**, Makefile)
+#                work       → ~/Proyectos/luana-protocol-{slug}/               branch wip/protocol-{slug}
 #   SLUG     identificador story-id/slug-corto. Solo [a-z0-9-], lowercase, max 40 chars
 #            Con TYPE=story, SLUG === story-id (story-closure-gate convention 2026-05-18).
 #   LANE     opcional, solo con TYPE=story: be|fe|tests|docs (libre, recomendado)
@@ -46,11 +48,12 @@ SLUG="${3:-}"
 LANE="${4:-}"
 
 # Validate BRAND (mantener lista en sync con docs/portfolio/PORTFOLIO.md)
-# 'core' es pseudo-brand reservado para lifts engine (D12)
+# 'core' es pseudo-brand reservado para lifts engine (D12).
+# 'protocol' es pseudo-brand para cambios cross-cutting al modelo/harness (scope-gate wip/protocol-*).
 case "${BRAND}" in
-  vitalia|nicolify|comunify|lupulo|core) ;;
+  vitalia|nicolify|comunify|lupulo|core|protocol) ;;
   *)
-    echo "::error::Unknown brand '${BRAND}'. Allowed: vitalia, nicolify, comunify, lupulo, core"
+    echo "::error::Unknown brand '${BRAND}'. Allowed: vitalia, nicolify, comunify, lupulo, core, protocol"
     exit 1
     ;;
 esac
@@ -62,6 +65,15 @@ case "${BRAND}" in
       lift) ;;
       *)
         echo "::error::With BRAND=core only TYPE=lift allowed (got TYPE=${TYPE})"
+        exit 1
+        ;;
+    esac
+    ;;
+  protocol)
+    case "${TYPE}" in
+      work) ;;
+      *)
+        echo "::error::With BRAND=protocol only TYPE=work allowed (got TYPE=${TYPE})"
         exit 1
         ;;
     esac
@@ -147,6 +159,11 @@ if [[ "${BRAND}" = "core" ]]; then
   # D12 — lift core
   BRANCH="wip/core-${SLUG}"
   WORKTREE_DIR="${WORKTREE_PARENT}/luana-core-${SLUG}"
+  WORKTREE_TYPE="ephemeral"
+elif [[ "${BRAND}" = "protocol" ]]; then
+  # cross-cutting harness/modelo — scope-gate enforces wip/protocol-* solo toca modelo
+  BRANCH="wip/protocol-${SLUG}"
+  WORKTREE_DIR="${WORKTREE_PARENT}/luana-protocol-${SLUG}"
   WORKTREE_TYPE="ephemeral"
 else
   case "${TYPE}" in
@@ -261,8 +278,8 @@ if ! grep -qxF "/.session.yaml" "${EXCLUDE_FILE}" 2>/dev/null; then
   echo "→ Added /.session.yaml to ${EXCLUDE_FILE}"
 fi
 
-# Copy .env.dev.template per brand (best-effort) — solo si BRAND es una brand real, no 'core'
-if [[ "${BRAND}" != "core" ]]; then
+# Copy .env.dev.template per brand (best-effort) — solo brands reales (no 'core'/'protocol')
+if [[ "${BRAND}" != "core" ]] && [[ "${BRAND}" != "protocol" ]]; then
   template="${WORKTREE_DIR}/${BRAND}/.env.dev.template"
   if [[ -f "${template}" ]]; then
     dest="${WORKTREE_DIR}/${BRAND}/.env.dev"
