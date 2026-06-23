@@ -215,3 +215,29 @@ Fix: removed token state+useEffect entirely. Each queryFn/mutationFn calls `cons
 Files: use-nueva-cita.ts (6 hooks) + use-patients.ts (2) + use-availability.ts (2) + NuevaCitaView.tsx + AvailabilityChip + DayAvailabilityStrip + FreeDoctorsList + PatientPickerWithCreate + 7 test files.
 TDD regression: added describe block in use-nueva-cita.test.ts asserting getToken() called inside queryFn (not at mount).
 Gates: tsc 0 errors | eslint 0 errors | vitest 30 files 370/370 PASS.
+
+### 2026-06-22 · 🤖 claude · `/dev-team` · ⚠️ DUDA (live-verify: 9 tickets construidos, integración rota en 5 puntos)
+Construí los 9 tickets (5 BE + 4 FE) — todos verdes en unit (BE 35-365 tests, FE 2659/2659) + arch-fitness. **Live-verify en dev-app (Chrome DevTools MCP, dr.demo, localhost:3002) destapó que la integración estaba rota en TODOS sus seams** — clásico "unit-green ≠ runtime-truth" (los unit mockean Clerk/DB, nunca cruzan los contratos reales). Bugs:
+1. **Render** — el effect del token no esperaba `isLoaded` de Clerk (deps `[getToken]`) → token "" → queries `enabled:false` → pickers skeleton eterno, cero fetch. FIXED (gate isLoaded/isSignedIn, patrón PatientAutocomplete). Verificado: `/offer/servicios 200`, combobox poblado.
+2. **Token 60s** — los 10 hooks cacheaban el JWT al montar; Clerk no refresca header-token en non-GET → **todo write** 307→/sign-in tras ~60s. FIXED (refactor getToken fresco por-request, commit `1d63734f`, 370/370). Verificado: `free-doctors POST 200` (era 307).
+3. **BE schema** — `patient_repository` SELECT/INSERT referencia `channel_first` + `notes` → **columnas inexistentes** en vitalia_patients → search+create **500**. FIXED (migración 051 + regression test al schema real, commit `0ff94f55`, CRM 365/365). Verificado: `crm/patients GET 200` (29 pacientes masked).
+4. **Nested `<form>`** — PatientPickerWithCreate renderizaba `<form>` DENTRO del `<form>` de NuevaCitaView → hydration error → submit tragado. FIXED por mí (form→div + button onClick, uncommitted). Hydration error desaparecido.
+5. **Inline create no dispara POST** (remanente) — tras #4, "Crear paciente" sigue sin pegar `POST /crm/patients` (count sigue 29, sin error de validación, sin pending). `handleInlineSubmit` no se invoca. Handoff a builder-frontend (fix-loop con diagnóstico + test).
+- **cita-create 201 BLOQUEADO por seed:** en los slots probados (mar 23-jun 09:00) `free-doctors` devuelve `200` pero **vacío** ("Sin médicos disponibles"). Para el 201 end-to-end necesito un slot con médico libre — ¿médico+día+hora seedeado disponible en Sanaré LATAM?
+- **`dod_live_verified: false`** — la story NO cierra. Faltan: fix #5 + re-verify + crear-cita-201 + crear-paciente-201 + solape-409 + auditor + tu firma G.
+- ⚠️ aparte: runner E2E Playwright roto platform-wide (`clerk.setup.ts:31 describe.configure`, pre-existente, afecta TODOS los smoke) → HB pendiente.
+
+### 2026-06-22 · 🤖 claude · `builder-frontend` · T-FE-4-submitfix · ✓ APLICADO
+Bug #5 FIXED: inline "Crear paciente" submit (phone blank) now fires POST /crm/patients.
+
+**Root cause (2-part):**
+1. Zod schema — `phone: z.string().min(6)` with `defaultValues: { phone: "" }`: empty string fails `min(6)` → RHF blocks `handleSubmit` → mutation never called.
+2. onClick — `onClick={form.handleSubmit(handleInlineSubmit)}` didn't guarantee explicit invocation; changed to `onClick={() => void form.handleSubmit(handleInlineSubmit)()}`.
+
+**Schema fix:** `z.union([z.string().min(6).max(20), z.literal("")]).nullable().optional().transform(v => v===""||v==null ? null : v)`. RHF typed via `useForm<InlineCreateFormInput, unknown, InlineCreateFormOutput>` (3-arg generic, separates input/output types for transform to work with TS strict).
+
+**TDD:** RED test `SC-crear-paciente-sin-telefono` added first (confirmed `mockCreatePatient` not called), then GREEN after fix. All 5 PatientPickerWithCreate tests pass.
+
+**G5 GATE:** tsc 0 errors · eslint 0 errors · vitest 371/371 PASS (mateo feature suite).
+
+Files touched: `PatientPickerWithCreate.tsx` (schema + onClick) + its test file (regression guard).

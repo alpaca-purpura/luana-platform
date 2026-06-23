@@ -33,13 +33,31 @@ import { useSearchPatients, useCreatePatientInline } from "../../hooks/use-patie
 import type { PatientPickerItem, PatientInlineCreateResult } from "../../hooks/use-patients";
 
 // ── Inline create schema (minimal — name required, phone optional per BE contract) ──
-
+// Bug #5 fix: phone defaults to "" from RHF defaultValues. An empty string is NOT
+// null/undefined, so z.string().min(6)... fails even when the field is blank.
+// Fix: accept "" as valid (empty = absent) and transform to null before BE payload.
+//
+// RHF + Zod transform typing note:
+//  - z.input<> = form field values (RHF sees: phone = string | "" | null | undefined)
+//  - z.output<> = submitted data after transform (phone = string | null)
+//  - useForm<InlineCreateFormInput> to avoid TFieldValues mismatch
+//  - handleInlineSubmit receives InlineCreateFormOutput (post-transform)
 const InlineCreateSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres").max(120),
-  phone: z.string().min(6, "Ingresa un teléfono válido").max(20).nullable().optional(),
+  phone: z
+    .union([
+      z.string().min(6, "Ingresa un teléfono válido").max(20),
+      z.literal(""),
+    ])
+    .nullable()
+    .optional()
+    .transform((v): string | null => (v === "" || v == null ? null : v)),
 });
 
-type InlineCreateForm = z.infer<typeof InlineCreateSchema>;
+// Input type = what RHF manages in DOM fields (before transform)
+type InlineCreateFormInput = z.input<typeof InlineCreateSchema>;
+// Output type = what handleInlineSubmit receives (after transform)
+type InlineCreateFormOutput = z.output<typeof InlineCreateSchema>;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -93,7 +111,7 @@ export function PatientPickerWithCreate({
   const { searchFn } = useSearchPatients({ tenantId });
   const createMutation = useCreatePatientInline({ tenantId });
 
-  const form = useForm<InlineCreateForm>({
+  const form = useForm<InlineCreateFormInput, unknown, InlineCreateFormOutput>({
     resolver: zodResolver(InlineCreateSchema),
     defaultValues: { name: "", phone: "" },
     mode: "onSubmit",
@@ -113,11 +131,11 @@ export function PatientPickerWithCreate({
   };
 
   // ── Inline form submit ────────────────────────────────────────────────────
-  const handleInlineSubmit = async (data: InlineCreateForm) => {
+  const handleInlineSubmit = async (data: InlineCreateFormOutput) => {
     try {
       const result = await createMutation.mutateAsync({
         name: data.name,
-        phone: data.phone ?? null,
+        phone: data.phone,
         email: null,
         uiChannel,
         note: null,
@@ -197,10 +215,18 @@ export function PatientPickerWithCreate({
         className={cn("rounded-md border bg-card p-4", className)}
       >
         <p className="mb-3 text-sm font-medium">Nuevo paciente</p>
-        {/* ponytail: minimal form — name + phone only per T-FE-2 scope */}
-        <form
-          onSubmit={form.handleSubmit(handleInlineSubmit)}
-          noValidate
+        {/* ponytail: minimal create — name + phone only per T-FE-2 scope.
+            NOT a <form>: this picker mounts inside NuevaCitaView's outer <form>,
+            and nested <form>s are invalid HTML → hydration error swallows the
+            submit (no POST fires). Use a div + button onClick; Enter on a field
+            triggers the same handler. (bugfix: nested-form found in live-verify) */}
+        <div
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              void form.handleSubmit(handleInlineSubmit)();
+            }
+          }}
         >
           <div className="mb-3">
             <Label htmlFor="patient-inline-name-field" className="mb-1 block text-xs">
@@ -259,10 +285,11 @@ export function PatientPickerWithCreate({
 
           <div className="flex gap-2">
             <Button
-              type="submit"
+              type="button"
               size="sm"
               data-testid="patient-inline-submit"
               disabled={createMutation.isPending}
+              onClick={() => void form.handleSubmit(handleInlineSubmit)()}
             >
               {createMutation.isPending ? "Guardando…" : "Crear paciente"}
             </Button>
@@ -276,7 +303,7 @@ export function PatientPickerWithCreate({
               Cancelar
             </Button>
           </div>
-        </form>
+        </div>
       </div>
     );
   }

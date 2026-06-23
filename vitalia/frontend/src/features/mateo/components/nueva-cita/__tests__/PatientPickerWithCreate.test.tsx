@@ -8,6 +8,11 @@
  *  - SC-paciente-duplicado: BE returns is_duplicate=true → "¿Usar existente?" prompt (RN-9)
  *  - SC-empty-pacientes: empty search shows empty state
  *  - SC-pacientes-grandes: windowed render via EntityPicker (cursor pagination)
+ *
+ * Regression guard — T-FE-4 bug #5:
+ *  - SC-crear-paciente-sin-telefono: name-only create (phone blank) MUST call mutation.
+ *    Root cause: InlineCreateSchema phone:"" failed min(6) → RHF blocked submit silently.
+ *    Fix: empty-string phone transforms to null (optional field, not required by BE).
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -232,5 +237,58 @@ describe("PatientPickerWithCreate", () => {
     );
 
     expect(screen.getByTestId("patient-picker-empty")).toBeInTheDocument();
+  });
+
+  // ── Regression guard: T-FE-4 bug #5 — submit never fires with empty phone ──
+  // RED: with the old schema (phone: z.string().min(6)...), leaving phone blank
+  // caused RHF validation to block handleSubmit → mutation was NEVER called.
+  // GREEN: after fix (empty-string → null transform), name-only create works.
+  it("SC-crear-paciente-sin-telefono: name-only (phone blank) MUST call mutation [regression guard bug#5]", async () => {
+    const onChange = vi.fn();
+    mockCreatePatient.mockResolvedValue({
+      patientId: "created-no-phone-uuid",
+      nameMasked: "M*** P***",
+      phoneMasked: null,
+      isDuplicate: false,
+    });
+
+    const user = userEvent.setup();
+    render(
+      <PatientPickerWithCreate
+        value={null}
+        onChange={onChange}
+        tenantId="t-1"
+      />,
+    );
+
+    // Open inline form via createAction
+    const searchInput = screen.getByTestId("patient-picker-search");
+    await user.type(searchInput, "María");
+    const createBtn = await screen.findByTestId("patient-picker-create-action");
+    await user.click(createBtn);
+
+    // Fill name only — leave phone BLANK (the buggy path)
+    const nameInput = screen.getByTestId("patient-inline-name");
+    await user.clear(nameInput);
+    await user.type(nameInput, "María Pérez");
+    // phone input untouched — stays empty ""
+
+    // Click submit
+    await user.click(screen.getByTestId("patient-inline-submit"));
+
+    // Mutation MUST have been called (was silently swallowed before fix)
+    await waitFor(() => {
+      expect(mockCreatePatient).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: "María Pérez",
+          phone: null, // "" transformed to null by schema
+        }),
+      );
+    });
+
+    // onChange called with the new patientId
+    await waitFor(() => {
+      expect(onChange).toHaveBeenCalledWith("created-no-phone-uuid");
+    });
   });
 });
