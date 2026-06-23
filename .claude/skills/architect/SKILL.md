@@ -249,6 +249,7 @@ Reglas:
 - **Nueva categoría `architectural_validation`** separada de `non_functional` (DDD boundary scan, anti-dup grep, tenant_isolation grep, cross-module audit)
 - **TODA story con surface FE/funcional MUST incluir Playwright behavior tests** — el architect dicta los scenarios E2E exactos a cubrir (no es opcional)
 - **`test_construction_plan` section** dentro de `04-validators.yaml` con: orden de creación, POMs requeridos, fixtures compartidos, mapping scenario Gherkin → spec.ts file → assertions
+- **★ Seam coverage (HB-95 · cement 2026-06-23):** cada escenario que cruza una COSTURA (código↔DB · FE↔BE · service↔router/response · código↔auth · componente↔shell) declara en `test_construction_plan.seam_coverage` la `seam` + el `test_type` real-collaborator requerido (`integration-realdb` / `contract` / `router` / `e2e-live` / `live-verify`) + el `target`. **PROHIBIDO `unit-mocked` para un escenario de costura** — un test que mockea el colaborador del otro lado de la costura NO la cubre (`test-design-doctrine.md § Cobertura = colaborador real, no mock`). Mapeo: code-db→integration-realdb · fe-be→contract · router→router(end-to-end) · auth→live-verify(#37, NO unit-testeable) · component-shell→e2e-live(render real). Gate: `scripts/check_seam_coverage.py --report 04-validators.yaml`.
 
 Template (paths brand-scoped; workspace root parametrizado via `${WS}` o `cd {brand}/...`):
 
@@ -475,6 +476,15 @@ test_construction_plan:
         - "expect(request as tenant B for tenant A resource).toHaveStatus(404 or 403)"
         - "NO leak en error body"
 
+  # ★ Seam coverage (HB-95) — cada escenario de COSTURA → test del tipo que la ejerce de verdad
+  # (NO unit-mocked). Gate: scripts/check_seam_coverage.py. Ver template para el detalle de enums.
+  seam_coverage:
+    - { sc: "SC-happy-create", seam: code-db,         test_type: integration-realdb, target: "{brand}/backend/tests/modules/{brand}/{m}/test_{m}_create_realdb.py" }
+    - { sc: "SC-payload",      seam: fe-be,           test_type: contract,           target: "{brand}/backend/tests/modules/{brand}/{m}/test_{m}_contract.py" }
+    - { sc: "SC-response-dto", seam: router,          test_type: router,             target: "{brand}/backend/tests/modules/{brand}/{m}/test_{m}_router.py" }
+    - { sc: "SC-auth-write",   seam: auth,            test_type: live-verify,        target: "live (#37 dod_evidence)" }
+    - { sc: "SC-form-in-shell",seam: component-shell, test_type: e2e-live,           target: "{brand}/frontend/e2e/regression/{story-id}/{m}-happy.spec.ts" }
+
   # POMs requeridos (Page Object Models) — qué métodos exponen
   poms_required:
     - file: "{m}-list-page.pom.ts"
@@ -508,6 +518,8 @@ iteration:
 ```
 
 **Validation gate v4.1:** Every scenario in `01-spec.md` MUST appear en `scenario_coverage` AND `test_construction_plan.scenario_to_test`. If any uncovered → architect itera hasta cubrirlos. **Sub-categorías scenarios obligatorias (v4.1 /po-ux refused refined sin ellas):** race conditions, concurrent users, network failures, empty states, large datasets, accessibility, i18n. Si /po-ux ratificó refined SIN estas sub-categorías → flag para Chris (spec quality gap).
+
+**★ Seam validation gate (HB-95):** todo escenario que cruza una costura DEBE tener su entry en `test_construction_plan.seam_coverage` con `test_type` ≠ `unit-mocked`. Corré `scripts/check_seam_coverage.py --report {story}/04-validators.yaml` antes de cerrar `ready` — `::error::` → el ready package NO cierra. (El escenario `código↔auth` se declara `test_type: live-verify` — su cobertura es la live-verify #37, no un test.)
 
 ### Step 6 — Producir 05-guidelines.md ★ v4.1 must_load_skills enforceable ★
 

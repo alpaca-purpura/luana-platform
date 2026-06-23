@@ -49,7 +49,7 @@ El builder NO improvisa los tests. Diseña la **batería de tests apropiada a la
 | **componente ↔ padre/shell** | render DENTRO del contenedor real (`<form>`/shell) + axe + `assertShellMounted` | componente aislado que nunca vive dentro del `<form>`/shell real |
 
 **Cómo se aplica (sin fase nueva — endurece "cubierto" donde ya existe):**
-- `/architect` declara por escenario la **costura** + el **tipo de test real-collaborator** en `04-validators § test_construction_plan` (`scenario_to_test`); prohíbe `unit-mocked` para escenario de costura (HB-95).
+- `/architect` declara por escenario la **costura** + el **tipo de test real-collaborator** en `04-validators § test_construction_plan.seam_coverage`; prohíbe `unit-mocked` para escenario de costura (HB-95).
 - El builder construye el test del **tipo requerido** (`integration-realdb` / `contract` / `router` / `e2e-live` / `live-verify`), no un unit mockeado.
 - Phase D (dev-team local Step 4.5 + auditor) marca **MOCK-ONLY (= MISSING)** un escenario de costura cubierto solo por test mockeado (HB-96 · `scripts/check_seam_coverage.py`).
 
