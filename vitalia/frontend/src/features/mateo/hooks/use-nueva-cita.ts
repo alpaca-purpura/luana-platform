@@ -15,7 +15,7 @@
  *   - fetchClient (vitaliaFetch) auto-injects X-Tenant-ID.
  *
  * ★ ANTI-EMBUDO CONTRACT (verified against BE DTOs 2026-06-22):
- *   - Services: GET /api/v1/offers/servicios → ServiceListResponse (snake_case)
+ *   - Services: GET /api/v1/offer/servicios → ServiceListResponse (snake_case)
  *     Fields: offer_id, public_name, initial_appt_duration_minutes, is_active, status, currency
  *   - FreeDoctors: POST /api/v1/scheduling/availability/free-doctors → FreeDoctorsResponse
  *     Fields: doctors[{doctor_id, doctor_label}], count
@@ -271,7 +271,7 @@ interface BaseParams {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// useNuevaCitaServices — GET /api/v1/offers/servicios
+// useNuevaCitaServices — GET /api/v1/offer/servicios
 // ────────────────────────────────────────────────────────────────────────────
 
 /**
@@ -288,7 +288,7 @@ export function useNuevaCitaServices({ tenantId, token }: BaseParams) {
       const raw = await vitaliaFetch<{
         items: Raw[];
         next_cursor: string | null;
-      }>("/api/v1/offers/servicios?is_active=true&limit=100", {
+      }>("/api/v1/offer/servicios?is_active=true&limit=100", {
         token,
         tenantId,
         headers: {

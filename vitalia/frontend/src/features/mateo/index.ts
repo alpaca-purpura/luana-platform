@@ -194,9 +194,31 @@ export type { AppointmentDrawerNotasSectionProps } from "./components/agenda/App
 export { AppointmentDrawerAccionesAvanzadasSection } from "./components/agenda/AppointmentDrawerAccionesAvanzadasSection";
 export type { AppointmentDrawerAccionesAvanzadasSectionProps } from "./components/agenda/AppointmentDrawerAccionesAvanzadasSection";
 
-// ── Nueva Cita leaf sheet (T-FE-1) ────────────────────────────────────────────
+// ── Nueva Cita leaf sheet (T-FE-1..T-FE-4) ────────────────────────────────────
 export { NuevaCitaView } from "./components/nueva-cita/NuevaCitaView";
 export type { NuevaCitaViewProps } from "./components/nueva-cita/NuevaCitaView";
+
+// T-FE-2: pickers
+export { ServicePicker } from "./components/nueva-cita/ServicePicker";
+export type { ServicePickerProps, ServicePickerChange } from "./components/nueva-cita/ServicePicker";
+export { DoctorPicker } from "./components/nueva-cita/DoctorPicker";
+export type { DoctorPickerProps } from "./components/nueva-cita/DoctorPicker";
+export { PatientPickerWithCreate } from "./components/nueva-cita/PatientPickerWithCreate";
+export type { PatientPickerWithCreateProps } from "./components/nueva-cita/PatientPickerWithCreate";
+export { CanalPicker } from "./components/nueva-cita/CanalPicker";
+export type { CanalPickerProps, CanalValue } from "./components/nueva-cita/CanalPicker";
+
+// T-FE-3: availability
+export { AvailabilityChip } from "./components/nueva-cita/AvailabilityChip";
+export type { AvailabilityChipProps } from "./components/nueva-cita/AvailabilityChip";
+export { DayAvailabilityStrip } from "./components/nueva-cita/DayAvailabilityStrip";
+export type { DayAvailabilityStripProps } from "./components/nueva-cita/DayAvailabilityStrip";
+export { FreeDoctorsList } from "./components/nueva-cita/FreeDoctorsList";
+export type { FreeDoctorsListProps } from "./components/nueva-cita/FreeDoctorsList";
+
+// T-FE-4: actions
+export { NuevaCitaActions } from "./components/nueva-cita/NuevaCitaActions";
+export type { NuevaCitaActionsProps } from "./components/nueva-cita/NuevaCitaActions";
 
 export { useNuevaCitaStore } from "./store/nueva-cita-store";
 export type {

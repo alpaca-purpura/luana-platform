@@ -1,32 +1,29 @@
 // cap: scheduling.mateo-agenda
 /**
- * NuevaCitaView.tsx — "Nueva cita" leaf sheet (client root).
- * T-FE-1 vitalia-fase2-mateo-nueva-cita
+ * NuevaCitaView.tsx — "Nueva cita" leaf sheet (client root). INTEGRATED.
+ * T-FE-4 vitalia-fase2-mateo-nueva-cita
  *
  * FULL-PAGE SHEET (AC-9 — no modal/drawer).
- * Composed from @luana/ui-kit atoms:
- *   - FormPageScaffold — page container
- *   - PageHeader — title + back-pill (‹ Agenda)
- *   - FormActionBar — sticky bottom submit bar
+ * Integration ticket: replaces T-FE-1 placeholder selects/inputs
+ * with real pickers from T-FE-2 and availability components from T-FE-3.
  *
- * Form sections:
- *   1. Servicio → drives default duration → drives endTime default
- *   2. Médico → driven by startTime + duration (free-doctors query)
+ * Form sections (integrated):
+ *   1. Servicio → ServicePicker → drives default duration + endTime
+ *   2. Canal    → CanalPicker (walk_in | telefono)
  *   3. Fecha/hora inicio (SmartDateTimePicker, UTC to BE)
  *   4. Duración → drives endTime (editable, default 30 when service.dur=null)
  *   5. Hora fin (computed from start + duration, editable)
- *   6. Canal (walk_in | telefono)
- *   7. Paciente (typeahead + inline create toggle)
+ *   6. Médico   → DoctorPicker → AvailabilityChip + DayAvailabilityStrip + FreeDoctorsList
+ *   7. Paciente → PatientPickerWithCreate (typeahead + inline create)
  *   8. Notas internas (optional)
  *
  * Validation: RHF + Zod (CreateAppointmentRequestSchema).
- * fin ≤ inicio → inline error, no POST (SC-fin-invalido).
- * service.dur=null → 30 min editable (SC-dur-default).
- * tz: display = tenant timezone, sent to BE = UTC (SC-i18n-tz).
+ * Submit blocked until form valid AND availabilityStatus === "available" (RN-10).
+ * availabilityStatus sourced from Zustand store (set by AvailabilityChip).
  *
  * Named exports only — NO default exports (FSD-Lite boundary enforcement).
  * downstream-regression-na: brand-local FE component; no cross-brand consumers
- * spec_anchor: 03-arch-fe.md § F3 + 06-tickets.yaml T-FE-1
+ * spec_anchor: 03-arch-fe.md § F3 + 06-tickets.yaml T-FE-4
  */
 
 "use client";
@@ -42,29 +39,34 @@ import { useTenantLocale } from "@/hooks/useTenantLocale";
 import {
   FormPageScaffold,
   PageHeader,
-  FormActionBar,
   SmartDateTimePicker,
 } from "@luana/ui-kit";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   useNuevaCitaServices,
   useNuevaCitaFreeDoctors,
-  useNuevaCitaAvailabilityCheck,
   useNuevaCitaCreate,
 } from "../../hooks/use-nueva-cita";
 import type { CreateAppointmentPayload } from "../../hooks/use-nueva-cita";
 import { useNuevaCitaStore } from "../../store/nueva-cita-store";
 import { CreateAppointmentRequestSchema } from "../../types/agenda-schema";
 import type { CreateAppointmentRequestDTO } from "../../types/agenda-schema";
+
+// T-FE-2 pickers
+import { ServicePicker } from "./ServicePicker";
+import { DoctorPicker } from "./DoctorPicker";
+import { PatientPickerWithCreate } from "./PatientPickerWithCreate";
+import { CanalPicker } from "./CanalPicker";
+
+// T-FE-3 availability
+import { AvailabilityChip } from "./AvailabilityChip";
+import { DayAvailabilityStrip } from "./DayAvailabilityStrip";
+import { FreeDoctorsList } from "./FreeDoctorsList";
+
+// T-FE-4 actions bar
+import { NuevaCitaActions } from "./NuevaCitaActions";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -82,7 +84,7 @@ export interface NuevaCitaViewProps {
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-/** Build UTC ISO string from date + time strings (local wall clock in tz). */
+/** Build UTC ISO string from date + time strings (local wall clock). */
 function buildIsoFromDateAndTime(
   date: string | undefined,
   time: string | undefined,
@@ -90,13 +92,8 @@ function buildIsoFromDateAndTime(
 ): string | undefined {
   if (!date || !time) return undefined;
   try {
-    // Convert wall-clock in tenant timezone to UTC
-    // SmartDateTimePicker handles this conversion internally — for prefill we
-    // construct a naïve local string and let the picker normalize.
-    // ponytail: simple approach — correct for non-DST scenarios; full DST
-    // correctness handled by SmartDateTimePicker's fromZonedTime.
-    const naive = `${date}T${time}:00`;
-    const d = new Date(naive + "Z"); // treat as UTC for initial prefill
+    // ponytail: simple UTC construct for prefill; SmartDateTimePicker handles full DST
+    const d = new Date(`${date}T${time}:00Z`);
     return d.toISOString();
   } catch {
     return undefined;
@@ -104,10 +101,7 @@ function buildIsoFromDateAndTime(
 }
 
 /** Add durationMinutes to an ISO string and return new ISO string. */
-function addMinutesToIso(
-  isoStart: string,
-  minutes: number,
-): string {
+function addMinutesToIso(isoStart: string, minutes: number): string {
   const d = new Date(isoStart);
   d.setMinutes(d.getMinutes() + minutes);
   return d.toISOString();
@@ -116,10 +110,13 @@ function addMinutesToIso(
 // ── Component ──────────────────────────────────────────────────────────────────
 
 /**
- * NuevaCitaView — full-page appointment creation sheet.
+ * NuevaCitaView — full-page appointment creation sheet (INTEGRATED T-FE-4).
  *
  * AC-9: This is NOT a modal/drawer — it is a dedicated route page.
  * Back-pill navigates to /mateo/agenda.
+ *
+ * Submit blocked: !isValid || availabilityStatus !== "available" (RN-10).
+ * availabilityStatus sourced from Zustand store (set by AvailabilityChip).
  */
 export function NuevaCitaView({
   tenantId,
@@ -142,6 +139,7 @@ export function NuevaCitaView({
   const setSelectedServiceId = useNuevaCitaStore((s) => s.setSelectedServiceId);
   const selectedDoctorId = useNuevaCitaStore((s) => s.selectedDoctorId);
   const setSelectedDoctorId = useNuevaCitaStore((s) => s.setSelectedDoctorId);
+  const availabilityStatus = useNuevaCitaStore((s) => s.availabilityStatus);
   const patientId = useNuevaCitaStore((s) => s.patientId);
   const setPatientId = useNuevaCitaStore((s) => s.setPatientId);
   const reset = useNuevaCitaStore((s) => s.reset);
@@ -181,6 +179,7 @@ export function NuevaCitaView({
   });
 
   const startTime = watch("startTime");
+  const endTime = watch("endTime");
   const origin = watch("origin");
 
   // ── React Query hooks ─────────────────────────────────────────────────────
@@ -194,14 +193,6 @@ export function NuevaCitaView({
       startIso: startTime,
       durationMinutes,
     });
-
-  const { data: availabilityData } = useNuevaCitaAvailabilityCheck({
-    tenantId,
-    token,
-    doctorId: selectedDoctorId,
-    startIso: startTime,
-    durationMinutes,
-  });
 
   const createMutation = useNuevaCitaCreate({ tenantId, token });
 
@@ -239,7 +230,6 @@ export function NuevaCitaView({
 
   const onSubmit = React.useCallback(
     (data: CreateAppointmentRequestDTO) => {
-      // CreateAppointmentRequestDTO is structurally identical to CreateAppointmentPayload
       createMutation.mutate(data as CreateAppointmentPayload, {
         onSuccess: () => {
           toast.success("Cita creada con éxito");
@@ -258,26 +248,43 @@ export function NuevaCitaView({
     [createMutation, reset, router],
   );
 
-  // ── Availability badge ─────────────────────────────────────────────────────
-  const availabilityHint = React.useMemo(() => {
-    if (!availabilityData) return null;
-    if (availabilityData.status === "available") return "Médico disponible";
-    if (availabilityData.status === "busy")
-      return `No disponible${availabilityData.conflictLabel ? ` — ${availabilityData.conflictLabel}` : ""}`;
-    if (availabilityData.status === "out_of_hours") return "Fuera del horario";
-    if (availabilityData.status === "no_schedule") return "Sin horario registrado";
-    return null;
-  }, [availabilityData]);
-
+  // ── Submit block: fail-closed RN-10 ──────────────────────────────────────
+  // Block submit when:
+  //   - form invalid (required fields missing, fin <= inicio, etc.)
+  //   - availability not confirmed AVAILABLE (fail-closed — null = unknown = block)
   const isAvailabilityBlocked =
-    availabilityData?.status != null &&
-    availabilityData.status !== "available";
+    availabilityStatus !== "available";
 
-  // ── Rendered form ─────────────────────────────────────────────────────────
+  const submitDisabled = !isValid || isAvailabilityBlocked;
+
+  // ── Hint text for action bar ──────────────────────────────────────────────
+  const actionHint = React.useMemo((): string | null => {
+    if (!isValid) return "Completa los campos requeridos";
+    if (!selectedDoctorId) return "Selecciona un médico";
+    if (!startTime) return "Selecciona fecha y hora";
+    if (availabilityStatus === null) return "Verificando disponibilidad…";
+    if (availabilityStatus === "busy") return "El médico tiene un conflicto en este horario";
+    if (availabilityStatus === "out_of_hours") return "El médico está fuera de su horario";
+    if (availabilityStatus === "no_schedule") return "El médico no tiene horario registrado";
+    // available
+    return cn(
+      "Canal:",
+      origin === "walk_in" ? "presencial" : "teléfono",
+    );
+  }, [isValid, selectedDoctorId, startTime, availabilityStatus, origin]);
+
+  // ── Date-only string for DayAvailabilityStrip ─────────────────────────────
+  const dateLocal = startTime ? startTime.slice(0, 10) : "";
+
+  // ── Loading gate ──────────────────────────────────────────────────────────
   const isLoading = servicesLoading && !servicesData;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      noValidate
+      data-testid="nueva-cita-form"
+    >
       <FormPageScaffold
         isLoading={isLoading}
         header={
@@ -289,36 +296,29 @@ export function NuevaCitaView({
         }
       >
         {/* ── Sección: Servicio ─────────────────────────────────────────── */}
-        <section aria-labelledby="nc-servicio-label">
+        <section aria-labelledby="nc-servicio-label" data-testid="nc-section-servicio">
           <Label
             id="nc-servicio-label"
-            htmlFor="nc-servicio"
             className="mb-1.5 block text-sm font-medium"
           >
             Servicio
           </Label>
-          <Select
-            value={selectedServiceId ?? ""}
-            onValueChange={(val) => setSelectedServiceId(val || null)}
-          >
-            <SelectTrigger id="nc-servicio" data-testid="nc-servicio-trigger">
-              <SelectValue placeholder="Selecciona un servicio..." />
-            </SelectTrigger>
-            <SelectContent>
-              {servicesData?.items.map((svc) => (
-                <SelectItem
-                  key={svc.offerId}
-                  value={svc.offerId}
-                  data-testid={`nc-servicio-option-${svc.offerId}`}
-                >
-                  {svc.publicName}
-                  {svc.initialApptDurationMinutes != null
-                    ? ` (${svc.initialApptDurationMinutes} min)`
-                    : ""}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <ServicePicker
+            services={servicesData?.items ?? []}
+            value={selectedServiceId}
+            loading={servicesLoading}
+            onChange={({ offerId, durationMinutes: dur }) => {
+              setSelectedServiceId(offerId);
+              if (dur != null) {
+                setDurationMinutes(dur);
+                if (startTime) {
+                  setValue("endTime", addMinutesToIso(startTime, dur), {
+                    shouldValidate: true,
+                  });
+                }
+              }
+            }}
+          />
           {errors.serviceLabel ? (
             <p className="mt-1 text-xs text-destructive" role="alert">
               {errors.serviceLabel.message}
@@ -327,10 +327,9 @@ export function NuevaCitaView({
         </section>
 
         {/* ── Sección: Canal ────────────────────────────────────────────── */}
-        <section aria-labelledby="nc-canal-label">
+        <section aria-labelledby="nc-canal-label" data-testid="nc-section-canal">
           <Label
             id="nc-canal-label"
-            htmlFor="nc-canal"
             className="mb-1.5 block text-sm font-medium"
           >
             Canal de ingreso
@@ -339,22 +338,10 @@ export function NuevaCitaView({
             name="origin"
             control={control}
             render={({ field }) => (
-              <Select
-                value={field.value}
-                onValueChange={field.onChange}
-              >
-                <SelectTrigger id="nc-canal" data-testid="nc-canal-trigger">
-                  <SelectValue placeholder="Selecciona el canal..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="walk_in" data-testid="nc-canal-walk-in">
-                    👤 Paciente walk-in
-                  </SelectItem>
-                  <SelectItem value="telefono" data-testid="nc-canal-telefono">
-                    📞 Reserva telefónica
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <CanalPicker
+                value={field.value as "walk_in" | "telefono"}
+                onChange={(canal) => field.onChange(canal)}
+              />
             )}
           />
           {errors.origin ? (
@@ -365,7 +352,7 @@ export function NuevaCitaView({
         </section>
 
         {/* ── Sección: Fecha y hora de inicio ──────────────────────────── */}
-        <section aria-labelledby="nc-inicio-label">
+        <section aria-labelledby="nc-inicio-label" data-testid="nc-section-inicio">
           <Label
             id="nc-inicio-label"
             className="mb-1.5 block text-sm font-medium"
@@ -381,11 +368,9 @@ export function NuevaCitaView({
                 onChange={(iso) => {
                   field.onChange(iso);
                   // Auto-update endTime when startTime changes
-                  setValue(
-                    "endTime",
-                    addMinutesToIso(iso, durationMinutes),
-                    { shouldValidate: true },
-                  );
+                  setValue("endTime", addMinutesToIso(iso, durationMinutes), {
+                    shouldValidate: true,
+                  });
                 }}
                 timezone={timezone}
                 placeholder="Selecciona fecha y hora..."
@@ -400,7 +385,7 @@ export function NuevaCitaView({
         </section>
 
         {/* ── Sección: Duración ─────────────────────────────────────────── */}
-        <section aria-labelledby="nc-duracion-label">
+        <section aria-labelledby="nc-duracion-label" data-testid="nc-section-duracion">
           <Label
             id="nc-duracion-label"
             htmlFor="nc-duracion"
@@ -416,7 +401,10 @@ export function NuevaCitaView({
             value={durationMinutes}
             data-testid="nc-duracion-input"
             onChange={(e) => {
-              const dur = Math.max(1, parseInt(e.target.value, 10) || DEFAULT_DURATION_MINUTES);
+              const dur = Math.max(
+                1,
+                parseInt(e.target.value, 10) || DEFAULT_DURATION_MINUTES,
+              );
               setDurationMinutes(dur);
               if (startTime) {
                 setValue("endTime", addMinutesToIso(startTime, dur), {
@@ -429,7 +417,7 @@ export function NuevaCitaView({
         </section>
 
         {/* ── Sección: Hora de fin ──────────────────────────────────────── */}
-        <section aria-labelledby="nc-fin-label">
+        <section aria-labelledby="nc-fin-label" data-testid="nc-section-fin">
           <Label
             id="nc-fin-label"
             className="mb-1.5 block text-sm font-medium"
@@ -461,118 +449,86 @@ export function NuevaCitaView({
         </section>
 
         {/* ── Sección: Médico ───────────────────────────────────────────── */}
-        <section aria-labelledby="nc-medico-label">
+        <section aria-labelledby="nc-medico-label" data-testid="nc-section-medico">
           <Label
             id="nc-medico-label"
-            htmlFor="nc-medico"
             className="mb-1.5 block text-sm font-medium"
           >
             Médico
           </Label>
-          {availabilityHint ? (
-            <p
-              className={cn(
-                "mb-1 text-xs",
-                isAvailabilityBlocked
-                  ? "text-destructive"
-                  : "text-muted-foreground",
-              )}
-              data-testid="nc-availability-hint"
-            >
-              {availabilityHint}
-            </p>
-          ) : null}
-          <Select
-            value={selectedDoctorId ?? ""}
-            onValueChange={(val) => setSelectedDoctorId(val || null)}
-            disabled={!startTime || doctorsLoading}
-          >
-            <SelectTrigger
-              id="nc-medico"
-              data-testid="nc-medico-trigger"
-              aria-busy={doctorsLoading || undefined}
-            >
-              <SelectValue
-                placeholder={
-                  !startTime
-                    ? "Selecciona fecha y hora primero..."
-                    : doctorsLoading
-                      ? "Cargando médicos disponibles..."
-                      : "Selecciona un médico..."
-                }
+
+          {/* AvailabilityChip: shows when doctor + slot selected (T-FE-3) */}
+          {selectedDoctorId && startTime ? (
+            <div className="mb-2" data-testid="nc-availability-chip-container">
+              <AvailabilityChip
+                tenantId={tenantId}
+                token={token}
+                doctorId={selectedDoctorId}
+                startIso={startTime}
+                durationMinutes={durationMinutes}
               />
-            </SelectTrigger>
-            <SelectContent>
-              {freeDoctorsData?.doctors.map((doc) => (
-                <SelectItem
-                  key={doc.doctorId}
-                  value={doc.doctorId}
-                  data-testid={`nc-medico-option-${doc.doctorId}`}
-                >
-                  {doc.doctorLabel}
-                </SelectItem>
-              ))}
-              {freeDoctorsData?.doctors.length === 0 ? (
-                <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                  Sin médicos disponibles para este horario
-                </div>
-              ) : null}
-            </SelectContent>
-          </Select>
+            </div>
+          ) : null}
+
+          <DoctorPicker
+            doctors={freeDoctorsData?.doctors ?? []}
+            value={selectedDoctorId}
+            loading={doctorsLoading && !!startTime}
+            disabled={!startTime}
+            disabledReason="Selecciona fecha y hora primero"
+            onChange={(doctorId) => setSelectedDoctorId(doctorId)}
+          />
           {errors.doctorId ? (
             <p className="mt-1 text-xs text-destructive" role="alert">
               {errors.doctorId.message}
             </p>
           ) : null}
+
+          {/* DayAvailabilityStrip: AC-8 mini-vista (T-FE-3) */}
+          {startTime ? (
+            <div className="mt-2" data-testid="nc-day-strip-container">
+              <DayAvailabilityStrip
+                tenantId={tenantId}
+                token={token}
+                doctorId={selectedDoctorId}
+                dateLocal={dateLocal}
+                selectedStartIso={startTime || null}
+                selectedEndIso={endTime || null}
+              />
+            </div>
+          ) : null}
+
+          {/* FreeDoctorsList: reassign 1-click (T-FE-3) */}
+          <div className="mt-3" data-testid="nc-free-doctors-container">
+            <FreeDoctorsList
+              tenantId={tenantId}
+              token={token}
+              startIso={startTime ?? ""}
+              durationMinutes={durationMinutes}
+              doctors={freeDoctorsData?.doctors ?? []}
+              isPending={doctorsLoading}
+            />
+          </div>
         </section>
 
         {/* ── Sección: Paciente ─────────────────────────────────────────── */}
-        <section aria-labelledby="nc-paciente-label">
+        <section aria-labelledby="nc-paciente-label" data-testid="nc-section-paciente">
           <Label
             id="nc-paciente-label"
-            htmlFor="nc-paciente-search"
             className="mb-1.5 block text-sm font-medium"
           >
             Paciente
           </Label>
-          {/* ponytail: patient typeahead via future EntityPicker integration.
-              For T-FE-1 scope: manual UUID input for integration smoke.
-              Full typeahead is T-FE-2 scope (PatientAutocomplete already exists). */}
-          {patientId ? (
-            <div
-              className="flex items-center gap-2 rounded-md border border-border bg-muted px-3 py-2 text-sm"
-              data-testid="nc-patient-selected"
-            >
-              <span className="text-muted-foreground">Paciente seleccionado:</span>
-              <code className="text-xs">{patientId}</code>
-              <button
-                type="button"
-                className="ml-auto text-xs text-muted-foreground hover:text-destructive"
-                onClick={() => setPatientId(null)}
-                data-testid="nc-patient-clear"
-              >
-                Cambiar
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <p className="text-xs text-muted-foreground">
-                Usa la búsqueda de paciente (disponible en T-FE-2) o ingresa el ID temporalmente.
-              </p>
-              <Input
-                id="nc-paciente-search"
-                placeholder="UUID del paciente..."
-                data-testid="nc-paciente-input"
-                onChange={(e) => {
-                  const val = e.target.value.trim();
-                  if (val.length === 36) {
-                    // Basic UUID length check
-                    setPatientId(val);
-                  }
-                }}
-              />
-            </div>
-          )}
+          <PatientPickerWithCreate
+            value={patientId}
+            tenantId={tenantId}
+            token={token}
+            uiChannel={origin === "walk_in" ? "walk_in" : "telefono"}
+            onChange={(resolvedPatientId) => {
+              setPatientId(resolvedPatientId);
+              setValue("patientId", resolvedPatientId, { shouldValidate: true });
+            }}
+          />
           {errors.patientId ? (
             <p className="mt-1 text-xs text-destructive" role="alert">
               {errors.patientId.message}
@@ -581,7 +537,7 @@ export function NuevaCitaView({
         </section>
 
         {/* ── Sección: Notas internas (opcional) ───────────────────────── */}
-        <section aria-labelledby="nc-notas-label">
+        <section aria-labelledby="nc-notas-label" data-testid="nc-section-notas">
           <Label
             id="nc-notas-label"
             htmlFor="nc-notas"
@@ -602,42 +558,22 @@ export function NuevaCitaView({
                 maxLength={500}
                 data-testid="nc-notas-textarea"
                 value={field.value ?? ""}
-                onChange={(e) =>
-                  field.onChange(e.target.value || null)
-                }
+                onChange={(e) => field.onChange(e.target.value || null)}
                 className="resize-none"
                 rows={3}
               />
             )}
           />
         </section>
-
-        {/* Hidden field — origin maps from canal to form via watch */}
-        <Controller
-          name="origin"
-          control={control}
-          render={() => <></>}
-        />
       </FormPageScaffold>
 
-      {/* ── FormActionBar — sticky bottom ──────────────────────────────────── */}
-      <FormActionBar
-        accent="mateo"
-        submitLabel="Crear cita"
-        cancelLabel="Cancelar"
+      {/* ── NuevaCitaActions — sticky bottom (T-FE-4) ─────────────────────── */}
+      <NuevaCitaActions
         onCancel={handleBack}
         onSubmit={handleSubmit(onSubmit)}
         submitting={createMutation.isPending}
-        submitDisabled={!isValid || isAvailabilityBlocked}
-        hint={
-          !isValid
-            ? "Completa los campos requeridos"
-            : isAvailabilityBlocked
-              ? "El médico no está disponible en este horario"
-              : origin === "walk_in"
-                ? "Canal: walk-in"
-                : "Canal: teléfono"
-        }
+        submitDisabled={submitDisabled}
+        hint={actionHint}
       />
     </form>
   );
