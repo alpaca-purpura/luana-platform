@@ -69,4 +69,6 @@ Direct orchestrator-equivalent invocation against the running dev DB (worktree e
 
 ## Commit
 
-`<SHA filled at commit>` — `feat(sales-agent): inbound mode-resolver + activity-emit seams (canal-inbound GAP-2/3)` (SCOPE_GATE_SKIP, pathspec).
+`5bd0dd1b` — `feat(sales-agent): inbound mode-resolver + activity-emit seams (canal-inbound GAP-2/3)` (SCOPE_GATE_SKIP, committed by explicit pathspec; pushed `faa643f7..5bd0dd1b` to `wip/vitalia`). Contains exactly the 14 T-AG-GAP23 files.
+
+> ⚠️ Shared-index note for /pm: a FIRST commit attempt `9feb302c` (same subject) raced the shared single-hub index and captured a PARALLEL session's WIP (`052_vitalia_appointments_notes_internal.py` + `test_migration_052_notes_internal.py` + `T-BE-4-notesfix-result.md` + a `chris-input.md` line — the mateo-nueva-cita story), NOT this ticket's files. That commit's CONTENT is legitimate parallel work; only its MESSAGE is mislabeled. This ticket's real content is in `5bd0dd1b` (committed by explicit pathspec to dodge the race). No revert performed (M5 — never touch another session's committed work).
