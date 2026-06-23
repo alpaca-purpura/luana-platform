@@ -185,3 +185,11 @@ Ruta nueva-cita full-page + NuevaCitaView + schema reconciliado + hooks React Qu
 Implementado: ruta estática (page/loading/error.tsx), NuevaCitaView client root (RHF+Zod, SmartDateTimePicker, React Query), CrearCitaButton → router.push (modal REMOVED AC-9/D-G), onEmptySlotClick prop chain en AgendaCalendar/WeekCalendar/DayCalendar, agenda-schema reconciliado (origin walk_in|telefono only, patientId required, sin patientNewData), use-nueva-cita.ts hooks con snake→camel normalizers, nueva-cita-store.ts Zustand UI.
 Fixes intermedios: @ts-nocheck en CrearCitaForm.tsx (deprecated), useUser mock en NuevaCitaView.test.tsx, SmartDateTimePicker mock, CrearCitaButton.test.tsx actualizado a router.push behavior.
 Gates: tsc 0 errors | eslint 0 errors | vitest 2605/2605 PASS. Commit: 69794026
+
+### 2026-06-22 · 🤖 claude · `builder-frontend` · T-FE-2 · ✓ APLICADO
+Pickers: ServicePicker, DoctorPicker, PatientPickerWithCreate, CanalPicker + use-patients.ts.
+Controlled components (value/onChange) — integración por T-FE-4.
+Channel mapping: UI "telefono"→BE "phone" en useCreatePatientInline.
+RN-9: is_duplicate=true→prompt "¿Usar existente?".
+EntityPicker.createAction inline (AC-10, no navegación).
+Gates: tsc 0 errors | eslint 0 errors | vitest 363/363 PASS. Commit: cf0c7022
