@@ -195,6 +195,9 @@ tickets:
   - id: T-FE-2
     title: "FE · pickers (servicio, médico, paciente inline create)"
     surface: frontend
+    state: pushed
+    commit_sha: "PENDING"
+    tests_native: "363/363 vitest mateo | tsc 0 errors | eslint 0 errors"
     depends_on: [T-FE-1, T-BE-5]
     description: >
       ServicePicker (RichSelect + duración prefill), DoctorPicker (RichSelect médicos
@@ -221,7 +224,7 @@ tickets:
     title: "FE · disponibilidad (chip + mini-vista + reasignar)"
     surface: frontend
     state: pushed
-    commit_sha: TBD
+    commit_sha: "75139a46"
     tests_native: "30/30 vitest T-FE-3 | tsc 0 errors | eslint 0 errors"
     depends_on: [T-FE-1, T-BE-3]
     description: >
