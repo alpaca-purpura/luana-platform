@@ -17,7 +17,7 @@ from datetime import datetime
 from uuid import UUID
 
 from luana_core_platform.domain.base_entity import Base
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, text
+from sqlalchemy import Boolean, DateTime, String, text
 from sqlalchemy.dialects.postgresql import UUID as PgUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -25,17 +25,24 @@ from sqlalchemy.orm import Mapped, mapped_column
 class AppointmentClinicMapModel(Base):
     """SQLAlchemy 2.0 model for vitalia_appointment_clinic_map.
 
-    One-to-one with vitalia_appointments (appointment_id is PK + FK).
+    One-to-one with vitalia_appointments (appointment_id is PK).
     Stores brand-local metadata: service_label, origin badge, currency_override.
 
     Architecture decision A12: brand-local FK avoids modifying engine appointment record.
+
+    IMPORTANT — ORM FK intentionally absent (bug #8 fix, 2026-06-23):
+    vitalia_appointments has NO Python SQLAlchemy model class — it is managed via
+    raw Alembic migrations only (see agenda_grid_repository_impl.py lines 54-65).
+    Adding ForeignKey("vitalia_appointments.id") here causes NoReferencedTableError
+    at flush() because SQLAlchemy's mapper can't resolve a FK to an unmapped table.
+    The DB-level FK constraint (ON DELETE CASCADE) is correctly created by migration 050
+    and enforced by Postgres — no ORM-level declaration is needed or correct here.
     """
 
     __tablename__ = "vitalia_appointment_clinic_map"
 
     appointment_id: Mapped[UUID] = mapped_column(
         PgUUID(as_uuid=True),
-        ForeignKey("vitalia_appointments.id", ondelete="CASCADE"),
         primary_key=True,
     )
     tenant_id: Mapped[UUID] = mapped_column(
