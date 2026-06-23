@@ -79,6 +79,22 @@ class AppointmentClinicMapModel(Base):
         nullable=False,
         server_default=text("false"),
     )
+    # ── Mirror columns (schema-mirror exception — backend-ddd.md § schema-mirror-exception) ──
+    # Added by migration 050 (T-BE-2). These mirror vitalia_appointments.start_time/end_time/status
+    # so that the EXCLUDE USING gist constraint can reference them on this brand-local table.
+    # Domain boundary: EXCLUDE lives here (has doctor_id); engine table has no doctor_id.
+    # cap: scheduling.mateo-agenda (RN-2 half-open, RN-6 CANCELLED exclusion)
+    start_time: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    end_time: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    # AppointmentStatus value: SCHEDULED | CONFIRMED | CANCELLED | COMPLETED | NO_SHOW
+    status: Mapped[str | None] = mapped_column(String(32), nullable=True)
+
     # Soft delete (brand consistency per backend-ddd.md)
     deleted_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
