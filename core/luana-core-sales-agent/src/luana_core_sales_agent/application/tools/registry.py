@@ -217,3 +217,48 @@ _tool_registry = ToolRegistry()
 def get_tool_registry() -> ToolRegistry:
     """Return the process-singleton sales-agent ToolRegistry (engine ⊕ brand tools)."""
     return _tool_registry
+
+
+def _sanitize_tool_name(name: str) -> str:
+    """Make a tool name valid for OpenAI/DeepSeek function-calling.
+
+    Providers require function names to match ``^[a-zA-Z0-9_-]+$`` — a DOT is
+    rejected with a 400. Brand EP-3 tools are namespaced ``{brand}.{tool}``, so
+    swap ``.`` → ``-`` (both allowed). No engine/brand tool name contains a
+    literal ``-``, so :func:`desanitize_tool_name` reverses it losslessly.
+    """
+    return name.replace(".", "-")
+
+
+def desanitize_tool_name(name: str) -> str:
+    """Reverse :func:`_sanitize_tool_name` so the dispatcher looks up the real name."""
+    return name.replace("-", ".")
+
+
+def extension_tool_schemas(stage: str | None = None) -> list[dict[str, Any]]:
+    """OpenAI function schemas for the brand EP-3 tools — for NATIVE function-calling.
+
+    The text-``[TOOL_REQUEST]`` protocol is unreliable for getting models to dispatch
+    brand tools (measured 0→25%); passing these schemas to the LLM via ``bind_tools``
+    makes dispatch reliable. Each brand tool self-describes (name + description + its own
+    ``input_schema``) → hexagonal, no brand hardcoding. Stage-scoped when ``stage`` is
+    given (only tools whose ``stage_scope`` includes it). Engine tools are NOT included —
+    they stay on the working text protocol (closer's concrete examples).
+    """
+    reg = get_tool_registry()
+    schemas: list[dict[str, Any]] = []
+    for name, tool in reg.extension_tools().items():
+        if stage is not None and not reg.is_extension_tool_in_stage(name, stage):
+            continue
+        schemas.append(
+            {
+                "type": "function",
+                "function": {
+                    "name": _sanitize_tool_name(name),
+                    "description": tool.description or name,
+                    "parameters": tool.input_schema
+                    or {"type": "object", "properties": {}},
+                },
+            }
+        )
+    return schemas

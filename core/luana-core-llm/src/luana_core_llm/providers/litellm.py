@@ -44,7 +44,7 @@ if TYPE_CHECKING:
 from luana_core_platform.core.config import settings
 from luana_core_platform.core.enums import ModelRole
 
-from luana_core_llm.base import BaseLLMService
+from luana_core_llm.base import BaseLLMService, ToolCallResult
 from luana_core_llm.providers._chat_model_resolver import (
     DEFAULT_OPENAI_SPEC,
     ChatBuildContext,
@@ -197,6 +197,49 @@ class LiteLLMService(BaseLLMService):
             model_name=settings.get_model(resolved_role),
         )
         return response.content
+
+    def generate_with_tools(
+        self,
+        messages: list[dict[str, str]],
+        system_prompt: str | None = None,
+        model_type: str | ModelRole = "smart",
+        tools: list[dict[str, Any]] | None = None,
+        **kwargs: Any,  # noqa: ANN401 — abstract LLM interface
+    ) -> ToolCallResult:
+        """Generate a response with NATIVE function-calling via LangChain ``bind_tools``.
+
+        LangChain's ``ChatOpenAI`` (targeting the LiteLLM proxy) sends the OpenAI
+        ``tools=`` param and normalises the provider's structured ``tool_calls`` into
+        ``AIMessage.tool_calls`` (verified working across deepseek-reasoner / deepseek-chat
+        / kimi). Empty/None ``tools`` → behaves like ``generate_response`` (text only).
+        """
+        if not tools:
+            text = self.generate_response(messages, system_prompt=system_prompt, model_type=model_type, **kwargs)
+            return ToolCallResult(text=text, tool_calls=[])
+
+        if isinstance(messages, str):
+            messages = [{"role": "user", "content": messages}]
+        lc_messages = self._convert_to_lc_messages(messages, system_prompt)
+        resolved_role = self._resolve_role(model_type)
+        selected_model = self._get_chat_model(resolved_role)
+        self.CHAT_MODEL_SPEC.kwargs_normalizer(kwargs, spec=self.CHAT_MODEL_SPEC)
+        try:
+            bound = selected_model.bind_tools(tools)
+            response = bound.invoke(lc_messages, **kwargs)
+        except Exception as e:
+            logger.warning(
+                "litellm_tool_dispatch_failed",
+                litellm_model=self._litellm_model_name(resolved_role),
+                error=str(e),
+            )
+            raise
+        raw_calls = getattr(response, "tool_calls", None) or []
+        tool_calls = [
+            {"name": tc.get("name", ""), "args": tc.get("args") or {}}
+            for tc in raw_calls
+            if isinstance(tc, dict) and tc.get("name")
+        ]
+        return ToolCallResult(text=response.content or "", tool_calls=tool_calls)
 
     def get_embedding_model(self) -> Any:  # noqa: ANN401 — abstract LLM interface
         """Return OpenAIEmbeddings targeting LiteLLM Proxy /v1/embeddings.

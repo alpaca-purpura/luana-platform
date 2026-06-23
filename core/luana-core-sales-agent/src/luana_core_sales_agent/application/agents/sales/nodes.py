@@ -4,6 +4,8 @@ import json
 import re
 from typing import Any
 
+import structlog
+
 from luana_core_sales_agent.application.orchestrator.state import AgentState
 from luana_core_sales_agent.application.prompts.compose import (
     SpecialistRole,
@@ -23,8 +25,20 @@ from luana_core_sales_agent.domain.tuning import (
     SUPERVISOR_MESSAGE_WINDOW,
 )
 from luana_core_sales_agent.infrastructure.monitoring.tracing import trace_node
+from luana_core_sales_agent.application.tools.registry import (
+    desanitize_tool_name,
+    extension_tool_schemas,
+)
 from luana_core_sales_agent.infrastructure.prompts.base import prompt_loader
 from luana_core_llm.factory import LLMFactory
+
+# Specialist → conversation stage, for scoping which brand EP-3 tools are offered
+# natively per specialist (share/match → discovery/presentation; book → closing).
+_SPECIALIST_STAGE: dict[str, str] = {
+    "qualifier": "discovery",
+    "product_expert": "presentation",
+    "closer": "closing",
+}
 
 
 def _get_llm_service(state: AgentState) -> object:
@@ -38,6 +52,53 @@ def _get_llm_service(state: AgentState) -> object:
     wire the guard).
     """
     return state.get("_llm_service") or LLMFactory.get_service()
+
+
+def _specialist_content(
+    state: AgentState,
+    role: str,
+    system_prompt: str,
+    temperature: float,
+    prompt_template: str,
+) -> str:
+    """Generate a specialist response with NATIVE brand-tool calling.
+
+    Offers the stage's brand EP-3 tools (``extension_tool_schemas``) to the LLM via
+    ``bind_tools`` when the service supports it. Any native ``tool_call`` is serialized
+    back into a ``[TOOL_REQUEST]`` block appended to the content, so the EXISTING
+    parsing + routing (``_extract_json_block`` → ``_decide_route`` → ``tool_executor``)
+    dispatches it — no routing changes. Falls back to text-only ``generate_response``
+    (engine tools keep their working text protocol; mocks without ``generate_with_tools``
+    are honored).
+    """
+    svc = _get_llm_service(state)
+    schemas = extension_tool_schemas(_SPECIALIST_STAGE.get(role))
+    common: dict[str, Any] = {
+        "messages": state["messages"],
+        "system_prompt": system_prompt,
+        "model_type": SPECIALIST_TO_ROLE[role],
+        "temperature": temperature,
+        "metadata": {"prompt_template": prompt_template},
+    }
+    if schemas and hasattr(svc, "generate_with_tools"):
+        result = svc.generate_with_tools(tools=schemas, **common)
+        content = result.text or ""
+        if result.tool_calls:
+            tc = result.tool_calls[0]  # one tool per turn (engine dedup convention)
+            block = (
+                "[TOOL_REQUEST: "
+                + json.dumps(
+                    {
+                        "tool": desanitize_tool_name(tc.get("name", "")),
+                        "args": tc.get("args") or {},
+                    },
+                    ensure_ascii=False,
+                )
+                + "]"
+            )
+            content = f"{content}\n\n{block}" if content.strip() else block
+        return content
+    return svc.generate_response(**common)
 
 
 # ---------------------------------------------------------------------------
@@ -159,28 +220,20 @@ def node_sales_supervisor(state: AgentState) -> dict[str, Any]:
 def node_qualifier(state: AgentState) -> dict[str, Any]:
     """Node qualifier."""
     system_prompt = build_specialist_system_prompt(state, SpecialistRole.QUALIFIER)
-    response = _get_llm_service(state).generate_response(
-        messages=state["messages"],
-        system_prompt=system_prompt,
-        model_type=SPECIALIST_TO_ROLE["qualifier"],
-        temperature=0.2,
-        metadata={"prompt_template": "compose:specialist_qualifier"},
+    content = _specialist_content(
+        state, "qualifier", system_prompt, 0.2, "compose:specialist_qualifier"
     )
-    return {"messages": [{"role": "assistant", "content": response}]}
+    return {"messages": [{"role": "assistant", "content": content}]}
 
 
 @trace_node("product_expert")
 def node_product_expert(state: AgentState) -> dict[str, Any]:
     """Node product expert."""
     system_prompt = build_specialist_system_prompt(state, SpecialistRole.PRODUCT_EXPERT)
-    response = _get_llm_service(state).generate_response(
-        messages=state["messages"],
-        system_prompt=system_prompt,
-        model_type=SPECIALIST_TO_ROLE["product_expert"],
-        temperature=0.2,
-        metadata={"prompt_template": "compose:specialist_product_expert"},
+    content = _specialist_content(
+        state, "product_expert", system_prompt, 0.2, "compose:specialist_product_expert"
     )
-    return {"messages": [{"role": "assistant", "content": response}]}
+    return {"messages": [{"role": "assistant", "content": content}]}
 
 
 @trace_node("closer")
@@ -195,14 +248,10 @@ def node_closer(state: AgentState) -> dict[str, Any]:
     a K2 SKU.
     """
     system_prompt = build_specialist_system_prompt(state, SpecialistRole.CLOSER)
-    response = _get_llm_service(state).generate_response(
-        messages=state["messages"],
-        system_prompt=system_prompt,
-        model_type=SPECIALIST_TO_ROLE["closer"],
-        temperature=0.4,
-        metadata={"prompt_template": "compose:specialist_closer"},
+    content = _specialist_content(
+        state, "closer", system_prompt, 0.4, "compose:specialist_closer"
     )
-    return {"messages": [{"role": "assistant", "content": response}]}
+    return {"messages": [{"role": "assistant", "content": content}]}
 
 
 # ---------------------------------------------------------------------------
@@ -446,6 +495,12 @@ def node_tool_executor(state: AgentState) -> dict[str, Any]:
                 "next_node": "respond",
             }
 
+    structlog.get_logger().info(
+        "sales_agent.tool_dispatched",
+        tool=tool_name,
+        dedup_verdict=str(verdict),
+        user_id=str(state.get("user_id")),
+    )
     try:
         result = tool_fn(state, db=state.get("_db"))
         result_text = json.dumps(result, ensure_ascii=False)

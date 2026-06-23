@@ -47,3 +47,33 @@ def test_router_litellm_singleton_across_roles(
     # All roles share a single LiteLLMService instance (singleton).
     assert svc_nano is svc_reasoning
     assert svc_nano is svc_agent
+
+
+def test_router_generate_with_tools_delegates_to_provider() -> None:
+    """Router MUST override generate_with_tools and delegate to the resolved provider.
+
+    Regression: without the override the router inherited BaseLLMService's text-only
+    fallback, so native function-calling (bind_tools) never ran in the live graph and
+    brand tools were never offered to the LLM (dispatch rate 0).
+    """
+    from luana_core_llm.base import ToolCallResult
+    from luana_core_llm.router import MultiRoleLLMRouter
+
+    class _FakeProvider:
+        def __init__(self) -> None:
+            self.called_with: dict | None = None
+
+        def generate_with_tools(self, messages, system_prompt=None, model_type="smart", tools=None, **kwargs):
+            self.called_with = {"tools": tools, "messages": messages}
+            return ToolCallResult(text="ok", tool_calls=[{"name": "t", "args": {}}])
+
+    fake = _FakeProvider()
+    router = MultiRoleLLMRouter()
+    router._resolve = lambda role: fake  # type: ignore[assignment]
+
+    tools = [{"type": "function", "function": {"name": "t", "description": "d", "parameters": {}}}]
+    result = router.generate_with_tools(messages=[{"role": "user", "content": "hi"}], model_type="smart", tools=tools)
+
+    assert fake.called_with is not None, "router did not delegate to provider"
+    assert fake.called_with["tools"] == tools
+    assert result.tool_calls == [{"name": "t", "args": {}}]
