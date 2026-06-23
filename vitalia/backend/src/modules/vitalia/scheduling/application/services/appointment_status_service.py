@@ -118,6 +118,16 @@ class AppointmentStatusService:
             reason=reason,
         )
 
+        # T-BE-4: Propagate status to clinic_map mirror column.
+        # Required so the EXCLUDE constraint WHERE (status <> 'CANCELLED')
+        # allows re-booking after a CANCELLED appointment frees its slot.
+        await self._repo.update_clinic_map_status(
+            appointment_id,
+            tenant_id=tenant_id,
+            clinic_id=clinic_id,
+            new_status=new_status,
+        )
+
         # Audit log sync write (HIPAA mandate — status change is PHI-adjacent mutation)
         await self._audit.write(
             tenant_id=tenant_id,

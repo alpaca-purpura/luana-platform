@@ -1,20 +1,18 @@
-"""T-6 A4 — POST /appointments create endpoint tests.
+"""T-BE-4 — POST /appointments create endpoint tests.
 
-TDD: tests define the create appointment contract BEFORE implementation.
+TDD: tests define the create appointment contract BEFORE + AFTER T-BE-4.
 
 Coverage:
-  - Happy path: origin=walk_in + patient_new_data → 201 + AppointmentDetailDTO
-  - Happy path: origin=desde_paciente_existente + patient_id → 201
-  - Validation: origin=desde_paciente_existente without patient_id → 422
-  - Validation: origin=walk_in without patient_new_data AND without patient_id → 422
+  - Happy path: origin=walk_in + patient_id (REQUIRED) → 201 + AppointmentDetailDTO
+  - Happy path: origin=telefono + patient_id → 201
+  - Validation: patient_id omitted (now REQUIRED) → 422 PATIENT_ID_REQUIRED
+  - Validation: origin=desde_paciente_existente rejected (removed in T-BE-4) → 422
+  - Overlap: service raises AppointmentOverlapError → 409 APPOINTMENT_OVERLAP
+  - Out-of-hours: service raises OutOfWorkingHoursError → 422 OUT_OF_HOURS
   - RBAC: non-PHI role → 403
   - Service called with correct tenant_id + clinic_id (dual filter)
-  - Audit written (CreateAppointmentService is constructed with audit_writer)
 
-Per T-6 acceptance A4:
-  "POST create emits create_appointment audit row + persists clinic_map"
-
-downstream-regression-na: brand-local create appointment test for vitalia scheduling T-6
+downstream-regression-na: brand-local create appointment test for vitalia scheduling T-BE-4
 """
 
 from __future__ import annotations
@@ -104,8 +102,8 @@ def _build_test_app() -> FastAPI:
 
 
 @pytest.mark.asyncio
-async def test_create_appointment_walk_in_returns_201() -> None:
-    """Walk-in with patient_new_data → 201 Created + AppointmentDetailDTO response."""
+async def test_create_appointment_walk_in_with_patient_id_returns_201() -> None:
+    """Walk-in with patient_id (required in T-BE-4) → 201 Created."""
     with (
         patch("src.modules.vitalia.scheduling.api.agenda_router.CreateAppointmentService") as MockSvc,
         patch("src.modules.vitalia.scheduling.api.agenda_router.AgendaGridRepositoryImpl"),
@@ -124,18 +122,11 @@ async def test_create_appointment_walk_in_returns_201() -> None:
                 "/api/v1/scheduling/appointments",
                 json={
                     "origin": "walk_in",
-                    "patient_new_data": {
-                        "name": "Laura Fernández",
-                        "phone": "+51987654321",
-                        "dni": None,
-                        "email": None,
-                    },
+                    "patient_id": str(PATIENT_ID),
                     "doctor_id": str(DOCTOR_ID),
                     "service_label": "Extracción simple",
                     "start_time": "2026-05-27T09:00:00+00:00",
                     "end_time": "2026-05-27T09:30:00+00:00",
-                    "notes_internal": None,
-                    "currency_override": None,
                 },
                 headers=_PHI_HEADERS,
             )
@@ -147,8 +138,8 @@ async def test_create_appointment_walk_in_returns_201() -> None:
 
 
 @pytest.mark.asyncio
-async def test_create_appointment_existing_patient_returns_201() -> None:
-    """origin=desde_paciente_existente + patient_id → 201 Created."""
+async def test_create_appointment_telefono_with_patient_id_returns_201() -> None:
+    """origin=telefono + patient_id → 201 Created."""
     with (
         patch("src.modules.vitalia.scheduling.api.agenda_router.CreateAppointmentService") as MockSvc,
         patch("src.modules.vitalia.scheduling.api.agenda_router.AgendaGridRepositoryImpl"),
@@ -166,14 +157,12 @@ async def test_create_appointment_existing_patient_returns_201() -> None:
             resp = await client.post(
                 "/api/v1/scheduling/appointments",
                 json={
-                    "origin": "desde_paciente_existente",
+                    "origin": "telefono",
                     "patient_id": str(PATIENT_ID),
                     "doctor_id": str(DOCTOR_ID),
                     "service_label": "Control de seguimiento",
                     "start_time": "2026-05-27T10:00:00+00:00",
                     "end_time": "2026-05-27T10:30:00+00:00",
-                    "notes_internal": None,
-                    "currency_override": None,
                 },
                 headers=_PHI_HEADERS,
             )
@@ -182,34 +171,8 @@ async def test_create_appointment_existing_patient_returns_201() -> None:
 
 
 @pytest.mark.asyncio
-async def test_create_appointment_missing_patient_id_for_existing_origin_returns_422() -> None:
-    """origin=desde_paciente_existente without patient_id → 422."""
-    app = _build_test_app()
-    async with AsyncClient(
-        transport=ASGITransport(app=app),
-        base_url="http://test",
-    ) as client:
-        resp = await client.post(
-            "/api/v1/scheduling/appointments",
-            json={
-                "origin": "desde_paciente_existente",
-                # patient_id intentionally omitted
-                "doctor_id": str(DOCTOR_ID),
-                "service_label": "Control de seguimiento",
-                "start_time": "2026-05-27T10:00:00+00:00",
-                "end_time": "2026-05-27T10:30:00+00:00",
-            },
-            headers=_PHI_HEADERS,
-        )
-
-    assert resp.status_code == 422
-    body = resp.json()
-    assert body["detail"]["error_code"] == "PATIENT_ID_REQUIRED"
-
-
-@pytest.mark.asyncio
-async def test_create_appointment_walk_in_no_patient_data_returns_422() -> None:
-    """origin=walk_in without patient_new_data AND without patient_id → 422."""
+async def test_create_appointment_missing_patient_id_returns_422() -> None:
+    """patient_id now REQUIRED (T-BE-4) — omitting it → 422."""
     app = _build_test_app()
     async with AsyncClient(
         transport=ASGITransport(app=app),
@@ -219,7 +182,7 @@ async def test_create_appointment_walk_in_no_patient_data_returns_422() -> None:
             "/api/v1/scheduling/appointments",
             json={
                 "origin": "walk_in",
-                # Neither patient_id nor patient_new_data
+                # patient_id intentionally omitted
                 "doctor_id": str(DOCTOR_ID),
                 "service_label": "Limpieza dental",
                 "start_time": "2026-05-27T11:00:00+00:00",
@@ -229,8 +192,30 @@ async def test_create_appointment_walk_in_no_patient_data_returns_422() -> None:
         )
 
     assert resp.status_code == 422
-    body = resp.json()
-    assert body["detail"]["error_code"] == "PATIENT_DATA_REQUIRED"
+
+
+@pytest.mark.asyncio
+async def test_create_appointment_desde_paciente_existente_rejected() -> None:
+    """origin=desde_paciente_existente removed in T-BE-4 → 422 (DTO rejects it)."""
+    app = _build_test_app()
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+    ) as client:
+        resp = await client.post(
+            "/api/v1/scheduling/appointments",
+            json={
+                "origin": "desde_paciente_existente",
+                "patient_id": str(PATIENT_ID),
+                "doctor_id": str(DOCTOR_ID),
+                "service_label": "Control",
+                "start_time": "2026-05-27T10:00:00+00:00",
+                "end_time": "2026-05-27T10:30:00+00:00",
+            },
+            headers=_PHI_HEADERS,
+        )
+
+    assert resp.status_code == 422
 
 
 @pytest.mark.asyncio
@@ -245,7 +230,7 @@ async def test_create_appointment_non_phi_role_forbidden() -> None:
             "/api/v1/scheduling/appointments",
             json={
                 "origin": "walk_in",
-                "patient_new_data": {"name": "Test", "phone": "+51987654321"},
+                "patient_id": str(PATIENT_ID),
                 "doctor_id": str(DOCTOR_ID),
                 "service_label": "Consulta",
                 "start_time": "2026-05-27T12:00:00+00:00",
@@ -256,6 +241,80 @@ async def test_create_appointment_non_phi_role_forbidden() -> None:
 
     assert resp.status_code == 403
     assert resp.json()["detail"]["error_code"] == "PHI_RBAC_DENIED"
+
+
+@pytest.mark.asyncio
+async def test_create_appointment_overlap_returns_409() -> None:
+    """Service raises AppointmentOverlapError → 409 APPOINTMENT_OVERLAP."""
+    from src.modules.vitalia.scheduling.domain.exceptions import AppointmentOverlapError  # noqa: PLC0415
+
+    with (
+        patch("src.modules.vitalia.scheduling.api.agenda_router.CreateAppointmentService") as MockSvc,
+        patch("src.modules.vitalia.scheduling.api.agenda_router.AgendaGridRepositoryImpl"),
+        patch("src.modules.vitalia.scheduling.api.agenda_router.AsyncAuditWriter"),
+    ):
+        svc_instance = MagicMock()
+        svc_instance.create_appointment = AsyncMock(side_effect=AppointmentOverlapError())
+        MockSvc.return_value = svc_instance
+
+        app = _build_test_app()
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+        ) as client:
+            resp = await client.post(
+                "/api/v1/scheduling/appointments",
+                json={
+                    "origin": "walk_in",
+                    "patient_id": str(PATIENT_ID),
+                    "doctor_id": str(DOCTOR_ID),
+                    "service_label": "Consulta",
+                    "start_time": "2026-05-27T09:00:00+00:00",
+                    "end_time": "2026-05-27T09:30:00+00:00",
+                },
+                headers=_PHI_HEADERS,
+            )
+
+    assert resp.status_code == 409
+    body = resp.json()
+    assert body["detail"]["error_code"] == "APPOINTMENT_OVERLAP"
+
+
+@pytest.mark.asyncio
+async def test_create_appointment_out_of_hours_returns_422() -> None:
+    """Service raises OutOfWorkingHoursError → 422 OUT_OF_HOURS."""
+    from src.modules.vitalia.scheduling.domain.exceptions import OutOfWorkingHoursError  # noqa: PLC0415
+
+    with (
+        patch("src.modules.vitalia.scheduling.api.agenda_router.CreateAppointmentService") as MockSvc,
+        patch("src.modules.vitalia.scheduling.api.agenda_router.AgendaGridRepositoryImpl"),
+        patch("src.modules.vitalia.scheduling.api.agenda_router.AsyncAuditWriter"),
+    ):
+        svc_instance = MagicMock()
+        svc_instance.create_appointment = AsyncMock(side_effect=OutOfWorkingHoursError())
+        MockSvc.return_value = svc_instance
+
+        app = _build_test_app()
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+        ) as client:
+            resp = await client.post(
+                "/api/v1/scheduling/appointments",
+                json={
+                    "origin": "walk_in",
+                    "patient_id": str(PATIENT_ID),
+                    "doctor_id": str(DOCTOR_ID),
+                    "service_label": "Consulta",
+                    "start_time": "2026-05-27T07:00:00+00:00",
+                    "end_time": "2026-05-27T07:30:00+00:00",
+                },
+                headers=_PHI_HEADERS,
+            )
+
+    assert resp.status_code == 422
+    body = resp.json()
+    assert body["detail"]["error_code"] == "OUT_OF_HOURS"
 
 
 @pytest.mark.asyncio
@@ -278,7 +337,7 @@ async def test_create_appointment_service_called_with_dual_filter() -> None:
             await client.post(
                 "/api/v1/scheduling/appointments",
                 json={
-                    "origin": "desde_paciente_existente",
+                    "origin": "walk_in",
                     "patient_id": str(PATIENT_ID),
                     "doctor_id": str(DOCTOR_ID),
                     "service_label": "Consulta",

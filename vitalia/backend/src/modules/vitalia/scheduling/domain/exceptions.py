@@ -112,3 +112,32 @@ class AppointmentStatusInvalidError(SchedulingDomainError):
         self.current = current
         self.requested = requested
         super().__init__(f"Cannot transition appointment from '{current}' to '{requested}'.")
+
+
+class AppointmentOverlapError(SchedulingDomainError):
+    """Raised when a new appointment overlaps an existing one for the same doctor/clinic slot.
+
+    Triggered when Postgres EXCLUDE constraint (23P01) fires on
+    vitalia_appointment_clinic_map — the DB is the TOCTOU-safe gate.
+
+    Callers map this to HTTP 409 APPOINTMENT_OVERLAP.
+    """
+
+    def __init__(
+        self,
+        tenant_id: UUID | None = None,
+        clinic_id: UUID | None = None,
+    ) -> None:
+        self.tenant_id = tenant_id
+        self.clinic_id = clinic_id
+        super().__init__("El horario solicitado se superpone con una cita existente. Selecciona otro horario.")
+
+
+class OutOfWorkingHoursError(SchedulingDomainError):
+    """Raised when the requested slot falls outside the doctor's working hours.
+
+    Callers map this to HTTP 422 OUT_OF_HOURS.
+    """
+
+    def __init__(self, detail: str = "El horario solicitado está fuera del horario de atención.") -> None:
+        super().__init__(detail)

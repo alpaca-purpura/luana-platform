@@ -22,13 +22,13 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Any
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import structlog
 from luana_core_platform.repositories.compound_scope_repository import (
     CompoundScopeRepositoryBase,
 )
-from sqlalchemy import bindparam, text
+from sqlalchemy import bindparam, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.modules.vitalia._shared.encryption.kek_client import KEKClient
@@ -38,6 +38,9 @@ from src.modules.vitalia.scheduling.infrastructure.repositories._phi_mask import
 )
 from src.modules.vitalia.scheduling.infrastructure.repositories._phi_mask import (
     mask_name as _mask_name,
+)
+from src.modules.vitalia.scheduling.persistence.models.appointment_clinic_map_model import (
+    AppointmentClinicMapModel,
 )
 
 logger = structlog.get_logger()
@@ -305,3 +308,131 @@ class AgendaGridRepositoryImpl(CompoundScopeRepositoryBase):  # type: ignore[typ
         )
 
         return [_apply_name_mask(dict(row)) for row in rows]
+
+    # ---------------------------------------------------------------------------
+    # Write methods (T-BE-4): create appointment + clinic_map with mirror cols
+    # ---------------------------------------------------------------------------
+
+    async def create(
+        self,
+        *,
+        tenant_id: UUID,
+        patient_id: UUID,
+        doctor_id: UUID,
+        service_label: str,
+        start_time: datetime,
+        end_time: datetime,
+        origin: str,
+        notes_internal: str | None = None,
+        currency_override: str | None = None,
+    ) -> UUID:
+        """Insert engine appointment row into vitalia_appointments.
+
+        vitalia_appointments has no Python model (created via raw migration).
+        Returns the new appointment_id UUID.
+
+        Dual scope: tenant_id bound; clinic_id lives in clinic_map (A12).
+        """
+        appointment_id = uuid4()
+        duration_minutes = int((end_time - start_time).total_seconds() // 60)
+        stmt = text(
+            "INSERT INTO vitalia_appointments "
+            "(id, tenant_id, patient_id, doctor_id, slot_iso, duration_minutes, "
+            " status, origin, notes_internal, currency, created_at) "
+            "VALUES (:id, :tenant_id, :patient_id, :doctor_id, :slot_iso, :dur, "
+            "        'SCHEDULED', :origin, :notes, :currency, NOW())"
+        ).bindparams(
+            bindparam("id", value=appointment_id),
+            bindparam("tenant_id", value=tenant_id),
+            bindparam("patient_id", value=patient_id),
+            bindparam("doctor_id", value=doctor_id),
+            bindparam("slot_iso", value=start_time),
+            bindparam("dur", value=duration_minutes),
+            bindparam("origin", value=origin),
+            bindparam("notes", value=notes_internal),
+            bindparam("currency", value=currency_override),
+        )
+        await self._session.execute(stmt)
+        logger.info(
+            "appointment_created",
+            appointment_id=str(appointment_id),
+            tenant_id=str(tenant_id),
+        )
+        return appointment_id
+
+    async def create_clinic_map(
+        self,
+        *,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        appointment_id: UUID,
+        patient_id: UUID,
+        doctor_id: UUID,
+        service_label: str,
+        origin: str,
+        currency_override: str | None = None,
+        # T-BE-4 mirror columns (feed the EXCLUDE constraint from migration 050)
+        start_time: datetime | None = None,
+        end_time: datetime | None = None,
+        status: str = "SCHEDULED",
+    ) -> None:
+        """Insert brand-local clinic_map row with mirror cols for EXCLUDE constraint.
+
+        start_time/end_time/status are the mirror columns added by migration 050.
+        They feed: EXCLUDE USING gist(tstzrange(start_time, end_time, '[)') WITH &&, ...)
+        WHERE (status <> 'CANCELLED').
+        SQLSTATE 23P01 on this insert → AppointmentOverlapError.
+        """
+        row = AppointmentClinicMapModel(
+            appointment_id=appointment_id,
+            tenant_id=tenant_id,
+            clinic_id=clinic_id,
+            patient_id=patient_id,
+            doctor_id=doctor_id,
+            service_label=service_label,
+            origin=origin,
+            currency_override=currency_override,
+            start_time=start_time,
+            end_time=end_time,
+            status=status,
+        )
+        self._session.add(row)
+        await self._session.flush()  # raise IntegrityError here if EXCLUDE fires
+
+        logger.info(
+            "clinic_map_created",
+            appointment_id=str(appointment_id),
+            tenant_id=str(tenant_id),
+            clinic_id=str(clinic_id),
+        )
+
+    async def update_clinic_map_status(
+        self,
+        appointment_id: UUID,
+        *,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        new_status: str,
+    ) -> None:
+        """Propagate status change to clinic_map mirror column.
+
+        Called by AppointmentStatusService after update_status().
+        CANCELLED frees the slot for EXCLUDE (WHERE status <> 'CANCELLED').
+        """
+        stmt = (
+            update(AppointmentClinicMapModel)
+            .where(
+                AppointmentClinicMapModel.appointment_id == appointment_id,
+                AppointmentClinicMapModel.tenant_id == tenant_id,
+                AppointmentClinicMapModel.clinic_id == clinic_id,
+                AppointmentClinicMapModel.deleted_at.is_(None),
+            )
+            .values(status=new_status)
+        )
+        await self._session.execute(stmt)
+        logger.info(
+            "clinic_map_status_updated",
+            appointment_id=str(appointment_id),
+            tenant_id=str(tenant_id),
+            new_status=new_status,
+        )

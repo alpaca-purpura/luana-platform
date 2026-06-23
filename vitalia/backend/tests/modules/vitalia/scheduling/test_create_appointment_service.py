@@ -3,8 +3,12 @@
 TDD: tests define expected interface BEFORE implementation.
 All tests use in-memory mocks — no Postgres required (pure unit tests).
 
-Contract (03-arch A12 + § 5 + hipaa-lite.md):
+Contract (03-arch A12 + § 5 + hipaa-lite.md + T-BE-4):
 - Create persists appointment + clinic_map (A12 brand-local FK)
+- clinic_map receives mirror cols: start_time, end_time, status=SCHEDULED (T-BE-4)
+- Pre-insert availability check → OutOfWorkingHoursError on OUT_OF_HOURS (T-BE-4)
+- IntegrityError pgcode=23P01 → AppointmentOverlapError (T-BE-4, TOCTOU-safe)
+- patient_id is REAL (no uuid4 stub) — PHI bug fix (T-BE-4)
 - Audit log sync write (HIPAA PHI write = mandatory log)
 - Telemetry growth_studio_event emitted (create_appointment)
 
@@ -18,6 +22,7 @@ from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
 import pytest
+from sqlalchemy.exc import IntegrityError
 
 # ---------------------------------------------------------------------------
 # Import helpers
@@ -255,3 +260,255 @@ class TestCreateAppointmentServiceTelemetry:
         call_kwargs = growth_emitter.emit_event.call_args.kwargs
         assert call_kwargs.get("tenant_id") == TENANT_ID
         assert call_kwargs.get("clinic_id") == CLINIC_ID
+
+
+# ---------------------------------------------------------------------------
+# T-BE-4: mirror columns, overlap, out-of-hours, real patient_id
+# ---------------------------------------------------------------------------
+
+
+class TestCreateAppointmentServiceMirrorColumns:
+    """T-BE-4: clinic_map receives start_time, end_time, status=SCHEDULED."""
+
+    @pytest.mark.asyncio
+    async def test_clinic_map_receives_start_time_end_time_status(self):
+        """create_clinic_map must be called with start_time, end_time, status=SCHEDULED.
+
+        Per T-BE-4 + migration 050: vitalia_appointment_clinic_map has mirror cols
+        start_time/end_time/status to enable the EXCLUDE constraint.
+        Without these the constraint never fires (slot never blocked).
+        """
+        CreateAppointmentService = _import_service()
+        repo = _make_mock_scheduling_repo()
+        audit_writer = _make_mock_audit_writer()
+        growth_emitter = _make_mock_growth_emitter()
+        service = CreateAppointmentService(
+            repo=repo,
+            audit_writer=audit_writer,
+            growth_emitter=growth_emitter,
+        )
+
+        start = datetime(2026, 6, 22, 9, 0, tzinfo=timezone.utc)
+        end = datetime(2026, 6, 22, 9, 30, tzinfo=timezone.utc)
+
+        await service.create_appointment(
+            tenant_id=TENANT_ID,
+            clinic_id=CLINIC_ID,
+            user_id=USER_ID,
+            origin="walk_in",
+            patient_id=PATIENT_ID,
+            doctor_id=DOCTOR_ID,
+            service_label="Limpieza dental",
+            start_time=start,
+            end_time=end,
+        )
+
+        repo.create_clinic_map.assert_called_once()
+        kw = repo.create_clinic_map.call_args.kwargs
+        assert kw.get("start_time") == start, "start_time must be passed to create_clinic_map"
+        assert kw.get("end_time") == end, "end_time must be passed to create_clinic_map"
+        assert kw.get("status") == "SCHEDULED", "status must be SCHEDULED on create"
+
+
+class TestCreateAppointmentServiceOverlap:
+    """T-BE-4: IntegrityError 23P01 → AppointmentOverlapError (HTTP 409)."""
+
+    @pytest.mark.asyncio
+    async def test_overlap_raises_appointment_overlap_error(self):
+        """When repo.create_clinic_map raises IntegrityError pgcode=23P01,
+        service must raise AppointmentOverlapError.
+
+        TOCTOU-safe: pre-check is NOT used; DB EXCLUDE constraint is the gate.
+        Catches sqlalchemy.exc.IntegrityError with orig.pgcode == '23P01'.
+        """
+        from src.modules.vitalia.scheduling.domain.exceptions import AppointmentOverlapError  # noqa: PLC0415
+
+        CreateAppointmentService = _import_service()
+        repo = _make_mock_scheduling_repo()
+        audit_writer = _make_mock_audit_writer()
+        growth_emitter = _make_mock_growth_emitter()
+
+        # Simulate Postgres EXCLUDE violation on clinic_map insert
+        pg_error = MagicMock()
+        pg_error.pgcode = "23P01"
+        repo.create_clinic_map = AsyncMock(side_effect=IntegrityError("EXCLUDE", {}, pg_error))
+
+        service = CreateAppointmentService(
+            repo=repo,
+            audit_writer=audit_writer,
+            growth_emitter=growth_emitter,
+        )
+
+        with pytest.raises(AppointmentOverlapError):
+            await service.create_appointment(
+                tenant_id=TENANT_ID,
+                clinic_id=CLINIC_ID,
+                user_id=USER_ID,
+                origin="walk_in",
+                patient_id=PATIENT_ID,
+                doctor_id=DOCTOR_ID,
+                service_label="Limpieza dental",
+                start_time=datetime(2026, 6, 22, 9, 0, tzinfo=timezone.utc),
+                end_time=datetime(2026, 6, 22, 9, 30, tzinfo=timezone.utc),
+            )
+
+    @pytest.mark.asyncio
+    async def test_other_integrity_error_reraises(self):
+        """IntegrityError with pgcode != 23P01 must NOT be swallowed."""
+        CreateAppointmentService = _import_service()
+        repo = _make_mock_scheduling_repo()
+        audit_writer = _make_mock_audit_writer()
+        growth_emitter = _make_mock_growth_emitter()
+
+        pg_error = MagicMock()
+        pg_error.pgcode = "23505"  # unique violation, not EXCLUDE
+        repo.create_clinic_map = AsyncMock(side_effect=IntegrityError("UNIQUE", {}, pg_error))
+
+        service = CreateAppointmentService(
+            repo=repo,
+            audit_writer=audit_writer,
+            growth_emitter=growth_emitter,
+        )
+
+        with pytest.raises(IntegrityError):
+            await service.create_appointment(
+                tenant_id=TENANT_ID,
+                clinic_id=CLINIC_ID,
+                user_id=USER_ID,
+                origin="walk_in",
+                patient_id=PATIENT_ID,
+                doctor_id=DOCTOR_ID,
+                service_label="Limpieza dental",
+                start_time=datetime(2026, 6, 22, 10, 0, tzinfo=timezone.utc),
+                end_time=datetime(2026, 6, 22, 10, 30, tzinfo=timezone.utc),
+            )
+
+
+class TestCreateAppointmentServiceOutOfHours:
+    """T-BE-4: Availability check → OutOfWorkingHoursError (HTTP 422)."""
+
+    @pytest.mark.asyncio
+    async def test_out_of_hours_raises_before_insert(self):
+        """When availability_check_service returns OUT_OF_HOURS,
+        service must raise OutOfWorkingHoursError WITHOUT calling repo.create().
+
+        No insert must happen — the check is pre-insert.
+        """
+        from src.modules.vitalia.scheduling.domain.availability_check import (  # noqa: PLC0415
+            AvailabilityCheckResult,
+            AvailabilityStatus,
+        )
+        from src.modules.vitalia.scheduling.domain.exceptions import OutOfWorkingHoursError  # noqa: PLC0415
+
+        CreateAppointmentService = _import_service()
+        repo = _make_mock_scheduling_repo()
+        audit_writer = _make_mock_audit_writer()
+        growth_emitter = _make_mock_growth_emitter()
+
+        avail_svc = MagicMock()
+        avail_svc.check = AsyncMock(
+            return_value=AvailabilityCheckResult(
+                status=AvailabilityStatus.OUT_OF_HOURS,
+                conflict_label=None,
+                conflict_start=None,
+            )
+        )
+
+        service = CreateAppointmentService(
+            repo=repo,
+            audit_writer=audit_writer,
+            growth_emitter=growth_emitter,
+            availability_check_service=avail_svc,
+        )
+
+        with pytest.raises(OutOfWorkingHoursError):
+            await service.create_appointment(
+                tenant_id=TENANT_ID,
+                clinic_id=CLINIC_ID,
+                user_id=USER_ID,
+                origin="walk_in",
+                patient_id=PATIENT_ID,
+                doctor_id=DOCTOR_ID,
+                service_label="Limpieza dental",
+                start_time=datetime(2026, 6, 22, 7, 0, tzinfo=timezone.utc),  # before hours
+                end_time=datetime(2026, 6, 22, 7, 30, tzinfo=timezone.utc),
+            )
+
+        # No insert should have been called
+        repo.create.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_no_availability_check_service_skips_check(self):
+        """When availability_check_service=None (default), check is skipped.
+
+        Mateo manual flow doesn't require availability pre-check
+        (staff knows the schedule; EXCLUDE handles overlaps).
+        """
+        CreateAppointmentService = _import_service()
+        repo = _make_mock_scheduling_repo()
+        audit_writer = _make_mock_audit_writer()
+        growth_emitter = _make_mock_growth_emitter()
+
+        # No availability_check_service → default None
+        service = CreateAppointmentService(
+            repo=repo,
+            audit_writer=audit_writer,
+            growth_emitter=growth_emitter,
+        )
+
+        result = await service.create_appointment(
+            tenant_id=TENANT_ID,
+            clinic_id=CLINIC_ID,
+            user_id=USER_ID,
+            origin="walk_in",
+            patient_id=PATIENT_ID,
+            doctor_id=DOCTOR_ID,
+            service_label="Limpieza dental",
+            start_time=datetime(2026, 6, 22, 9, 0, tzinfo=timezone.utc),
+            end_time=datetime(2026, 6, 22, 9, 30, tzinfo=timezone.utc),
+        )
+
+        assert result is not None  # happy path completed
+        repo.create.assert_called_once()
+
+
+class TestCreateAppointmentServiceRealPatientId:
+    """T-BE-4: patient_id must be real — no uuid4() stub."""
+
+    @pytest.mark.asyncio
+    async def test_real_patient_id_passed_to_repo(self):
+        """patient_id supplied by caller must be forwarded to repo.create() as-is.
+
+        PHI bug fix: old code generated uuid4() stub when patient_new_data was set.
+        T-BE-5 now handles inline patient creation and provides real patient_id.
+        The stub is gone — patient_id is REQUIRED.
+        """
+        CreateAppointmentService = _import_service()
+        repo = _make_mock_scheduling_repo()
+        audit_writer = _make_mock_audit_writer()
+        growth_emitter = _make_mock_growth_emitter()
+        service = CreateAppointmentService(
+            repo=repo,
+            audit_writer=audit_writer,
+            growth_emitter=growth_emitter,
+        )
+
+        real_patient_id = uuid4()
+
+        await service.create_appointment(
+            tenant_id=TENANT_ID,
+            clinic_id=CLINIC_ID,
+            user_id=USER_ID,
+            origin="walk_in",
+            patient_id=real_patient_id,
+            doctor_id=DOCTOR_ID,
+            service_label="Limpieza dental",
+            start_time=datetime(2026, 6, 22, 9, 0, tzinfo=timezone.utc),
+            end_time=datetime(2026, 6, 22, 9, 30, tzinfo=timezone.utc),
+        )
+
+        repo.create.assert_called_once()
+        kw = repo.create.call_args.kwargs
+        assert kw.get("patient_id") == real_patient_id, (
+            f"Expected real patient_id={real_patient_id}, got {kw.get('patient_id')}"
+        )

@@ -35,6 +35,7 @@ from typing import Any
 from uuid import UUID
 
 import structlog
+from sqlalchemy.exc import IntegrityError
 
 logger = structlog.get_logger()
 
@@ -65,6 +66,7 @@ class CreateAppointmentService:
         audit_writer: Any,
         growth_emitter: Any,
         hold_service: Any = None,
+        availability_check_service: Any = None,
     ) -> None:
         """Initialize CreateAppointmentService.
 
@@ -76,11 +78,15 @@ class CreateAppointmentService:
             hold_service: Optional SchedulingHoldService. If provided, called
                 after clinic_map persist to mark slot + set hold-TTL (T-BE-2).
                 If None (default), slot marking is skipped (Mateo manual flow).
+            availability_check_service: Optional AvailabilityCheckService (T-BE-3).
+                When provided, checks working hours pre-insert.
+                None = skip check (e.g. proactivo_adrian flow that already validated).
         """
         self._repo = repo
         self._audit = audit_writer
         self._growth = growth_emitter
         self._hold_service = hold_service
+        self._avail = availability_check_service
 
     async def create_appointment(
         self,
@@ -124,6 +130,29 @@ class CreateAppointmentService:
         Returns:
             Full appointment detail dict (same shape as get_detail).
         """
+        # Step 0 (T-BE-4): Pre-insert working hours check (when availability_check_service provided).
+        # Skip when None (proactivo_adrian flow, or Mateo flow without svc injected).
+        # OUT_OF_HOURS → OutOfWorkingHoursError (HTTP 422). Never pre-check overlap
+        # (TOCTOU-unsafe) — the DB EXCLUDE constraint catches that (23P01 → 409).
+        if self._avail is not None:
+            from src.modules.vitalia.scheduling.domain.availability_check import (  # noqa: PLC0415
+                AvailabilityStatus,
+            )
+            from src.modules.vitalia.scheduling.domain.exceptions import (  # noqa: PLC0415
+                OutOfWorkingHoursError,
+            )
+
+            duration_minutes = int((end_time - start_time).total_seconds() // 60)
+            avail = await self._avail.check(
+                tenant_id=tenant_id,
+                clinic_id=clinic_id,
+                doctor_id=doctor_id,
+                start=start_time,
+                duration_minutes=duration_minutes,
+            )
+            if avail.status == AvailabilityStatus.OUT_OF_HOURS:
+                raise OutOfWorkingHoursError()
+
         # Step 1: Create engine appointment row
         appointment_id: UUID = await self._repo.create(
             tenant_id=tenant_id,
@@ -137,17 +166,33 @@ class CreateAppointmentService:
             currency_override=currency_override,
         )
 
-        # Step 2: Create brand-local clinic_map row (A12)
-        await self._repo.create_clinic_map(
-            tenant_id=tenant_id,
-            clinic_id=clinic_id,
-            appointment_id=appointment_id,
-            patient_id=patient_id,
-            doctor_id=doctor_id,
-            service_label=service_label,
-            origin=origin,
-            currency_override=currency_override,
-        )
+        # Step 2: Create brand-local clinic_map row (A12) with mirror cols (T-BE-4).
+        # Mirror cols start_time/end_time/status feed the EXCLUDE constraint from migration 050.
+        # IntegrityError pgcode=23P01 → AppointmentOverlapError (HTTP 409, TOCTOU-safe).
+        try:
+            await self._repo.create_clinic_map(
+                tenant_id=tenant_id,
+                clinic_id=clinic_id,
+                appointment_id=appointment_id,
+                patient_id=patient_id,
+                doctor_id=doctor_id,
+                service_label=service_label,
+                origin=origin,
+                currency_override=currency_override,
+                start_time=start_time,
+                end_time=end_time,
+                status="SCHEDULED",
+            )
+        except IntegrityError as exc:
+            orig = getattr(exc, "orig", None)
+            pgcode = getattr(orig, "pgcode", None)
+            if pgcode == "23P01":
+                from src.modules.vitalia.scheduling.domain.exceptions import (  # noqa: PLC0415
+                    AppointmentOverlapError,
+                )
+
+                raise AppointmentOverlapError(tenant_id=tenant_id, clinic_id=clinic_id) from exc
+            raise  # reraise non-EXCLUDE IntegrityErrors
 
         # Step 2b: Mark availability slot + set hold-TTL (T-BE-2 / RN-26 fix)
         # Only called when hold_service is injected (proactivo_adrian flow).

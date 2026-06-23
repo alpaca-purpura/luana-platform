@@ -162,14 +162,15 @@ class PatientNewDataDTO(BaseModel):
 class CreateAppointmentRequestDTO(BaseModel):
     """Request body for POST /api/v1/scheduling/appointments.
 
-    origin determines whether patient_id or patient_new_data is required.
+    T-BE-4: patient_id is REQUIRED (real patient from CRM — T-BE-5 provides it).
+    origin is limited to walk_in | telefono (Mateo manual flow).
+    desde_paciente_existente removed; patient_new_data removed (PHI bug fix).
     """
 
     model_config = ConfigDict(extra="forbid")
 
-    origin: Literal["walk_in", "telefono", "desde_paciente_existente"]
-    patient_id: UUID | None = None  # required if origin=desde_paciente_existente
-    patient_new_data: PatientNewDataDTO | None = None  # required if walk_in or telefono
+    origin: Literal["walk_in", "telefono"]
+    patient_id: UUID  # required — real patient_id from CRM (T-BE-5); no stub
     doctor_id: UUID
     service_label: str = Field(..., min_length=1, max_length=128)
     start_time: datetime

@@ -73,6 +73,8 @@ def _make_mock_repo(initial_detail: dict | None = None) -> MagicMock:
         initial_detail = _make_detail_dict("SCHEDULED")
     repo.get_by_id = AsyncMock(return_value=initial_detail)
     repo.update_status = AsyncMock(return_value={**initial_detail, "status": "CANCELLED"})
+    # T-BE-4: clinic_map mirror propagation (always set up so existing tests don't TypeError)
+    repo.update_clinic_map_status = AsyncMock(return_value=None)
     return repo
 
 
@@ -252,3 +254,73 @@ class TestAppointmentStatusServiceCrossClinic:
                 reason=None,
                 user_id=USER_ID,
             )
+
+
+# ---------------------------------------------------------------------------
+# T-BE-4: clinic_map status mirror propagation
+# ---------------------------------------------------------------------------
+
+
+class TestAppointmentStatusServiceClinicMapMirror:
+    """T-BE-4: change_status must propagate status to clinic_map mirror."""
+
+    @pytest.mark.asyncio
+    async def test_cancel_updates_clinic_map_status_mirror(self):
+        """change_status(CANCELLED) must call repo.update_clinic_map_status().
+
+        When a CANCELLED appointment frees its slot, the clinic_map mirror
+        status must also be set to CANCELLED so the EXCLUDE constraint
+        (WHERE status <> 'CANCELLED') allows re-booking of that slot.
+        """
+        AppointmentStatusService = _import_service()
+        repo = _make_mock_repo(_make_detail_dict("SCHEDULED"))
+        repo.update_clinic_map_status = AsyncMock(return_value=None)
+        audit_writer = _make_mock_audit_writer()
+        growth_emitter = _make_mock_growth_emitter()
+        service = AppointmentStatusService(
+            repo=repo,
+            audit_writer=audit_writer,
+            growth_emitter=growth_emitter,
+        )
+
+        await service.change_status(
+            appointment_id=APPT_ID,
+            tenant_id=TENANT_ID,
+            clinic_id=CLINIC_ID,
+            new_status="CANCELLED",
+            reason="Paciente canceló",
+            user_id=USER_ID,
+        )
+
+        repo.update_clinic_map_status.assert_called_once()
+        kw = repo.update_clinic_map_status.call_args.kwargs
+        assert kw.get("new_status") == "CANCELLED"
+        assert kw.get("tenant_id") == TENANT_ID
+        assert kw.get("clinic_id") == CLINIC_ID
+
+    @pytest.mark.asyncio
+    async def test_complete_updates_clinic_map_status_mirror(self):
+        """change_status(COMPLETED) must also propagate to clinic_map mirror."""
+        AppointmentStatusService = _import_service()
+        repo = _make_mock_repo(_make_detail_dict("SCHEDULED"))
+        repo.update_clinic_map_status = AsyncMock(return_value=None)
+        audit_writer = _make_mock_audit_writer()
+        growth_emitter = _make_mock_growth_emitter()
+        service = AppointmentStatusService(
+            repo=repo,
+            audit_writer=audit_writer,
+            growth_emitter=growth_emitter,
+        )
+
+        await service.change_status(
+            appointment_id=APPT_ID,
+            tenant_id=TENANT_ID,
+            clinic_id=CLINIC_ID,
+            new_status="COMPLETED",
+            reason=None,
+            user_id=USER_ID,
+        )
+
+        repo.update_clinic_map_status.assert_called_once()
+        kw = repo.update_clinic_map_status.call_args.kwargs
+        assert kw.get("new_status") == "COMPLETED"

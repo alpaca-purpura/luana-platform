@@ -61,7 +61,11 @@ from src.modules.vitalia.scheduling.application.services.appointment_status_serv
 from src.modules.vitalia.scheduling.application.services.create_appointment_service import (
     CreateAppointmentService,
 )
-from src.modules.vitalia.scheduling.domain.exceptions import AppointmentNotFoundError
+from src.modules.vitalia.scheduling.domain.exceptions import (
+    AppointmentNotFoundError,
+    AppointmentOverlapError,
+    OutOfWorkingHoursError,
+)
 from src.modules.vitalia.scheduling.infrastructure.repositories.agenda_grid_repository_impl import (
     AgendaGridRepositoryImpl,
 )
@@ -482,8 +486,9 @@ async def create_appointment(
 ) -> AppointmentDetailDTO:
     """POST /api/v1/scheduling/appointments — create appointment.
 
-    Validates origin + patient_id or patient_new_data, delegates to service.
-    Service persists engine appointment + brand-local clinic_map (A12).
+    T-BE-4: patient_id REQUIRED (real CRM patient). origin=walk_in|telefono only.
+    Service persists engine appointment + brand-local clinic_map with mirror cols (A12).
+    EXCLUDE constraint catches overlap → 409. Availability check → 422 OUT_OF_HOURS.
     Audit log row written sync. Growth telemetry fire-forget.
     """
     if user_role not in ALLOWED_PHI_ROLES:
@@ -492,42 +497,9 @@ async def create_appointment(
             detail={"error_code": "PHI_RBAC_DENIED", "message": "Acceso no autorizado a datos clínicos."},
         )
 
-    # Validate origin + patient payload combination
-    if body.origin == "desde_paciente_existente" and body.patient_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail={
-                "error_code": "PATIENT_ID_REQUIRED",
-                "message": "patient_id es requerido cuando origin=desde_paciente_existente.",
-            },
-        )
-    if body.origin in ("walk_in", "telefono") and body.patient_new_data is None and body.patient_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail={
-                "error_code": "PATIENT_DATA_REQUIRED",
-                "message": "patient_new_data o patient_id es requerido para este tipo de cita.",
-            },
-        )
-
     tid = UUID(tenant_id)
     cid = UUID(clinic_id)
     uid = UUID(user_id)
-
-    # Resolve patient_id
-    patient_id = body.patient_id
-    if patient_id is None and body.patient_new_data is not None:
-        # In F2-S1 stub: create a placeholder UUID (real CRM integration in T-next)
-        # Real impl: call CRM service to create/lookup patient
-        import uuid  # noqa: PLC0415
-
-        patient_id = uuid.uuid4()
-
-    if patient_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail={"error_code": "PATIENT_ID_MISSING", "message": "No se pudo resolver el paciente."},
-        )
 
     from src.modules.vitalia._shared.telemetry.growth_studio_emitter import (  # noqa: PLC0415
         GrowthStudioEmitter,
@@ -536,7 +508,7 @@ async def create_appointment(
     audit_writer = AsyncAuditWriter(session=db)
     growth_emitter = GrowthStudioEmitter(session=db)
 
-    # Use AgendaGridRepositoryImpl as combined repo adapter (create + clinic_map)
+    # Combined repo adapter: create + create_clinic_map + get_by_id (A12)
     combined_repo = AgendaGridRepositoryImpl(session=db)
     service = CreateAppointmentService(
         repo=combined_repo,
@@ -544,19 +516,36 @@ async def create_appointment(
         growth_emitter=growth_emitter,
     )
 
-    detail = await service.create_appointment(
-        tenant_id=tid,
-        clinic_id=cid,
-        user_id=uid,
-        origin=body.origin,
-        patient_id=patient_id,
-        doctor_id=body.doctor_id,
-        service_label=body.service_label,
-        start_time=body.start_time,
-        end_time=body.end_time,
-        notes_internal=body.notes_internal,
-        currency_override=body.currency_override,
-    )
+    try:
+        detail = await service.create_appointment(
+            tenant_id=tid,
+            clinic_id=cid,
+            user_id=uid,
+            origin=body.origin,
+            patient_id=body.patient_id,
+            doctor_id=body.doctor_id,
+            service_label=body.service_label,
+            start_time=body.start_time,
+            end_time=body.end_time,
+            notes_internal=body.notes_internal,
+            currency_override=body.currency_override,
+        )
+    except AppointmentOverlapError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={
+                "error_code": "APPOINTMENT_OVERLAP",
+                "message": "El horario solicitado se superpone con una cita existente. Selecciona otro horario.",
+            },
+        )
+    except OutOfWorkingHoursError:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={
+                "error_code": "OUT_OF_HOURS",
+                "message": "El horario solicitado está fuera del horario de atención.",
+            },
+        )
 
     return AppointmentDetailDTO.model_validate(detail)
 

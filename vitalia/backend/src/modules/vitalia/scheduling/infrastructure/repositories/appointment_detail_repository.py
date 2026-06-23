@@ -23,11 +23,14 @@ import structlog
 from luana_core_platform.repositories.compound_scope_repository import (
     CompoundScopeRepositoryBase,
 )
-from sqlalchemy import bindparam, select, text
+from sqlalchemy import bindparam, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.modules.vitalia._shared.encryption.kek_client import KEKClient
 from src.modules.vitalia.scheduling.infrastructure.repositories._phi_mask import apply_name_mask
+from src.modules.vitalia.scheduling.persistence.models.appointment_clinic_map_model import (
+    AppointmentClinicMapModel,
+)
 from src.modules.vitalia.scheduling.persistence.models.appointment_payment_model import (
     AppointmentPaymentModel,
 )
@@ -162,6 +165,76 @@ class AppointmentDetailRepository(CompoundScopeRepositoryBase):  # type: ignore[
         if clinic_id is None:
             raise ValueError("AppointmentDetailRepository: clinic_id required (HIPAA-lite dual filter)")
         return []
+
+    async def update_status(
+        self,
+        appointment_id: UUID,
+        *,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        new_status: str,
+        reason: str | None = None,
+    ) -> dict[str, Any]:
+        """Update appointment status in vitalia_appointments.
+
+        Dual filter: tenant_id + clinic_id (via clinic_map FK join — HIPAA-lite).
+        Returns updated detail dict after persisting.
+        """
+        # Update base appointments table (status field)
+        stmt = text(
+            "UPDATE vitalia_appointments "
+            "SET status = :new_status, updated_at = NOW() "
+            "WHERE id = :appt_id AND tenant_id = :tenant_id AND deleted_at IS NULL"
+        ).bindparams(
+            bindparam("new_status", value=new_status),
+            bindparam("appt_id", value=appointment_id),
+            bindparam("tenant_id", value=tenant_id),
+        )
+        await self._session.execute(stmt)
+
+        logger.info(
+            "appointment_status_updated",
+            appointment_id=str(appointment_id),
+            tenant_id=str(tenant_id),
+            new_status=new_status,
+        )
+
+        # Return fresh detail
+        result = await self.get_by_id(appointment_id, tenant_id=tenant_id, clinic_id=clinic_id)
+        if result is None:
+            # Shouldn't happen if caller verified existence first, return minimal dict
+            return {"appointment_id": str(appointment_id), "status": new_status}
+        return result
+
+    async def update_clinic_map_status(
+        self,
+        appointment_id: UUID,
+        *,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        new_status: str,
+    ) -> None:
+        """Propagate status change to clinic_map mirror column (T-BE-4).
+
+        CANCELLED frees the slot for EXCLUDE (WHERE status <> 'CANCELLED').
+        """
+        stmt = (
+            update(AppointmentClinicMapModel)
+            .where(
+                AppointmentClinicMapModel.appointment_id == appointment_id,
+                AppointmentClinicMapModel.tenant_id == tenant_id,
+                AppointmentClinicMapModel.clinic_id == clinic_id,
+                AppointmentClinicMapModel.deleted_at.is_(None),
+            )
+            .values(status=new_status)
+        )
+        await self._session.execute(stmt)
+        logger.info(
+            "clinic_map_status_updated",
+            appointment_id=str(appointment_id),
+            tenant_id=str(tenant_id),
+            new_status=new_status,
+        )
 
     async def _get_payments(
         self,
