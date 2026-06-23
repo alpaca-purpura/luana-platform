@@ -173,6 +173,20 @@ Claude: chrome-devtools mcp:
 
 Detalle completo: `https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/main/docs/tool-reference.md`
 
+## ★ Footgun — `click()` sintético no dispara `onClick` de React (HB-101)
+
+El `click()` del MCP es un evento sintético que **NO dispara el handler `onClick` de React** en botones con `onClick` puro (vistos en vitalia: `FreeDoctorsList`, "Crear paciente", "Crear cita"): el click "funciona" (sin error, sin Network, sin nada) pero no hay POST → se pierden turnos creyendo que es un bug de la app cuando es el harness de testing. Los pickers/combobox de **Radix** SÍ responden al `click()` del MCP; los botones con `onClick` puro NO.
+
+**Workaround verificado** — `evaluate_script` con `el.click()` nativo SÍ dispara React:
+
+```js
+// evaluate_script
+const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Crear cita'));
+btn?.click();   // click nativo → el onClick de React dispara
+```
+
+Heurística: si un click "no hace nada" (sin error, sin request en Network), sospechá esto ANTES de declarar bug de la app.
+
 ## Anti-patterns prohibidos
 
 - ❌ Spammear `take_screenshot` cada turn (cada screenshot consume context — usar con criterio)
@@ -181,6 +195,7 @@ Detalle completo: `https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/ma
 - ❌ Performance trace en producción (puede impactar UX real users — solo local dev)
 - ❌ Asumir que `--no-sandbox` es OK en prod (NUNCA — sólo dev local)
 - ❌ Tocar componentes shared/ vía Chrome MCP "para arreglar bug visual rápido" sin escalate (rompe `playwright_visual_scope` de la story per `.claude/rules/architect-autonomous-mode.md`)
+- ❌ Declarar "el botón no funciona / hay un bug" cuando el MCP `click()` no disparó un `onClick` puro de React — probá `evaluate_script` con `el.click()` nativo PRIMERO (ver § Footgun · HB-101)
 
 ## DoD Live Verification Gate (Critical Rule #37)
 
