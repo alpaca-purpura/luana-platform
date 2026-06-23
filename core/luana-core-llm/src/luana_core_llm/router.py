@@ -91,6 +91,30 @@ class MultiRoleLLMRouter(BaseLLMService):
             **kwargs,
         )
 
+    def generate_with_tools(
+        self,
+        messages: list[dict[str, str]],
+        system_prompt: str | None = None,
+        model_type: str | ModelRole = "smart",
+        tools: list[dict[str, Any]] | None = None,
+        **kwargs: Any,  # noqa: ANN401 — abstract LLM interface
+    ) -> Any:  # noqa: ANN401 — ToolCallResult (avoid import cycle)
+        """Dispatch native function-calling to the resolved provider.
+
+        Without this override the router would inherit ``BaseLLMService``'s
+        text-only fallback, so brand tools would never be offered to the LLM
+        in the live graph (the native ``bind_tools`` path lives on the
+        concrete provider, e.g. ``LiteLLMService``).
+        """
+        role = self._resolve_role_compat(model_type)
+        return self._resolve(role).generate_with_tools(
+            messages,
+            system_prompt=system_prompt,
+            model_type=model_type,
+            tools=tools,
+            **kwargs,
+        )
+
     # Test/debug helper — surfaces the configured provider for ratchet tests
     # and ops dashboards. The proxy still does the real routing at call time.
     def get_provider_for_role(self, role: ModelRole) -> AIProvider:
