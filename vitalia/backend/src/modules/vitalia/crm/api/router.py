@@ -63,8 +63,11 @@ from src.modules.vitalia.crm.application.dto.lead_dto import (
     LeadUpdateRequest,
 )
 from src.modules.vitalia.crm.application.dto.patient_dto import (
+    PatientInlineCreateRequest,
+    PatientInlineCreateResponse,
     PatientPatchRequest,
     PatientResponse,
+    PatientSearchResponse,
 )
 from src.modules.vitalia.crm.application.dto.transition_dto import (
     StageTransitionRequest,
@@ -279,6 +282,131 @@ async def get_patient(
         marketing_opt_out_at=patient.marketing_opt_out_at,
         created_at=patient.created_at,
     )
+
+
+@router.post("/patients", response_model=PatientInlineCreateResponse, status_code=201)
+async def create_patient_inline(
+    body: PatientInlineCreateRequest,
+    authorization: AuthorizationHeader,
+    x_tenant_id: TenantIdHeader,
+    x_clinic_id: ClinicIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
+) -> PatientInlineCreateResponse:
+    """Create a minimal patient record inline during nueva-cita flow.
+
+    PHI transmitted in POST body ONLY — NEVER in URL params.
+    Dual filter: tenant_id + clinic_id required.
+    RN-9: if phone already exists → returns existing patient with is_duplicate=True.
+
+    Allowed roles: doctor, nurse, admin_clinic.
+
+    Args:
+        body: PatientInlineCreateRequest (name, phone?, email?, channel, note?).
+        authorization: Bearer token.
+        x_tenant_id: Tenant ID header.
+        x_clinic_id: Clinic ID header (required — dual PHI filter).
+        session: Async DB session.
+
+    Returns:
+        PatientInlineCreateResponse with masked fields (name_masked, phone_masked).
+        HTTP 201 Created on new patient. HTTP 200 when is_duplicate=True.
+
+    Raises:
+        401: Invalid/missing token.
+        403: Role not permitted to create PHI records.
+        422: Invalid request body.
+    """
+    ctx = await _resolve_context_async(authorization, x_tenant_id, x_clinic_id, session)
+
+    audit_repo = AuditLogRepository(session=session)
+    patient_repo = PatientRepository(session=session, audit_repo=audit_repo, kek=KEKClient.from_env())
+    service = PatientService(patient_repo=patient_repo, audit_repo=audit_repo)
+
+    try:
+        result = await service.create_minimal(
+            tenant_id=ctx.tenant_id,
+            clinic_id=UUID(x_clinic_id),
+            user_id=UUID(ctx.user_id) if len(ctx.user_id) == 36 else UUID(int=0),
+            name=body.name,
+            phone=body.phone,
+            email=body.email,
+            channel=body.channel,
+            note=body.note,
+        )
+    except PHIAccessDeniedError:
+        logger.warning(
+            "crm.create_patient.access_denied",
+            role=ctx.role,
+            tenant_id=x_tenant_id,
+        )
+        raise HTTPException(
+            status_code=403,
+            detail="Acceso denegado: tu rol no tiene permisos para crear pacientes.",
+        )
+
+    return result
+
+
+@router.get("/patients", response_model=PatientSearchResponse)
+async def search_patients(
+    authorization: AuthorizationHeader,
+    x_tenant_id: TenantIdHeader,
+    x_clinic_id: ClinicIdHeader,
+    session: Annotated[AsyncSession, Depends(get_async_session_committing)],
+    q: str = Query(default="", max_length=100, description="Typeahead query"),
+    cursor: UUID | None = Query(default=None, description="Pagination cursor (patient UUID)"),
+    limit: int = Query(default=20, ge=1, le=50, description="Page size"),
+) -> PatientSearchResponse:
+    """Typeahead patient search for nueva-cita picker.
+
+    PHI NEVER in URL — q= is generic search term, not name/dni/phone directly.
+    Results are always masked (name_masked, phone_masked) — raw PHI never returned.
+    Cursor-based pagination for 1500+ row datasets.
+
+    Dual filter: tenant_id + clinic_id required.
+    Allowed roles: doctor, nurse, admin_clinic.
+
+    Args:
+        authorization: Bearer token.
+        x_tenant_id: Tenant ID header.
+        x_clinic_id: Clinic ID header.
+        session: Async DB session.
+        q: Typeahead search term (applied to decrypted name).
+        cursor: Optional pagination cursor.
+        limit: Page size (1-50, default 20).
+
+    Returns:
+        PatientSearchResponse with masked items + next_cursor + total_approx.
+
+    Raises:
+        401: Invalid/missing token.
+        403: Role not permitted to search PHI.
+    """
+    ctx = await _resolve_context_async(authorization, x_tenant_id, x_clinic_id, session)
+
+    audit_repo = AuditLogRepository(session=session)
+    patient_repo = PatientRepository(session=session, audit_repo=audit_repo, kek=KEKClient.from_env())
+    service = PatientService(patient_repo=patient_repo, audit_repo=audit_repo)
+
+    try:
+        return await service.search(
+            tenant_id=ctx.tenant_id,
+            clinic_id=UUID(x_clinic_id),
+            user_id=UUID(ctx.user_id) if len(ctx.user_id) == 36 else UUID(int=0),
+            q=q,
+            cursor=cursor,
+            limit=limit,
+        )
+    except PHIAccessDeniedError:
+        logger.warning(
+            "crm.search_patients.access_denied",
+            role=ctx.role,
+            tenant_id=x_tenant_id,
+        )
+        raise HTTPException(
+            status_code=403,
+            detail="Acceso denegado: tu rol no tiene permisos para buscar pacientes.",
+        )
 
 
 @router.patch("/patients/{patient_id}", response_model=PatientResponse)

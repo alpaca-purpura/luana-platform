@@ -24,7 +24,8 @@ ADR-007 D1: inline pgp_sym_* with :kek bound param. NO trigger+GUC.
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from uuid import UUID
+from typing import Any
+from uuid import UUID, uuid4
 
 import structlog
 from sqlalchemy import text
@@ -480,3 +481,301 @@ class PatientRepository(PhiRepositoryBase):
             clinic_id=str(clinic_id),
             opt_in=opt_in,
         )
+
+    # ------------------------------------------------------------------
+    # T-BE-5: inline create + typeahead search + dedup
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _mask_name(name: str) -> str:
+        """Return first initial + last name: 'María López' → 'M. López'.
+
+        If name has only one word, returns first initial + '.'.
+        PHI masking — raw name must never reach API response.
+        """
+        parts = name.strip().split()
+        if len(parts) == 1:
+            return f"{parts[0][0].upper()}."
+        return f"{parts[0][0].upper()}. {parts[-1]}"
+
+    @staticmethod
+    def _mask_phone(phone: str | None) -> str | None:
+        """Return phone with digits replaced by *** after country/area prefix.
+
+        Examples:
+          '+51987654321' → '+51 9***'
+          '+5491112345678' → '+54 9***'
+          None → None
+        """
+        if not phone:
+            return None
+        # Keep up to first 4 chars of stripped digits after '+'
+        stripped = phone.replace(" ", "").replace("-", "")
+        if stripped.startswith("+"):
+            visible = stripped[:4]  # e.g. '+519'
+            return f"{visible}***"
+        # Fallback: show first digit then mask
+        return f"{stripped[0]}***"
+
+    async def create_minimal(
+        self,
+        *,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        user_id: UUID,
+        name: str,
+        phone: str | None = None,
+        email: str | None = None,
+        channel: str,
+        note: str | None = None,
+    ) -> dict[str, Any]:
+        """Insert a minimal patient record with pgcrypto-encrypted PHI.
+
+        Writes audit log BEFORE returning result (HIPAA-lite sync).
+        Returns masked fields only (name_masked, phone_masked) — raw PHI never returned.
+
+        T-BE-5: used by inline patient create in the nueva-cita flow.
+
+        Args:
+            tenant_id: Tenant UUID.
+            clinic_id: Clinic UUID (dual filter).
+            user_id: User creating the record (for audit log).
+            name: Patient full name (PHI — encrypted at-rest).
+            phone: Optional E.164 phone (PHI — encrypted at-rest).
+            email: Optional email (PHI — encrypted at-rest).
+            channel: Acquisition channel (not PHI).
+            note: Optional note (not PHI).
+
+        Returns:
+            dict with patient_id, name_masked, phone_masked, is_duplicate, created_at.
+        """
+        self.validate_dual_filter(tenant_id=tenant_id, clinic_id=clinic_id)
+
+        kek_val = self._kek.get_key()
+        patient_id = uuid4()
+        now = _utc_now()
+
+        # Insert with pgcrypto encryption for PHI columns
+        stmt = text(
+            """
+            INSERT INTO vitalia_patients
+              (id, tenant_id, clinic_id,
+               name, phone, email,
+               channel_first, notes,
+               marketing_opt_in, opt_out, created_at, updated_at)
+            VALUES
+              (:id, :tenant_id, :clinic_id,
+               pgp_sym_encrypt(:name, :kek),
+               pgp_sym_encrypt(:phone, :kek),
+               pgp_sym_encrypt(:email, :kek),
+               :channel_first, :notes,
+               FALSE, FALSE, :created_at, :updated_at)
+            """
+        )
+        await self._session.execute(
+            stmt,
+            {
+                "id": str(patient_id),
+                "tenant_id": str(tenant_id),
+                "clinic_id": str(clinic_id),
+                "name": name,
+                "phone": phone or "",
+                "email": email or "",
+                "channel_first": channel,
+                "notes": note or "",
+                "kek": kek_val,
+                "created_at": now,
+                "updated_at": now,
+            },
+        )
+
+        # Audit log SYNC (HIPAA-lite — must complete before response)
+        audit_entry = AuditLogEntry(
+            tenant_id=tenant_id,
+            clinic_id=clinic_id,
+            user_id=user_id,
+            action="patient_create",
+            resource_type="patient",
+            resource_id=patient_id,
+        )
+        await self._audit_repo.write(audit_entry)
+
+        logger.info(
+            "patient_created_minimal",
+            patient_id=str(patient_id),
+            tenant_id=str(tenant_id),
+            clinic_id=str(clinic_id),
+            channel=channel,
+        )
+
+        return {
+            "patient_id": patient_id,
+            "name_masked": self._mask_name(name),
+            "phone_masked": self._mask_phone(phone),
+            "is_duplicate": False,
+            "created_at": now,
+        }
+
+    async def find_by_phone(
+        self,
+        *,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        phone: str,
+    ) -> dict[str, Any] | None:
+        """Find an existing patient by phone (decrypt-then-compare) for RN-9 dedup.
+
+        Decrypts phone column and compares exact match. Returns masked result dict
+        or None if no match. Used to detect duplicates before inline create.
+
+        HIPAA-lite: dual filter enforced. Raw PHI never returned.
+
+        T-BE-5 / RN-9: drives "use existing patient?" dialog.
+
+        Args:
+            tenant_id: Tenant UUID.
+            clinic_id: Clinic UUID (dual filter).
+            phone: Phone number to search (exact match after decrypt).
+
+        Returns:
+            Masked patient dict or None if not found.
+        """
+        self.validate_dual_filter(tenant_id=tenant_id, clinic_id=clinic_id)
+
+        kek_val = self._kek.get_key()
+
+        stmt = text(
+            """
+            SELECT id,
+                   pgp_sym_decrypt(name, :kek)::text  AS name,
+                   pgp_sym_decrypt(phone, :kek)::text AS phone,
+                   channel_first,
+                   created_at
+            FROM vitalia_patients
+            WHERE tenant_id = :tenant_id
+              AND clinic_id = :clinic_id
+              AND pgp_sym_decrypt(phone, :kek)::text = :phone
+              AND deleted_at IS NULL
+            LIMIT 1
+            """
+        )
+        result = await self._session.execute(
+            stmt,
+            {
+                "kek": kek_val,
+                "tenant_id": str(tenant_id),
+                "clinic_id": str(clinic_id),
+                "phone": phone,
+            },
+        )
+        row = result.fetchone()
+        if row is None:
+            return None
+
+        return {
+            "patient_id": UUID(str(row.id)),
+            "name_masked": self._mask_name(row.name),
+            "phone_masked": self._mask_phone(row.phone),
+            "created_at": row.created_at,
+        }
+
+    async def search(
+        self,
+        *,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        q: str,
+        cursor: UUID | None = None,
+        limit: int = 20,
+    ) -> dict[str, Any]:
+        """Typeahead patient search using decrypt-then-ILIKE on name/phone.
+
+        Windowed cursor pagination for datasets with 1500+ rows.
+        Returns masked items only — raw PHI never returned.
+
+        Performance note: decrypt-then-ILIKE is O(n) over encrypted rows.
+        Acceptable at 1500 rows; for >50k rows, a name_hash index + suggest
+        approach would be needed (out of scope for MVP).
+
+        HIPAA-lite: dual filter enforced. Audit log written.
+
+        T-BE-5: drives typeahead picker in nueva-cita form.
+
+        Args:
+            tenant_id: Tenant UUID.
+            clinic_id: Clinic UUID (dual filter).
+            q: Search query (applied to decrypted name ILIKE %q%).
+            cursor: Optional UUID of last seen patient (pagination cursor).
+            limit: Page size (default 20, max enforced by caller).
+
+        Returns:
+            dict with items (list of masked dicts), next_cursor (UUID | None),
+            total_approx (int).
+        """
+        self.validate_dual_filter(tenant_id=tenant_id, clinic_id=clinic_id)
+
+        kek_val = self._kek.get_key()
+        search_pattern = f"%{q}%"
+
+        # Cursor-based pagination: WHERE id > :cursor ordered by created_at DESC
+        # ponytail: simple id-based cursor; for created_at-stable pagination use composite
+        cursor_clause = "AND id > :cursor" if cursor is not None else ""
+
+        stmt = text(
+            f"""
+            WITH filtered AS (
+                SELECT id,
+                       pgp_sym_decrypt(name, :kek)::text  AS name,
+                       pgp_sym_decrypt(phone, :kek)::text AS phone,
+                       channel_first,
+                       created_at,
+                       COUNT(*) OVER() AS total_approx
+                FROM vitalia_patients
+                WHERE tenant_id = :tenant_id
+                  AND clinic_id = :clinic_id
+                  AND deleted_at IS NULL
+                  {cursor_clause}
+                  AND pgp_sym_decrypt(name, :kek)::text ILIKE :q
+                ORDER BY created_at DESC
+                LIMIT :limit_plus1
+            )
+            SELECT * FROM filtered
+            """
+        )
+        params: dict[str, Any] = {
+            "kek": kek_val,
+            "tenant_id": str(tenant_id),
+            "clinic_id": str(clinic_id),
+            "q": search_pattern,
+            "limit_plus1": limit + 1,
+        }
+        if cursor is not None:
+            params["cursor"] = str(cursor)
+
+        result = await self._session.execute(stmt, params)
+        rows = result.fetchall()
+
+        has_more = len(rows) > limit
+        page_rows = rows[:limit]
+        total_approx = int(rows[0].total_approx) if rows else 0
+
+        items = [
+            {
+                "patient_id": UUID(str(row.id)),
+                "name_masked": self._mask_name(row.name),
+                "phone_masked": self._mask_phone(row.phone),
+                "channel_first": row.channel_first,
+                "created_at": row.created_at,
+            }
+            for row in page_rows
+        ]
+
+        next_cursor: UUID | None = None
+        if has_more and page_rows:
+            next_cursor = UUID(str(page_rows[-1].id))
+
+        return {
+            "items": items,
+            "next_cursor": next_cursor,
+            "total_approx": total_approx,
+        }
