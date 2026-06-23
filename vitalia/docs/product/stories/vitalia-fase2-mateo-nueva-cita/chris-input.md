@@ -227,6 +227,9 @@ Construí los 9 tickets (5 BE + 4 FE) — todos verdes en unit (BE 35-365 tests,
 - **`dod_live_verified: false`** — la story NO cierra. Faltan: fix #5 + re-verify + crear-cita-201 + crear-paciente-201 + solape-409 + auditor + tu firma G.
 - ⚠️ aparte: runner E2E Playwright roto platform-wide (`clerk.setup.ts:31 describe.configure`, pre-existente, afecta TODOS los smoke) → HB pendiente.
 
+### 2026-06-23 · 🤖 claude · `builder-backend` · T-BE-4-notesfix · ✓ APLICADO
+Migration 052 applied: `notes_internal TEXT` added to `vitalia_appointments` (was missing, causing live 500 UndefinedColumnError). 5/5 integration tests GREEN. Ruff clean. See T-BE-4-notesfix-result.md.
+
 ### 2026-06-22 · 🤖 claude · `builder-frontend` · T-FE-4-submitfix · ✓ APLICADO
 Bug #5 FIXED: inline "Crear paciente" submit (phone blank) now fires POST /crm/patients.
 
