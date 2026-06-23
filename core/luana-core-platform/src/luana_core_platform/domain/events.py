@@ -270,6 +270,51 @@ class LeadCapturedEvent(DomainEvent):
 
 
 @dataclass
+class AgentTurnCompletedEvent(DomainEvent):
+    """Emitted once per inbound sales_agent turn (after the graph runs).
+
+    Lightweight per-turn signal that lets a brand nourish its own activity
+    timeline / inbox without the engine knowing brand internals. Emitted via
+    the outbox EventBus (``adapter_bus``) so it rides the same after-commit
+    dispatch path as ``LeadCapturedEvent``.
+
+    HIPAA-lite invariant: the payload carries IDs + funnel stage ONLY — NEVER
+    message bodies, patient names, or any PHI. Brands resolve the human-readable
+    (sanitized) description on their side from the IDs.
+
+    Payload keys:
+        lead_id: UUID of the lead (str).
+        conversation_id: UUID of the conversation (str) or None when the engine
+            could not resolve one (brand subscriber may resolve it from lead_id).
+        role: the turn author — "assistant" (Adrián replied / drafted).
+        funnel_stage: resolved funnel stage (rapport / discovery / presentation
+            / closing) — coarse, non-PHI.
+    """
+
+    @classmethod
+    def create(
+        cls,
+        *,
+        tenant_id: UUID,
+        lead_id: UUID,
+        conversation_id: UUID | None,
+        role: str,
+        funnel_stage: str,
+    ) -> "AgentTurnCompletedEvent":
+        """Create an ``agent_turn_completed`` event (IDs + stage only, no PHI)."""
+        return cls(
+            event_name="agent_turn_completed",
+            tenant_id=tenant_id,
+            payload={
+                "lead_id": str(lead_id),
+                "conversation_id": str(conversation_id) if conversation_id else None,
+                "role": role,
+                "funnel_stage": funnel_stage,
+            },
+        )
+
+
+@dataclass
 class ExtractionSectionCompletedEvent(DomainEvent):
     """Emitted per section transition running→completed by extraction workers.
 

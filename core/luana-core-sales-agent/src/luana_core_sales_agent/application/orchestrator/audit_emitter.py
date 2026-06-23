@@ -27,7 +27,10 @@ import structlog
 from luana_core_events.outbox.application.event_bus_adapter import (
     adapter_bus as EventBus,  # noqa: N812
 )
-from luana_core_platform.domain.events import LeadCapturedEvent
+from luana_core_platform.domain.events import (
+    AgentTurnCompletedEvent,
+    LeadCapturedEvent,
+)
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -132,6 +135,37 @@ class AuditEmitter:
         except Exception:  # noqa: BLE001 — orchestrator resilience
             with contextlib.suppress(Exception):
                 logger.warning("ws_emit_assistant_failed", exc_info=True)
+
+    @staticmethod
+    async def emit_turn_completed(
+        tenant_uuid: UUID,
+        user: _Lead,
+        result: dict,
+        *,
+        conversation_id: UUID | None,
+        db: Session | None,
+    ) -> None:
+        """Emit ``AgentTurnCompletedEvent`` once per inbound turn (GAP-3, best-effort).
+
+        Publishes via the outbox EventBus so a brand can nourish its activity
+        timeline / inbox. Payload = IDs + funnel stage ONLY (HIPAA-lite — no PHI,
+        no message bodies). Deferred dispatch after the caller's commit (``session=db``).
+
+        Best-effort: any failure is swallowed + logged. Observability /
+        nourishment must NEVER break the turn.
+        """
+        try:
+            event = AgentTurnCompletedEvent.create(
+                tenant_id=tenant_uuid,
+                lead_id=user.id,
+                conversation_id=conversation_id,
+                role="assistant",
+                funnel_stage=result.get("current_state", "rapport"),
+            )
+            EventBus.publish(event, session=db)
+        except Exception:  # noqa: BLE001 — emit is best-effort, never breaks the turn
+            with contextlib.suppress(Exception):
+                logger.warning("emit_turn_completed_failed", exc_info=True)
 
     @staticmethod
     async def emit_human_mode_message(

@@ -394,6 +394,12 @@ class ChatOrchestrator:
                 user,
                 channel_type,
                 tenant_uuid,
+                # GAP-2/GAP-3 inbound seams (additive — default-off when no brand
+                # resolver/subscriber is registered → EXACT current behavior).
+                lead_id=user.id if user else None,
+                conversation_id=getattr(checkpoint, "conversation_id", None),
+                db=db,
+                checkpoint=checkpoint,
             )
 
         except Exception as e:

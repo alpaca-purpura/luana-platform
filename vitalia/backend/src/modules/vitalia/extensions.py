@@ -149,6 +149,7 @@ from src.modules.vitalia.offer.biblioteca_seed import MEDICAL_SERVICES_V1_PRESET
 # NOT callable that way. `structured_tool_adapter` wraps each one as a sync
 # (state, db)->dict handler (the engine ABI is the port; the brand adapts).
 from src.modules.vitalia.sales_agent.composition import (
+    wire_inbound_mode_seam,  # T-AG-GAP23 — wire inbound mode-resolver + activity-emit seams
     wire_sales_agent_tool_resolvers,  # T-AG-GAP1 — wire EP-3 DI service resolvers
 )
 from src.modules.vitalia.sales_agent.tool_bridge import structured_tool_adapter
@@ -853,6 +854,15 @@ def register_all(registry: ExtensionPointRegistry) -> None:
     # main.py lifespan AFTER set_main_loop, so the main-loop bridge is ready for
     # the AsyncSession each resolver opens at tool-invocation time).
     wire_sales_agent_tool_resolvers()
+
+    # ───────────────────────────────────────────────────────────────────────
+    # Inbound mode seam (T-AG-GAP23 · GAP-2 consulta-gate + GAP-3 activity-emit)
+    # ───────────────────────────────────────────────────────────────────────
+    # GAP-2: register HonorModeBridge as the engine inbound mode-resolver + a brand
+    # draft sink (consulta → 0 outbound + activity draft row). GAP-3: subscribe the
+    # AgentTurnCompletedEvent → write vitalia_activity_events (IDs+stage, dual filter).
+    # Both default-off engine-side until this call (additive · backward-compatible).
+    wire_inbound_mode_seam()
 
     # ───────────────────────────────────────────────────────────────────────
     # EP-4 — copilot_workflow_register (DataClass)

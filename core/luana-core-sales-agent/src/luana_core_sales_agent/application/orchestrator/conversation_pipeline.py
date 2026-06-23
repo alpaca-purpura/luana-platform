@@ -562,8 +562,24 @@ class ConversationPipeline:
         user: _Lead,
         channel_type: str,
         tenant_uuid: UUID | None,
+        *,
+        lead_id: UUID | None = None,
+        conversation_id: UUID | None = None,
+        db: Session | None = None,
+        checkpoint: _Checkpoint | None = None,
     ) -> None:
-        """Sanitize, log, send the agent response, and emit Closer Studio WS."""
+        """Sanitize, log, deliver the agent response, and emit per-turn signals.
+
+        GAP-2 inbound mode seam: an opt-in brand resolver may classify this turn
+        as ``CONSULTA`` (graph ran, but the reply must be **drafted, not sent**).
+        On CONSULTA the channel send is suppressed, the WS still fires (glass-box
+        inbox), and the bot text is handed to the brand draft sink. With no
+        resolver registered the mode is ``DECIDE`` → EXACT current behavior.
+
+        GAP-3 activity emit seam: once the turn is delivered (or drafted) the
+        engine emits ``AgentTurnCompletedEvent`` (IDs + funnel stage only) via the
+        outbox EventBus so a brand can nourish its activity timeline. Best-effort.
+        """
         last_msg = result["messages"][-1]
         bot_text = (
             last_msg.get("content", "") if isinstance(last_msg, dict) else str(last_msg)
@@ -578,16 +594,73 @@ class ConversationPipeline:
             tenant_id=tenant_uuid,
         )
 
-        await OutputManager.process_response(
-            incoming.user_id,
-            bot_text,
-            channel_adapter,
-            channel_type=channel_type,
+        # GAP-2: resolve the inbound mode (default DECIDE = current behavior).
+        # PAUSA is handled pre-graph by handle_human_mode; here we only branch
+        # CONSULTA (draft) vs DECIDE (send). Import locally to keep the engine
+        # boundary clean (the seam is an injectable hook, not a hard dep).
+        from luana_core_sales_agent.application.orchestrator.inbound_mode_seam import (
+            InboundMode,
+            get_draft_sink,
+            resolve_inbound_mode,
         )
+
+        mode = (
+            await resolve_inbound_mode(
+                tenant_id=tenant_uuid,
+                lead_id=lead_id if lead_id is not None else getattr(user, "id", None),
+                checkpoint=checkpoint,
+            )
+            if tenant_uuid is not None
+            else InboundMode.DECIDE
+        )
+
+        if mode is InboundMode.CONSULTA:
+            # CONSULTA: graph already ran (bot_text computed) — DO NOT send to the
+            # channel. Hand the draft to the brand sink + notify the inbox via WS.
+            sink = get_draft_sink()
+            if sink is not None:
+                try:
+                    await sink(
+                        tenant_id=tenant_uuid,
+                        lead_id=lead_id
+                        if lead_id is not None
+                        else getattr(user, "id", None),
+                        draft_text=bot_text,
+                        result=result,
+                    )
+                except Exception as exc:  # noqa: BLE001 — draft sink is best-effort
+                    logger.warning(
+                        "inbound_draft_sink_failed",
+                        tenant_id=str(tenant_uuid),
+                        error=str(exc),
+                    )
+            else:
+                logger.info(
+                    "inbound_consulta_no_draft_sink",
+                    tenant_id=str(tenant_uuid),
+                )
+        else:
+            # DECIDE (or no resolver): EXACT current behavior — send to the channel.
+            await OutputManager.process_response(
+                incoming.user_id,
+                bot_text,
+                channel_adapter,
+                channel_type=channel_type,
+            )
 
         if tenant_uuid:
             await AuditEmitter.emit_assistant_message(
                 tenant_uuid, user, bot_text, result
+            )
+            # GAP-3: per-turn activity signal (IDs + stage, no PHI). Fired on BOTH
+            # DECIDE and CONSULTA — the turn completed either way and the inbox /
+            # activity timeline is nourished. db=None → immediate in-memory dispatch.
+            await AuditEmitter.emit_turn_completed(
+                tenant_uuid,
+                user,
+                result,
+                conversation_id=conversation_id,
+                db=db,
             )
 
 

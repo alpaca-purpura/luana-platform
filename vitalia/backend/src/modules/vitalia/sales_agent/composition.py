@@ -313,6 +313,122 @@ def _adapter_bus() -> object:
 # ── Public composition entrypoint (called from register_all) ──────────────────
 
 
+# ── Inbound mode seam (GAP-2/GAP-3) ───────────────────────────────────────────
+
+
+async def _load_open_conversation(*, tenant_id: Any, lead_id: Any) -> Any:
+    """Load the most-recent open Conversation for a lead (tenant-scoped, own session).
+
+    Tenant-scoped read (clinic_id is READ from the row, it is the authoritative
+    dual-filter axis the brand then uses to write). Returns the Conversation row
+    or None. Best-effort: any failure → None (the seam degrades to DECIDE / no-op).
+    Runs on the app main loop (deliver_response awaits it) → the brand AsyncSession
+    binds to the loop that owns the shared async engine pool (no cross-loop trap).
+    """
+    if lead_id is None:
+        return None
+    from sqlalchemy import select  # noqa: PLC0415
+
+    from src.modules.vitalia.crm.infrastructure.persistence.models.conversation_model import (  # noqa: PLC0415
+        ConversationModel,
+    )
+
+    session = _new_async_session()
+    try:
+        stmt = (
+            select(ConversationModel)
+            .where(ConversationModel.tenant_id == tenant_id)
+            .where(ConversationModel.lead_id == lead_id)
+            .where(ConversationModel.status == "open")
+            .where(ConversationModel.deleted_at.is_(None))
+            .order_by(ConversationModel.last_message_at.desc().nullslast())
+            .limit(1)
+        )
+        result = await session.execute(stmt)
+        return result.scalar_one_or_none()
+    except Exception as exc:  # noqa: BLE001 — seam read is best-effort
+        logger.warning("inbound_seam_conv_load_failed", error=str(exc))
+        return None
+    finally:
+        await session.close()
+
+
+async def _write_activity_event(**kwargs: Any) -> Any:  # noqa: ANN401
+    """Write one vitalia_activity_events row in its own committing session.
+
+    Mirrors the inbox/fidelización per-call session pattern (composition.py GAP-1):
+    open → ActivityEventRepository.create (flush) → commit → close. Best-effort.
+    """
+    from src.modules.vitalia.crm.infrastructure.persistence.activity_event_repository import (  # noqa: PLC0415,E501
+        ActivityEventRepository,
+    )
+
+    session = _new_async_session()
+    try:
+        repo = ActivityEventRepository(session=session)
+        row = await repo.create(**kwargs)
+        await session.commit()
+        return row
+    except Exception:
+        await session.rollback()
+        raise
+    finally:
+        await session.close()
+
+
+def _build_inbound_seam_adapter() -> Any:  # noqa: ANN401
+    """Construct the VitaliaInboundSeamAdapter with brand loader + writer ports."""
+    from src.modules.vitalia.sales_agent.application.services.inbound_seam_adapter import (  # noqa: PLC0415,E501
+        VitaliaInboundSeamAdapter,
+    )
+
+    return VitaliaInboundSeamAdapter(
+        conv_loader=_load_open_conversation,
+        activity_writer=_write_activity_event,
+    )
+
+
+def wire_inbound_mode_seam() -> None:
+    """Wire vitalia's mode resolver + draft sink + activity subscriber (GAP-2/3).
+
+    - ``set_mode_resolver`` → HonorModeBridge over the lead's open conversation.
+    - ``set_draft_sink`` → on CONSULTA, write an ``adrian_draft_pending`` activity row.
+    - ``EventBus.subscribe('agent_turn_completed', ...)`` → write an ``adrian_turn``
+      activity row from the engine AgentTurnCompletedEvent (outbox-delivered).
+
+    Idempotent (module-level rebind + subscribe is additive). Called once from
+    ``register_all`` at FastAPI lifespan startup. Each adapter builds its own
+    committing session per call (main-loop bound).
+    """
+    from luana_core_sales_agent.application.orchestrator.inbound_mode_seam import (  # noqa: PLC0415
+        set_draft_sink,
+        set_mode_resolver,
+    )
+
+    from src.modules.vitalia.sales_agent.application.services.inbound_seam_adapter import (  # noqa: PLC0415,E501
+        build_agent_turn_completed_handler,
+    )
+
+    adapter = _build_inbound_seam_adapter()
+
+    async def _resolver(*, tenant_id: Any, lead_id: Any, checkpoint: Any) -> Any:  # noqa: ANN401, ARG001
+        # checkpoint is the ENGINE checkpoint (no vitalia mode fields) — the
+        # adapter loads vitalia's own Conversation by (tenant_id, lead_id).
+        return await adapter.resolve_mode_async(tenant_id=tenant_id, lead_id=lead_id)
+
+    set_mode_resolver(_resolver)
+    set_draft_sink(adapter.draft_sink_async)
+
+    # Subscribe the activity-event handler on the legacy in-memory bus — the outbox
+    # dispatcher re-emits via LegacyEventBus._dispatch(event_name), so this fires
+    # for both the in-memory (flag-off) and the outbox (flag-on) delivery paths.
+    from luana_core_platform.domain.events import EventBus as _LegacyEventBus  # noqa: PLC0415
+
+    _LegacyEventBus.subscribe("agent_turn_completed", build_agent_turn_completed_handler(adapter))
+
+    logger.info("vitalia.sales_agent.inbound_mode_seam_wired")
+
+
 def wire_sales_agent_tool_resolvers() -> None:
     """Wire every ``set_*_service_resolver`` for the 5 async-wrapped EP-3 tools.
 
@@ -353,4 +469,4 @@ def wire_sales_agent_tool_resolvers() -> None:
     )
 
 
-__all__ = ["wire_sales_agent_tool_resolvers"]
+__all__ = ["wire_inbound_mode_seam", "wire_sales_agent_tool_resolvers"]
