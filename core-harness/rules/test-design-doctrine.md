@@ -9,6 +9,8 @@ El builder NO improvisa los tests. Diseña la **batería de tests apropiada a la
 
 **★ Verificación REAL ≠ "HTTP 200" (cement 2026-05-29):** un scenario está VERIFICADO solo cuando se ejerce la **acción real del usuario** (especialmente los writes: POST/PATCH/PUT/DELETE) y se **observan los logs + el efecto en DB**. Un `GET 200` sobre un placeholder NO es verificación. Declarar "funciona" porque un GET dio 200 = anti-patrón estrella prohibido.
 
+**★ Cobertura = colaborador real, no mock (seam testing · cement 2026-06-23 · HB-94):** un test que **mockea el colaborador del otro lado de la costura (seam) bajo prueba NO cuenta como cobertura de esa costura**. Cubierto = *ejercido contra el colaborador real*, no *existe un test verde* (coverage + mutación son ortogonales: no detectan si la costura se toca). Por costura: código↔DB → integration real-DB · FE↔BE → contract · service↔router → router end-to-end · código↔auth → live-verify (#37, no unit-testeable) · componente↔shell → render en el contenedor real. `/architect` lo declara por escenario (`04-validators § test_construction_plan.scenario_to_test`); Phase D marca **MOCK-ONLY (= MISSING)** la cobertura mock-only de un escenario de costura.
+
 ## Cuándo carga el detalle
 
 - `builder-*` arranca la fase `technical_design` → leer la **Matriz: naturaleza del ticket → tests requeridos** completa (13 naturalezas cubiertas: BE endpoint, service, repo, migration, FE component, hook, form, route nueva, flujo crítico, agentic tool, prompt slot, bug fix, refactor).
@@ -18,6 +20,7 @@ El builder NO improvisa los tests. Diseña la **batería de tests apropiada a la
 ## Anti-patterns (top 3 — lista completa en el detalle)
 
 - ❌ **Declarar "verificado" porque un GET dio 200, sin ejercer la acción real ni leer logs**
+- ❌ **Test que mockea el colaborador del otro lado de la costura bajo prueba, presentado como cobertura de esa costura** (HB-94 — cubierto = colaborador real)
 - ❌ Cerrar con jscpd o arch-fitness en rojo (duplicación / boundary roto = NO verde)
 - ❌ Bug fix sin regression test que reproduzca el bug primero (RED)
 

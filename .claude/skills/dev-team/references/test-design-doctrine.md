@@ -32,6 +32,27 @@ El builder NO improvisa los tests. Diseña la **batería de tests apropiada a la
 
 **Anti-patrón estrella (prohibido):** declarar una funcionalidad "verificada"/"verified-live"/"funciona" porque un `GET` dio 200, sin ejercer la acción real ni leer logs. El 200 de un read es necesario pero **nunca suficiente**.
 
+## ★ Cobertura = colaborador real, no mock (seam testing · cardinal · cement 2026-06-23 · HB-94)
+
+> **Origen:** `vitalia-fase2-mateo-nueva-cita` — 9 bugs de integración pasaron **2900+ unit tests verdes** porque cada test mockeaba el colaborador del otro lado de la costura. Extiende § "HTTP 200": aquélla dice "ejercé la acción real"; ésta dice **qué hace verde a un test mentiroso** y cómo el gate lo caza ANTES del live-verify. SSoT: `docs/learnings/2026-06-23-coverage-means-real-collaborator-seam-testing.md`.
+
+**Regla:** un test que **mockea el colaborador del otro lado de la costura (seam) bajo prueba NO cuenta como cobertura de esa costura**. "Cubierto" = *ejercido contra el colaborador real*, no *existe un test verde*. Coverage alto + mutación NO lo cazan (son ortogonales: miden el rigor de asserts sobre lógica *ejercida*, no si la costura se toca).
+
+**Tabla costura → test que SÍ la cubre (vs mock que miente):**
+
+| Costura | Test que SÍ la cubre | Mock que NO la cubre |
+|---|---|---|
+| **código ↔ DB** | integration real-DB: INSERT/query real contra Postgres (sin mock de sesión/repo) | mock de sesión/repo "acepta cualquier columna" → oculta columna inexistente / FK no resoluble / NOT NULL faltante |
+| **FE ↔ BE** | contract test: payload/tipos FE = DTO BE (schemathesis BE + assert de shape compartido) | cada isla verde contra un contrato imaginado (`offer_id` vs `service_label`) |
+| **service ↔ router/response** | integration a nivel ROUTER (TestClient end-to-end) que construye el response DTO | test solo-service que nunca serializa el response (null en campo `str`) |
+| **código ↔ Clerk/auth** | **live-verify obligatoria (#37)** — NO unit-testeable con mock | `useAuth` mockeado "siempre cargado" + token estático → timing/expiry real irreproducible |
+| **componente ↔ padre/shell** | render DENTRO del contenedor real (`<form>`/shell) + axe + `assertShellMounted` | componente aislado que nunca vive dentro del `<form>`/shell real |
+
+**Cómo se aplica (sin fase nueva — endurece "cubierto" donde ya existe):**
+- `/architect` declara por escenario la **costura** + el **tipo de test real-collaborator** en `04-validators § test_construction_plan` (`scenario_to_test`); prohíbe `unit-mocked` para escenario de costura (HB-95).
+- El builder construye el test del **tipo requerido** (`integration-realdb` / `contract` / `router` / `e2e-live` / `live-verify`), no un unit mockeado.
+- Phase D (dev-team local Step 4.5 + auditor) marca **MOCK-ONLY (= MISSING)** un escenario de costura cubierto solo por test mockeado (HB-96 · `scripts/check_seam_coverage.py`).
+
 ## Verificación por naturaleza + gate anti-burbuja + modificación (Critical Rule #37)
 
 **Naturaleza de la capability define la batería:**
