@@ -19,6 +19,8 @@ tickets:
   - id: T-BE-1
     title: "BE-1 · exponer initial_appt_duration_minutes en ServiceListItemDTO"
     surface: backend
+    state: pushed
+    commit_sha: PENDING_COMMIT
     depends_on: []
     description: >
       Agregar initial_appt_duration_minutes (int | None) al DTO de la lista de

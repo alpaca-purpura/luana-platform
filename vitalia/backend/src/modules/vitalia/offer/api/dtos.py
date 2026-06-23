@@ -162,7 +162,12 @@ class ThreeChargePricingDTO(BaseModel):
 
 
 class ServiceListItemDTO(BaseModel):
-    """One catalog card (RN-15 list). Maps from ServiceView."""
+    """One catalog card (RN-15 list). Maps from ServiceView.
+
+    T-BE-1 (mateo-nueva-cita): exposes ``initial_appt_duration_minutes`` so the
+    "Nueva cita" form can prefill appointment duration from the selected service.
+    ``None`` is valid — the FE defaults to 30 min (RN-5, FE concern).
+    """
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -175,6 +180,7 @@ class ServiceListItemDTO(BaseModel):
     canonical_service_ref: str | None = None  # → origin chip (biblioteca vs personalizado)
     price: Decimal | None = None
     currency: str | None = None
+    initial_appt_duration_minutes: int | None = None  # T-BE-1: prefill duración cita (RN-5)
 
 
 class ServiceListResponse(BaseModel):
