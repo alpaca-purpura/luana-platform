@@ -148,6 +148,9 @@ from src.modules.vitalia.offer.biblioteca_seed import MEDICAL_SERVICES_V1_PRESET
 # `tool_fn(state, db)`. Vitalia's real EP-3 handlers are async StructuredTools →
 # NOT callable that way. `structured_tool_adapter` wraps each one as a sync
 # (state, db)->dict handler (the engine ABI is the port; the brand adapts).
+from src.modules.vitalia.sales_agent.composition import (
+    wire_sales_agent_tool_resolvers,  # T-AG-GAP1 — wire EP-3 DI service resolvers
+)
 from src.modules.vitalia.sales_agent.tool_bridge import structured_tool_adapter
 from src.modules.vitalia.sales_agent.tools import (
     reschedule_appointment,
@@ -839,6 +842,17 @@ def register_all(registry: ExtensionPointRegistry) -> None:
             tool_groups=("closing",),
         ),
     )
+
+    # ───────────────────────────────────────────────────────────────────────
+    # EP-3 — DI service resolvers for the 5 async-wrapped tools (T-AG-GAP1)
+    # ───────────────────────────────────────────────────────────────────────
+    # GAP-1 (RECONCILE-2026-06-22 §1): the 5 async StructuredTools dispatch live
+    # but their set_*_service_resolver(...) DI hooks were never called → the tool
+    # returned a "resolver not configured" error and never executed real logic.
+    # Wire them here (register_all is the brand composition root, called from
+    # main.py lifespan AFTER set_main_loop, so the main-loop bridge is ready for
+    # the AsyncSession each resolver opens at tool-invocation time).
+    wire_sales_agent_tool_resolvers()
 
     # ───────────────────────────────────────────────────────────────────────
     # EP-4 — copilot_workflow_register (DataClass)
