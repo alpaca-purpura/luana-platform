@@ -1,0 +1,188 @@
+story_id: vitalia-fase2-mateo-nueva-cita
+brand: vitalia
+schema_version: v4.1
+architecture_pattern: ADR-vitalia-004
+
+# ── Naturaleza de la verificación (top-level · D-X4) ──────────────────────────
+verification_nature: funcional        # writes reales + reglas de negocio
+demo_required: true                   # Chris firma en G (chris_verify.signoff)
+regression_guard: true                # extiende suite scheduling/crm existente
+
+# ── Live-verify gate (Rule #37) ──────────────────────────────────────────────
+dev_app_verified:
+  required: true
+  env: "make dev-app-vitalia → dev-app.vitalialat.com (Chrome DevTools MCP) | localhost:3002 fallback"
+  must_exercise_writes: true          # POST create + POST patient inline reales
+  evidence_fields: [dod_live_verified, dod_evidence, verified_at]
+
+# ── Categoría 1 · Scenario coverage (100% de los 28 SC) ───────────────────────
+scenario_coverage:
+  total_scenarios: 28
+  by_subcategory:                     # 7 sub-categorías mandatory
+    happy: [SC-happy, SC-crear-paciente, SC-reasignar, SC-mini-vista]
+    edge: [SC-dur-default, SC-half-open-ok, SC-half-open-block, SC-cancelled-reuse, SC-race, SC-create-timeout-retry, SC-pasado, SC-reasignar-vacio, SC-revalida-cambio]
+    negative: [SC-fin-invalido, SC-paciente-incompleto, SC-paciente-duplicado, SC-sin-horario, SC-fuera-horario, SC-solape]
+    empty_state: [SC-empty-servicios, SC-empty-medicos, SC-empty-pacientes]
+    network_failure: [SC-disponibilidad-falla, SC-create-timeout-retry]
+    concurrent_users: [SC-concurrent-availability, SC-race]
+    large_dataset: [SC-pacientes-grandes]
+    accessibility: [SC-a11y]
+    i18n: [SC-i18n-tz]
+    adversarial: [SC-cross-clinic, SC-cross-tenant, SC-bypass-availability, SC-rbac, SC-phi-audit]
+  mapping:
+    SC-happy:                  { graders: [e2e, state_check], verification: "201 + fila vitalia_appointments + clinic_map status SCHEDULED + audit row sync + grilla refleja + toast", playwright_required: true, validator_ids: [V-BE-create, V-BE-audit, V-FE-happy] }
+    SC-crear-paciente:         { graders: [e2e, state_check], verification: "201 paciente fila vitalia_patients + audit + picker preseleccionado + form intacto + aparece en directorio D10", playwright_required: true, validator_ids: [V-BE-patient-inline, V-FE-patient-create] }
+    SC-dur-default:            { graders: [e2e], verification: "servicio dur=null → campo 30 editable + fin recalcula", playwright_required: true, validator_ids: [V-FE-duration] }
+    SC-fin-invalido:           { graders: [e2e], verification: "fin ≤ inicio → error inline, sin POST", playwright_required: true, validator_ids: [V-FE-fin-valid] }
+    SC-paciente-incompleto:    { graders: [e2e], verification: "crear inline sin tel → validación, sin fila", playwright_required: true, validator_ids: [V-BE-patient-inline, V-FE-patient-create] }
+    SC-paciente-duplicado:     { graders: [e2e], verification: "inline con tel existente → ofrece usar existente (RN-9 FOLD)", playwright_required: true, validator_ids: [V-BE-patient-dedup] }
+    SC-empty-servicios:        { graders: [e2e], verification: "sin servicios → estado vacío + Crear deshabilitado", playwright_required: true, validator_ids: [V-FE-empty] }
+    SC-empty-medicos:          { graders: [e2e], verification: "sin médicos → estado vacío", playwright_required: true, validator_ids: [V-FE-empty] }
+    SC-empty-pacientes:        { graders: [e2e], verification: "typeahead 0 results → '+ Crear paciente' prominente", playwright_required: true, validator_ids: [V-FE-empty] }
+    SC-sin-horario:            { graders: [e2e], verification: "médico sin horario → chip warning bloquea + CTA", playwright_required: true, validator_ids: [V-BE-availability, V-FE-chip] }
+    SC-fuera-horario:          { graders: [e2e], verification: "franja fuera 09-18 → chip warning bloquea", playwright_required: true, validator_ids: [V-BE-availability, V-FE-chip] }
+    SC-solape:                 { graders: [e2e], verification: "franja pisa cita activa → chip 'Ocupado' + FreeDoctorsList", playwright_required: true, validator_ids: [V-BE-availability, V-FE-chip, V-FE-reassign] }
+    SC-reasignar:              { graders: [e2e], verification: "Asignar médico libre → chip re-eval Disponible → Crear habilitado", playwright_required: true, validator_ids: [V-FE-reassign] }
+    SC-reasignar-vacio:        { graders: [e2e], verification: "ningún médico libre → lista vacía + mensaje", playwright_required: true, validator_ids: [V-BE-availability, V-FE-reassign] }
+    SC-mini-vista:             { graders: [e2e], verification: "DayAvailabilityStrip pinta horario + ocupado + franja resaltada; cambiar hora mueve franja", playwright_required: true, validator_ids: [V-BE-availability, V-FE-daystrip] }
+    SC-revalida-cambio:        { graders: [e2e], verification: "cambiar servicio/hora → chip + mini-vista re-evalúan; estado viejo no pegado", playwright_required: true, validator_ids: [V-FE-chip, V-FE-revalidate] }
+    SC-half-open-ok:           { graders: [e2e, state_check], verification: "10:30-11:00 tras 10:00-10:30 → 201, ambas conviven (RN-2)", playwright_required: true, validator_ids: [V-BE-create, V-MIG-exclude] }
+    SC-half-open-block:        { graders: [e2e], verification: "10:15-10:45 sobre 10:00-10:30 → bloqueo chip + 409 server", playwright_required: true, validator_ids: [V-BE-availability, V-MIG-exclude] }
+    SC-cancelled-reuse:        { graders: [state_check], verification: "rebook sobre franja CANCELLED → 201 (RN-6); 2 filas mismo rango 1 CANCELLED + 1 SCHEDULED", playwright_required: true, validator_ids: [V-BE-status-mirror, V-MIG-exclude] }
+    SC-race:                   { graders: [e2e, state_check], verification: "2 creates misma franja → 1×201 + 1×409 (23P01) + toast; reintento", playwright_required: true, validator_ids: [V-BE-create, V-MIG-exclude] }
+    SC-create-timeout-retry:   { graders: [e2e], verification: "retry tras timeout → si aterrizó 409 'ya creada', nunca 2 filas", playwright_required: true, validator_ids: [V-BE-create, V-MIG-exclude] }
+    SC-pasado:                 { graders: [e2e], verification: "fecha pasada (walk-in registrado) → permitido (RN-1/3 aplican)", playwright_required: true, validator_ids: [V-BE-create] }
+    SC-disponibilidad-falla:   { graders: [e2e], verification: "endpoint 5xx → chip 'no pudimos verificar' + Crear deshabilitado (fail-closed RN-10) + reintentar", playwright_required: true, validator_ids: [V-FE-chip, V-FE-availfail] }
+    SC-concurrent-availability:{ graders: [e2e], verification: "2 operadores mismo médico → free/busy consistente scoped tenant+clinic", playwright_required: true, validator_ids: [V-BE-availability] }
+    SC-pacientes-grandes:      { graders: [e2e], verification: "1500+ pacientes → EntityPicker pagina + windowed + debounced server-side", playwright_required: true, validator_ids: [V-BE-patient-search, V-FE-patient-create] }
+    SC-a11y:                   { graders: [{ type: axe, ruleset: wcag2aa }], verification: "teclado + lector; combobox; chip aria-live; focus visible; contraste AA; 0 violations", playwright_required: true, validator_ids: [V-FE-a11y] }
+    SC-i18n-tz:                { graders: [e2e], verification: "tz IANA + DST → ingresa/muestra tz tenant, persiste UTC, sin falso solape", playwright_required: true, validator_ids: [V-BE-create, V-FE-tz] }
+    SC-cross-clinic:           { graders: [e2e], verification: "POST con doctor_id clínica B → 403, sin fila (dual filter)", playwright_required: true, validator_ids: [V-BE-dual-filter] }
+    SC-cross-tenant:           { graders: [{ type: e2e, note: "BE integration — no UI" }], verification: "tenant A + doctor tenant B → 404 (no leak)", playwright_required: false, validator_ids: [V-BE-dual-filter] }
+    SC-bypass-availability:    { graders: [{ type: e2e, note: "BE integration" }], verification: "POST directo franja ocupada/fuera → 409 (EXCLUDE) / 422 (fuera); garantía server-side", playwright_required: false, validator_ids: [V-BE-create, V-MIG-exclude] }
+    SC-rbac:                   { graders: [{ type: e2e, note: "BE integration" }], verification: "rol fuera {admin_clinic,doctor} → 403 (@require_phi_access)", playwright_required: false, validator_ids: [V-BE-rbac] }
+    SC-phi-audit:              { graders: [{ type: e2e, note: "BE integration" }], verification: "audit_log row sync ANTES de respuesta; response_model sin PHI fuera de whitelist", playwright_required: false, validator_ids: [V-BE-audit, V-BE-phi-leak] }
+
+# ── Categoría 2 · Business rules (gherkin @rule-ID matrix) ────────────────────
+business_rules:
+  - { id: RN-1, desc: "no-solape activo (constraint EXCLUDE)", must_pass: true, scenarios: [SC-solape, SC-race, SC-bypass-availability, SC-half-open-block] }
+  - { id: RN-2, desc: "half-open back-to-back conviven", must_pass: true, scenarios: [SC-half-open-ok, SC-half-open-block] }
+  - { id: RN-3, desc: "dentro-de-horario (422 por POST directo)", must_pass: true, scenarios: [SC-fuera-horario, SC-bypass-availability] }
+  - { id: RN-4, desc: "sin-horario bloquea accionable", must_pass: true, scenarios: [SC-sin-horario] }
+  - { id: RN-5, desc: "duración del servicio; null→30; fin autocalc", must_pass: true, scenarios: [SC-dur-default, SC-fin-invalido, SC-happy] }
+  - { id: RN-6, desc: "CANCELLED libera franja", must_pass: true, scenarios: [SC-cancelled-reuse] }
+  - { id: RN-7, desc: "RBAC + PHI dual + audit", must_pass: true, scenarios: [SC-rbac, SC-cross-clinic, SC-cross-tenant, SC-phi-audit, SC-crear-paciente] }
+  - { id: RN-8, desc: "UTC + tz IANA + DST-safe", must_pass: true, scenarios: [SC-i18n-tz] }
+  - { id: RN-9, desc: "dedup paciente inline por teléfono (FOLD · D-C)", must_pass: true, scenarios: [SC-paciente-duplicado] }
+  - { id: RN-10, desc: "disponibilidad advisory; UI fail-closed; server-side garantía", must_pass: true, scenarios: [SC-disponibilidad-falla, SC-bypass-availability, SC-race] }
+
+# ── Categoría 3 · Acceptance criteria ────────────────────────────────────────
+acceptance_criteria:
+  - { id: AC-1, desc: "médico de dropdown (no UUID)", scenarios: [SC-happy] }
+  - { id: AC-2, desc: "servicio de dropdown (no texto libre)", scenarios: [SC-happy] }
+  - { id: AC-3, desc: "fin autocalc editable >inicio", scenarios: [SC-happy, SC-fin-invalido] }
+  - { id: AC-4, desc: "chip + bloqueo solape/fuera", scenarios: [SC-solape, SC-fuera-horario, SC-sin-horario, SC-revalida-cambio] }
+  - { id: AC-5, desc: "reasignar 1 clic", scenarios: [SC-reasignar, SC-reasignar-vacio] }
+  - { id: AC-6, desc: "carrera error claro + reintento", scenarios: [SC-race] }
+  - { id: AC-7, desc: "persiste + grilla live", scenarios: [SC-happy, SC-pasado] }
+  - { id: AC-8, desc: "mini-vista del día", scenarios: [SC-mini-vista, SC-a11y] }
+  - { id: AC-9, desc: "hoja full-page data-safe (no drawer/modal)", scenarios: [SC-happy, SC-crear-paciente] }
+  - { id: AC-10, desc: "paciente real inline sin salir", scenarios: [SC-crear-paciente, SC-empty-pacientes, SC-pacientes-grandes] }
+
+# ── Categoría 4 · Test construction plan (por capa/naturaleza) ────────────────
+test_construction_plan:
+  backend:
+    domain:
+      - { file: "tests/modules/vitalia/scheduling/test_availability_overlap.py", red_first: true, covers: [RN-2], validator: V-BE-availability }
+    infrastructure:
+      - { file: "tests/modules/vitalia/scheduling/test_availability_query_repository.py", red_first: true, covers: [RN-1, RN-7], validator: V-BE-availability }
+      - { file: "tests/modules/vitalia/crm/test_patient_search_typeahead.py", red_first: true, covers: [AC-10], validator: V-BE-patient-search }
+    application:
+      - { file: "tests/modules/vitalia/scheduling/test_availability_check_service.py", red_first: true, covers: [RN-3, RN-4], validator: V-BE-availability }
+      - { file: "tests/modules/vitalia/scheduling/test_create_appointment_overlap_409.py", red_first: true, covers: [RN-1, RN-3, RN-5], validator: V-BE-create }
+      - { file: "tests/modules/vitalia/scheduling/test_appointment_status_propagates_mirror.py", red_first: true, covers: [RN-6], validator: V-BE-status-mirror }
+      - { file: "tests/modules/vitalia/crm/test_patient_inline_create.py", red_first: true, covers: [RN-7, AC-10], validator: V-BE-patient-inline }
+      - { file: "tests/modules/vitalia/crm/test_patient_dedup_phone.py", red_first: true, covers: [RN-9], validator: V-BE-patient-dedup }
+    api_integration:
+      - { file: "tests/modules/vitalia/scheduling/test_availability_router_phi.py", red_first: true, covers: [RN-7], validator: V-BE-dual-filter }
+      - { file: "tests/modules/vitalia/scheduling/test_create_appointment_phi.py", red_first: true, covers: [RN-7], validator: V-BE-audit }
+    migration:
+      - { file: "tests/modules/vitalia/scheduling/test_migration_050_exclude.py", red_first: true, covers: [RN-1, RN-2, RN-6], validator: V-MIG-exclude }
+    arch_fitness_extend:
+      - test_response_model_required.py
+      - test_phi_dual_filter.py
+      - test_audit_log_sync_write.py
+      - test_audit_log_row_per_phi_endpoint.py
+      - test_no_phi_in_url_params.py
+      - test_migrations_idempotent.py
+  frontend:
+    hooks:
+      - { file: "features/mateo/api/nueva-cita.test.ts", red_first: true, covers: [AC-4, AC-10], validator: V-FE-revalidate }
+    components:
+      - { file: "features/mateo/components/nueva-cita/AvailabilityChip.test.tsx", red_first: true, covers: [AC-4], validator: V-FE-chip }
+      - { file: "features/mateo/components/nueva-cita/DayAvailabilityStrip.test.tsx", red_first: true, covers: [AC-8], validator: V-FE-daystrip }
+      - { file: "features/mateo/components/nueva-cita/FreeDoctorsList.test.tsx", red_first: true, covers: [AC-5], validator: V-FE-reassign }
+      - { file: "features/mateo/components/nueva-cita/PatientPickerWithCreate.test.tsx", red_first: true, covers: [AC-10, RN-9], validator: V-FE-patient-create }
+      - { file: "features/mateo/components/nueva-cita/NuevaCitaView.test.tsx", red_first: true, covers: [AC-3, RN-10], validator: V-FE-fin-valid }
+    store:
+      - { file: "features/mateo/store/nueva-cita-store.test.ts", red_first: true, covers: [AC-3], validator: V-FE-duration }
+    types:
+      - { file: "features/mateo/types/__tests__/agenda-schema.test.ts", red_first: true, covers: [AC-1, AC-2] }
+    e2e:
+      - { file: "e2e/specs/smoke/nueva-cita.smoke.spec.ts", red_first: true, covers: [SC-happy], note: "ruta nueva = smoke obligatorio" }
+      - { file: "e2e/specs/regression/mateo/nueva-cita.spec.ts", red_first: true, covers: [SC-crear-paciente, SC-solape, SC-reasignar, SC-mini-vista, SC-fin-invalido, SC-empty-servicios, SC-cancelled-reuse, SC-a11y, SC-i18n-tz] }
+
+# ── Categoría 5 · Technical gates (verification por efecto + mutation HARD) ────
+technical_gates:
+  static:
+    - "cd vitalia/backend && ${WS}/.venv/bin/ruff check src/ tests/"
+    - "cd vitalia/backend && ${WS}/.venv/bin/pytest tests/architecture/ -x -q"
+    - "cd vitalia/frontend && npx tsc --noEmit"
+    - "cd vitalia/frontend && npx eslint src/ --cache"
+  unit_integration:
+    - "cd vitalia/backend && ${WS}/.venv/bin/pytest tests/modules/vitalia/scheduling/ tests/modules/vitalia/crm/ -q"
+    - "cd vitalia/frontend && npx vitest run src/features/mateo/"
+  mutation:
+    enabled: true
+    mode: diff-scoped-HARD            # 100% mutantes muertos sobre líneas NUEVAS
+    targets:
+      - "vitalia/backend/src/modules/vitalia/scheduling/application/services/create_appointment_service.py"   # validación + 409
+      - "vitalia/backend/src/modules/vitalia/scheduling/application/services/availability_check_service.py"    # overlap matrix
+      - "vitalia/backend/src/modules/vitalia/scheduling/domain/availability_check.py"                          # half-open
+      - "vitalia/backend/alembic/versions/050_vitalia_appointment_no_overlap.py"                               # EXCLUDE
+    note: "survivor líneas-nuevas → CHANGES_REQUESTED; tool ausente → degrada advisory (no rompe ci-parity)"
+  schemathesis:
+    enabled: true
+    note: "endpoints nuevos (availability/check, free-doctors, patients inline) — fuzz contra OpenAPI"
+  ci_parity:
+    required_before_merge: true
+    note: "make ci-parity (sentinel .ci-parity-deferred = advisory en fase dev; bidirectional cross_check_3 sigue HARD)"
+
+# ── Playwright visual scope discipline (D3 · scope creep guard) ───────────────
+playwright_visual_scope:
+  story_scope_routes:
+    - "/{tenantId}/mateo/agenda/nueva-cita"
+  story_scope_components:
+    - NuevaCitaView
+    - ServicePicker
+    - DoctorPicker
+    - PatientPickerWithCreate
+    - AvailabilityChip
+    - DayAvailabilityStrip
+    - FreeDoctorsList
+    - NuevaCitaActions
+  out_of_mockup_scope:
+    - "AgendaCalendar / WeekCalendar / DayCalendar (la grilla — solo se verifica que refleja la cita creada, no se re-screenshotea)"
+    - "AppointmentDrawer (detalle de cita — otra story)"
+    - "CobrarSaldoSubform (cobro — otra story)"
+  render_sanity: "await assertShellMounted(page) antes de axe/visual sobre el shell (HB-68)"
+  storybook_ssot: "design-system-canon § 5 — partir de Storybook, net-new = PROMOTE (no local)"
+
+# ── Engine boundary / promotion gate (4 atoms PROMOTE) ───────────────────────
+promotion_dependency:
+  proposal: "docs/promotion-protocol/proposals/2026-06-22-ui-kit-nueva-cita-atoms.md"
+  gate: "/pm-luana"
+  atoms: [FormActionBar, "Badge variant=success|warning", "PageHeader back-pill", "EntityPicker.createAction"]
+  contract: "mockups/PROPOSED-CANON-ATOMS.md"
+  soft_dep: true
+  note: "tickets FE consumen los atoms desde @luana/ui-kit; build FE espera la promoción si el kit no los tiene. NUNCA editar core/@luana/ui-kit/src/ desde un ticket de marca."

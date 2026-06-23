@@ -21,6 +21,16 @@
   html, body { height: 100%; }
   body { overflow-x: hidden; }
 
+  /* ── Tag "★ PROPUESTO" (átomo propuesto al canon @luana/ui-kit) ── */
+  .canon-proposed-tag {
+    display: inline-flex; align-items: center;
+    background: #7B2D91; color: #fff;
+    font-size: 9px; font-weight: 700;
+    padding: 2px 6px; border-radius: 4px;
+    letter-spacing: .3px; margin-left: 6px;
+    vertical-align: middle; white-space: nowrap;
+  }
+
   /* La hoja ocupa todo el alto (chrome + header N3 + body scroll + footer sticky) */
   .leaf-root {
     display: flex; flex-direction: column;
@@ -80,6 +90,51 @@
   [data-theme="dark"] .leaf-n3-agent-dot { color: #fde047; }
   .leaf-n3-title { font-size: 18px; font-weight: 700; line-height: 1.15; }
   .leaf-n3-sub { font-size: 11px; color: var(--text-muted); }
+
+  /* ── Caja "Mapeo al canon @luana/ui-kit" (legend discreta sobre el form) ── */
+  .canon-map {
+    max-width: 1180px; margin: 16px auto 0;
+    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg-hover) 45%, transparent);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 12px;
+  }
+  .canon-map-title {
+    font-size: 12px; font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .canon-map-title .cm-kit {
+    font-family: ui-monospace, monospace; font-size: 11px;
+    color: var(--text-muted); font-weight: 600;
+  }
+  .canon-map-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 4px 28px;
+  }
+  @media (max-width: 720px) { .canon-map-grid { grid-template-columns: 1fr; } }
+  .cm-row {
+    display: flex; align-items: baseline; gap: 7px;
+    padding: 2px 0; line-height: 1.45;
+  }
+  .cm-mark { flex-shrink: 0; font-weight: 700; width: 14px; text-align: center; }
+  .cm-mark.exist { color: var(--c-success); }
+  .cm-mark.prop  { color: #7B2D91; }
+  .cm-mark.feat  { color: var(--text-muted); }
+  .cm-block { color: var(--text-secondary); }
+  .cm-atom {
+    font-family: ui-monospace, monospace; font-size: 11px;
+    color: var(--text-primary);
+  }
+  .cm-legend {
+    display: flex; flex-wrap: wrap; gap: 14px;
+    margin-top: 11px; padding-top: 9px;
+    border-top: 1px dashed var(--border);
+    font-size: 10.5px; color: var(--text-muted);
+  }
+  .cm-legend .lg { display: inline-flex; align-items: center; gap: 5px; }
 
   /* ── Cuerpo de la hoja (2 columnas · FormLayout full-page) ── */
   .leaf-body { flex: 1; overflow-y: auto; }
@@ -432,26 +487,139 @@
     max-width: 760px; margin: 26px auto 0;
   }
 
-  /* ── Mini-mock de la hoja "Crear paciente" (panel ilustrativo en la galería) ── */
-  .crear-paciente-leaf {
-    border: 1px solid var(--border-strong);
+  /* ── Sección "★ Átomos propuestos al canon" ── */
+  .proposed-atoms {
+    border-top: 2px dashed #7B2D91;
+    margin-top: 44px; padding-top: 28px;
+  }
+  .proposed-atoms-title {
+    font-size: 16px; font-weight: 700;
+    color: var(--text-primary);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .proposed-atoms-title .pa-star { color: #7B2D91; }
+  .proposed-atoms-sub {
+    font-size: 12px; color: var(--text-muted);
+    margin: 4px 0 22px;
+  }
+  .proposed-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 18px;
+  }
+  .atom-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid #7B2D91;
     border-radius: var(--r-lg);
+    padding: 16px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .atom-name {
+    font-family: ui-monospace, monospace;
+    font-size: 13px; font-weight: 700;
+    color: var(--text-primary);
+  }
+  .atom-demo {
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--r-md);
+    background: var(--bg-hover);
+    padding: 12px; min-height: 56px;
+    display: flex; align-items: center;
+  }
+  .atom-api {
+    font-family: ui-monospace, monospace;
+    font-size: 11px; color: var(--text-muted);
+    line-height: 1.5; word-break: break-word;
+  }
+  .atom-note {
+    font-size: 11px; color: var(--text-secondary);
+    line-height: 1.45; font-style: italic;
+  }
+  /* mini demo del FormActionBar */
+  .demo-actionbar {
+    width: 100%;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    padding: 8px 10px;
+  }
+  .demo-actionbar .da-hint { font-size: 10px; color: var(--text-muted); }
+  .demo-actionbar .da-btns { display: flex; gap: 6px; }
+  .demo-actionbar .btn { padding: 5px 12px; font-size: 11.5px; }
+  /* mini demo del back-pill */
+  .demo-pageheader { display: flex; align-items: center; gap: 9px; }
+  .demo-pageheader .ph-title { font-size: 14px; font-weight: 700; }
+  /* mini demo del EntityPicker createAction */
+  .demo-picker {
+    width: 100%;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-md);
+    background: var(--bg-panel);
     overflow: hidden;
-    background: var(--bg-app);
   }
-  .cp-n3 {
-    background: var(--bg-panel);
-    border-bottom: 1px solid var(--border);
-    padding: 10px 14px;
-    display: flex; align-items: center; gap: 10px;
+  .demo-picker .dp-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 10px; font-size: 12px;
   }
-  .cp-n3 .leaf-n3-title { font-size: 14px; }
-  .cp-body { padding: 14px; }
-  .cp-actionbar {
+  .demo-picker .dp-item .avatar { flex-shrink: 0; }
+  .demo-picker .dp-create {
+    display: flex; align-items: center; gap: 7px;
+    padding: 8px 10px; font-size: 12px; font-weight: 600;
+    color: var(--c-valeria);
+    border-top: 1px dashed var(--border);
+  }
+  [data-theme="dark"] .demo-picker .dp-create { color: #c98fdf; }
+
+  /* ── Create paciente INLINE en el picker (popover abierto · NO hoja, NO popup) ── */
+  .cp-inline-popover {
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-lg);
     background: var(--bg-panel);
-    border-top: 1px solid var(--border);
-    padding: 10px 14px;
-    display: flex; justify-content: flex-end; gap: 8px;
+    padding: 6px;
+    overflow: hidden;
+  }
+  .cp-inline-search {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-sm);
+    background: var(--bg-panel);
+  }
+  .cp-inline-icon { color: var(--text-muted); font-size: 13px; }
+  .cp-inline-typed { font-size: 13px; color: var(--text-primary); }
+  .cp-inline-empty {
+    padding: 9px 10px 4px;
+    font-size: 11.5px; color: var(--text-muted);
+  }
+  /* Fila de acción "▾ + Crear paciente" en estado expandido */
+  .cp-inline-create-row {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 10px;
+    border-top: 1px dashed var(--border);
+    color: var(--c-mateo); font-weight: 600; font-size: 12.5px;
+  }
+  [data-theme="dark"] .cp-inline-create-row { color: #fde047; }
+  /* Mini-form inline · indentado + barra lateral = "está adentro del picker" */
+  .cp-inline-form {
+    margin: 4px 4px 4px 16px;
+    padding: 12px 12px 12px 12px;
+    border-left: 2px solid var(--c-mateo);
+    border-radius: var(--r-sm);
+    background: var(--bg-hover);
+  }
+  .cp-inline-actions {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .cp-inline-cancel {
+    font-size: 12px; color: var(--text-muted); cursor: pointer;
+  }
+  .cp-inline-cancel:hover { color: var(--text-primary); text-decoration: underline; }
+  .cp-inline-caption {
+    font-size: 11px; color: var(--text-muted);
+    line-height: 1.45; margin-top: 2px;
   }
 </style>
 </head>
@@ -494,12 +662,42 @@
     <a class="back-pill" href="agenda-week.html" title="Volver a la Agenda (sin perder datos)">
       <span class="rl-arrow">‹</span> Agenda
     </a>
+    <span class="canon-proposed-tag" title="PageHeader back-pill — átomo propuesto al canon">★ PROPUESTO</span>
     <div class="leaf-n3-title-wrap">
       <span class="leaf-n3-agent-dot">📅</span>
       <div>
         <div class="leaf-n3-title">Nueva cita</div>
         <div class="leaf-n3-sub">Mateo · Agenda — Clínica Dental Sonrisa</div>
       </div>
+    </div>
+  </div>
+
+  <!-- ── MAPEO AL CANON @luana/ui-kit (legend discreta) ── -->
+  <div class="canon-map">
+    <div class="canon-map-title">
+      Mapeo al canon <span class="cm-kit">@luana/ui-kit</span>
+    </div>
+    <div class="canon-map-grid">
+      <div class="cm-row"><span class="cm-mark exist">✓</span> <span class="cm-block">Contenedor hoja</span> → <span class="cm-atom">archetypes.FormPageScaffold</span></div>
+      <div class="cm-row"><span class="cm-mark exist">✓</span> <span class="cm-block">Canal de ingreso</span> → <span class="cm-atom">shell.TogglePill</span></div>
+      <div class="cm-row"><span class="cm-mark exist">✓</span> <span class="cm-block">Servicio / Médico</span> → <span class="cm-atom">inputs.RichSelect</span></div>
+      <div class="cm-row"><span class="cm-mark exist">✓</span> <span class="cm-block">Paciente</span> → <span class="cm-atom">EntityPicker</span></div>
+      <div class="cm-row"><span class="cm-mark exist">✓</span> <span class="cm-block">Fecha y hora</span> → <span class="cm-atom">inputs.SmartDatetimePicker</span></div>
+      <div class="cm-row"><span class="cm-mark exist">✓</span> <span class="cm-block">Hora de fin</span> → <span class="cm-atom">inline-editable + Badge</span></div>
+      <div class="cm-row"><span class="cm-mark exist">✓</span> <span class="cm-block">Notas</span> → <span class="cm-atom">textarea</span></div>
+      <div class="cm-row"><span class="cm-mark exist">✓</span> <span class="cm-block">Médico card</span> → <span class="cm-atom">card / EntityInfoCard</span></div>
+      <div class="cm-row"><span class="cm-mark exist">✓</span> <span class="cm-block">Toast 409</span> → <span class="cm-atom">overlays.Sonner</span></div>
+      <div class="cm-row"><span class="cm-mark exist">✓</span> <span class="cm-block">Avatars</span> → <span class="cm-atom">avatar</span></div>
+      <div class="cm-row"><span class="cm-mark prop">★</span> <span class="cm-block">Barra de acción sticky</span> → <span class="cm-atom">FormActionBar</span></div>
+      <div class="cm-row"><span class="cm-mark prop">★</span> <span class="cm-block">Chips de disponibilidad</span> → <span class="cm-atom">Badge success / warning</span></div>
+      <div class="cm-row"><span class="cm-mark prop">★</span> <span class="cm-block">Volver a Agenda</span> → <span class="cm-atom">PageHeader back-pill</span></div>
+      <div class="cm-row"><span class="cm-mark prop">★</span> <span class="cm-block">Crear paciente sin salir</span> → <span class="cm-atom">EntityPicker.createAction</span></div>
+      <div class="cm-row"><span class="cm-mark feat">◆</span> <span class="cm-block">Mini-vista del día</span> → <span class="cm-atom">DayAvailabilityStrip</span></div>
+    </div>
+    <div class="cm-legend">
+      <span class="lg"><span class="cm-mark exist">✓</span> Existente en el canon</span>
+      <span class="lg"><span class="cm-mark prop">★</span> Propuesto (va por /pm-luana)</span>
+      <span class="lg"><span class="cm-mark feat">◆</span> Componente de feature (scheduling · lift-candidate)</span>
     </div>
   </div>
 
@@ -576,7 +774,6 @@
                 <div class="nc-select-item"><span class="check"></span> Blanqueamiento <span class="si-sub">90 min</span></div>
               </div>
             </div>
-            <div class="dur-badge">Duración: <span class="pill">30 min</span> <span class="muted">— viene del servicio</span></div>
           </div>
 
           <!-- 4 + 5 · Fecha/hora inicio + Duración (min) -->
@@ -588,7 +785,7 @@
             <div class="nc-field">
               <div class="nc-field-label">Duración (min) <span class="req">*</span></div>
               <input class="form-input" type="number" value="30" />
-              <div class="form-helper">Prellenada del servicio · editable</div>
+              <div class="form-helper">viene del servicio · editable</div>
             </div>
           </div>
 
@@ -637,6 +834,7 @@
         <div class="form-card" style="display:flex;flex-direction:column;gap:16px">
           <div>
             <span class="avail-chip ok">✓ Disponible</span>
+            <span class="canon-proposed-tag" title="Badge variants success/warning — propuestos al canon">★ PROPUESTO</span>
           </div>
 
           <!-- 10 · Mini-vista del día del médico (AC-8) — más grande en la columna -->
@@ -671,9 +869,9 @@
     </div>
   </div>
 
-  <!-- ── BARRA DE ACCIÓN STICKY (footer de la hoja) ── -->
+  <!-- ── BARRA DE ACCIÓN STICKY (footer de la hoja · FormActionBar propuesto) ── -->
   <div class="leaf-actionbar">
-    <div class="ab-left">Sin guardar todavía · los datos no se pierden si navegas dentro de la hoja.</div>
+    <div class="ab-left">Sin guardar todavía · los datos no se pierden si navegas dentro de la hoja.<span class="canon-proposed-tag" title="FormActionBar — átomo propuesto al canon">★ PROPUESTO</span></div>
     <div class="ab-right">
       <button class="btn btn-outline">Cancelar</button>
       <button class="btn btn-mateo">Crear cita</button>
@@ -691,7 +889,7 @@
     <div class="mockup-title">Galería de estados — disponibilidad + paciente</div>
     <div class="mockup-subtitle">
       La hoja de arriba muestra el estado <strong>Disponible</strong> (happy path). Acá los 4 estados de bloqueo
-      + validaciones inline + la <strong>hoja «Crear paciente»</strong> (sub-página que reusa el alta de paciente),
+      + validaciones inline + el <strong>crear paciente inline en el picker</strong> (sin salir del form de la cita),
       para ratificar cada comportamiento (RN-1..RN-8 · AC-4/AC-5/AC-6/AC-8/AC-10).
     </div>
   </div>
@@ -783,42 +981,46 @@
       <button class="btn btn-mateo" disabled style="width:100%">Crear cita</button>
     </div>
 
-    <!-- D · Hoja «Crear paciente» (sub-página · reusa el alta de paciente · AC-10) -->
+    <!-- D · Crear paciente INLINE en el picker (NO hoja, NO popup · AC-10) -->
     <div class="state-card" style="grid-column:span 1">
       <div class="state-card-head">
         <span class="status-pill info">＋ Crear paciente</span>
+        <span class="canon-proposed-tag" title="EntityPicker.createAction — átomo propuesto al canon">★ PROPUESTO</span>
         <span class="state-card-sc">SC-crear-paciente · AC-10</span>
       </div>
-      <div class="text-sm secondary">Si el paciente no existe, «+ Crear paciente» abre esta <strong>hoja enfocada</strong> que reusa el alta de paciente (registro real) y vuelve a Nueva cita con el paciente preseleccionado.</div>
-      <div class="crear-paciente-leaf">
-        <div class="cp-n3">
-          <a class="back-pill" href="#" title="Volver a Nueva cita"><span class="rl-arrow">‹</span> Nueva cita</a>
-          <div class="leaf-n3-title-wrap">
-            <span class="leaf-n3-agent-dot" style="width:24px;height:24px;font-size:12px">🧑</span>
-            <div class="leaf-n3-title">Crear paciente</div>
-          </div>
+      <div class="text-sm secondary">Inline en el picker — el operador busca, no hay resultado, y crea sin salir del form de la cita.</div>
+      <!-- Popover del picker de Paciente ABIERTO con el create inline expandido -->
+      <div class="cp-inline-popover">
+        <div class="cp-inline-search">
+          <span class="cp-inline-icon">🔍</span>
+          <span class="cp-inline-typed">Lópe</span>
         </div>
-        <div class="cp-body">
+        <div class="cp-inline-empty">Sin resultados para «Lópe»</div>
+        <div class="cp-inline-create-row">
+          <span class="rl-arrow" style="font-size:13px">▾</span>
+          <span class="plus" style="font-size:14px">＋</span> Crear paciente
+        </div>
+        <!-- Mini-form inline EXPANDIDO · adentro del mismo popover (indent + borde dejan claro que NO es página nueva) -->
+        <div class="cp-inline-form">
           <div class="nc-field" style="margin-bottom:12px">
             <div class="nc-field-label">Nombre completo <span class="req">*</span></div>
-            <input class="form-input" type="text" value="Lópe" placeholder="Ej. María Fernanda López" />
+            <input class="form-input" type="text" value="María Fernanda López" placeholder="Ej. María Fernanda López" />
           </div>
-          <div class="nc-row-2" style="margin-bottom:0">
-            <div class="nc-field" style="margin-bottom:0">
-              <div class="nc-field-label">Teléfono <span class="req">*</span></div>
-              <input class="form-input" type="text" placeholder="+51 9XX XXX XXX" />
-            </div>
-            <div class="nc-field" style="margin-bottom:0">
-              <div class="nc-field-label">Email <span class="muted" style="font-weight:400">(opcional)</span></div>
-              <input class="form-input" type="text" placeholder="correo@ejemplo.com" />
-            </div>
+          <div class="nc-field" style="margin-bottom:12px">
+            <div class="nc-field-label">Teléfono <span class="req">*</span></div>
+            <input class="form-input" type="text" value="+51 998 123 456" placeholder="+51 9XX XXX XXX" />
           </div>
-        </div>
-        <div class="cp-actionbar">
-          <button class="btn btn-outline btn-sm">Cancelar</button>
-          <button class="btn btn-mateo btn-sm">Guardar y volver</button>
+          <div class="nc-field" style="margin-bottom:14px">
+            <div class="nc-field-label">Email <span class="muted" style="font-weight:400">(opcional)</span></div>
+            <input class="form-input" type="text" placeholder="correo@ejemplo.com" />
+          </div>
+          <div class="cp-inline-actions">
+            <button class="btn btn-mateo btn-sm">Crear y elegir</button>
+            <span class="cp-inline-cancel">Cancelar</span>
+          </div>
         </div>
       </div>
+      <div class="cp-inline-caption">Guarda → colapsa → «María Fernanda López» queda elegida en el form. Registro real mínimo (no descartable); el perfil completo se enriquece después en Mateo › Pacientes. NO es popup ni hoja aparte.</div>
     </div>
 
   </div>
@@ -838,7 +1040,7 @@
 
       <div class="divider"></div>
 
-      <!-- paciente nuevo incompleto (en la hoja Crear paciente) -->
+      <!-- paciente nuevo incompleto (en el create inline del picker) -->
       <div>
         <div class="nc-field-label">Crear paciente · Teléfono <span class="req">*</span></div>
         <input class="form-input" type="text" value="" placeholder="+51 9XX XXX XXX" style="border-color:var(--c-destructive)" />
@@ -863,6 +1065,75 @@
       </div>
     </div>
   </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       ★ ÁTOMOS PROPUESTOS AL CANON @luana/ui-kit (van por /pm-luana)
+       ══════════════════════════════════════════════════════ -->
+  <div class="proposed-atoms">
+    <div class="proposed-atoms-title"><span class="pa-star">★</span> Átomos propuestos al canon <span style="font-family:ui-monospace,monospace;font-size:14px;color:var(--text-secondary)">@luana/ui-kit</span> (van por /pm-luana)</div>
+    <div class="proposed-atoms-sub">Cuatro primitivas que esta hoja necesita y el canon todavía no tiene. Contrato completo en <span style="font-family:ui-monospace,monospace">PROPOSED-CANON-ATOMS.md</span>.</div>
+
+    <div class="proposed-grid">
+
+      <!-- 1 · FormActionBar -->
+      <div class="atom-card">
+        <div class="atom-name">FormActionBar</div>
+        <div class="atom-demo">
+          <div class="demo-actionbar">
+            <span class="da-hint">Sin guardar todavía</span>
+            <div class="da-btns">
+              <button class="btn btn-outline">Cancelar</button>
+              <button class="btn btn-mateo">Crear cita</button>
+            </div>
+          </div>
+        </div>
+        <div class="atom-api">&lt;FormActionBar hint cancelLabel submitLabel onCancel onSubmit submitting? /&gt;</div>
+        <div class="atom-note">El canon hoy es solo autosave; este es el segundo modo, para flujos de crear / submit.</div>
+      </div>
+
+      <!-- 2 · Badge success | warning -->
+      <div class="atom-card">
+        <div class="atom-name">Badge success | warning</div>
+        <div class="atom-demo" style="gap:10px">
+          <span class="avail-chip ok">Disponible</span>
+          <span class="avail-chip outhours">Fuera de horario</span>
+        </div>
+        <div class="atom-api">&lt;Badge variant="success | warning"&gt;</div>
+        <div class="atom-note">Hoy badge solo tiene default / secondary / destructive / outline.</div>
+      </div>
+
+      <!-- 3 · PageHeader back-pill -->
+      <div class="atom-card">
+        <div class="atom-name">PageHeader back-pill</div>
+        <div class="atom-demo">
+          <div class="demo-pageheader">
+            <span class="back-pill"><span class="rl-arrow">‹</span> Agenda</span>
+            <span class="ph-title">Nueva cita</span>
+          </div>
+        </div>
+        <div class="atom-api">&lt;PageHeader backLabel="Agenda" onBack={...} title subtitle actions /&gt;</div>
+        <div class="atom-note">Para hojas-leaf, sin abusar de EntitySubNavBar (que es nav de entidad).</div>
+      </div>
+
+      <!-- 4 · EntityPicker.createAction -->
+      <div class="atom-card">
+        <div class="atom-name">EntityPicker.createAction</div>
+        <div class="atom-demo">
+          <div class="demo-picker">
+            <div class="dp-item">
+              <div class="avatar avatar-sm" style="background:var(--c-mateo-soft);color:#92400e">MF</div>
+              <span>María Fernanda López</span>
+            </div>
+            <div class="dp-create"><span style="font-size:14px">＋</span> Crear paciente</div>
+          </div>
+        </div>
+        <div class="atom-api">&lt;EntityPicker createAction={{ label, onCreate }} ... /&gt;</div>
+        <div class="atom-note">Cuando la entidad no existe, crearla inline sin salir del picker.</div>
+      </div>
+
+    </div>
+  </div>
+
 </div>
 
 <script>
