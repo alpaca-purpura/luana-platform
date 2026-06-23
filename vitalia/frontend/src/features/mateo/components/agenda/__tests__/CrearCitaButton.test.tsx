@@ -1,19 +1,15 @@
 /**
- * CrearCitaButton.test.tsx — Vitest unit tests (TDD RED→GREEN).
+ * CrearCitaButton.test.tsx — Vitest unit tests (T-FE-1 reconciled).
  *
- * T-16 vitalia-fase2-valeria-agenda
- * spec_anchor: 06-tickets.yaml T-16 acceptance A2, A4
+ * T-FE-1 vitalia-fase2-mateo-nueva-cita
+ * AC-9: Button now pushes to /nueva-cita?origin=... (no modal/dialog).
  *
  * Tests:
- *   - Renders desktop button variant by default (A2)
- *   - Button click opens dropdown with 3 options (A2)
- *   - All 3 dropdown options present with correct labels (A2)
- *   - Clicking walk_in option opens dialog with form (A2)
- *   - Clicking telefono option opens dialog with form (A2)
- *   - Clicking existing_patient option opens dialog with form (A2)
- *   - FAB variant renders with fixed bottom-right position classes (A4)
- *   - FAB has aria-label="Nueva cita" (A4 + accessibility)
- *   - Dialog closes on form cancel (A2)
+ *   - Renders desktop button variant by default
+ *   - Button click opens dropdown with 2 options (walk_in, telefono only — existing_patient REMOVED)
+ *   - Clicking an option calls router.push with correct URL
+ *   - FAB variant renders with fixed bottom-right position classes
+ *   - FAB has aria-label="Nueva cita"
  *
  * NOTE: Radix UI DropdownMenu uses Portal — requires userEvent.setup() with
  *       pointer events for trigger interaction in happy-dom. fireEvent.click
@@ -30,6 +26,12 @@ import { CrearCitaButton } from "../CrearCitaButton";
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
+const mockPush = vi.fn();
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: mockPush, back: vi.fn() }),
+  useParams: () => ({ tenantId: "tenant-123" }),
+}));
+
 // Mock Clerk useAuth
 vi.mock("@clerk/nextjs", () => ({
   useAuth: vi.fn(() => ({
@@ -38,38 +40,8 @@ vi.mock("@clerk/nextjs", () => ({
     isSignedIn: true,
   })),
 }));
+
 vi.mock("@/hooks/useTenantId", () => ({ useTenantId: () => "mock-tenant-id" }));
-
-
-// Mock CrearCitaForm to avoid deep form setup in button tests
-vi.mock("../CrearCitaForm", () => ({
-  CrearCitaForm: ({
-    origin,
-    onCancel,
-  }: {
-    origin: string;
-    onCancel?: () => void;
-  }) => (
-    <div data-testid="crear-cita-form" data-origin={origin}>
-      <button type="button" onClick={onCancel} data-testid="form-cancel">
-        Cancelar
-      </button>
-    </div>
-  ),
-}));
-
-// Mock PatientAutocomplete
-vi.mock("../PatientAutocomplete", () => ({
-  PatientAutocomplete: () => (
-    <div data-testid="patient-autocomplete-mock" />
-  ),
-}));
-
-// Mock sonner toast
-vi.mock("sonner", () => ({
-  toast: { success: vi.fn(), error: vi.fn() },
-  Toaster: () => null,
-}));
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -98,9 +70,9 @@ function renderButton({ variant = "button" }: RenderProps = {}) {
   return { user };
 }
 
-// ── Desktop button tests (A2) ─────────────────────────────────────────────────
+// ── Desktop button tests ──────────────────────────────────────────────────────
 
-describe("CrearCitaButton — desktop variant render (A2)", () => {
+describe("CrearCitaButton — desktop variant render", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -121,7 +93,9 @@ describe("CrearCitaButton — desktop variant render (A2)", () => {
   });
 });
 
-describe("CrearCitaButton — dropdown interaction (A2)", () => {
+// ── Dropdown interaction (AC-9: router.push, no modal) ───────────────────────
+
+describe("CrearCitaButton — dropdown interaction (AC-9)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -136,45 +110,46 @@ describe("CrearCitaButton — dropdown interaction (A2)", () => {
     });
   });
 
-  it("shows all 3 dropdown options after button click", async () => {
+  it("shows 2 dropdown options (walk_in + telefono) after button click", async () => {
     const { user } = renderButton();
     await user.click(screen.getByTestId("crear-cita-button"));
 
     await waitFor(() => {
       expect(screen.getByTestId("crear-cita-walk-in")).toBeDefined();
       expect(screen.getByTestId("crear-cita-telefono")).toBeDefined();
-      expect(screen.getByTestId("crear-cita-existing")).toBeDefined();
     });
   });
 
-  it("dropdown shows 'Paciente walk-in (nuevo)' label", async () => {
+  it("does NOT show existing_patient option (removed in T-FE-1)", async () => {
     const { user } = renderButton();
     await user.click(screen.getByTestId("crear-cita-button"));
 
     await waitFor(() => {
-      expect(screen.getByText("Paciente walk-in (nuevo)")).toBeDefined();
+      expect(screen.getByTestId("crear-cita-walk-in")).toBeDefined();
     });
+
+    expect(screen.queryByTestId("crear-cita-existing")).toBeNull();
   });
 
-  it("dropdown shows 'Reserva telefónica (nuevo)' label", async () => {
+  it("dropdown shows 'Paciente walk-in' label", async () => {
     const { user } = renderButton();
     await user.click(screen.getByTestId("crear-cita-button"));
 
     await waitFor(() => {
-      expect(screen.getByText("Reserva telefónica (nuevo)")).toBeDefined();
+      expect(screen.getByText("Paciente walk-in")).toBeDefined();
     });
   });
 
-  it("dropdown shows 'Desde paciente existente' label", async () => {
+  it("dropdown shows 'Reserva telefónica' label", async () => {
     const { user } = renderButton();
     await user.click(screen.getByTestId("crear-cita-button"));
 
     await waitFor(() => {
-      expect(screen.getByText("Desde paciente existente")).toBeDefined();
+      expect(screen.getByText("Reserva telefónica")).toBeDefined();
     });
   });
 
-  it("clicking walk_in opens dialog with form variant walk_in", async () => {
+  it("clicking walk_in calls router.push with origin=walk_in (AC-9: no modal)", async () => {
     const { user } = renderButton();
     await user.click(screen.getByTestId("crear-cita-button"));
 
@@ -185,12 +160,13 @@ describe("CrearCitaButton — dropdown interaction (A2)", () => {
     await user.click(screen.getByTestId("crear-cita-walk-in"));
 
     await waitFor(() => {
-      const form = screen.getByTestId("crear-cita-form");
-      expect(form.getAttribute("data-origin")).toBe("walk_in");
+      expect(mockPush).toHaveBeenCalledWith(
+        "/tenant-123/mateo/agenda/nueva-cita?origin=walk_in",
+      );
     });
   });
 
-  it("clicking telefono opens dialog with form variant telefono", async () => {
+  it("clicking telefono calls router.push with origin=telefono (AC-9: no modal)", async () => {
     const { user } = renderButton();
     await user.click(screen.getByTestId("crear-cita-button"));
 
@@ -201,52 +177,16 @@ describe("CrearCitaButton — dropdown interaction (A2)", () => {
     await user.click(screen.getByTestId("crear-cita-telefono"));
 
     await waitFor(() => {
-      const form = screen.getByTestId("crear-cita-form");
-      expect(form.getAttribute("data-origin")).toBe("telefono");
-    });
-  });
-
-  it("clicking existing_patient opens dialog with form variant existing_patient", async () => {
-    const { user } = renderButton();
-    await user.click(screen.getByTestId("crear-cita-button"));
-
-    await waitFor(() => {
-      expect(screen.getByTestId("crear-cita-existing")).toBeDefined();
-    });
-
-    await user.click(screen.getByTestId("crear-cita-existing"));
-
-    await waitFor(() => {
-      const form = screen.getByTestId("crear-cita-form");
-      expect(form.getAttribute("data-origin")).toBe("existing_patient");
-    });
-  });
-
-  it("dialog closes when form cancel is clicked", async () => {
-    const { user } = renderButton();
-    await user.click(screen.getByTestId("crear-cita-button"));
-
-    await waitFor(() => {
-      expect(screen.getByTestId("crear-cita-walk-in")).toBeDefined();
-    });
-
-    await user.click(screen.getByTestId("crear-cita-walk-in"));
-
-    await waitFor(() => {
-      expect(screen.getByTestId("crear-cita-form")).toBeDefined();
-    });
-
-    await user.click(screen.getByTestId("form-cancel"));
-
-    await waitFor(() => {
-      expect(screen.queryByTestId("crear-cita-form")).toBeNull();
+      expect(mockPush).toHaveBeenCalledWith(
+        "/tenant-123/mateo/agenda/nueva-cita?origin=telefono",
+      );
     });
   });
 });
 
-// ── FAB variant tests (A4) ────────────────────────────────────────────────────
+// ── FAB variant tests ─────────────────────────────────────────────────────────
 
-describe("CrearCitaButton — FAB variant render (A4)", () => {
+describe("CrearCitaButton — FAB variant render", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -263,27 +203,26 @@ describe("CrearCitaButton — FAB variant render (A4)", () => {
     expect(fab.getAttribute("aria-label")).toBe("Nueva cita");
   });
 
-  it("FAB has 'fixed' class for fixed positioning (A4 bottom-right)", () => {
+  it("FAB has 'fixed' class for fixed positioning", () => {
     renderButton({ variant: "fab" });
     const fab = screen.getByTestId("crear-cita-fab");
     expect(fab.className).toContain("fixed");
   });
 
-  it("FAB has 'bottom-4' and 'right-4' positioning classes (A4)", () => {
+  it("FAB has 'bottom-4' and 'right-4' positioning classes", () => {
     renderButton({ variant: "fab" });
     const fab = screen.getByTestId("crear-cita-fab");
     expect(fab.className).toContain("bottom-4");
     expect(fab.className).toContain("right-4");
   });
 
-  it("FAB opens dropdown on click showing 3 options", async () => {
+  it("FAB opens dropdown on click showing 2 options", async () => {
     const { user } = renderButton({ variant: "fab" });
     await user.click(screen.getByTestId("crear-cita-fab"));
 
     await waitFor(() => {
       expect(screen.getByTestId("crear-cita-walk-in")).toBeDefined();
       expect(screen.getByTestId("crear-cita-telefono")).toBeDefined();
-      expect(screen.getByTestId("crear-cita-existing")).toBeDefined();
     });
   });
 });

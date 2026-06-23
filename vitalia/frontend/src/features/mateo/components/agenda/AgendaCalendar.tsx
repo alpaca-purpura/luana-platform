@@ -52,6 +52,11 @@ export interface AgendaCalendarProps {
    * Parent can switch to DayCalendar for that date.
    */
   onDayClick?: (date: string) => void;
+  /**
+   * T-FE-1: Called when an empty time slot is clicked.
+   * Parent (MateoAgendaView) pushes to /nueva-cita?date=&time=
+   */
+  onEmptySlotClick?: (date: string, time: string) => void;
   className?: string;
 }
 
@@ -75,6 +80,7 @@ export function AgendaCalendar({
   isLoading = false,
   onSlotClick,
   onDayClick,
+  onEmptySlotClick,
   className,
 }: AgendaCalendarProps) {
   const { view, date } = useAgendaFilters();
@@ -93,6 +99,13 @@ export function AgendaCalendar({
     [onDayClick],
   );
 
+  const handleEmptySlotClick = useCallback(
+    (emptyDate: string, emptyTime: string) => {
+      onEmptySlotClick?.(emptyDate, emptyTime);
+    },
+    [onEmptySlotClick],
+  );
+
   // Show skeleton during initial load
   if (isLoading) {
     return <SkeletonCalendar className={className} />;
@@ -107,6 +120,7 @@ export function AgendaCalendar({
           date={date}
           tenantId={tenantId}
           onSlotClick={handleSlotClick}
+          onEmptySlotClick={handleEmptySlotClick}
         />
       )}
 
@@ -116,6 +130,7 @@ export function AgendaCalendar({
           date={date}
           tenantId={tenantId}
           onSlotClick={handleSlotClick}
+          onEmptySlotClick={handleEmptySlotClick}
         />
       )}
 

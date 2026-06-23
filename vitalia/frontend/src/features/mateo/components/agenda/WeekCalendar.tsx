@@ -95,6 +95,11 @@ export interface WeekCalendarProps {
   tenantId: string;
   /** Called with appointmentId when a slot is clicked. */
   onSlotClick: (appointmentId: string) => void;
+  /**
+   * T-FE-1: Called when an empty day column is clicked.
+   * Passes YYYY-MM-DD date + "09:00" as default time for prefill.
+   */
+  onEmptySlotClick?: (date: string, time: string) => void;
   className?: string;
 }
 
@@ -113,6 +118,7 @@ export function WeekCalendar({
   slots,
   date,
   onSlotClick,
+  onEmptySlotClick,
   className,
 }: WeekCalendarProps) {
   // Compute the 7 days for this week
@@ -208,6 +214,18 @@ export function WeekCalendar({
                   onClick={() => handleSlotClick(slot)}
                 />
               ))}
+              {/* Empty column click target (T-FE-1: push to nueva-cita with date prefill) */}
+              {daySlots.length === 0 && onEmptySlotClick && (
+                <button
+                  type="button"
+                  className="flex-1 w-full cursor-pointer rounded-sm text-xs text-muted-foreground/50 hover:bg-muted/40 hover:text-muted-foreground transition-colors"
+                  aria-label={`Crear cita el ${DAY_ABBRS[colIdx]} ${formatDayNumber(day)}`}
+                  data-testid={`week-empty-slot-${colIdx}`}
+                  onClick={() => onEmptySlotClick(dayKey, "09:00")}
+                >
+                  +
+                </button>
+              )}
             </div>
           );
         })}

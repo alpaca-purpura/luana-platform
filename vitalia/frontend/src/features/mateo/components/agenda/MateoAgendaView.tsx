@@ -27,7 +27,8 @@
  * spec_anchor: 03-arch.md § 6.4 + 06-tickets.yaml T-12
  */
 
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
@@ -78,12 +79,23 @@ export function MateoAgendaView({
   tenantId,
 }: MateoAgendaViewProps) {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const { view, date, presetFilter } = useAgendaFilters();
   const { drawerOpen, selectedSlotId, openDrawer } = useDrawerStore();
   const { freshnessLabel, updateFreshness } = useFreshness();
   const { currency, timezone, locale } = useTenantLocale();
   const clinicId = useClinicId();
   const { getToken } = useAuth();
+
+  // T-FE-1: Empty slot click → push to nueva-cita with date/time prefill
+  const handleEmptySlotClick = useCallback(
+    (emptyDate: string, emptyTime: string) => {
+      router.push(
+        `/${tenantId}/mateo/agenda/nueva-cita?date=${emptyDate}&time=${emptyTime}`,
+      );
+    },
+    [router, tenantId],
+  );
 
   // Resolve effective view/date (URL overrides initial props after mount)
   const effectiveView = view ?? initialView;
@@ -205,6 +217,7 @@ export function MateoAgendaView({
             monthAggregates={null}
             isLoading={isLoading && !data}
             onSlotClick={openDrawer}
+            onEmptySlotClick={handleEmptySlotClick}
             className="flex-1"
           />
           {/* Empty-state announcement for screen readers (also tested by T-12 suite) */}

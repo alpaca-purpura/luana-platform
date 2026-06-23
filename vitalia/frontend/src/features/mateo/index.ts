@@ -194,6 +194,62 @@ export type { AppointmentDrawerNotasSectionProps } from "./components/agenda/App
 export { AppointmentDrawerAccionesAvanzadasSection } from "./components/agenda/AppointmentDrawerAccionesAvanzadasSection";
 export type { AppointmentDrawerAccionesAvanzadasSectionProps } from "./components/agenda/AppointmentDrawerAccionesAvanzadasSection";
 
+// ── Nueva Cita leaf sheet (T-FE-1) ────────────────────────────────────────────
+export { NuevaCitaView } from "./components/nueva-cita/NuevaCitaView";
+export type { NuevaCitaViewProps } from "./components/nueva-cita/NuevaCitaView";
+
+export { useNuevaCitaStore } from "./store/nueva-cita-store";
+export type {
+  NuevaCitaStoreState,
+  NuevaCitaStoreActions,
+} from "./store/nueva-cita-store";
+
+export {
+  nuevaCitaKeys,
+  useNuevaCitaServices,
+  useNuevaCitaFreeDoctors,
+  useNuevaCitaAvailabilityCheck,
+  useNuevaCitaCreate,
+  useNuevaCitaPatientSearch,
+  useNuevaCitaPatientInlineCreate,
+} from "./hooks/use-nueva-cita";
+export type {
+  NuevaCitaServiceItem,
+  NuevaCitaServicesResponse,
+  NuevaCitaDoctorItem,
+  NuevaCitaFreeDoctorsResponse,
+  NuevaCitaAvailabilityResponse,
+  NuevaCitaCreatedAppointment,
+  NuevaCitaPatientSearchItem,
+  NuevaCitaPatientSearchResponse,
+  NuevaCitaPatientInlineCreateResponse,
+  CreateAppointmentPayload,
+  PatientInlineCreatePayload,
+} from "./hooks/use-nueva-cita";
+
+// New schemas exported from agenda-schema (availability + patient inline) ──────
+export {
+  AvailabilityStatusSchema,
+  AvailabilityCheckResponseSchema,
+  FreeDoctorItemSchema,
+  FreeDoctorsResponseSchema,
+  DayBlockItemSchema,
+  DayStripResponseSchema,
+  PatientInlineCreateRequestSchema,
+  PatientInlineCreateResponseSchema,
+  PatientSearchItemSchema,
+  PatientSearchResponseSchema,
+} from "./types/agenda-schema";
+export type {
+  AvailabilityCheckResponse,
+  FreeDoctorsResponse,
+  DayStripResponse,
+  PatientInlineCreateRequest,
+  PatientInlineCreateResponse,
+  PatientSearchItem,
+  PatientSearchResponse,
+} from "./types/agenda-schema";
+
 // ── CobrarSaldoSubform + helpers (T-15) ───────────────────────────────────────
 export { CobrarSaldoSubform } from "./components/agenda/CobrarSaldoSubform";
 export type {

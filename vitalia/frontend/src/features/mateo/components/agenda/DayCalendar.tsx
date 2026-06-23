@@ -54,6 +54,11 @@ export interface DayCalendarProps {
   tenantId: string;
   /** Called with appointmentId when a slot is clicked. */
   onSlotClick: (appointmentId: string) => void;
+  /**
+   * T-FE-1: Called when the empty state "+" button is clicked.
+   * Passes date + "09:00" as default time for prefill in nueva-cita.
+   */
+  onEmptySlotClick?: (date: string, time: string) => void;
   className?: string;
 }
 
@@ -120,6 +125,7 @@ export function DayCalendar({
   slots,
   date,
   onSlotClick,
+  onEmptySlotClick,
   className,
 }: DayCalendarProps) {
   const { timezone, locale } = useTenantLocale();
@@ -151,13 +157,26 @@ export function DayCalendar({
         </p>
       </div>
 
-      {/* Empty state */}
+      {/* Empty state — T-FE-1: clickable if onEmptySlotClick provided */}
       {slots.length === 0 && (
         <div
           className="flex flex-1 items-center justify-center p-8"
           aria-live="polite"
         >
-          <p className="text-sm text-muted-foreground">Sin citas para este día.</p>
+          {onEmptySlotClick ? (
+            <button
+              type="button"
+              className="flex flex-col items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              onClick={() => onEmptySlotClick(date, "09:00")}
+              data-testid="day-empty-slot-btn"
+              aria-label="Crear cita para este día"
+            >
+              <span className="text-2xl">+</span>
+              <span>Sin citas — crear una</span>
+            </button>
+          ) : (
+            <p className="text-sm text-muted-foreground">Sin citas para este día.</p>
+          )}
         </div>
       )}
 

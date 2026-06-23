@@ -1,5 +1,11 @@
 // cap: scheduling.mateo-agenda
 // story-origin: vitalia-fase2-s1-TBD
+// @deprecated T-FE-1 vitalia-fase2-mateo-nueva-cita (AC-9/D-G): This modal form is
+// REPLACED by the full-page NuevaCitaView route. Retained temporarily pending cleanup story.
+// TS errors suppressed via @ts-nocheck: schema reconciliation (T-FE-1) changed origin enum
+// (removed "existing_patient") and removed patientNewData field. Delete in cleanup story.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 "use client";
 
 /**

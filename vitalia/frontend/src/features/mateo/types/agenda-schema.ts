@@ -312,41 +312,57 @@ export type ChargeResponseDTO = z.infer<typeof ChargeResponseSchema>;
 
 // ────────────────────────────────────────────────────────────────────────────
 // CreateAppointmentRequestSchema
+// RECONCILED (T-FE-1 D-F): origin = walk_in|telefono only (matches BE
+// CreateAppointmentRequestDTO.origin: Literal["walk_in","telefono"]).
+// patientId is REQUIRED (BE T-BE-4: real patient_id from CRM, no stub).
+// patientNewData REMOVED (alta = separate CRM endpoint, not in POST /appointments).
+// existing_patient REMOVED from origin (not a valid Mateo manual flow origin).
+//
+// Contract verified against:
+//   vitalia/backend/src/modules/vitalia/scheduling/api/dtos/agenda_dtos.py
+//   class CreateAppointmentRequestDTO.
 // ────────────────────────────────────────────────────────────────────────────
 
-const PatientNewDataSchema = z.object({
-  name: z
-    .string()
-    .min(2, "El nombre debe tener al menos 2 caracteres")
-    .max(128, "El nombre no puede superar 128 caracteres"),
-  dni: z.string().max(32).nullable().optional(),
-  phone: z
-    .string()
-    .min(6, "El teléfono debe tener al menos 6 caracteres")
-    .max(24, "El teléfono no puede superar 24 caracteres"),
-  email: z.string().email("Correo inválido").nullable().optional(),
-});
-
-export const CreateAppointmentRequestSchema = z.object({
-  origin: z.enum(["walk_in", "telefono", "existing_patient"], {
-    error: "Origen de turno inválido",
-  }),
-  patientId: z.string().uuid("ID de paciente inválido").nullable(),
-  patientNewData: PatientNewDataSchema.nullable(),
-  doctorId: z.string().uuid("ID de médico inválido"),
-  serviceLabel: z
-    .string()
-    .min(1, "La descripción del servicio es requerida")
-    .max(128, "La descripción del servicio no puede superar 128 caracteres"),
-  startTime: z.string().datetime({ offset: true, message: "Fecha de inicio inválida" }),
-  endTime: z.string().datetime({ offset: true, message: "Fecha de fin inválida" }),
-  notesInternal: z
-    .string()
-    .max(500, "Las notas no pueden superar 500 caracteres")
-    .nullable(),
-  /** Per-appointment currency override (ISO 4217). Null = use tenant default. */
-  currencyOverride: z.string().length(3).nullable(),
-});
+export const CreateAppointmentRequestSchema = z
+  .object({
+    origin: z.enum(["walk_in", "telefono"], {
+      error: "Origen de turno inválido",
+    }),
+    /** Required: real patient UUID from CRM (typeahead or inline create). */
+    patientId: z.string().uuid("ID de paciente inválido"),
+    doctorId: z.string().uuid("ID de médico inválido"),
+    serviceLabel: z
+      .string()
+      .min(1, "La descripción del servicio es requerida")
+      .max(128, "La descripción del servicio no puede superar 128 caracteres"),
+    startTime: z.string().datetime({
+      offset: true,
+      message: "Fecha de inicio inválida",
+    }),
+    endTime: z.string().datetime({
+      offset: true,
+      message: "Fecha de fin inválida",
+    }),
+    notesInternal: z
+      .string()
+      .max(500, "Las notas no pueden superar 500 caracteres")
+      .nullable(),
+    /** Per-appointment currency override (ISO 4217). Null = use tenant default. */
+    currencyOverride: z.string().length(3).nullable(),
+  })
+  .refine(
+    (d) => {
+      try {
+        return new Date(d.endTime) > new Date(d.startTime);
+      } catch {
+        return false;
+      }
+    },
+    {
+      message: "El horario de fin debe ser posterior al inicio",
+      path: ["endTime"],
+    },
+  );
 
 export type CreateAppointmentRequestDTO = z.infer<
   typeof CreateAppointmentRequestSchema
@@ -384,3 +400,164 @@ export const NotifyRequestSchema = z.object({
 });
 
 export type NotifyRequestDTO = z.infer<typeof NotifyRequestSchema>;
+
+// ────────────────────────────────────────────────────────────────────────────
+// Availability schemas — T-FE-1 (nueva-cita)
+// Contract verified against BE DTOs in:
+//   vitalia/backend/src/modules/vitalia/scheduling/api/dtos/availability_dtos.py
+//
+// BE returns snake_case; hooks (use-nueva-cita.ts) normalize to camelCase.
+// These Zod schemas validate the NORMALIZED (camelCase) shape used in FE.
+// ────────────────────────────────────────────────────────────────────────────
+
+/** 4-state availability status (matches BE AvailabilityStatus enum values). */
+export const AvailabilityStatusSchema = z.enum([
+  "available",
+  "busy",
+  "out_of_hours",
+  "no_schedule",
+]);
+
+/**
+ * AvailabilityCheckResponseSchema — camelCase FE representation.
+ * BE: { status, conflict_label, conflict_start } — normalized by use-nueva-cita hook.
+ * conflictStart: UTC ISO 8601 datetime string | null.
+ */
+export const AvailabilityCheckResponseSchema = z.object({
+  status: AvailabilityStatusSchema,
+  conflictLabel: z.string().nullable(),
+  conflictStart: z
+    .string()
+    .datetime({ offset: true })
+    .nullable()
+    .optional(),
+});
+
+export type AvailabilityCheckResponse = z.infer<
+  typeof AvailabilityCheckResponseSchema
+>;
+
+/**
+ * FreeDoctorItemSchema — single doctor in the free-doctors list.
+ * BE: { doctor_id, doctor_label } — normalized by use-nueva-cita hook.
+ */
+export const FreeDoctorItemSchema = z.object({
+  doctorId: z.string().uuid(),
+  doctorLabel: z.string().min(1),
+});
+
+/**
+ * FreeDoctorsResponseSchema — camelCase FE representation.
+ * BE: { doctors: [{doctor_id, doctor_label}], count } — normalized by hook.
+ * ★ BE also returns `count` (added in T-BE-3 dto), but FE derives from doctors.length.
+ */
+export const FreeDoctorsResponseSchema = z.object({
+  doctors: z.array(FreeDoctorItemSchema),
+  count: z.number().int(),
+});
+
+export type FreeDoctorsResponse = z.infer<typeof FreeDoctorsResponseSchema>;
+
+/**
+ * DayBlockItemSchema — a working_hours or busy block in the day-strip.
+ * BE: { kind, start, end } — normalized to startTime/endTime by hook.
+ * kind: "working_hours" | "busy" | "unavailable"
+ */
+export const DayBlockItemSchema = z.object({
+  startTime: z.string().datetime({ offset: true }),
+  endTime: z.string().datetime({ offset: true }),
+  kind: z.enum(["working_hours", "busy", "unavailable"]),
+});
+
+/**
+ * DayStripResponseSchema — camelCase FE representation.
+ * BE: { doctor_id, date, blocks: [{kind, start, end}] } — normalized by hook.
+ * dateLocal: YYYY-MM-DD string (from BE date field).
+ */
+export const DayStripResponseSchema = z.object({
+  doctorId: z.string().uuid(),
+  dateLocal: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  blocks: z.array(DayBlockItemSchema),
+});
+
+export type DayStripResponse = z.infer<typeof DayStripResponseSchema>;
+
+// ────────────────────────────────────────────────────────────────────────────
+// Patient inline create schemas — T-FE-1 (nueva-cita)
+// Contract verified against:
+//   vitalia/backend/src/modules/vitalia/crm/application/dto/patient_dto.py
+//
+// NOTE: PatientInlineCreateRequest.channel in BE is:
+//   Literal["whatsapp","instagram","web","phone","walk_in","other"]
+//   NOT "telefono" — Mateo origin "telefono" maps to channel="phone".
+// ────────────────────────────────────────────────────────────────────────────
+
+/**
+ * PatientInlineCreateRequestSchema — FE form values for minimal patient creation.
+ * Maps to BE PatientInlineCreateRequest:
+ *   name (min 1 char in BE, 2 here for UX), phone, email, channel.
+ *
+ * Channel mapping (Mateo origin → BE channel):
+ *   "walk_in" → "walk_in"
+ *   "telefono" → "phone"
+ */
+export const PatientInlineCreateRequestSchema = z.object({
+  name: z
+    .string()
+    .min(2, "El nombre debe tener al menos 2 caracteres")
+    .max(120, "El nombre no puede superar 120 caracteres"),
+  phone: z
+    .string()
+    .min(6, "El teléfono debe tener al menos 6 caracteres")
+    .max(20, "El teléfono no puede superar 20 caracteres")
+    .nullable()
+    .optional(),
+  email: z.string().email("Correo inválido").max(254).nullable().optional(),
+  /** FE origin ("walk_in" | "telefono") — serializer maps to BE channel. */
+  origin: z.enum(["walk_in", "telefono"]),
+  note: z.string().max(500).nullable().optional(),
+});
+
+export type PatientInlineCreateRequest = z.infer<
+  typeof PatientInlineCreateRequestSchema
+>;
+
+/**
+ * PatientInlineCreateResponseSchema — camelCase FE representation.
+ * BE: { patient_id, name_masked, phone_masked, is_duplicate, created_at }.
+ * All PHI fields are MASKED server-side (HIPAA-lite invariant).
+ */
+export const PatientInlineCreateResponseSchema = z.object({
+  patientId: z.string().uuid(),
+  /** Server-masked: "M. López". NEVER raw name. */
+  nameMasked: z.string().min(1),
+  /** Server-masked: "+51 9***". Null if no phone. */
+  phoneMasked: z.string().nullable(),
+  /** True = phone already exists → surface "usar paciente existente?" UX. */
+  isDuplicate: z.boolean(),
+});
+
+export type PatientInlineCreateResponse = z.infer<
+  typeof PatientInlineCreateResponseSchema
+>;
+
+/**
+ * PatientSearchItemSchema — masked result in typeahead search.
+ * BE: { patient_id, name_masked, phone_masked, channel_first, created_at }.
+ */
+export const PatientSearchItemSchema = z.object({
+  patientId: z.string().uuid(),
+  nameMasked: z.string().min(1),
+  phoneMasked: z.string().nullable(),
+  channelFirst: z.string().nullable(),
+});
+
+export type PatientSearchItem = z.infer<typeof PatientSearchItemSchema>;
+
+export const PatientSearchResponseSchema = z.object({
+  items: z.array(PatientSearchItemSchema),
+  nextCursor: z.string().nullable(),
+  totalApprox: z.number().int(),
+});
+
+export type PatientSearchResponse = z.infer<typeof PatientSearchResponseSchema>;

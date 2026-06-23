@@ -476,16 +476,12 @@ describe("PatchAppointmentRequestSchema", () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe("CreateAppointmentRequestSchema", () => {
-  it("parses walk_in appointment with patient new data", () => {
+  // RECONCILED (T-FE-1 D-F): walk_in now requires real patientId (UUID from CRM).
+  // patientNewData removed from schema (alta = separate CRM endpoint).
+  it("parses walk_in appointment with required patientId", () => {
     const result = CreateAppointmentRequestSchema.parse({
       origin: "walk_in",
-      patientId: null,
-      patientNewData: {
-        name: "Carlos Flores",
-        dni: "12345678",
-        phone: "+51 999 111 222",
-        email: "carlos@email.com",
-      },
+      patientId: UUID.patient,
       doctorId: UUID.doctor,
       serviceLabel: "Consulta general",
       startTime: "2026-06-02T09:00:00Z",
@@ -494,14 +490,15 @@ describe("CreateAppointmentRequestSchema", () => {
       currencyOverride: null,
     });
     expect(result.origin).toBe("walk_in");
-    expect(result.patientNewData?.name).toBe("Carlos Flores");
+    expect(result.patientId).toBe(UUID.patient);
   });
 
-  it("parses existing patient appointment", () => {
+  // RECONCILED (T-FE-1 D-F): "existing_patient" origin removed — only walk_in + telefono.
+  // Telefono origin parses with patientId (real patient from CRM).
+  it("parses telefono appointment with patientId and currencyOverride", () => {
     const result = CreateAppointmentRequestSchema.parse({
-      origin: "existing_patient",
+      origin: "telefono",
       patientId: UUID.patient,
-      patientNewData: null,
       doctorId: UUID.doctor,
       serviceLabel: "Limpieza dental",
       startTime: "2026-06-03T10:00:00Z",
@@ -509,6 +506,7 @@ describe("CreateAppointmentRequestSchema", () => {
       notesInternal: null,
       currencyOverride: "USD",
     });
+    expect(result.origin).toBe("telefono");
     expect(result.patientId).toBe(UUID.patient);
     expect(result.currencyOverride).toBe("USD");
   });
