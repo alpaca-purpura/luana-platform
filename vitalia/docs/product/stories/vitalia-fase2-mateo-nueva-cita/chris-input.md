@@ -193,3 +193,13 @@ Channel mapping: UI "telefono"→BE "phone" en useCreatePatientInline.
 RN-9: is_duplicate=true→prompt "¿Usar existente?".
 EntityPicker.createAction inline (AC-10, no navegación).
 Gates: tsc 0 errors | eslint 0 errors | vitest 363/363 PASS. Commit: cf0c7022
+
+### 2026-06-22 · 🤖 claude · `builder-frontend` · T-FE-3 · ✓ APLICADO
+Disponibilidad: AvailabilityChip + DayAvailabilityStrip + FreeDoctorsList + use-availability.ts.
+AvailabilityChip: Badge success/warning (@luana/ui-kit P-0), 4 estados (available/busy/out_of_hours/no_schedule), aria-live="polite", syncs availabilityStatus a Zustand, fail-closed + retry (SC-disponibilidad-falla).
+DayAvailabilityStrip: timeline 07:00–21:00 UTC, bloques working_hours/busy, highlight slot seleccionado (AC-8 mini-vista, SC-mini-vista).
+FreeDoctorsList: pills 1-click reasignar, estados empty/loading/no-slot (AC-5, SC-reasignar, SC-reasignar-vacio, SC-empty-medicos).
+useAvailabilityCheck: debounced 400ms. useDayStrip: no debounce. availabilityKeys: factory estable.
+DISJOINT-FILE guardrail: cero edits a NuevaCitaView/store/schema/index.ts (propios de T-FE-1/T-FE-4).
+ANTI-EMBUDO: todos los field names verificados contra DTOs reales de T-BE-3.
+Gates: 30/30 vitest T-FE-3 | tsc 0 errors | eslint 0 errors. Commit: 75139a46
