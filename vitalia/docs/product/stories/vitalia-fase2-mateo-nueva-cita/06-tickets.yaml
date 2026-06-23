@@ -150,6 +150,9 @@ tickets:
       must_load_artifacts: [03-arch.md, 03-arch-be.md, 05-guidelines.md]
       forbidden_to_touch: [core/luana-core-scheduling/src, core/@luana/ui-kit/src]
       rationale: "Misma tabla vitalia_patients (pgcrypto); alta mínima sin PHI completo de D10 (dep suave)."
+    status: pushed
+    commit_sha: a2871456
+    tests_native: 35/35 unit + 361/361 CRM + 363/363 arch_fitness
 
   # ── FRONTEND ───────────────────────────────────────────────────────────────
 
