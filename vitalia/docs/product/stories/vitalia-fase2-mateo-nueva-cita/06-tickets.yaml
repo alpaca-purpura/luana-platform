@@ -102,6 +102,9 @@ tickets:
   - id: T-BE-4
     title: "BE-4 + BE-7 · create_appointment: validación in-horario + 409 + paciente real + reconcile origin"
     surface: backend
+    state: pushed
+    commit_sha: "02643f1f"
+    tests_native: 229/229 unit + 363/363 arch_fitness
     depends_on: [T-BE-2, T-BE-3]
     description: >
       MOD create_appointment_service: pre-insert valida in-horario (422 OUT_OF_HOURS);

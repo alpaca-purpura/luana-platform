@@ -170,3 +170,12 @@ Chris: "continuar la story hasta cerrarla". Step 0 closure-gate GREEN (única OP
 
 ### 2026-06-22 · 🤖 claude · `builder-backend` · T-BE-5 · ✓ APLICADO
 POST /api/v1/crm/patients + GET /api/v1/crm/patients?q= + find_by_phone() implementados. 35/35 unit GREEN + 361/361 CRM + 363/363 arch fitness. Commit: a2871456 (wip/vitalia).
+
+### 2026-06-22 · 🤖 claude · `builder-backend` · T-BE-4 · ✓ APLICADO
+create_appointment TOCTOU-safe + clinic_map mirror + origin reconcile. 4 cambios:
+1. exceptions.py: AppointmentOverlapError (409) + OutOfWorkingHoursError (422) — domain pure, no framework
+2. create_appointment_service: pre-insert OUT_OF_HOURS check (avail_svc optional); start_time/end_time/status=SCHEDULED en clinic_map mirror; IntegrityError pgcode=23P01 → AppointmentOverlapError; patient_id real (stub removido)
+3. appointment_status_service: propaga new_status a clinic_map mirror (cancel libera franja EXCLUDE)
+4. agenda_router + CreateAppointmentRequestDTO: origin→{walk_in,telefono}; patient_id required; legacy desde_paciente_existente removido; mapeo excepciones→HTTP
+TOCTOU: DB EXCLUDE (23P01) es el único gate de solape (no pre-check-then-insert).
+Tests: 229/229 unit GREEN (26 nuevos T-BE-4) + 363/363 arch fitness GREEN. Commit: 02643f1f
