@@ -7,6 +7,9 @@
  *
  * React Query key convention: ["mateo","nueva-cita",action,...stableFilters]
  * BE returns snake_case — hooks normalize to camelCase.
+ *
+ * T-FE-4 regression: getToken() must be called INSIDE queryFn per-request,
+ * not cached at mount. See describe "T-FE-4 regression" at bottom of file.
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -14,10 +17,13 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
 
+// Hoist getToken so regression test can assert on it
+const mockGetToken = vi.hoisted(() => vi.fn().mockResolvedValue("test-token"));
+
 // Mock Clerk
 vi.mock("@clerk/nextjs", () => ({
   useAuth: () => ({
-    getToken: vi.fn().mockResolvedValue("test-token"),
+    getToken: mockGetToken,
     isLoaded: true,
     isSignedIn: true,
   }),
@@ -77,7 +83,7 @@ describe("useNuevaCitaServices", () => {
 
   it("returns services list normalized to camelCase", async () => {
     const { result } = renderHook(
-      () => useNuevaCitaServices({ tenantId: "t1", token: "tok" }),
+      () => useNuevaCitaServices({ tenantId: "t1" }),
       { wrapper: makeWrapper() },
     );
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -93,7 +99,7 @@ describe("useNuevaCitaServices", () => {
     const wrapper = ({ children }: { children: React.ReactNode }) =>
       React.createElement(QueryClientProvider, { client: qc }, children);
     const { result } = renderHook(
-      () => useNuevaCitaServices({ tenantId: "t1", token: "tok" }),
+      () => useNuevaCitaServices({ tenantId: "t1" }),
       { wrapper },
     );
     await waitFor(() => !result.current.isPending);
@@ -118,7 +124,6 @@ describe("useNuevaCitaFreeDoctors", () => {
       () =>
         useNuevaCitaFreeDoctors({
           tenantId: "t1",
-          token: "tok",
           startIso: "2026-07-01T10:00:00Z",
           durationMinutes: 30,
         }),
@@ -134,7 +139,6 @@ describe("useNuevaCitaFreeDoctors", () => {
       () =>
         useNuevaCitaFreeDoctors({
           tenantId: "t1",
-          token: "tok",
           startIso: "",
           durationMinutes: 30,
         }),
@@ -159,7 +163,6 @@ describe("useNuevaCitaAvailabilityCheck", () => {
       () =>
         useNuevaCitaAvailabilityCheck({
           tenantId: "t1",
-          token: "tok",
           doctorId: "doc-1",
           startIso: "2026-07-01T10:00:00Z",
           durationMinutes: 30,
@@ -176,7 +179,6 @@ describe("useNuevaCitaAvailabilityCheck", () => {
       () =>
         useNuevaCitaAvailabilityCheck({
           tenantId: "t1",
-          token: "tok",
           doctorId: null,
           startIso: "2026-07-01T10:00:00Z",
           durationMinutes: 30,
@@ -201,7 +203,7 @@ describe("useNuevaCitaCreate", () => {
 
   it("mutates and returns created appointment normalized", async () => {
     const { result } = renderHook(
-      () => useNuevaCitaCreate({ tenantId: "t1", token: "tok" }),
+      () => useNuevaCitaCreate({ tenantId: "t1" }),
       { wrapper: makeWrapper() },
     );
     result.current.mutate({
@@ -216,5 +218,62 @@ describe("useNuevaCitaCreate", () => {
     });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data?.appointmentId).toBe("appt-uuid-1");
+  });
+});
+
+/**
+ * T-FE-4 regression — getToken() called inside queryFn per-request.
+ *
+ * RED: before the fix, getToken was cached at mount (useState+useEffect).
+ * GREEN: after fix, getToken is called inside every queryFn invocation.
+ * This test asserts getToken() was called when the query resolved — not once
+ * at mount but during each async fetch.
+ */
+describe("T-FE-4 regression: getToken() called per-request inside queryFn", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (vitaliaFetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      items: [],
+      next_cursor: null,
+    });
+  });
+
+  it("useNuevaCitaServices calls getToken() inside queryFn (not cached at mount)", async () => {
+    // ARRANGE: reset so we can count calls from this test only
+    mockGetToken.mockClear();
+
+    const { result } = renderHook(
+      () => useNuevaCitaServices({ tenantId: "t1" }),
+      { wrapper: makeWrapper() },
+    );
+
+    // ACT: wait for query to complete
+    await waitFor(() => !result.current.isPending);
+
+    // ASSERT: getToken was called during the fetch (inside queryFn)
+    // If token was cached at mount via useState/useEffect instead, getToken
+    // would be called 0 times here (it ran in effect, not in queryFn).
+    expect(mockGetToken).toHaveBeenCalled();
+  });
+
+  it("useNuevaCitaFreeDoctors calls getToken() inside queryFn", async () => {
+    (vitaliaFetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      doctors: [],
+      count: 0,
+    });
+    mockGetToken.mockClear();
+
+    const { result } = renderHook(
+      () =>
+        useNuevaCitaFreeDoctors({
+          tenantId: "t1",
+          startIso: "2026-07-01T10:00:00Z",
+          durationMinutes: 30,
+        }),
+      { wrapper: makeWrapper() },
+    );
+
+    await waitFor(() => !result.current.isPending);
+    expect(mockGetToken).toHaveBeenCalled();
   });
 });

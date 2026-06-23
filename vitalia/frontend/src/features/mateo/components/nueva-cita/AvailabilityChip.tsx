@@ -32,7 +32,7 @@ import { useNuevaCitaStore } from "../../store/nueva-cita-store";
 
 export interface AvailabilityChipProps {
   tenantId: string;
-  token: string;
+  // token removed — hook calls getToken() fresh per-request (T-FE-4)
   doctorId: string | null;
   startIso: string;
   durationMinutes: number;
@@ -61,7 +61,6 @@ function statusLabel(status: string, conflictLabel: string | null): string {
  */
 export function AvailabilityChip({
   tenantId,
-  token,
   doctorId,
   startIso,
   durationMinutes,
@@ -72,7 +71,6 @@ export function AvailabilityChip({
 
   const { data, isPending, isError, refetch } = useAvailabilityCheck({
     tenantId,
-    token,
     doctorId,
     startIso,
     durationMinutes,

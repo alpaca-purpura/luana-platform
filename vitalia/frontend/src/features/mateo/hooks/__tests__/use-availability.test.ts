@@ -14,6 +14,13 @@ const mockVitaliaFetch = vi.fn();
 vi.mock("@/lib/fetch-client", () => ({ vitaliaFetch: (...a: unknown[]) => mockVitaliaFetch(...a) }));
 vi.mock("@/hooks/useActorHeaders", () => ({ useActorHeaders: () => ({}) }));
 vi.mock("@/hooks/useClinicId", () => ({ useClinicId: () => "clinic-1" }));
+vi.mock("@clerk/nextjs", () => ({
+  useAuth: () => ({
+    getToken: vi.fn().mockResolvedValue("test-token"),
+    isLoaded: true,
+    isSignedIn: true,
+  }),
+}));
 
 // Import after mocks
 const { useAvailabilityCheck, useDayStrip, availabilityKeys } = await import("../use-availability");
@@ -48,7 +55,6 @@ describe("useAvailabilityCheck", () => {
       () =>
         useAvailabilityCheck({
           tenantId: "t",
-          token: "tok",
           doctorId: null,
           startIso: "2026-06-22T10:00:00Z",
           durationMinutes: 30,
@@ -70,7 +76,6 @@ describe("useAvailabilityCheck", () => {
       () =>
         useAvailabilityCheck({
           tenantId: "t",
-          token: "tok",
           doctorId: "d-1",
           startIso: "2026-06-22T10:00:00Z",
           durationMinutes: 30,
@@ -99,7 +104,6 @@ describe("useAvailabilityCheck", () => {
       () =>
         useDayStrip({
           tenantId: "t",
-          token: "tok",
           doctorId: "d-1",
           dateLocal: "2026-06-22",
         }),
@@ -117,7 +121,7 @@ describe("useDayStrip", () => {
 
   it("disabled when doctorId is null", () => {
     const { result } = renderHook(
-      () => useDayStrip({ tenantId: "t", token: "tok", doctorId: null, dateLocal: "2026-06-22" }),
+      () => useDayStrip({ tenantId: "t", doctorId: null, dateLocal: "2026-06-22" }),
       { wrapper: makeWrapper() },
     );
     expect(result.current.fetchStatus).toBe("idle");
@@ -136,7 +140,6 @@ describe("useDayStrip", () => {
       () =>
         useDayStrip({
           tenantId: "t",
-          token: "tok",
           doctorId: "d-1",
           dateLocal: "2026-06-22",
         }),

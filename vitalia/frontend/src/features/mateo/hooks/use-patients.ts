@@ -28,6 +28,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
+import { useAuth } from "@clerk/nextjs";
 import { vitaliaFetch } from "@/lib/fetch-client";
 import { useActorHeaders } from "@/hooks/useActorHeaders";
 import { useClinicId } from "@/hooks/useClinicId";
@@ -94,10 +95,10 @@ function normalizeCreateResponse(raw: Raw): PatientInlineCreateResult {
 }
 
 // ── Hook params ───────────────────────────────────────────────────────────────
+// token removed — getToken() called fresh inside each async fn (T-FE-4 fix).
 
 interface BaseParams {
   tenantId: string;
-  token: string;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -113,13 +114,15 @@ interface BaseParams {
  * its own state machine (debounce + infinite scroll). We just provide the async
  * function it calls.
  */
-export function useSearchPatients({ tenantId, token }: BaseParams) {
+export function useSearchPatients({ tenantId }: BaseParams) {
+  const { getToken } = useAuth();
   const actorHeaders = useActorHeaders();
   const clinicId = useClinicId();
 
   const searchFn = async (
     args: EntitySearchArgs,
   ): Promise<EntitySearchResult<PatientPickerItem>> => {
+    const token = await getToken();
     const params = new URLSearchParams();
     params.set("q", args.q);
     params.set("limit", String(args.limit));
@@ -130,7 +133,7 @@ export function useSearchPatients({ tenantId, token }: BaseParams) {
       next_cursor: string | null;
       total_approx: number;
     }>(`/api/v1/crm/patients?${params.toString()}`, {
-      token,
+      token: token ?? "",
       tenantId,
       headers: {
         ...(clinicId ? { "X-Clinic-ID": clinicId } : {}),
@@ -159,7 +162,8 @@ export function useSearchPatients({ tenantId, token }: BaseParams) {
  *
  * PHI transmitted in POST body ONLY (dual filter: X-Clinic-ID + X-Tenant-ID).
  */
-export function useCreatePatientInline({ tenantId, token }: BaseParams) {
+export function useCreatePatientInline({ tenantId }: BaseParams) {
+  const { getToken } = useAuth();
   const actorHeaders = useActorHeaders();
   const clinicId = useClinicId();
 
@@ -167,9 +171,10 @@ export function useCreatePatientInline({ tenantId, token }: BaseParams) {
     mutationFn: async (
       payload: CreatePatientInlinePayload,
     ): Promise<PatientInlineCreateResult> => {
+      const token = await getToken();
       const raw = await vitaliaFetch<Raw>("/api/v1/crm/patients", {
         method: "POST",
-        token,
+        token: token ?? "",
         tenantId,
         headers: {
           ...(clinicId ? { "X-Clinic-ID": clinicId } : {}),

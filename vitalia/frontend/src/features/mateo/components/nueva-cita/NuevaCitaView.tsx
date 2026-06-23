@@ -32,7 +32,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAuth } from "@clerk/nextjs";
+// useAuth removed — T-FE-4: token no longer resolved here; hooks call getToken() per-request
 import { toast } from "sonner";
 import { cn } from "@/lib/cn";
 import { useTenantLocale } from "@/hooks/useTenantLocale";
@@ -124,15 +124,11 @@ export function NuevaCitaView({
   prefillTime,
 }: NuevaCitaViewProps) {
   const router = useRouter();
-  const { getToken } = useAuth();
+  // T-FE-4: token state + useEffect REMOVED. Each hook now calls getToken()
+  // fresh inside its own queryFn/mutationFn so Clerk can transparently refresh
+  // expired JWTs. Cached token caused 307→/sign-in on POST after ~60s.
   const locale = useTenantLocale();
   const timezone = locale.timezone ?? "America/Lima";
-
-  // ── Auth token (resolved once on mount) ───────────────────────────────────
-  const [token, setToken] = React.useState<string>("");
-  React.useEffect(() => {
-    void getToken().then((t) => setToken(t ?? ""));
-  }, [getToken]);
 
   // ── Zustand UI state ──────────────────────────────────────────────────────
   const selectedServiceId = useNuevaCitaStore((s) => s.selectedServiceId);
@@ -184,17 +180,16 @@ export function NuevaCitaView({
 
   // ── React Query hooks ─────────────────────────────────────────────────────
   const { data: servicesData, isPending: servicesLoading } =
-    useNuevaCitaServices({ tenantId, token });
+    useNuevaCitaServices({ tenantId });
 
   const { data: freeDoctorsData, isPending: doctorsLoading } =
     useNuevaCitaFreeDoctors({
       tenantId,
-      token,
       startIso: startTime,
       durationMinutes,
     });
 
-  const createMutation = useNuevaCitaCreate({ tenantId, token });
+  const createMutation = useNuevaCitaCreate({ tenantId });
 
   // ── Sync selected service → duration default ──────────────────────────────
   React.useEffect(() => {
@@ -462,7 +457,6 @@ export function NuevaCitaView({
             <div className="mb-2" data-testid="nc-availability-chip-container">
               <AvailabilityChip
                 tenantId={tenantId}
-                token={token}
                 doctorId={selectedDoctorId}
                 startIso={startTime}
                 durationMinutes={durationMinutes}
@@ -489,7 +483,6 @@ export function NuevaCitaView({
             <div className="mt-2" data-testid="nc-day-strip-container">
               <DayAvailabilityStrip
                 tenantId={tenantId}
-                token={token}
                 doctorId={selectedDoctorId}
                 dateLocal={dateLocal}
                 selectedStartIso={startTime || null}
@@ -502,7 +495,6 @@ export function NuevaCitaView({
           <div className="mt-3" data-testid="nc-free-doctors-container">
             <FreeDoctorsList
               tenantId={tenantId}
-              token={token}
               startIso={startTime ?? ""}
               durationMinutes={durationMinutes}
               doctors={freeDoctorsData?.doctors ?? []}
@@ -522,7 +514,6 @@ export function NuevaCitaView({
           <PatientPickerWithCreate
             value={patientId}
             tenantId={tenantId}
-            token={token}
             uiChannel={origin === "walk_in" ? "walk_in" : "telefono"}
             onChange={(resolvedPatientId) => {
               setPatientId(resolvedPatientId);

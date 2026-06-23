@@ -24,7 +24,7 @@ const { FreeDoctorsList } = await import("../FreeDoctorsList");
 
 const BASE_PROPS = {
   tenantId: "t-1",
-  token: "tok",
+  // token removed — T-FE-4: not used by FreeDoctorsList (takes doctors/isPending as props)
   startIso: "2026-06-22T10:00:00Z",
   durationMinutes: 30,
 };

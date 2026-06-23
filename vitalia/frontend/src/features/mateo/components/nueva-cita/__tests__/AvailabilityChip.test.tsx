@@ -28,7 +28,7 @@ const { AvailabilityChip } = await import("../AvailabilityChip");
 
 const BASE_PROPS = {
   tenantId: "t-1",
-  token: "tok",
+  // token removed — T-FE-4: hook calls getToken() fresh per-request
   doctorId: "d-1",
   startIso: "2026-06-22T10:00:00Z",
   durationMinutes: 30,

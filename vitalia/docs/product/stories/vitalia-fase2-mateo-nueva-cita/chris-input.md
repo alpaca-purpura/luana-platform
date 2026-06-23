@@ -203,3 +203,11 @@ useAvailabilityCheck: debounced 400ms. useDayStrip: no debounce. availabilityKey
 DISJOINT-FILE guardrail: cero edits a NuevaCitaView/store/schema/index.ts (propios de T-FE-1/T-FE-4).
 ANTI-EMBUDO: todos los field names verificados contra DTOs reales de T-BE-3.
 Gates: 30/30 vitest T-FE-3 | tsc 0 errors | eslint 0 errors. Commit: 75139a46
+
+### 2026-06-22 · 🤖 claude · `builder-frontend` · T-FE-4 · ✓ APLICADO
+Regression bugfix: stale Clerk JWT token breaks POST/PATCH/DELETE after ~60s.
+Root cause: NuevaCitaView cached `getToken()` result in useState+useEffect. Token expired but cache never refreshed.
+Fix: removed token state+useEffect entirely. Each queryFn/mutationFn calls `const token = await getToken()` fresh (Clerk transparently returns valid/refreshed token). Removed `token` prop from 4 child components. Updated `enabled` gates to `isLoaded && Boolean(isSignedIn)`.
+Files: use-nueva-cita.ts (6 hooks) + use-patients.ts (2) + use-availability.ts (2) + NuevaCitaView.tsx + AvailabilityChip + DayAvailabilityStrip + FreeDoctorsList + PatientPickerWithCreate + 7 test files.
+TDD regression: added describe block in use-nueva-cita.test.ts asserting getToken() called inside queryFn (not at mount).
+Gates: tsc 0 errors | eslint 0 errors | vitest 30 files 370/370 PASS.

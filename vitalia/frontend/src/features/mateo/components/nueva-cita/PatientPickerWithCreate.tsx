@@ -49,7 +49,7 @@ export interface PatientPickerWithCreateProps {
   /** Called with patientId when resolved (picker or inline create) */
   onChange: (patientId: string) => void;
   tenantId: string;
-  token: string;
+  // token removed — hooks call getToken() fresh per-request (T-FE-4)
   /** UI channel context — drives channel mapping for inline create */
   uiChannel?: "walk_in" | "telefono";
   disabled?: boolean;
@@ -80,7 +80,6 @@ export function PatientPickerWithCreate({
   value: _value, // ponytail: controlled prop for parent; internal display via selectedPatient state
   onChange,
   tenantId,
-  token,
   uiChannel = "walk_in",
   disabled = false,
   className,
@@ -91,8 +90,8 @@ export function PatientPickerWithCreate({
   const [selectedPatient, setSelectedPatient] =
     React.useState<PatientPickerItem | null>(null);
 
-  const { searchFn } = useSearchPatients({ tenantId, token });
-  const createMutation = useCreatePatientInline({ tenantId, token });
+  const { searchFn } = useSearchPatients({ tenantId });
+  const createMutation = useCreatePatientInline({ tenantId });
 
   const form = useForm<InlineCreateForm>({
     resolver: zodResolver(InlineCreateSchema),

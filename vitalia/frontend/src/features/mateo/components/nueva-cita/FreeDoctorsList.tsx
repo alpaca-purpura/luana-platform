@@ -27,7 +27,7 @@ import type { NuevaCitaDoctorItem } from "../../hooks/use-nueva-cita";
 
 export interface FreeDoctorsListProps {
   tenantId: string;
-  token: string;
+  // token removed — not used by this component (T-FE-4)
   startIso: string;
   durationMinutes: number;
   doctors: NuevaCitaDoctorItem[];

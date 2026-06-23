@@ -23,6 +23,7 @@
 
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@clerk/nextjs";
 import { vitaliaFetch } from "@/lib/fetch-client";
 import { useActorHeaders } from "@/hooks/useActorHeaders";
 import { useClinicId } from "@/hooks/useClinicId";
@@ -96,7 +97,7 @@ function normalizeDayStrip(raw: Raw): DayStripData {
 
 interface AvailabilityCheckParams {
   tenantId: string;
-  token: string;
+  // token removed — getToken() called fresh inside queryFn (T-FE-4 fix)
   doctorId: string | null;
   startIso: string;
   durationMinutes: number;
@@ -112,11 +113,11 @@ interface AvailabilityCheckParams {
  */
 export function useAvailabilityCheck({
   tenantId,
-  token,
   doctorId,
   startIso,
   durationMinutes,
 }: AvailabilityCheckParams) {
+  const { getToken, isLoaded, isSignedIn } = useAuth();
   const actorHeaders = useActorHeaders();
   const clinicId = useClinicId();
 
@@ -142,11 +143,12 @@ export function useAvailabilityCheck({
     queryKey: debouncedKey ?? ["mateo", "availability", "check", "__disabled__"],
     queryFn: async (): Promise<NuevaCitaAvailabilityResponse> => {
       if (!doctorId || !startIso) throw new Error("Disabled");
+      const token = await getToken();
       const raw = await vitaliaFetch<Raw>(
         "/api/v1/scheduling/availability/check",
         {
           method: "POST",
-          token,
+          token: token ?? "",
           tenantId,
           headers: {
             ...(clinicId ? { "X-Clinic-ID": clinicId } : {}),
@@ -161,7 +163,7 @@ export function useAvailabilityCheck({
       );
       return normalizeAvailability(raw);
     },
-    enabled: Boolean(debouncedKey) && Boolean(token) && Boolean(tenantId),
+    enabled: Boolean(debouncedKey) && isLoaded && Boolean(isSignedIn) && Boolean(tenantId),
     staleTime: 15_000,
     retry: 2,
   });
@@ -175,7 +177,7 @@ export function useAvailabilityCheck({
 
 interface DayStripParams {
   tenantId: string;
-  token: string;
+  // token removed — getToken() called fresh inside queryFn (T-FE-4 fix)
   doctorId: string | null;
   dateLocal: string; // YYYY-MM-DD
 }
@@ -187,16 +189,17 @@ interface DayStripParams {
  */
 export function useDayStrip({
   tenantId,
-  token,
   doctorId,
   dateLocal,
 }: DayStripParams) {
+  const { getToken, isLoaded, isSignedIn } = useAuth();
   const actorHeaders = useActorHeaders();
   const clinicId = useClinicId();
 
   return useQuery({
     queryKey: availabilityKeys.dayStrip(tenantId, doctorId ?? "", dateLocal),
     queryFn: async (): Promise<DayStripData> => {
+      const token = await getToken();
       const params = new URLSearchParams({
         doctor_id: doctorId ?? "",
         date: dateLocal,
@@ -204,7 +207,7 @@ export function useDayStrip({
       const raw = await vitaliaFetch<Raw>(
         `/api/v1/scheduling/availability/day-strip?${params.toString()}`,
         {
-          token,
+          token: token ?? "",
           tenantId,
           headers: {
             ...(clinicId ? { "X-Clinic-ID": clinicId } : {}),
@@ -214,7 +217,7 @@ export function useDayStrip({
       );
       return normalizeDayStrip(raw);
     },
-    enabled: Boolean(doctorId) && Boolean(dateLocal) && Boolean(token) && Boolean(tenantId),
+    enabled: Boolean(doctorId) && Boolean(dateLocal) && isLoaded && Boolean(isSignedIn) && Boolean(tenantId),
     staleTime: 30_000,
   });
 }

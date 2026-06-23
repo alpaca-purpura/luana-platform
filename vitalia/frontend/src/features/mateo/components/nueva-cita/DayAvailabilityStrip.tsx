@@ -69,7 +69,7 @@ function blockToPct(
 
 export interface DayAvailabilityStripProps {
   tenantId: string;
-  token: string;
+  // token removed — hook calls getToken() fresh per-request (T-FE-4)
   doctorId: string | null;
   dateLocal: string; // YYYY-MM-DD derived from startIso
   selectedStartIso: string | null;
@@ -86,7 +86,6 @@ export interface DayAvailabilityStripProps {
  */
 export function DayAvailabilityStrip({
   tenantId,
-  token,
   doctorId,
   dateLocal,
   selectedStartIso,
@@ -94,7 +93,6 @@ export function DayAvailabilityStrip({
 }: DayAvailabilityStripProps) {
   const { data, isPending, isError } = useDayStrip({
     tenantId,
-    token,
     doctorId,
     dateLocal,
   });

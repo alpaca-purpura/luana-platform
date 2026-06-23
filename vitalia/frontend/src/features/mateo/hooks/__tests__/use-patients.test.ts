@@ -14,8 +14,17 @@ import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Hoist mock fn declarations so vi.mock factories can reference them
-const { mockFetch } = vi.hoisted(() => ({
+const { mockFetch, mockGetToken } = vi.hoisted(() => ({
   mockFetch: vi.fn(),
+  mockGetToken: vi.fn().mockResolvedValue("test-token"),
+}));
+
+vi.mock("@clerk/nextjs", () => ({
+  useAuth: () => ({
+    getToken: mockGetToken,
+    isLoaded: true,
+    isSignedIn: true,
+  }),
 }));
 
 vi.mock("@/lib/fetch-client", () => ({
@@ -56,7 +65,7 @@ describe("useSearchPatients", () => {
     });
 
     const { result } = renderHook(
-      () => useSearchPatients({ tenantId: "t-1", token: "tok" }),
+      () => useSearchPatients({ tenantId: "t-1" }),
       { wrapper },
     );
 
@@ -81,7 +90,7 @@ describe("useSearchPatients", () => {
     mockFetch.mockResolvedValueOnce({ items: [], next_cursor: null, total_approx: 0 });
 
     const { result } = renderHook(
-      () => useSearchPatients({ tenantId: "t-1", token: "tok" }),
+      () => useSearchPatients({ tenantId: "t-1" }),
       { wrapper },
     );
 
@@ -107,7 +116,7 @@ describe("useCreatePatientInline", () => {
     });
 
     const { result } = renderHook(
-      () => useCreatePatientInline({ tenantId: "t-1", token: "tok" }),
+      () => useCreatePatientInline({ tenantId: "t-1" }),
       { wrapper },
     );
 
@@ -136,7 +145,7 @@ describe("useCreatePatientInline", () => {
     });
 
     const { result } = renderHook(
-      () => useCreatePatientInline({ tenantId: "t-1", token: "tok" }),
+      () => useCreatePatientInline({ tenantId: "t-1" }),
       { wrapper },
     );
 
@@ -164,7 +173,7 @@ describe("useCreatePatientInline", () => {
     });
 
     const { result } = renderHook(
-      () => useCreatePatientInline({ tenantId: "t-1", token: "tok" }),
+      () => useCreatePatientInline({ tenantId: "t-1" }),
       { wrapper },
     );
 

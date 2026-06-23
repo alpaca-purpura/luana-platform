@@ -117,7 +117,6 @@ describe("PatientPickerWithCreate", () => {
         value={null}
         onChange={onChange}
         tenantId="t-1"
-        token="tok"
       />,
     );
 
@@ -163,7 +162,6 @@ describe("PatientPickerWithCreate", () => {
         value={null}
         onChange={vi.fn()}
         tenantId="t-1"
-        token="tok"
       />,
     );
 
@@ -197,7 +195,6 @@ describe("PatientPickerWithCreate", () => {
         value={null}
         onChange={onChange}
         tenantId="t-1"
-        token="tok"
       />,
     );
 
@@ -231,7 +228,6 @@ describe("PatientPickerWithCreate", () => {
         value={null}
         onChange={vi.fn()}
         tenantId="t-1"
-        token="tok"
       />,
     );
 

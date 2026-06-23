@@ -38,6 +38,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@clerk/nextjs";
 import { vitaliaFetch } from "@/lib/fetch-client";
 import { useActorHeaders } from "@/hooks/useActorHeaders";
 import { useClinicId } from "@/hooks/useClinicId";
@@ -262,12 +263,14 @@ function serializeCreateAppointment(
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// Hook params (resolve auth before calling to avoid hook-in-queryFn)
+// Hook params
+// token removed — hooks call getToken() fresh inside queryFn/mutationFn
+// to avoid stale-token bug (Clerk JWTs expire ~60s; caching at mount breaks
+// POST requests after long form fills). T-FE-4.
 // ────────────────────────────────────────────────────────────────────────────
 
 interface BaseParams {
   tenantId: string;
-  token: string;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -278,18 +281,20 @@ interface BaseParams {
  * Load active service list for the nueva-cita form.
  * Prefills initialApptDurationMinutes → default end time.
  */
-export function useNuevaCitaServices({ tenantId, token }: BaseParams) {
+export function useNuevaCitaServices({ tenantId }: BaseParams) {
+  const { getToken, isLoaded, isSignedIn } = useAuth();
   const actorHeaders = useActorHeaders();
   const clinicId = useClinicId();
 
   return useQuery({
     queryKey: nuevaCitaKeys.services(tenantId),
     queryFn: async (): Promise<NuevaCitaServicesResponse> => {
+      const token = await getToken();
       const raw = await vitaliaFetch<{
         items: Raw[];
         next_cursor: string | null;
       }>("/api/v1/offer/servicios?is_active=true&limit=100", {
-        token,
+        token: token ?? "",
         tenantId,
         headers: {
           ...(clinicId ? { "X-Clinic-ID": clinicId } : {}),
@@ -301,7 +306,7 @@ export function useNuevaCitaServices({ tenantId, token }: BaseParams) {
         nextCursor: raw.next_cursor ?? null,
       };
     },
-    enabled: Boolean(token) && Boolean(tenantId),
+    enabled: isLoaded && Boolean(isSignedIn) && Boolean(tenantId),
     staleTime: 60_000, // services change infrequently
   });
 }
@@ -321,22 +326,23 @@ interface FreeDoctorsParams extends BaseParams {
  */
 export function useNuevaCitaFreeDoctors({
   tenantId,
-  token,
   startIso,
   durationMinutes,
 }: FreeDoctorsParams) {
+  const { getToken, isLoaded, isSignedIn } = useAuth();
   const actorHeaders = useActorHeaders();
   const clinicId = useClinicId();
 
   return useQuery({
     queryKey: nuevaCitaKeys.freeDoctors(tenantId, startIso, durationMinutes),
     queryFn: async (): Promise<NuevaCitaFreeDoctorsResponse> => {
+      const token = await getToken();
       const raw = await vitaliaFetch<{
         doctors: Raw[];
         count: number;
       }>("/api/v1/scheduling/availability/free-doctors", {
         method: "POST",
-        token,
+        token: token ?? "",
         tenantId,
         headers: {
           ...(clinicId ? { "X-Clinic-ID": clinicId } : {}),
@@ -352,7 +358,7 @@ export function useNuevaCitaFreeDoctors({
         count: raw.count,
       };
     },
-    enabled: Boolean(token) && Boolean(tenantId) && Boolean(startIso),
+    enabled: isLoaded && Boolean(isSignedIn) && Boolean(tenantId) && Boolean(startIso),
     staleTime: 30_000,
   });
 }
@@ -373,11 +379,11 @@ interface AvailabilityCheckParams extends BaseParams {
  */
 export function useNuevaCitaAvailabilityCheck({
   tenantId,
-  token,
   doctorId,
   startIso,
   durationMinutes,
 }: AvailabilityCheckParams) {
+  const { getToken, isLoaded, isSignedIn } = useAuth();
   const actorHeaders = useActorHeaders();
   const clinicId = useClinicId();
 
@@ -389,11 +395,12 @@ export function useNuevaCitaAvailabilityCheck({
       durationMinutes,
     ),
     queryFn: async (): Promise<NuevaCitaAvailabilityResponse> => {
+      const token = await getToken();
       const raw = await vitaliaFetch<Raw>(
         "/api/v1/scheduling/availability/check",
         {
           method: "POST",
-          token,
+          token: token ?? "",
           tenantId,
           headers: {
             ...(clinicId ? { "X-Clinic-ID": clinicId } : {}),
@@ -409,7 +416,8 @@ export function useNuevaCitaAvailabilityCheck({
       return normalizeAvailability(raw);
     },
     enabled:
-      Boolean(token) &&
+      isLoaded &&
+      Boolean(isSignedIn) &&
       Boolean(tenantId) &&
       Boolean(doctorId) &&
       Boolean(startIso),
@@ -425,7 +433,8 @@ export function useNuevaCitaAvailabilityCheck({
  * Create a new appointment.
  * Invalidates agenda grid on success so the calendar refreshes.
  */
-export function useNuevaCitaCreate({ tenantId, token }: BaseParams) {
+export function useNuevaCitaCreate({ tenantId }: BaseParams) {
+  const { getToken } = useAuth();
   const qc = useQueryClient();
   const actorHeaders = useActorHeaders();
   const clinicId = useClinicId();
@@ -434,11 +443,12 @@ export function useNuevaCitaCreate({ tenantId, token }: BaseParams) {
     mutationFn: async (
       payload: CreateAppointmentPayload,
     ): Promise<NuevaCitaCreatedAppointment> => {
+      const token = await getToken();
       const raw = await vitaliaFetch<Raw>(
         "/api/v1/scheduling/appointments",
         {
           method: "POST",
-          token,
+          token: token ?? "",
           tenantId,
           headers: {
             ...(clinicId ? { "X-Clinic-ID": clinicId } : {}),
@@ -470,22 +480,23 @@ interface PatientSearchParams extends BaseParams {
  */
 export function useNuevaCitaPatientSearch({
   tenantId,
-  token,
   q,
 }: PatientSearchParams) {
+  const { getToken, isLoaded, isSignedIn } = useAuth();
   const actorHeaders = useActorHeaders();
   const clinicId = useClinicId();
 
   return useQuery({
     queryKey: nuevaCitaKeys.patientSearch(tenantId, q),
     queryFn: async (): Promise<NuevaCitaPatientSearchResponse> => {
+      const token = await getToken();
       const url = `/api/v1/crm/patients?q=${encodeURIComponent(q)}&limit=20`;
       const raw = await vitaliaFetch<{
         items: Raw[];
         next_cursor: string | null;
         total_approx: number;
       }>(url, {
-        token,
+        token: token ?? "",
         tenantId,
         headers: {
           ...(clinicId ? { "X-Clinic-ID": clinicId } : {}),
@@ -498,7 +509,7 @@ export function useNuevaCitaPatientSearch({
         totalApprox: raw.total_approx ?? 0,
       };
     },
-    enabled: Boolean(token) && Boolean(tenantId) && q.length >= 2,
+    enabled: isLoaded && Boolean(isSignedIn) && Boolean(tenantId) && q.length >= 2,
     staleTime: 30_000,
   });
 }
@@ -513,8 +524,8 @@ export function useNuevaCitaPatientSearch({
  */
 export function useNuevaCitaPatientInlineCreate({
   tenantId,
-  token,
 }: BaseParams) {
+  const { getToken } = useAuth();
   const actorHeaders = useActorHeaders();
   const clinicId = useClinicId();
 
@@ -522,9 +533,10 @@ export function useNuevaCitaPatientInlineCreate({
     mutationFn: async (
       payload: PatientInlineCreatePayload,
     ): Promise<NuevaCitaPatientInlineCreateResponse> => {
+      const token = await getToken();
       const raw = await vitaliaFetch<Raw>("/api/v1/crm/patients", {
         method: "POST",
-        token,
+        token: token ?? "",
         tenantId,
         headers: {
           ...(clinicId ? { "X-Clinic-ID": clinicId } : {}),
