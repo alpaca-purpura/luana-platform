@@ -1,0 +1,133 @@
+// cap: scheduling.mateo-agenda
+/**
+ * AvailabilityChip.test.tsx — RED-first tests for T-FE-3.
+ * Covers: SC-sin-horario, SC-fuera-horario, SC-solape, SC-disponibilidad-falla.
+ */
+import * as React from "react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen } from "@testing-library/react";
+
+// ── Mock the store ──────────────────────────────────────────────────────────
+const mockSetAvailabilityStatus = vi.fn();
+
+// Zustand selector-style mock: selector receives the full store slice
+vi.mock("../../../store/nueva-cita-store", () => ({
+  useNuevaCitaStore: vi.fn((selector: (s: Record<string, unknown>) => unknown) =>
+    selector({ setAvailabilityStatus: mockSetAvailabilityStatus }),
+  ),
+}));
+
+// ── Mock useAvailabilityCheck ───────────────────────────────────────────────
+const mockUseAvailabilityCheck = vi.fn();
+vi.mock("../../../hooks/use-availability", () => ({
+  useAvailabilityCheck: (...args: unknown[]) => mockUseAvailabilityCheck(...args),
+}));
+
+// ── Import component under test (after mocks) ──────────────────────────────
+const { AvailabilityChip } = await import("../AvailabilityChip");
+
+const BASE_PROPS = {
+  tenantId: "t-1",
+  token: "tok",
+  doctorId: "d-1",
+  startIso: "2026-06-22T10:00:00Z",
+  durationMinutes: 30,
+};
+
+describe("AvailabilityChip", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("renders nothing when disabled (no doctorId)", () => {
+    mockUseAvailabilityCheck.mockReturnValue({ data: undefined, isPending: false, isError: false });
+    const { container } = render(
+      <AvailabilityChip {...BASE_PROPS} doctorId={null} />,
+    );
+    expect(container.firstChild).toBeNull();
+  });
+
+  it("shows loading skeleton while pending", () => {
+    mockUseAvailabilityCheck.mockReturnValue({ data: undefined, isPending: true, isError: false });
+    render(<AvailabilityChip {...BASE_PROPS} />);
+    expect(screen.getByRole("status")).toBeTruthy();
+  });
+
+  it("SC-disponibilidad-falla: shows error + retry on isError", () => {
+    mockUseAvailabilityCheck.mockReturnValue({ data: undefined, isPending: false, isError: true, refetch: vi.fn() });
+    render(<AvailabilityChip {...BASE_PROPS} />);
+    expect(screen.getByTestId("availability-chip-error")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /reintentar/i })).toBeTruthy();
+  });
+
+  it("SC-disponibilidad-falla: calls refetch when retry clicked", async () => {
+    const refetch = vi.fn();
+    mockUseAvailabilityCheck.mockReturnValue({ data: undefined, isPending: false, isError: true, refetch });
+    const { getByRole } = render(<AvailabilityChip {...BASE_PROPS} />);
+    getByRole("button", { name: /reintentar/i }).click();
+    expect(refetch).toHaveBeenCalledOnce();
+  });
+
+  it("available: success badge + aria-live polite", () => {
+    mockUseAvailabilityCheck.mockReturnValue({
+      data: { status: "available", conflictLabel: null, conflictStart: null },
+      isPending: false,
+      isError: false,
+    });
+    render(<AvailabilityChip {...BASE_PROPS} />);
+    const chip = screen.getByTestId("availability-chip");
+    expect(chip.getAttribute("aria-live")).toBe("polite");
+    expect(chip.textContent).toMatch(/disponible/i);
+  });
+
+  it("busy: warning badge + conflict label", () => {
+    mockUseAvailabilityCheck.mockReturnValue({
+      data: { status: "busy", conflictLabel: "se solapa con 10:15", conflictStart: null },
+      isPending: false,
+      isError: false,
+    });
+    render(<AvailabilityChip {...BASE_PROPS} />);
+    expect(screen.getByTestId("availability-chip").textContent).toMatch(/10:15/);
+  });
+
+  it("SC-fuera-horario: warning badge", () => {
+    mockUseAvailabilityCheck.mockReturnValue({
+      data: { status: "out_of_hours", conflictLabel: null, conflictStart: null },
+      isPending: false,
+      isError: false,
+    });
+    render(<AvailabilityChip {...BASE_PROPS} />);
+    expect(screen.getByTestId("availability-chip").textContent).toMatch(/horario/i);
+  });
+
+  it("SC-sin-horario: warning badge", () => {
+    mockUseAvailabilityCheck.mockReturnValue({
+      data: { status: "no_schedule", conflictLabel: null, conflictStart: null },
+      isPending: false,
+      isError: false,
+    });
+    render(<AvailabilityChip {...BASE_PROPS} />);
+    expect(screen.getByTestId("availability-chip").textContent).toMatch(/horario/i);
+  });
+
+  it("syncs status to store on each data change", () => {
+    mockUseAvailabilityCheck.mockReturnValue({
+      data: { status: "available", conflictLabel: null, conflictStart: null },
+      isPending: false,
+      isError: false,
+    });
+    render(<AvailabilityChip {...BASE_PROPS} />);
+    expect(mockSetAvailabilityStatus).toHaveBeenCalledWith("available");
+  });
+
+  it("clears status in store on unmount", () => {
+    mockUseAvailabilityCheck.mockReturnValue({
+      data: { status: "available", conflictLabel: null, conflictStart: null },
+      isPending: false,
+      isError: false,
+    });
+    const { unmount } = render(<AvailabilityChip {...BASE_PROPS} />);
+    unmount();
+    expect(mockSetAvailabilityStatus).toHaveBeenLastCalledWith(null);
+  });
+});

@@ -220,6 +220,9 @@ tickets:
   - id: T-FE-3
     title: "FE · disponibilidad (chip + mini-vista + reasignar)"
     surface: frontend
+    state: pushed
+    commit_sha: TBD
+    tests_native: "30/30 vitest T-FE-3 | tsc 0 errors | eslint 0 errors"
     depends_on: [T-FE-1, T-BE-3]
     description: >
       AvailabilityChip (Badge success/warning PROMOTE + aria-live), DayAvailabilityStrip
