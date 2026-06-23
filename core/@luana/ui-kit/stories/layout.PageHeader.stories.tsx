@@ -24,9 +24,9 @@ const meta = {
           "- **No** lo uses cuando la hoja está dentro de `EntityWorkspaceLayout` — ahí el encabezado de la entidad lo maneja `EntitySubNavBar` (franja N3, canon §2.2).",
           "- **No** lo uses como encabezado de sección (eso es `<PageSection title=...>`, con `h2`).",
           "",
-          "### Nota (slot back-affordance)",
+          "### Slot back-pill (`backLabel` / `onBack`)",
           "",
-          "> El slot de navegación «‹ volver» (D11 pendiente) aún no existe en el componente. Si tu hoja necesita un botón de regreso, agrégalo manualmente como parte de `actions` hasta que el slot esté disponible.",
+          "> Para una hoja-leaf con regreso, pasá `backLabel` (+ `onBack`): renderiza un pill clickeable «‹ {backLabel}» arriba del título. Usa la flechita `‹` (no `←`). Es aditivo — sin `backLabel` el encabezado se comporta igual que antes. El slot `leading` permite además un dot de agente o ícono junto al título.",
         ].join("\n"),
       },
     },
@@ -53,6 +53,29 @@ export const ConAcciones: Story = {
         Agregar doctor
       </Button>
     ),
+  },
+};
+
+export const ConBackPill: Story = {
+  name: "Con back-pill (hoja-leaf)",
+  args: {
+    backLabel: "Agenda",
+    onBack: () => {},
+    title: "Nueva cita",
+    subtitle: "Martes 24 jun · 14:30",
+    actions: (
+      <Button variant="outline" size="sm">
+        Descartar
+      </Button>
+    ),
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Hoja-leaf con retorno: el pill «‹ Agenda» (flechita `‹`) llama a `onBack`. Aditivo sobre la API de siempre (título/subtítulo/acciones).",
+      },
+    },
   },
 };
 

@@ -32,6 +32,8 @@ export * from "./field-info";
 // FloatingAutosaveIndicator — canon §2.6 autosave: UNA por página, sticky bottom-center (core-ds-foundation T-7)
 export * from "./FloatingAutosaveIndicator";
 export * from "./form";
+// FormActionBar — canon sticky submit bar (segundo modo · explicit submit) (vitalia-fase2-mateo-nueva-cita P-0)
+export * from "./FormActionBar";
 // Group + GroupHeader + WhatForChip — canon §2.6 grupo de campos con error semántico + barrita de agente (core-ds-foundation T-7)
 export * from "./Group";
 export * from "./highlighted-text";

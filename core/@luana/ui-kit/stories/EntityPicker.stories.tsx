@@ -123,3 +123,26 @@ export const Preselected: Story = {
 export const Disabled: Story = {
   render: () => <Interactive disabled />,
 };
+
+export const WithCreateAction: Story = {
+  name: "Con acción de crear (pick-or-create)",
+  render: () => (
+    <Interactive
+      placeholder="Seleccionar servicio…"
+      searchPlaceholder="Buscar o crear servicio…"
+      emptyLabel="Sin servicios que coincidan"
+      createAction={{
+        label: (q) => `Crear «${q}»`,
+        onCreate: (q) => window.alert(`Crear servicio: ${q}`),
+      }}
+    />
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Patrón **pick-or-create**: escribe algo que no exista (ej. «Limpieza dental») y aparece una fila final `＋ Crear «…»` (borde superior punteado) que dispara `onCreate(query)`. Es aditivo — sin `createAction` el selector se comporta igual que siempre. La fila es navegable por teclado (↓ hasta ella, Enter para crear).",
+      },
+    },
+  },
+};

@@ -234,3 +234,101 @@ describe("EntityPicker", () => {
     expect(screen.getByTestId("entity-picker-trigger")).toHaveTextContent("Buscar servicio…");
   });
 });
+
+// ── createAction (pick-or-create) ─────────────────────────────────────────────────
+
+describe("EntityPicker · createAction", () => {
+  it("renders the create row when there's a query with no exact match + fires onCreate(query)", async () => {
+    const onCreate = vi.fn();
+    const searchFn = makeSearchFn();
+    render(
+      <EntityPicker
+        searchFn={searchFn}
+        createAction={{ label: (q) => `Crear «${q}»`, onCreate }}
+      />,
+    );
+    await openPicker();
+
+    // Type a query that matches NO existing entity (dataset names are "Dra. Persona N").
+    const input = screen.getByTestId("entity-picker-search");
+    fireEvent.change(input, { target: { value: "Nuevo Servicio" } });
+
+    const createRow = await screen.findByTestId("entity-picker-create");
+    expect(createRow).toBeInTheDocument();
+    expect(createRow).toHaveAttribute("role", "option");
+    expect(createRow).toHaveTextContent("Crear «Nuevo Servicio»");
+
+    fireEvent.click(createRow);
+    expect(onCreate).toHaveBeenCalledTimes(1);
+    expect(onCreate).toHaveBeenCalledWith("Nuevo Servicio");
+  });
+
+  it("does NOT render the create row when createAction is omitted (additive — same as before)", async () => {
+    const searchFn = makeSearchFn();
+    render(<EntityPicker searchFn={searchFn} />);
+    await openPicker();
+
+    const input = screen.getByTestId("entity-picker-search");
+    fireEvent.change(input, { target: { value: "Nuevo Servicio" } });
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("entity-picker-create")).not.toBeInTheDocument();
+    });
+  });
+
+  it("does NOT render the create row when the query is empty", async () => {
+    const onCreate = vi.fn();
+    const searchFn = makeSearchFn();
+    render(
+      <EntityPicker
+        searchFn={searchFn}
+        createAction={{ label: (q) => `Crear «${q}»`, onCreate }}
+      />,
+    );
+    await openPicker();
+
+    // No query typed → no create row even though createAction is present.
+    expect(screen.queryByTestId("entity-picker-create")).not.toBeInTheDocument();
+  });
+
+  it("does NOT render the create row when the query exactly matches an existing entity", async () => {
+    const onCreate = vi.fn();
+    const searchFn = makeSearchFn();
+    render(
+      <EntityPicker
+        searchFn={searchFn}
+        createAction={{ label: (q) => `Crear «${q}»`, onCreate }}
+      />,
+    );
+    await openPicker();
+
+    // "Dra. Persona 1" is an exact (case-insensitive) match → no create row.
+    const input = screen.getByTestId("entity-picker-search");
+    fireEvent.change(input, { target: { value: "Dra. Persona 1" } });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("entity-picker-option-doc-1")).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId("entity-picker-create")).not.toBeInTheDocument();
+  });
+
+  it("renders the create row even when there are zero results", async () => {
+    const onCreate = vi.fn();
+    const searchFn = makeSearchFn([]); // empty dataset → zero results
+    render(
+      <EntityPicker
+        searchFn={searchFn}
+        createAction={{ label: (q) => `Crear «${q}»`, onCreate }}
+      />,
+    );
+    fireEvent.click(screen.getByTestId("entity-picker-trigger"));
+
+    const input = await screen.findByTestId("entity-picker-search");
+    fireEvent.change(input, { target: { value: "Algo nuevo" } });
+
+    const createRow = await screen.findByTestId("entity-picker-create");
+    expect(createRow).toHaveTextContent("Crear «Algo nuevo»");
+    fireEvent.click(createRow);
+    expect(onCreate).toHaveBeenCalledWith("Algo nuevo");
+  });
+});

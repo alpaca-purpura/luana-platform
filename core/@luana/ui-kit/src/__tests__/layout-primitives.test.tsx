@@ -38,6 +38,29 @@ describe("layout-primitives", () => {
     expect(screen.getByRole("button", { name: "Nuevo" })).toBeInTheDocument();
   });
 
+  it("PageHeader renders the back-pill with backLabel and fires onBack on click", () => {
+    const onBack = vi.fn();
+    render(<PageHeader title="Cita nueva" backLabel="Agenda" onBack={onBack} />);
+    const pill = screen.getByTestId("page-header-back");
+    expect(pill).toBeInTheDocument();
+    expect(pill).toHaveTextContent("Agenda");
+    // Uses the chevron ‹ (not the arrow ←).
+    expect(pill).toHaveTextContent("‹");
+    expect(pill.textContent).not.toContain("←");
+    fireEvent.click(pill);
+    expect(onBack).toHaveBeenCalledTimes(1);
+  });
+
+  it("PageHeader does NOT render the back-pill when backLabel is absent", () => {
+    render(<PageHeader title="Cita nueva" />);
+    expect(screen.queryByTestId("page-header-back")).not.toBeInTheDocument();
+  });
+
+  it("PageHeader renders the leading slot next to the title", () => {
+    render(<PageHeader title="Cita nueva" leading={<span data-testid="agent-dot" />} />);
+    expect(screen.getByTestId("agent-dot")).toBeInTheDocument();
+  });
+
   it("ListPageSkeleton renders N rows", () => {
     render(<ListPageSkeleton rows={4} />);
     expect(screen.getAllByTestId("list-skeleton-row")).toHaveLength(4);

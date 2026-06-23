@@ -103,6 +103,17 @@ export interface EntityPickerProps<T extends EntityPickerItem = EntityPickerItem
   className?: string;
   /** Stable test id seed. */
   testId?: string;
+  /**
+   * Pick-or-create: when there's a typed query and NO exact match (or zero results),
+   * a final row `＋ {label(query)}` is rendered (dotted top border) that calls
+   * `onCreate(query)` on click/Enter. Additive — omit it and the picker behaves as before.
+   */
+  createAction?: {
+    /** Builds the create-row label from the current query (e.g. q => `Crear «${q}»`). */
+    label: (query: string) => string;
+    /** Fired with the current query when the user activates the create row. */
+    onCreate: (query: string) => void;
+  };
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────────
@@ -136,6 +147,7 @@ function EntityPickerInner<T extends EntityPickerItem>(
     disabled = false,
     className,
     testId,
+    createAction,
   }: EntityPickerProps<T>,
   ref: React.Ref<HTMLButtonElement>,
 ) {
@@ -223,16 +235,42 @@ function EntityPickerInner<T extends EntityPickerItem>(
     [onChange],
   );
 
+  // Pick-or-create: offer the create row when there's a typed query and no EXACT
+  // (case-insensitive, trimmed) name match among the loaded results.
+  const trimmedQuery = query.trim();
+  const hasExactMatch = React.useMemo(
+    () =>
+      trimmedQuery.length > 0 &&
+      items.some((it) => (it.name ?? "").trim().toLowerCase() === trimmedQuery.toLowerCase()),
+    [items, trimmedQuery],
+  );
+  const showCreate = !!createAction && trimmedQuery.length > 0 && !loading && !hasExactMatch;
+  const showEmpty = !loading && items.length === 0 && !showCreate;
+  // The create row occupies the virtual index === items.length (one past the last option).
+  const createIndex = items.length;
+
+  const fireCreate = React.useCallback(() => {
+    if (!createAction || trimmedQuery.length === 0) return;
+    createAction.onCreate(trimmedQuery);
+    setOpen(false);
+  }, [createAction, trimmedQuery]);
+
   // Keyboard nav on the search (which owns the combobox).
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Navigable max index: last option, or the create row when it's shown.
+    const maxIndex = showCreate ? createIndex : Math.max(items.length - 1, 0);
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setActiveIndex((i) => Math.min(i + 1, Math.max(items.length - 1, 0)));
+      setActiveIndex((i) => Math.min(i + 1, maxIndex));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setActiveIndex((i) => Math.max(i - 1, 0));
     } else if (e.key === "Enter") {
       e.preventDefault();
+      if (showCreate && activeIndex === createIndex) {
+        fireCreate();
+        return;
+      }
       const entity = items[activeIndex];
       if (entity) select(entity);
     } else if (e.key === "Escape") {
@@ -249,7 +287,6 @@ function EntityPickerInner<T extends EntityPickerItem>(
 
   const triggerInitials = value ? (value.initials ?? deriveInitials(value.name)) : "—";
   const triggerLabel = value?.name ?? placeholder;
-  const showEmpty = !loading && items.length === 0;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -349,6 +386,28 @@ function EntityPickerInner<T extends EntityPickerItem>(
                 );
               })}
             </div>
+
+            {/* Pick-or-create row — final option, dotted top border, fires onCreate(query). */}
+            {showCreate && createAction ? (
+              <button
+                type="button"
+                role="option"
+                aria-selected={activeIndex === createIndex}
+                data-active={activeIndex === createIndex || undefined}
+                data-testid={`${tid}-create`}
+                onMouseEnter={() => setActiveIndex(createIndex)}
+                onClick={fireCreate}
+                className={cn(
+                  "flex w-full items-center gap-2 border-t border-dashed border-border px-3 py-2.5 text-left text-sm text-foreground transition-colors hover:bg-accent",
+                  activeIndex === createIndex && "bg-accent",
+                )}
+              >
+                <span className="text-base leading-none text-muted-foreground" aria-hidden="true">
+                  ＋
+                </span>
+                <span className="truncate">{createAction.label(trimmedQuery)}</span>
+              </button>
+            ) : null}
           </div>
         )}
 
