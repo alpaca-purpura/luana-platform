@@ -717,9 +717,18 @@ class PatientRepository(PhiRepositoryBase):
         kek_val = self._kek.get_key()
         search_pattern = f"%{q}%"
 
-        # Cursor-based pagination: WHERE id > :cursor ordered by created_at DESC
-        # ponytail: simple id-based cursor; for created_at-stable pagination use composite
-        cursor_clause = "AND id > :cursor" if cursor is not None else ""
+        # Cursor-based pagination ESTABLE: ordenamos por (created_at, id) DESC y el
+        # cursor compara la TUPLA contra el (created_at, id) de la fila-cursor. Bug
+        # previo: cursor `id > :cursor` (asc) sobre `ORDER BY created_at DESC` →
+        # campo-cursor ≠ campo-orden + dirección invertida → páginas SOLAPADAS
+        # (filas duplicadas → "two children with the same key" en el FE) y filas
+        # omitidas. La row-comparison `(created_at, id) < (cursor_row)` con orden
+        # DESC compuesto es estable y NO solapa, manteniendo el contrato cursor=UUID.
+        cursor_clause = (
+            "AND (created_at, id) < (SELECT created_at, id FROM vitalia_patients WHERE id = :cursor)"
+            if cursor is not None
+            else ""
+        )
 
         stmt = text(
             f"""
@@ -736,7 +745,7 @@ class PatientRepository(PhiRepositoryBase):
                   AND deleted_at IS NULL
                   {cursor_clause}
                   AND pgp_sym_decrypt(name, :kek)::text ILIKE :q
-                ORDER BY created_at DESC
+                ORDER BY created_at DESC, id DESC
                 LIMIT :limit_plus1
             )
             SELECT * FROM filtered

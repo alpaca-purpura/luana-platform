@@ -207,13 +207,17 @@ export function NuevaCitaView({
   }, [selectedServiceId, servicesData, startTime, setValue]);
 
   // ── Sync selected doctor to form ──────────────────────────────────────────
+  // shouldValidate sólo cuando hay un valor REAL: en el mount estos efectos corren
+  // con selectedDoctorId/patientId = null → setValue("", {shouldValidate:true})
+  // disparaba "ID de médico/paciente inválido" sobre un form PRISTINO (parece roto).
+  // Validar sólo en selección real; el form vacío valida recién al submit.
   React.useEffect(() => {
-    setValue("doctorId", selectedDoctorId ?? "", { shouldValidate: true });
+    setValue("doctorId", selectedDoctorId ?? "", { shouldValidate: !!selectedDoctorId });
   }, [selectedDoctorId, setValue]);
 
   // ── Sync patient to form ──────────────────────────────────────────────────
   React.useEffect(() => {
-    setValue("patientId", patientId ?? "", { shouldValidate: true });
+    setValue("patientId", patientId ?? "", { shouldValidate: !!patientId });
   }, [patientId, setValue]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
