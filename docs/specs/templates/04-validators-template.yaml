@@ -30,8 +30,8 @@ verification:
     baseline: [tsc_strict, mypy_strict, ruff, eslint_max_warnings_0, arch_fitness]   # SIEMPRE, bloqueante
     # ★ DS gates (Storybook-first · canon §5 · frontend-visual-fidelity.md § Storybook) — FE story:
     #   · eslint `no-arbitrary-value` (spacing/radius/font-size/color-hex) → corre dentro de eslint_max_warnings_0 (todas las marcas wired).
-    #   · arch-test `no-div-layout` + `no-native-select` (ratchet shrink-only) → corre dentro de arch_fitness. LIVE en vitalia; nicolify/comunify pendiente replicación (HB-106).
-    #   · net-new shared → PROMOVER a @luana/ui-kit + story (verifica /auditor Cat 16; sin gate mecánico aún — HB-107). /architect: confirmá que ambos cubren el surface FE.
+    #   · arch-test `no-div-layout` + `no-native-select` (ratchet shrink-only) → corre dentro de arch_fitness. LIVE en vitalia + nicolify + comunify (HB-106 aplicado 2026-06-24).
+    #   · net-new shared → PROMOVER a @luana/ui-kit + story → gate mecánico `no-local-kit-primitive` (HB-107, ratchet baseline 0) en nicolify+comunify (vitalia parity diferida) + /auditor Cat 16. /architect: confirmá que cubren el surface FE.
     opt_in:                     # activar SOLO por naturaleza de la capability (NO en toda story)
       schemathesis: false       # true → endpoint nuevo (contrato FE↔BE antes del runtime de Next)
       hypothesis: false         # true → domain logic con invariantes (pricing/PHI/scheduling/validaciones)
