@@ -498,7 +498,21 @@ fi
 
 # Verify cada test citado existe + PASS
 # (lectura gherkin_coverage + pytest/playwright targeted run + report)
-echo "✅ Phase D local coverage: $SCENARIO_COUNT/$SCENARIO_COUNT scenarios mapeados"
+
+# ★ Seam coverage gate (HB-96 · cobertura = colaborador real, no mock)
+# Un escenario de costura cubierto SOLO por un test que mockea el colaborador del otro
+# lado = MOCK-ONLY (= MISSING). El gate valida la declaración seam_coverage + escanea
+# los targets code-db/router/component-shell (mock-markers sin colaborador real → FAIL).
+${WS}/.venv/bin/python ${WS}/scripts/check_seam_coverage.py \
+    --report ${STORY_DIR}/04-validators.yaml --story-dir ${STORY_DIR} || {
+  echo "❌ Phase D local: cobertura de costura inválida o MOCK-ONLY."
+  echo "   Construí el test del tipo declarado (integration-realdb/contract/router/e2e-live)"
+  echo "   contra el COLABORADOR REAL, o ejercé la live-verify (#37) para la costura auth."
+  echo "   Escape por test (auditor escruta): línea '# seam-ok: <razón>'."
+  exit 1
+}
+
+echo "✅ Phase D local coverage: $SCENARIO_COUNT/$SCENARIO_COUNT scenarios mapeados + costuras OK"
 ```
 
 Si Phase D local detecta gap → `/dev-team` REFUSE auto-handoff. Update `T-{n}-impl-log.md § Phase D gap` + revolver al loop autonomous para completar cobertura. Si gap es de spec (scenario sin test natural) → ESCALATE Chris ("scenario X de 01-spec.md no es testeable como definido").
@@ -879,7 +893,7 @@ Al cierre de cada turn, MUST appendear una entry a la sección 💬 Conversació
 ## DoD endurecida — obligaciones del builder (Critical Rule #37)
 
 Antes de cerrar `developing → developed`:
-- Correr los `technical_gates` declarados en `04-validators` (baseline + opt-in por naturaleza).
+- **★ Correr los `technical_gates` declarados (HB-97 · no saltar silenciosamente):** baseline + cada opt-in que `04-validators` marque `enabled: true` (mutation diff-scoped vía `scripts/mutation_gate.py`, schemathesis). El `T-{n}-result.md` DEBE incluir la **salida** de cada gate declarado (score de mutación / resumen schemathesis), no solo el conteo unit. Si `mutation.enabled: true` o `schemathesis.enabled: true` y NO hay evidencia de corrida en el result-file → la story **NO cierra `developed`** (un "GREEN" por conteo unit con un gate HARD declarado-y-no-corrido = falso-verde, caso mateo). Tool ausente (mutmut/Stryker/schemathesis) → degrada advisory + lo dice **explícito** en el result-file (no silencio).
 - **Superficies FE**: usar `{brand}/frontend/e2e/fixtures/base.ts` (gate anti-burbuja: pageerror=burbuja Next, hidratación, console.error con allowlist tight, `/api/` 4xx-5xx, diálogo de error Next) en los specs nuevos; correr `scripts/verify-no-backend-errors.sh {brand} "$SINCE"` tras ejercer writes.
 - **Live-verify con Chrome DevTools MCP**: ejercer la acción real + LEER el panel **Console** (0 errores rojos) + Network + logs + confirmar efecto.
 - Cubrir **cada regla de negocio** (gherkin-matrix sin MISSING).

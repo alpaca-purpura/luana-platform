@@ -45,7 +45,7 @@ class AppointmentModel(Base):
     # cross-registry target (scheduling→platform on a different mapper registry) it only
     # resolved on a clean global configure_mappers(); any later lazy import re-triggered a
     # per-registry configure that could NOT locate `LeadModel` → crashed the FIRST ORM query
-    # on `appointments` (surfaced live by `book_appointment` creating an appointment — the
-    # first code to ORM-query this table). The FK `lead_id` (ForeignKey "leads.id") stays;
-    # only the ORM relationship object is dropped. Read the lead via an explicit query when
-    # needed. (arch-green != runtime — found by book live-verify, not by tests.)
+    # on `appointments`. The FK `lead_id` (ForeignKey "leads.id") stays; only the ORM
+    # relationship object is dropped. Read the lead via an explicit query when needed.
+    # (arch-green != runtime — found by book_appointment live-verify; engine fix promoted
+    # shared-only to main since the original change was entangled in a brand commit.)

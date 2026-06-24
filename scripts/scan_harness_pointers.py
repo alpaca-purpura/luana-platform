@@ -97,6 +97,25 @@ def _resolve(ref: str, src_file: Path) -> Path | None:
     return None  # ambiguo / module-internal shorthand → no es puntero
 
 
+def _is_gitignored(target: Path) -> bool:
+    """True si `target` matchea una pattern de .gitignore → NO es rot: es un pointer R3
+    correcto a un OUTPUT auto-gen (PORTFOLIO/BACKLOG/INFRA-MATRIX · «edita la fuente + regen»),
+    que no se versiona y por eso ausente en un worktree fresco. `git check-ignore` matchea por
+    pattern aunque el archivo no exista en disco (CHECK 28 false-positive class · HB fix 2026-06-23)."""
+    try:
+        rel = target.relative_to(WS)
+    except ValueError:
+        return False
+    return (
+        subprocess.run(
+            ["git", "check-ignore", "-q", str(rel)],
+            cwd=WS,
+            capture_output=True,
+        ).returncode
+        == 0
+    )
+
+
 def find_broken_pointers(ws: Path = WS) -> set[str]:
     """Set de `<rel_file> :: <ref>` para cada puntero workspace-rooted roto."""
     broken: set[str] = set()
@@ -117,7 +136,7 @@ def find_broken_pointers(ws: Path = WS) -> set[str]:
                 target = _resolve(ref, f)
                 if target is None:
                     continue
-                if not target.exists():
+                if not target.exists() and not _is_gitignored(target):
                     broken.add(f"{rel} :: {ref}")
     return broken
 

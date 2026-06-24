@@ -28,6 +28,10 @@ verification:
   nature: functional            # technical | functional | both (técnica=sin UI; funcional=user-reachable)
   technical_gates:
     baseline: [tsc_strict, mypy_strict, ruff, eslint_max_warnings_0, arch_fitness]   # SIEMPRE, bloqueante
+    # ★ DS gates (Storybook-first · canon §5 · frontend-visual-fidelity.md § Storybook) — FE story:
+    #   · eslint `no-arbitrary-value` (spacing/radius/font-size/color-hex) → corre dentro de eslint_max_warnings_0 (todas las marcas wired).
+    #   · arch-test `no-div-layout` + `no-native-select` (ratchet shrink-only) → corre dentro de arch_fitness. LIVE en vitalia + nicolify + comunify (HB-106 aplicado 2026-06-24).
+    #   · net-new shared → PROMOVER a @luana/ui-kit + story → gate mecánico `no-local-kit-primitive` (HB-107, ratchet baseline 0) en nicolify+comunify (vitalia parity diferida) + /auditor Cat 16. /architect: confirmá que cubren el surface FE.
     opt_in:                     # activar SOLO por naturaleza de la capability (NO en toda story)
       schemathesis: false       # true → endpoint nuevo (contrato FE↔BE antes del runtime de Next)
       hypothesis: false         # true → domain logic con invariantes (pricing/PHI/scheduling/validaciones)
@@ -414,6 +418,23 @@ test_construction_plan:
     - { scenario: "large_dataset",    file: "{m}-edge.spec.ts",        function: "test('pagination handles 1000 items'" }
     - { scenario: "accessibility",    file: "../a11y/{story-id}.spec.ts", function: "test('axe-core wcag2aa pass'" }
     - { scenario: "i18n",             file: "../i18n/{story-id}.spec.ts", function: "test('renders correct currency per tenant'" }
+
+  # ── ★ Seam coverage (HB-95 · cobertura = colaborador real, no mock) ───────────
+  # Cada escenario que cruza una COSTURA declara la costura + el tipo de test que la
+  # ejerce DE VERDAD (no un unit mockeado). Gate: scripts/check_seam_coverage.py.
+  #   seam      ∈ code-db | fe-be | router | auth | component-shell
+  #   test_type ∈ integration-realdb | contract | router | e2e-live | live-verify
+  #   mapeo: code-db→integration-realdb · fe-be→contract · router→router(end-to-end)
+  #          · auth→live-verify(#37, NO unit-testeable) · component-shell→e2e-live(render real)
+  #   `unit-mocked`/`unit`/`mocked` PROHIBIDO para un escenario de costura.
+  #   `target` = path del test que toca el colaborador real (o "live" para la costura auth/#37).
+  # `target` = path WORKSPACE-ROOTED del test que toca el colaborador real (para que el gate lo resuelva).
+  seam_coverage:
+    - { sc: "SC-<happy-write>",  seam: code-db,         test_type: integration-realdb, target: "{brand}/backend/tests/modules/{brand}/{m}/test_<x>_realdb.py" }
+    - { sc: "SC-<fe-be>",        seam: fe-be,           test_type: contract,           target: "{brand}/backend/tests/modules/{brand}/{m}/test_<x>_contract.py" }
+    - { sc: "SC-<response-dto>", seam: router,          test_type: router,             target: "{brand}/backend/tests/modules/{brand}/{m}/test_<x>_router.py" }
+    - { sc: "SC-<auth-write>",   seam: auth,            test_type: live-verify,        target: "live (#37 dod_evidence)" }
+    - { sc: "SC-<form-in-shell>",seam: component-shell, test_type: e2e-live,           target: "{brand}/frontend/e2e/regression/{story-id}/<x>.spec.ts" }
 
   poms_required:
     - { file: "{m}-list-page.pom.ts",   methods: ["goto()", "filterBy(criteria)", "clickCreateButton()", "getRowCount() → number", "getRowByName(name)"] }

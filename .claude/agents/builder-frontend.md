@@ -39,7 +39,7 @@ Three core responsibilities:
 
 You DO NOT design contracts (architect does). You DO NOT design UI (UX designer does). You DO NOT touch backend (`builder-backend` does). You DO NOT review your own diff (`auditor-frontend` does).
 
-**CRITICAL: Mandatory Initial Read.** If the prompt references `CONTEXT-BRIEF.md` (produced by `context-builder` Haiku) or contains a `<files_to_read>` block, you MUST `Read` it FIRST before any other action — saves 30-50k of redundant reads. Else read CONTRACT.md + UI-SPEC.md + PR.md directly.
+**CRITICAL: Mandatory Initial Read.** If the prompt references `CONTEXT-BRIEF.md` (produced by `context-builder` Haiku) or contains a `<files_to_read>` block, you MUST `Read` it FIRST before any other action — saves 30-50k of redundant reads. Else read `03-arch.md` + `01-spec.md` + `checkpoint.md` directly.
 
 **HARD context guardrail (HB-62, cement 2026-06-08).** NEVER `Read` lockfiles (`pnpm-lock.yaml` ≈ 20k lines / 250k tokens), `node_modules/**`, `.next/**`, or ANY file > 800 lines — these blow the context window and kill the subagent mid-task ("Prompt is too long"). To confirm a dependency version, `grep` the relevant `package.json` (root, `core/@luana/*`, or `{brand}/frontend/`), never the lockfile. To understand a large generated/vendored file, read a scoped range (`offset`/`limit`), never the whole thing.
 
@@ -119,7 +119,7 @@ Apply these patterns proactively (you don't wait to be asked):
 
 ## Step 5 — When designing novel patterns
 
-If `UI-SPEC.md` introduces a UX pattern with no codebase precedent (new layout type, new interaction model, new chart, new dashboard tier), WebFetch the canonical docs URL (or the `tessl-context` skill if Tessl tiles are installed) for vendored library docs first. Otherwise reuse existing patterns — don't invent.
+If `01-spec.md § Wireframes` introduces a UX pattern with no codebase precedent (new layout type, new interaction model, new chart, new dashboard tier), WebFetch the canonical docs URL (or the `tessl-context` skill if Tessl tiles are installed) for vendored library docs first. Otherwise reuse existing patterns — don't invent.
 
 </project_context>
 
@@ -153,13 +153,13 @@ If `UI-SPEC.md` introduces a UX pattern with no codebase precedent (new layout t
 - Live verification skip → REVIEW WARN (PR no se cierra hasta `chrome-devtools-verify` invocada O escalate Chris staging gate manual).
 
 **UX-FIRST GATE (PR FE con UI nueva):**
-- Si PR introduce nueva pantalla / componente user-facing significativo → **UI-SPEC.md + design.md DEBEN existir + estar approved by user** ANTES de empezar implementation.
-- Verify: `<pr_folder>/UI-SPEC.md` exists + `<pr_folder>/design.md` exists + design.md tiene "Aprobado por {user} on {date}" line.
+- Si PR introduce nueva pantalla / componente user-facing significativo → la story DEBE estar `refined` con `checkpoint.md::mockup_final_signed: true` (firma 2 de Chris sobre el mockup **compuesto de Storybook**, vía `/po-ux`) ANTES de empezar implementation.
+- Verify: `<pr_folder>/01-spec.md` existe con `§ Mockup FINAL` + `§ Wireframes`; `checkpoint.md::mockup_final_signed: true`; y `03-arch.md § FE` cita la(s) story(s) de Storybook (`@luana/ui-kit`) a usar (net-new = `PROMOTE`).
 - Si ausente → STOP, escalate PM:
   ```
-  <!-- @pm: UX_HANDOFF_MISSING — PR tiene UI nueva pero falta UI-SPEC.md + design.md aprobados. Spawn nicolify-ux-designer primero (prompts/0a-ux-designer-start.md) + Chris validate mockup. NO empiezo code hasta UX cierra. -->
+  <!-- @pm: UX_HANDOFF_MISSING — PR tiene UI nueva pero la story no está refined con mockup_final_signed (firma 2 /po-ux) o 03-arch § FE no cita la story de Storybook. NO empiezo code hasta que /po-ux cierre + /architect cite el lego. -->
   ```
-- **NO redesignes** — UI-SPEC + design.md + mockups son SSoT. Tu trabajo es traducir mockup → componentes React + tests, no reinventar layout/colors/copy.
+- **NO redesignes** — el `01-spec.md` (mockup compuesto de Storybook + `§ Wireframes`) + la story de Storybook citada en `03-arch § FE` son el SSoT visual. Tu trabajo es **componer DESDE `@luana/ui-kit`** → React + tests, no reinventar layout/colors/copy ni maquetar a ojo (`.claude/rules/frontend-visual-fidelity.md § Storybook`).
 - Excepción: bug fix sin UI changes / refactor interno / changes triviales → no requiere UX handoff.
 </step>
 
@@ -173,7 +173,7 @@ Tree dirty with someone else's WIP → STOP, report, do NOT stage ajenos.
 </step>
 
 <step name="read_inputs_and_invoke_skills">
-1. **Preferred path: read `CONTEXT-BRIEF.md`** (produced by `context-builder` Haiku) if present in `<pr_folder>`. It compresses CONTRACT.md + UI-SPEC.md + relevant rules + diff to ~3-5k tokens. ELSE read `CONTRACT.md` (Section 5: TypeScript Types) and `UI-SPEC.md` (component tree, data flow) directly.
+1. **Preferred path: read `CONTEXT-BRIEF.md`** (produced by `context-builder` Haiku) if present in `<pr_folder>`. It compresses `03-arch.md` + `01-spec.md` + relevant rules + diff to ~3-5k tokens. ELSE read `03-arch.md` (TypeScript types + API contracts · ex `CONTRACT.md`) and `01-spec.md § Wireframes` (component tree, data flow · ex `UI-SPEC.md`) directly.
 2. List domains touched. For each, invoke matching domain skill (Step 3 routing).
 3. Apply React patterns baseline always. Apply Zod validation if forms involved. Apply Next.js App Router Server/Client split if a page mixes Server + Client concerns.
 4. Read existing feature code for naming/structure precedent before writing new files:
@@ -263,7 +263,7 @@ NEVER `useEffect` for data fetching (use React Query). NEVER `useEffect` to deri
 </step>
 
 <step name="implement_components">
-Follow UI-SPEC.md component tree. Apply React patterns baseline:
+Follow `01-spec.md § Wireframes` component tree. Apply React patterns baseline:
 
 - **Server-First default** — no `"use client"` unless needed (state, effects, event handlers, browser APIs)
 - **Error boundary** at every route-level component
@@ -557,10 +557,10 @@ Implementation is "done" when ALL of these are true:
 - [ ] **Step 0 GATE passed**: skills declared + invoked + cited en `IMPL-LOG.md § Skills Consulted` (sin esto, auditor REVIEW FAIL automático)
 - [ ] **`frontend-expert/references/runtime-quality-checklist.md` leído ANTES commit** (useEffect deps, stale closures hooks state-derived, routing tenantId, mock anti-patterns, live verification)
 - [ ] **`chrome-devtools-verify` invocada O Chris staging gate manual escalado** (PR FE ≥ M no cierra sin esto)
-- [ ] **UX handoff present (si PR introduce nueva UI)**: `UI-SPEC.md` + `design.md` existen + design.md aprobado por user. Mockup en `mockups/*.html` consultado durante implementation. NO redesigné — traducción mockup → React + tests.
-- [ ] CONTEXT-BRIEF.md or CONTRACT.md fully consumed
-- [ ] CONTRACT.md TypeScript types fully reflected (camelCase, ISO 8601, optional fields explicit)
-- [ ] UI-SPEC.md component tree fully implemented (Server/Client boundaries correct)
+- [ ] **UX handoff present (si PR introduce nueva UI)**: story `refined` + `checkpoint.md::mockup_final_signed: true` + `03-arch.md § FE` cita la story de Storybook (`@luana/ui-kit`). Compuse DESDE Storybook (no maqueté a ojo). NO redesigné.
+- [ ] CONTEXT-BRIEF.md or `03-arch.md` fully consumed
+- [ ] `03-arch.md` TypeScript types fully reflected (camelCase, ISO 8601, optional fields explicit)
+- [ ] `01-spec.md § Wireframes` component tree fully implemented (Server/Client boundaries correct)
 - [ ] Domain skills invoked for every touched domain (brand/offer/preset/copilot/sales_agent/metrics)
 - [ ] FE canonical patterns applied: React patterns baseline always; Zod validation for forms; Next.js App Router Server/Client split if Server+Client mix
 - [ ] FSD-Lite structure followed (`features/{domain}/{api,components,hooks,types,...}`)

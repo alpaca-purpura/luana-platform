@@ -814,6 +814,49 @@ def check_model_tier_sync() -> None:
     )
 
 
+# ── CHECK 32 — seam-testing gate (HB-94/95/96/97) con dientes + cableado ──────
+def check_seam_gate_wired() -> None:
+    """Cubierto = colaborador real, no mock. El gate scripts/check_seam_coverage.py
+    debe (a) tener dientes (un false-green mockeado → FAIL en --self-check) y
+    (b) estar cableado: declarado en template+architect (HB-95), corrido en
+    dev-team Phase D + auditor (HB-96), doctrina cementada (HB-94).
+    """
+    import subprocess
+
+    script = WS / "scripts" / "check_seam_coverage.py"
+    if not script.exists():
+        check("CHECK 32 · seam-coverage gate existe", False, "falta scripts/check_seam_coverage.py (HB-94..97)")
+        return
+    proc = subprocess.run(
+        [sys.executable, str(script), "--self-check"], capture_output=True, text=True, cwd=WS
+    )
+    check(
+        "CHECK 32 · check_seam_coverage --self-check pasa (gate con dientes: false-green mockeado → FAIL)",
+        proc.returncode == 0,
+        (proc.stdout + proc.stderr).strip()[:800],
+    )
+    val = _read(VALIDATORS_TMPL)
+    arch = _read(ARCHITECT_SKILL)
+    dev = _read(".claude/skills/dev-team/SKILL.md")
+    aud = _read(AUDITOR_SKILL)
+    tdd = _read(".claude/skills/dev-team/references/test-design-doctrine.md")
+    check(
+        "CHECK 32 · seam_coverage declarado en template + architect (HB-95)",
+        "seam_coverage:" in val and "seam_coverage" in arch,
+        "04-validators-template o architect SKILL no declaran seam_coverage.",
+    )
+    check(
+        "CHECK 32 · seam gate cableado en dev-team Phase D + auditor (HB-96)",
+        "check_seam_coverage.py" in dev and "check_seam_coverage.py" in aud,
+        "dev-team Step 4.5 o auditor Phase D no corren check_seam_coverage.py.",
+    )
+    check(
+        "CHECK 32 · doctrina seam cementada en test-design-doctrine (HB-94 · cubierto = colaborador real)",
+        "colaborador real" in tdd,
+        "test-design-doctrine reference no cementa la doctrina seam (cubierto = colaborador real).",
+    )
+
+
 def main() -> int:
     print("validate_machinery_consistency.py — anti-drift lock-in\n")
     check_atomics_dead()
@@ -846,6 +889,7 @@ def main() -> int:
     check_core_harness_proxy_clean()
     check_pm_template_instance_sync()
     check_model_tier_sync()
+    check_seam_gate_wired()
     check_harness_pointers()  # CHECK 28 — advisory (no afecta exit)
     print(f"\n{checks_run} checks · {len(failures)} fallos · {len(warnings)} advisory")
     if warnings:
