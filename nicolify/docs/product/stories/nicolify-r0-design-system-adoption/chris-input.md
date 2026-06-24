@@ -309,3 +309,24 @@ Patrón cross-brand (vitalia+nicolify) → candidate lift `/pm-luana`. Próximo:
   - `@luana/ui-kit/.../SupervisorHistory.tsx:106` → `filter of undefined` (sidebar de Luana). Bug del **kit/engine** → `/pm-luana` (no lo toco desde el worktree de nicolify · M13). Documentado en `observed-bugs`.
   - `auth() can't detect clerkMiddleware()` ×71 → wrinkle conocido Clerk+Next16 en requests RSC/Server-Action sobre el layout del shell. Pre-existente.
 - **Capturé el footgun de memoria del dev-stack** al harness-backlog (recurrente, ya mordió 2 live-verifies) — opciones reales: `make dev-nicolify` solo (parar vitalia+comunify durante verify single-brand) o subir el límite de mem.
+
+### 2026-06-23 — /pm-nicolify revisión de vigencia (Chris pidió chequear antes de "refinar")
+**Chris → "antes de refinar la historia nicolify-r0-design-system-adoption ¿podés revisar si sigue vigente + explicar corto de qué trata y qué ganamos?"**
+
+**/pm-nicolify → ✓ APLICADO (status, sin cambios de scope):**
+- **Corrección de premisa:** NO se refina — ya está **construida**. `state: developed`, parada en **G** (`AWAIT_CHRIS_VERIFY`). 5/5 tickets + 3 fix-rounds (dark · pill · dark-toggle+login) committeados (`b5acab8e`+`42f759c8`) + live-verificados. No hay refinamiento pendiente; falta SOLO tu re-ejercicio + firma.
+- **Vigente:** sí, y HARD — R0 Fundación, ADR-014 "homologar antes de crecer". Superficie chica hoy (27 arbitrary-values, brand en rebuild) = momento + costo ideal. Cuanto más crece nicolify sin esto, más caro después.
+- **Qué es (corto):** adopción Fase 3 del design system homologado — consume `@luana/ui-kit` + `@luana/design-tokens` + `@luana/eslint-config`, mata 4 mirrors locales, re-expresa shell+abel/icp vía primitivas, enciende lock no-arbitrary cero-allowlist, preserva identidad de marca (#635BFF + agent colors + fuentes).
+- **Qué ganamos:** consistencia cross-hoja · cero duplicación (fix-once en kit) · toda hoja R1+ nace homologada (no migra) · enforcement mecánico (lock) · mockup=código (SHELL-DESIGN-CONTRACT).
+- **Nit confirmado:** `chris_verify.rounds[2].fix.commits: PENDING-pathspec-commit` está STALE — el fix round-3 ya landeó en `b5acab8e` (+ `42f759c8` alineó dark a vitalia). Lo corrijo en R (reconcile).
+- **💡 PROPONE:** re-ejercé el demo #37 (dark toggle + pill + login limpio) → firma SATISFIED → R → /auditor → merge. Bif-5: cerrar esta primero converge el FE de abel-r1 (reviewing). ¿Levanto el stack o corrijo primero el nit del checkpoint?
+
+### 2026-06-23 — /pm-nicolify diagnóstico "se ve como idea en el cockpit"
+**Chris → "¿por qué la veo como idea en el cockpit multi?"**
+
+**/pm-nicolify → ✓ APLICADO (bug estructural del doc cazado + fixeado):**
+- **Root cause:** el `checkpoint.md` había perdido el **`---` de cierre del frontmatter** — la sección `## Prior art scan` se appendeó DENTRO del bloque YAML sin cerrarlo. El `> Resultado:` se leía como folded-scalar y reventaba el YAML (línea 153). Alpaca `readCheckpoint` (cockpit-go/handlers_stories.go) no podía parsear el frontmatter → `fmGetOr(frontmatter, "idea", "state")` cae al **default `"idea"`** (líneas 29/63). El `state: developed` real (línea 5) estaba pero el parser nunca lo leía. NO era el state — era el doc malformado.
+- **Fix:** inserté `---` antes de `## Prior art scan`. Re-validado con yaml.safe_load → PARSE OK · state = developed. Scan sistémico de los 6 checkpoints nicolify: **solo este estaba roto**, los otros 5 OK.
+- **Alcance del fix:** `:4001` (cockpit de este worktree wip/nicolify) ya lo ve developed al releer. Si el "multi" es el cross-brand `:4000` (corre desde main), lee el filesystem de main que tiene el mismo archivo roto → no se corrige ahí hasta sincronizar el fix a main.
+- **Clase de bug:** mismo patrón que "header huérfano → caja vacía" — doc estructural malformado hace que la caja del cockpit mienta. Candidato a gate mecánico (cap-deterministic-enforcement ya valida caps; faltaría un check "frontmatter de checkpoint cierra con ---"). Lo flaggeo a harness-backlog si querés.
+- **💡 PROPONE:** ¿commiteo el fix por pathspec? + ¿lo llevo a main (si tu multi es :4000) o lo dejo para el merge de la story?
