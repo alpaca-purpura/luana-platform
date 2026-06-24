@@ -55,8 +55,9 @@ GATE_LABEL = {
     "G7": "caps ILEGIBLES por el cockpit (YAML dup-key → caja vacía)",
     "G8": "caps live+visible SIN user_facing_description (cockpit no dice qué hace)",
     "G9": "caps live+visible SIN scenarios (sin casos de uso · «✨ Qué puedo hacer» mudo)",
+    "G10": "cajas fantasma (área live con cap forward-declared sin superseder · HB-90)",
 }
-GATE_IDS = ("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9")
+GATE_IDS = ("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10")
 
 
 def diagnose(brand: str) -> dict:

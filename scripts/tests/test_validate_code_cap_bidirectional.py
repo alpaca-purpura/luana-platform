@@ -64,13 +64,28 @@ def _setup(tmp_path: Path, brand: str = "vitalia") -> tuple[Path, Path, Path, Pa
     return caps_root, be_root, fe_root, e2e_root
 
 
-def _write_code_index(tmp_path: Path, brand: str, cap_to_files: dict[str, list[str]]) -> None:
-    """Write a minimal _code-index.json so cross_check_4 can resolve files."""
+def _write_code_index(
+    tmp_path: Path,
+    brand: str,
+    cap_to_files: dict[str, list[str]],
+    shared_files: list[str] | None = None,
+    resolved_cap_to_files: dict[str, list[str]] | None = None,
+) -> None:
+    """Write a minimal _code-index.json so cross_check_4 can resolve files.
+
+    HB-59: optional `shared_files` (god-files `# cap: __shared__`) + `resolved_cap_to_files`
+    (canonical cap_id keyed) so tests can exercise the resolver + per-endpoint __shared__ scan.
+    """
     import json
 
     idx_path = tmp_path / brand / "docs" / "product" / "capabilities" / "_code-index.json"
     idx_path.parent.mkdir(parents=True, exist_ok=True)
-    idx_path.write_text(json.dumps({"cap_to_files": cap_to_files}), encoding="utf-8")
+    payload: dict = {"cap_to_files": cap_to_files}
+    if shared_files is not None:
+        payload["shared_files"] = shared_files
+    if resolved_cap_to_files is not None:
+        payload["resolved_cap_to_files"] = resolved_cap_to_files
+    idx_path.write_text(json.dumps(payload), encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
@@ -1145,3 +1160,186 @@ def test_repro_delete_inbox_cap_trips_g1_and_g2(tmp_path: Path):
     assert g1["drift"] >= 1, "G1 debe cazar los headers huérfanos tras borrar la cap"
     assert g2["drift"] == 1, "G2 debe cazar la caja Inbox vacía tras borrar la cap"
     assert g2["details"][0]["functional_area"] == "adrian.inbox"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# HB-59 · cross_check_4 attribution: resolved index + __shared__ god-file scan
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def test_cross_check_4_shared_godfile_enforcement_pass(tmp_path: Path):
+    """HB-59: endpoint del cap vive en un god-file `# cap: __shared__` CON gate en
+    su función → cc4 lo atribuye vía scan per-endpoint → drift 0."""
+    mod = _load_module()
+    caps_root, be_root, _, _ = _setup(tmp_path)
+    _write_code(
+        be_root / "routes.py",
+        "# cap: __shared__\n# story-origin: TBD\n"
+        '@router.get("/events")\n'
+        "async def list_events(user = Depends(require_brand_owner_access())):\n"
+        "    return []\n\n"
+        '@router.get("/public-ping")\n'
+        "async def ping():\n"
+        "    return 'ok'\n",
+    )
+    _write_code_index(tmp_path, "vitalia", {}, shared_files=["vitalia/backend/src/routes.py"])
+    cap_data = {
+        "slug": "hipaa-lite-defensive-stack",
+        "access": {
+            "entry_points": [
+                {
+                    "path": "/api/v1/vitalia/medical-compliance/events",
+                    "requires_role": ["admin_clinic"],
+                    "entry_type": "api",
+                }
+            ]
+        },
+    }
+    _write_cap(caps_root, "compliance", "hipaa-lite-defensive-stack", cap_data)
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    result = mod.cross_check_4(caps, tmp_path, "vitalia")
+    assert result["drift"] == 0
+    assert result["pass"] == 1
+
+
+def test_cross_check_4_shared_godfile_no_enforcement_drift(tmp_path: Path):
+    """HB-59: endpoint en god-file __shared__ SIN gate → sigue drift (safe direction)."""
+    mod = _load_module()
+    caps_root, be_root, _, _ = _setup(tmp_path)
+    _write_code(
+        be_root / "routes.py",
+        "# cap: __shared__\n# story-origin: TBD\n"
+        '@router.get("/events")\n'
+        "async def list_events():\n"
+        "    return []\n",
+    )
+    _write_code_index(tmp_path, "vitalia", {}, shared_files=["vitalia/backend/src/routes.py"])
+    cap_data = {
+        "slug": "hipaa-lite-defensive-stack",
+        "access": {
+            "entry_points": [
+                {
+                    "path": "/api/v1/vitalia/medical-compliance/events",
+                    "requires_role": ["admin_clinic"],
+                    "entry_type": "api",
+                }
+            ]
+        },
+    }
+    _write_cap(caps_root, "compliance", "hipaa-lite-defensive-stack", cap_data)
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    result = mod.cross_check_4(caps, tmp_path, "vitalia")
+    assert result["drift"] == 1
+
+
+def test_cross_check_4_shared_godfile_no_false_attribution(tmp_path: Path):
+    """HB-59 safety: el gate de un endpoint VECINO en el god-file NO se atribuye al
+    endpoint del cap (scan per-función, no per-file) → drift 1, sin false-'enforced'."""
+    mod = _load_module()
+    caps_root, be_root, _, _ = _setup(tmp_path)
+    _write_code(
+        be_root / "routes.py",
+        "# cap: __shared__\n# story-origin: TBD\n"
+        '@router.get("/events")\n'
+        "async def list_events(user = Depends(require_brand_owner_access())):\n"
+        "    return []\n\n"
+        '@router.get("/export-csv")\n'
+        "async def export_csv():\n"
+        "    return 'csv'\n",
+    )
+    _write_code_index(tmp_path, "vitalia", {}, shared_files=["vitalia/backend/src/routes.py"])
+    cap_data = {
+        "slug": "hipaa-lite-defensive-stack",
+        "access": {
+            "entry_points": [
+                {
+                    "path": "/api/v1/vitalia/medical-compliance/export-csv",
+                    "requires_role": ["admin_clinic"],
+                    "entry_type": "api",
+                }
+            ]
+        },
+    }
+    _write_cap(caps_root, "compliance", "hipaa-lite-defensive-stack", cap_data)
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    result = mod.cross_check_4(caps, tmp_path, "vitalia")
+    assert result["drift"] == 1
+
+
+def test_cross_check_4_resolved_index_alias(tmp_path: Path):
+    """HB-59 B.1: cc4 lee resolved_cap_to_files → un header alias (functional-area)
+    se atribuye al cap_id canónico (antes daba false drift)."""
+    mod = _load_module()
+    caps_root, be_root, _, _ = _setup(tmp_path)
+    _write_code(
+        be_root / "servicios_router.py",
+        "# cap: lisa.servicios\n# story-origin: TBD\n"
+        "_g = Depends(require_brand_owner_access())\n"
+        "def patch_servicio(): pass\n",
+    )
+    _write_code_index(
+        tmp_path,
+        "vitalia",
+        {"lisa.servicios": ["vitalia/backend/src/servicios_router.py"]},
+        resolved_cap_to_files={"offer.lisa-servicios": ["vitalia/backend/src/servicios_router.py"]},
+    )
+    cap_data = {
+        "slug": "lisa-servicios",
+        "access": {
+            "entry_points": [
+                {"path": "/api/v1/lisa/servicios", "requires_role": ["admin_clinic"], "entry_type": "api"}
+            ]
+        },
+    }
+    _write_cap(caps_root, "offer", "lisa-servicios", cap_data)
+    caps = mod.load_capabilities("vitalia", tmp_path)
+    result = mod.cross_check_4(caps, tmp_path, "vitalia")
+    assert result["drift"] == 0
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# HB-90 · G10 — caja fantasma (forward-declared cap sobrevive a la live)
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def test_g10_pass_single_live_cap(tmp_path: Path):
+    mod = _load_module()
+    caps = {
+        "offer.lisa-servicios": {
+            "user_visible": True, "status": "live", "functional_area": "lisa.servicios",
+        }
+    }
+    g10 = mod.gate_g10_stale_forward_decl("vitalia", tmp_path, caps)
+    assert g10["drift"] == 0
+
+
+def test_g10_red_phantom_box(tmp_path: Path):
+    """live + planned (sin superseded_by) en la MISMA functional_area → drift 1."""
+    mod = _load_module()
+    caps = {
+        "offer.lisa-servicios": {
+            "user_visible": True, "status": "live", "functional_area": "lisa.servicios",
+        },
+        "offer_studio.medical-services-offer-preset": {
+            "user_visible": True, "status": "planned", "functional_area": "lisa.servicios",
+        },
+    }
+    g10 = mod.gate_g10_stale_forward_decl("vitalia", tmp_path, caps)
+    assert g10["drift"] == 1
+    assert g10["details"][0]["cap_id"] == "offer_studio.medical-services-offer-preset"
+
+
+def test_g10_pass_superseded(tmp_path: Path):
+    """el placeholder con superseded_by ya NO cuenta → drift 0."""
+    mod = _load_module()
+    caps = {
+        "offer.lisa-servicios": {
+            "user_visible": True, "status": "live", "functional_area": "lisa.servicios",
+        },
+        "offer_studio.medical-services-offer-preset": {
+            "user_visible": True, "status": "planned", "functional_area": "lisa.servicios",
+            "superseded_by": "offer.lisa-servicios",
+        },
+    }
+    g10 = mod.gate_g10_stale_forward_decl("vitalia", tmp_path, caps)
+    assert g10["drift"] == 0

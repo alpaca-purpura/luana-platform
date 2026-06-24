@@ -308,6 +308,60 @@ def detect_enforcement(content: str) -> dict[str, Any]:
     }
 
 
+# HB-59: matchea un route-decorator FastAPI por el último segmento literal del path
+# (robusto a prefijos de router: `@router.get("/events")` con prefix `/medical-compliance`).
+_ROUTE_DECO_RE_TMPL = r"@\w+\.(?:get|post|put|patch|delete)\(\s*[\"'][^\"']*\b{seg}\b"
+
+
+def _shared_file_enforcement_for_path(
+    workspace_root: Path, shared_files: list[str], path: str | None
+) -> tuple[list[str], set[str]]:
+    """HB-59 — busca el enforcement de un endpoint que vive en un god-file
+    `# cap: __shared__` (excluido del index per-cap), detectándolo SOLO en el
+    cuerpo de ESA función (decorador→def→body, hasta el próximo endpoint a col 0).
+
+    No escanea el god-file entero a propósito: atribuir el gate de un endpoint
+    VECINO daría un false-"enforced" (false-negative de seguridad). El bloque
+    se corta en el siguiente `@deco`/`def` a columna 0 tras el `def` de esta
+    función → captura sus decoradores apilados + Depends(...) + gate inline, nada más.
+    Devuelve (mechanisms, decorator_roles). Vacío si no hay match o no hay gate.
+    """
+    if not path:
+        return [], set()
+    segs = [s for s in path.strip("/").split("/") if s and "{" not in s]
+    if not segs:
+        return [], set()
+    route_re = re.compile(_ROUTE_DECO_RE_TMPL.format(seg=re.escape(segs[-1])))
+    mechs: list[str] = []
+    roles: set[str] = set()
+    for rel in shared_files:
+        full = workspace_root / rel
+        if full.suffix != ".py" or not full.exists():
+            continue
+        try:
+            content = full.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        lines = content.splitlines()
+        for i, line in enumerate(lines):
+            if not route_re.search(line):
+                continue
+            block = [line]
+            seen_def = False
+            for nxt in lines[i + 1 :]:
+                is_col0 = bool(nxt) and not nxt[:1].isspace()
+                starts_unit = nxt.startswith(("@", "def ", "async def "))
+                if seen_def and is_col0 and starts_unit:
+                    break  # próximo endpoint a col 0 → fin del cuerpo de esta función
+                block.append(nxt)
+                if nxt.startswith(("def ", "async def ")):
+                    seen_def = True
+            det = detect_enforcement("\n".join(block))
+            mechs.extend(det["mechanisms"])
+            roles |= det["decorator_roles"]
+    return mechs, roles
+
+
 def cross_check_4(
     caps: dict[str, dict],
     workspace_root: Path,
@@ -336,10 +390,15 @@ def cross_check_4(
     # Pre-load code index if exists (cap → files via headers)
     code_index_path = workspace_root / brand / "docs" / "product" / "capabilities" / "_code-index.json"
     code_index: dict[str, list[str]] = {}
+    shared_files: list[str] = []
     if code_index_path.exists():
         try:
             ci = json.loads(code_index_path.read_text())
-            code_index = ci.get("cap_to_files", {})
+            # HB-59: preferí resolved_cap_to_files (keyea el cap_id CANÓNICO → cubre
+            # headers alias como `lisa.servicios` ≠ cap_id `offer.lisa-servicios`);
+            # fallback a cap_to_files (back-compat + tests viejos que escriben solo eso).
+            code_index = ci.get("resolved_cap_to_files") or ci.get("cap_to_files", {})
+            shared_files = ci.get("shared_files", []) or []
         except (json.JSONDecodeError, OSError):
             code_index = {}
 
@@ -392,14 +451,27 @@ def cross_check_4(
 
             total += 1
 
-            if cap_mechanisms:
+            # HB-59: si el cap no tiene enforcement en sus archivos per-cap, el
+            # endpoint puede vivir en un god-file `# cap: __shared__` (excluido del
+            # index per-cap). Buscá el enforcement en el CUERPO de ESA función
+            # específica (no en todo el god-file → cero false-positive de un endpoint
+            # vecino enforced). Sólo aplica a entradas con `path` (api real).
+            eff_mechanisms = list(cap_mechanisms)
+            eff_roles = set(cap_decorator_roles)
+            if not eff_mechanisms and shared_files:
+                sh_mechs, sh_roles = _shared_file_enforcement_for_path(workspace_root, shared_files, path)
+                if sh_mechs:
+                    eff_mechanisms = sh_mechs
+                    eff_roles = sh_roles
+
+            if eff_mechanisms:
                 # Enforcement present via at least one recognized mechanism.
                 # If a @require_phi_access decorator declares roles, prefer the
                 # exact-match semantics for that (catches role drift). Otherwise
                 # (Depends / _assert_phi_access / inline frozenset gate) the
                 # mechanism's allowlist lives in code constants we don't fully
                 # parse — presence of the gate is sufficient to count ENFORCED.
-                if cap_decorator_roles and declared_roles != cap_decorator_roles:
+                if eff_roles and declared_roles != eff_roles:
                     drift += 1
                     results.append(
                         {
@@ -407,13 +479,13 @@ def cross_check_4(
                             "path": path,
                             "entry_type": entry_type,
                             "declared_roles": sorted(declared_roles),
-                            "runtime_roles": sorted(cap_decorator_roles),
-                            "mechanisms": sorted(set(cap_mechanisms)),
+                            "runtime_roles": sorted(eff_roles),
+                            "mechanisms": sorted(set(eff_mechanisms)),
                             "status": "role_mismatch",
                             "drift_reason": (
                                 f"cap declares roles {sorted(declared_roles)} but "
                                 f"@require_phi_access decorator declares "
-                                f"{sorted(cap_decorator_roles)}"
+                                f"{sorted(eff_roles)}"
                             ),
                         }
                     )
@@ -911,8 +983,57 @@ def gate_g9_user_visible_has_scenario(
     return {"total": total, "pass": passing, "drift": drift, "details": results}
 
 
+def gate_g10_stale_forward_decl(brand: str, workspace_root: Path, caps: dict[str, dict]) -> dict[str, Any]:
+    """G10 — una `functional_area` con una cap LIVE no debe cargar también una cap
+    forward-declared (`planned`/`idea`/`partial`/`wip`) user_visible NON-superseded.
+
+    Caza la "caja fantasma" del cockpit (HB-90): un placeholder forward-declared
+    (ej. `offer_studio/medical-services-offer-preset` planned) sobrevive sin
+    `superseded_by` cuando la cap real (`offer/lisa-servicios` live) shippea en la
+    MISMA área → el cockpit pinta 2 cajas. FLAG-only (no auto-drop: decidir
+    superseded vs dropped es juicio de `/pm-{brand}`, no de un gate determinístico).
+    """
+    from collections import defaultdict
+
+    by_fa: dict[str, list[tuple[str, str]]] = defaultdict(list)
+    for cap_id, cap_data in caps.items():
+        if cap_data.get("superseded_by") or cap_data.get("user_visible") is not True:
+            continue
+        fa = cap_data.get("functional_area")
+        if fa:
+            by_fa[fa].append((cap_id, (cap_data.get("status") or "").lower()))
+
+    pre_decl = {"planned", "idea", "partial", "wip"}
+    live = {"live", "beta"}
+    results: list[dict] = []
+    total = passing = drift = 0
+    for fa, members in by_fa.items():
+        if not any(status in live for _, status in members):
+            continue
+        total += 1
+        stale = [cid for cid, status in members if status in pre_decl]
+        if stale:
+            for cid in stale:
+                drift += 1
+                results.append(
+                    {
+                        "cap_id": cid,
+                        "functional_area": fa,
+                        "status": "stale_forward_decl",
+                        "drift_reason": (
+                            f"cap forward-declared '{cid}' sigue activa mientras una cap live cubre "
+                            f"'{fa}' → marcá superseded_by + status dropped/superseded (caja fantasma en el cockpit)"
+                        ),
+                    }
+                )
+        else:
+            passing += 1
+    return {"total": total, "pass": passing, "drift": drift, "details": results}
+
+
 def run_cap_gates(brand: str, workspace_root: Path, caps: dict[str, dict]) -> dict[str, dict[str, Any]]:
-    """Dispatcher de los gates G1-G9 (HB-51 + F2 cap-levels G8/G9). Devuelve {gate_id: result}."""
+    """Dispatcher de los gates G1-G10 (HB-51 G1-G7 + F2 cap-levels G8/G9 + HB-90 G10).
+    Devuelve {gate_id: result}. Registro OCP: CHECK 11 (machinery) auto-cubre G10+."""
     return {
         "G1": gate_g1_header_resolves(brand, workspace_root),
         "G2": gate_g2_live_area_has_cap(brand, workspace_root, caps),
@@ -923,6 +1044,7 @@ def run_cap_gates(brand: str, workspace_root: Path, caps: dict[str, dict]) -> di
         "G7": gate_g7_cockpit_readable(brand, workspace_root),
         "G8": gate_g8_user_visible_has_description(brand, workspace_root, caps),
         "G9": gate_g9_user_visible_has_scenario(brand, workspace_root, caps),
+        "G10": gate_g10_stale_forward_decl(brand, workspace_root, caps),
     }
 
 
@@ -1004,10 +1126,17 @@ def main() -> None:
         print(f"  {gid}: total={g['total']} pass={g['pass']} drift={g['drift']}")
     cap_gate_drift = sum(g["drift"] for g in cap_gates.values())
 
+    # G10 (HB-90 · caja fantasma forward-declared) es ADVISORY hasta el backfill
+    # cross-brand de placeholders forward-declared — mismo principio "no se prende
+    # un gate HARD con fallas conocidas" (ver hard_set/cc4 arriba). Cuenta para el
+    # reporte (cap-doctor + SOFT_DRIFT) pero NO para el hard-fail del pre-push.
+    ADVISORY_GATES = {"G10"}
+    hard_cap_gate_drift = sum(g["drift"] for gid, g in cap_gates.items() if gid not in ADVISORY_GATES)
+
     drift_total = cc3["drift"] + cc4["drift"] + cap_gate_drift
     hard_drift = sum(cc["drift"] for i, cc in [(3, cc3), (4, cc4)] if i in hard_set)
     if args.cap_gates_hard:
-        hard_drift += cap_gate_drift
+        hard_drift += hard_cap_gate_drift
 
     verdict = "CLEAN" if drift_total == 0 else ("HARD_FAIL" if hard_drift > 0 else "SOFT_DRIFT")
 

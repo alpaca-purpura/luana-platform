@@ -25,7 +25,7 @@ BRANDS := nicolify vitalia comunify lupulo
 .PHONY: dev-nicolify dev-vitalia dev-comunify dev-lupulo dev-which
 .PHONY: dev-vitalia-admin dev-vitalia-admin-down
 .PHONY: dev-nicolify-tunnel dev-vitalia-tunnel dev-comunify-tunnel dev-lupulo-tunnel
-.PHONY: dev-app-vitalia
+.PHONY: dev-app-vitalia lane-auth lane-auth-vitalia lane-auth-nicolify lane-auth-comunify
 .PHONY: dev-all dev-all-vector dev-all-cache
 .PHONY: dev-down-nicolify dev-down-vitalia dev-down-comunify dev-down-lupulo dev-down-all
 .PHONY: dev-clean-nicolify dev-clean-vitalia dev-clean-comunify dev-clean-lupulo dev-clean-all
@@ -117,6 +117,21 @@ dev-app-vitalia:
 
 dev-app-%:
 	bash scripts/dev-app-up.sh $*
+
+# ── lane-auth: seed Chrome DevTools MCP lane profile with a Clerk session (HB-89) ────
+# El perfil MCP de la lane (~/.cache/chrome-devtools-mcp/luana-<brand>-$LUANA_LANE) no tiene
+# sesión Clerk → los writes autenticados redirigen a /sign-in. Corré esto UNA vez por lane
+# (re-corré si >4h). SSoT: .claude/rules/definition-of-done-live-verify.md + HB-89.
+lane-auth-vitalia:
+	bash scripts/lane-auth.sh vitalia
+lane-auth-nicolify:
+	bash scripts/lane-auth.sh nicolify
+lane-auth-comunify:
+	bash scripts/lane-auth.sh comunify
+
+lane-auth:                ## Seed lane MCP Clerk session: make lane-auth BRAND=<vitalia|nicolify|comunify> [FORCE=1]
+	@test -n "$(BRAND)" || { echo "Uso: make lane-auth BRAND=<vitalia|nicolify|comunify> [FORCE=1]"; exit 1; }
+	bash scripts/lane-auth.sh $(BRAND) $(if $(FORCE),--force,)
 
 # ── all-brands targets ───────────────────────────────────────────────────────
 dev-all:

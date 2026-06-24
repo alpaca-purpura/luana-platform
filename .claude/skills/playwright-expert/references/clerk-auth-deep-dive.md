@@ -185,6 +185,37 @@ When something goes wrong, match the symptom to a row, then jump to the fix.
 
 ---
 
+## HB-28 — dev-FAPI throttle en suites largas: causa real + fix
+
+> **Read when:** una suite e2e larga empieza a fallar SOLO en los specs tardíos (típicamente los que ejercen autosave), con `PATCH` que llega lento → assertion `toBeVisible`/`toHaveText` hace timeout. Esos mismos specs pasan aislados o al principio del run. Síntoma hermano de las dos filas de la tabla §7 (`signIn() timed out ... Clerk dev instance throttled` y `__cf_bm keeps expiring during long runs`), pero la causa raíz es distinta y se diagnostica mal seguido.
+
+### El misdiagnóstico (lo que NO es)
+
+- **NO es `setupClerkTestingToken({ page })` re-fetcheando por página.** El testing token lo trae UNA vez `clerkSetup()` y queda cacheado en `process.env.CLERK_TESTING_TOKEN` (§5). `setupClerkTestingToken` solo instala un `context.route()` interceptor que inyecta un header — carga ~cero sobre dev-FAPI. No genera tráfico de minteo de tokens.
+- **NO es `next dev` compilando.** El throttle es del lado de Clerk (FAPI rate-limit), no del dev server.
+- **NO es `storageState` stale.** El reuse de `playwright/.clerk/user.json` YA está en su lugar y NO es el gap — ese archivo carga cookies; los JWT de sesión se mintean vivos en runtime, no salen del storageState.
+
+### La causa real (lo que SÍ es)
+
+La carga sobre dev-FAPI la genera **el propio código de la app** vía `useAuth().getToken()` — ~110 archivos en `src/`, incluyendo cada hook de autosave (ej. `vitalia/frontend/src/features/lisa/hooks/useIdentityAutosave.ts:59` → `const token = await getToken()` adentro del `useMutation` debounced). Ninguno pasa `getToken({ template })` → Clerk devuelve el **session JWT por defecto, TTL ~60s**.
+
+En una suite larga, el JWT cacheado expira → `getToken()` hace round-trip a dev-FAPI (`/v1/client/sessions/.../tokens`) para mintear uno nuevo. Las instancias **dev** de Clerk rate-limitean FAPI → los specs de autosave tardíos se throttlean (el `PATCH` llega lento → la assertion hace timeout). Los specs tempranos/aislados pasan porque el JWT todavía está caliente y no hay minteo mid-suite.
+
+### El fix real (durable, no retry-mask) — **acción de Chris**
+
+Subir el **session-token lifetime de la instancia DEV de Clerk** de 60s a su máximo (~1 día) en el dashboard: **Clerk dashboard → Sessions → token lifetime**. Es config, no código → `getToken()` resuelve desde cache y mintea ~98% menos veces mid-suite. **Por marca** (cada brand tiene su propia instancia dev de Clerk → repetir en cada dashboard). Esta es una acción que **solo Chris puede hacer** (acceso al dashboard).
+
+### Fallback (si no hay acceso al dashboard)
+
+Shardear en `playwright.config.ts` (`--shard=1/N`) para que cada shard sea más corto que la ventana de minteo. **Aditivo, sin cambio de fixture** — no toca `auth.fixture.ts` ni `clerk.setup.ts`.
+
+### Dos opciones RECHAZADAS (con el porqué)
+
+- **Memoizar `getToken()` en `fetchClient`** — RECHAZADO. Son ~110 call-sites de producción; un cache global podría enmascarar una expiración de auth REAL (un usuario cuyo token sí debe refrescarse). Es código de prod con blast radius grande para arreglar un problema de test infra.
+- **Tocar el auth fixture** — RECHAZADO. El fixture (`auth.fixture.ts` / `clerk.setup.ts`) ya paga failure modes reales (§6, §10: "no simplifiques el setup"). El throttle no nace ahí — nace del `getToken()` de la app — así que parchear el fixture sería tratar el síntoma en el lugar equivocado e introducir flake nuevo.
+
+---
+
 ## 8. What to do if Clerk is fundamentally down
 
 You will know because:
