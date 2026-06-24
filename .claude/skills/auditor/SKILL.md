@@ -511,7 +511,7 @@ Agent({
 - [ ] Each Gherkin scenario in 01-spec.md has GREEN test (cross-ref scenario_coverage in 04-validators.yaml)
 - [ ] Playwright E2E passes (if UI) — list specs run
 - [ ] Agentic eval pass^k threshold met (if agentic) — paste pass^k value
-- [ ] Screenshots updated if UI changed (mockups/ vs deployed)
+- [ ] Screenshots updated if UI changed (deployed vs la story de Storybook citada · `mockups/*.html` SUPERSEDED, canon §5)
 - [ ] Voice fidelity grader passed (if sales_agent voice scope)
 
 ## C3 — Architecture

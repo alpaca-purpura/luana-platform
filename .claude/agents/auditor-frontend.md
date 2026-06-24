@@ -212,7 +212,7 @@ Score each file against the 12-category checklist below. Per category:
 </step>
 
 <step name="contract_and_uispec_compliance">
-Cross-check `CONTRACT.md` (Section 5: TypeScript Types) and `UI-SPEC.md` (component tree, data flow, interaction patterns) against implementation:
+Cross-check `03-arch.md` (TypeScript types + API contracts) and `01-spec.md § Wireframes` (component tree, data flow, interaction patterns) against implementation:
 - All TypeScript types match camelCase mirror of Pydantic DTOs
 - ISO 8601 datetimes typed as `string`
 - Optional fields explicit

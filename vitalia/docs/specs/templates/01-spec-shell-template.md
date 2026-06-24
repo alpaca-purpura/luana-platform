@@ -2,14 +2,14 @@
 
 # 01-spec.md — Template SHELL-ORGANISM (Vitalia override)
 
-> **Override Vitalia** del template raíz `docs/specs/templates/01-spec-template.md`. Agrega secciones obligatorias del shell-organism: atomic design layers · reuse map exhaustivo · visual goldens contra mockup · zero deuda técnica checklist · dependencies cruzadas Fase 1/Fase 2.
+> **Override Vitalia** del template raíz `docs/specs/templates/01-spec-template.md`. Agrega secciones obligatorias del shell-organism: atomic design layers · reuse map exhaustivo · verificación visual (composición vs Storybook · canon §5) · zero deuda técnica checklist · dependencies cruzadas Fase 1/Fase 2.
 >
 > **Cuándo usar:** TODA historia Fase 1 (átomos del shell) y Fase 2 (sub-tabs activas). Para historias agentic-only o service-only sin UI, usar el template raíz.
 >
 > **SSoT que esta spec cita:**
 > - `vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md` (atomic design layers · tokens · stores · routing · a11y · testing)
 > - `vitalia/docs/architecture/ADR-vitalia-004-shell-feature-architecture.md` ★ **MANDATORY** — patrón transversal de 9 secciones (route group · FSD-Lite · Server-First · React Query/Zustand · RHF/Zod · DDD `PhiRepositoryBase` · migrations idempotent · `growth_studio_event` · tests 4 capas)
-> - `vitalia/docs/product/stories/vitalia-shell-organism/mockups/dual-mode-shell.html` (mockup visual ratificado)
+> - **Storybook** (`core/@luana/ui-kit` · stories `Shell/*` = SSoT visual del shell · `build-storybook`/`:6007`) — el viejo `dual-mode-shell.html` quedó SUPERSEDED (canon §5)
 > - `vitalia/docs/product/stories/vitalia-shell-organism/00-session-baseline.md` (17 decisiones cementadas)
 >
 > **★ Citación obligatoria en frontmatter:** `architecture_pattern: ADR-vitalia-004` (sin este campo, `/architect` REFUSE arrancar — ver `vitalia/.claude/rules/shell-feature-architecture-mandatory.md`).
@@ -31,7 +31,7 @@ capability: CAPABILITY_ID                          # ej. shell.tenant-switcher �
 po_version: 1
 last_modified: ISO_TIMESTAMP
 ratified_by_chris: false
-ratified_visual_by_chris: false                   # ★ gate ADR-vitalia-003 mockup-per-component
+ratified_visual_by_chris: false                   # ⚠️ LEGACY — gate ADR-vitalia-003 SUPERSEDED (canon §5). La firma visual viva es `mockup_final_signed` (RONDA 2, mockup compuesto de Storybook). Campo retenido solo por compat de stories viejas.
 input_spec_signed: false                          # ★ RONDA 1 (intención) firmada · cement 2026-06-03 · ver spec-mapa-funcional.md § Dos rondas
 mockup_final_signed: false                        # ★ mockup FINAL firmado (antes del GO a RONDA 2/Gherkin)
 parallel_safe: true | false
@@ -400,39 +400,35 @@ Cerrá con **Huecos detectados** (Bif/RN sin SC) y **SC huérfanos** (SC sin ít
 
 ---
 
-## § 7 — Visual Goldens (mockup como source of truth)
+## § 7 — Verificación visual (composición vs Storybook · canon §5)
 
-> **Regla cardinal Chris 2026-05-22:** "siempre debes verificar con playwright que lo que se ha creado cumple tanto a nivel funcional como a nivel diseño ui con lo planificado por el arquitecto".
+> **Regla cardinal Chris 2026-05-22 (re-grounded 2026-06-22):** "siempre debes verificar con playwright que lo que se ha creado cumple tanto a nivel funcional como a nivel diseño ui con lo planificado por el arquitecto" — pero el SSoT visual es **Storybook** (`@luana/ui-kit`), NO un mockup HTML por-componente. El golden-side-by-side-vs-`mockup.html` quedó **SUPERSEDED**.
 
-### § 7.1 — Snapshots requeridos
+### § 7.1 — Qué se verifica (composición, no golden-vs-mockup)
 
-| Snapshot | Viewport | Theme | Path golden |
-|---|---|---|---|
-| Mockup completo Lisa→Marca | 1440x900 | light | `e2e/__screenshots__/shell/lisa-marca-light.png` |
-| Mockup completo Lisa→Marca | 1440x900 | dark | `e2e/__screenshots__/shell/lisa-marca-dark.png` |
-| Componente aislado X | 800x600 | light | `e2e/__screenshots__/components/{component}-light.png` |
-| ... | ... | ... | ... |
+| Verificación | Cómo | Gate |
+|---|---|---|
+| Se **compuso desde `@luana/ui-kit`** (stories que `/architect` citó), no a mano | `/auditor` Cat 16 (Storybook-first) + lectura del diff | CHANGES_REQUESTED si maquetado a ojo / CSS inventado / `_shared.css` |
+| Net-new shared **promovido al kit + story** (no local) | `/auditor` Cat 16 (Promote check) | CHANGES_REQUESTED si quedó local en `features/{m}/` |
+| Cero arbitrary-value (spacing/radius/font/color-hex) | eslint `no-arbitrary-value` (pre-commit) | FAIL |
+| Cero `<div>` de layout donde hay page-primitive | arch-test `no-div-layout` (ratchet shrink-only) | FAIL |
+| Playwright visual **scoped** sobre las rutas/componentes de la story | `04-validators § playwright_visual_scope` | per scope |
 
-### § 7.2 — Generación inicial vs verify
+### § 7.2 — Visual scoped (no golden-vs-mockup-HTML)
 
 ```bash
 WS=$(git rev-parse --show-toplevel)
 cd ${WS}/vitalia/frontend
 
-# Generación inicial (story owner ejecuta tras finalizar implementación):
-npm run test:e2e:visual:update -- --grep "{story-id}"
-# revisar diff visual humano vs mockup HTML antes de commit
-
-# Verify CI (auto):
-npm run test:e2e:visual -- --grep "{story-id}"
-# falla si diff > 0.1% pixels
+# Visual scoped sobre la(s) ruta(s) de la story (04-validators § playwright_visual_scope):
+npx playwright test e2e/visual/{story}.spec.ts --project=desktop,mobile
+# Verifica estados (default/hover/loading/empty/error/success) y responsive — NO un diff pixel vs mockup.html.
 ```
 
-### § 7.3 — Tolerancia + animaciones
+### § 7.3 — Notas
 
-- `maxDiffPixelRatio: 0.001` (0.1%)
-- `animations: 'disabled'` en config (NO flaky)
-- `caret: 'hide'` (cursores textareas no afectan diff)
+- La fidelidad = "compuesto del kit + estados renderizados", no "diff < 0.1% vs un HTML maquetado a ojo".
+- Para descubrir el componente REAL antes de construir: Storybook (`pnpm --filter @luana/ui-kit build-storybook` o dev `:6007`) o `/showcase`.
 
 ---
 
@@ -441,11 +437,11 @@ npm run test:e2e:visual -- --grep "{story-id}"
 | # | Criterio | Verificación |
 |---|---|---|
 | AC-1 | Componente renderiza en todas las variantes de props documentadas | Vitest unit + Storybook variants |
-| AC-2 | Visual match con mockup HTML (golden) | Playwright visual `maxDiffPixelRatio: 0.001` |
+| AC-2 | Compuesto desde `@luana/ui-kit` (Storybook) + net-new promovido al kit | `/auditor` Cat 16 + eslint no-arbitrary + arch-test no-div-layout |
 | AC-3 | Funcional E2E: usuario completa happy-path sin errores | Playwright `@project=smoke` |
 | AC-4 | A11y axe pass (WCAG 2.1 AA) | Playwright `@project=a11y` |
 | AC-5 | Keyboard navigation Tab + shortcuts funciona | E2E test específico |
-| AC-6 | Light + Dark mode ambos visualmente correctos | Visual goldens light + dark |
+| AC-6 | Light + Dark mode ambos visualmente correctos | Playwright visual scoped light + dark |
 | AC-7 | Mobile responsive (≥375px) sin overflow | Playwright `@project=mobile` |
 | AC-8 | NO `.vt-*` utility class usada en código nuevo | Arch fitness test `test-no-vt-classes-in-new-features.ts` |
 | AC-9 | NO `any` TypeScript, NO `default export` | ESLint pass |
@@ -462,7 +458,7 @@ npm run test:e2e:visual -- --grep "{story-id}"
 - [ ] **Format:** `npx prettier --check src/{path}/`
 - [ ] **Vitest unit ≥80% coverage** del componente nuevo (lines + branches)
 - [ ] **Playwright functional E2E** pasa (`@project=smoke`)
-- [ ] **Playwright visual golden** generado + reviewed por Chris
+- [ ] **Playwright visual scoped** (composición vs story de Storybook · canon §5 — NO golden-vs-mockup-HTML)
 - [ ] **Playwright a11y** axe pass (`@project=a11y`)
 - [ ] **NO `.vt-*` classes** en código nuevo (arch test bloquea)
 - [ ] **NO `any`** TypeScript (use `unknown` + type guards)

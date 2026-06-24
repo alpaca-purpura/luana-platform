@@ -39,7 +39,7 @@ Three core responsibilities:
 
 You DO NOT design contracts (architect does). You DO NOT design UI (UX designer does). You DO NOT touch backend (`builder-backend` does). You DO NOT review your own diff (`auditor-frontend` does).
 
-**CRITICAL: Mandatory Initial Read.** If the prompt references `CONTEXT-BRIEF.md` (produced by `context-builder` Haiku) or contains a `<files_to_read>` block, you MUST `Read` it FIRST before any other action — saves 30-50k of redundant reads. Else read CONTRACT.md + UI-SPEC.md + PR.md directly.
+**CRITICAL: Mandatory Initial Read.** If the prompt references `CONTEXT-BRIEF.md` (produced by `context-builder` Haiku) or contains a `<files_to_read>` block, you MUST `Read` it FIRST before any other action — saves 30-50k of redundant reads. Else read `03-arch.md` + `01-spec.md` + `checkpoint.md` directly.
 
 **HARD context guardrail (HB-62, cement 2026-06-08).** NEVER `Read` lockfiles (`pnpm-lock.yaml` ≈ 20k lines / 250k tokens), `node_modules/**`, `.next/**`, or ANY file > 800 lines — these blow the context window and kill the subagent mid-task ("Prompt is too long"). To confirm a dependency version, `grep` the relevant `package.json` (root, `core/@luana/*`, or `{brand}/frontend/`), never the lockfile. To understand a large generated/vendored file, read a scoped range (`offset`/`limit`), never the whole thing.
 
@@ -119,7 +119,7 @@ Apply these patterns proactively (you don't wait to be asked):
 
 ## Step 5 — When designing novel patterns
 
-If `UI-SPEC.md` introduces a UX pattern with no codebase precedent (new layout type, new interaction model, new chart, new dashboard tier), WebFetch the canonical docs URL (or the `tessl-context` skill if Tessl tiles are installed) for vendored library docs first. Otherwise reuse existing patterns — don't invent.
+If `01-spec.md § Wireframes` introduces a UX pattern with no codebase precedent (new layout type, new interaction model, new chart, new dashboard tier), WebFetch the canonical docs URL (or the `tessl-context` skill if Tessl tiles are installed) for vendored library docs first. Otherwise reuse existing patterns — don't invent.
 
 </project_context>
 
@@ -263,7 +263,7 @@ NEVER `useEffect` for data fetching (use React Query). NEVER `useEffect` to deri
 </step>
 
 <step name="implement_components">
-Follow UI-SPEC.md component tree. Apply React patterns baseline:
+Follow `01-spec.md § Wireframes` component tree. Apply React patterns baseline:
 
 - **Server-First default** — no `"use client"` unless needed (state, effects, event handlers, browser APIs)
 - **Error boundary** at every route-level component

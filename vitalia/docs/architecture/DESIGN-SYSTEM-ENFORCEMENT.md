@@ -1,6 +1,6 @@
 # Design System Enforcement — Patrones canónicos vitalia (Storybook-first)
 
-> **Fecha:** 2026-06-11 · **Storybook-first 2026-06-23 (HB-104).** **Basado en:** el canon cross-brand (`docs/architecture/luana-platform/design-system-canon.md §5`). **Aplica a:** todas las historias UI vitalia (refining / idea). **Enforcement:** pre-commit lint (`no-arbitrary`) + `/po-ux` gate refining→refined + `/auditor` cat 9 (visual fidelity).
+> **Fecha:** 2026-06-11 · **Storybook-first 2026-06-24 (HB-105).** **Basado en:** el canon cross-brand (`docs/architecture/luana-platform/design-system-canon.md §5`). **Aplica a:** todas las historias UI vitalia (refining / idea). **Enforcement:** pre-commit lint (`no-arbitrary`) + `/po-ux` gate refining→refined + `/auditor` cat 9 (visual fidelity).
 >
 > **★ SSoT visual = Storybook** (`core/@luana/ui-kit`): el diseño/build **parte de las stories de Storybook**, no de un mockup HTML maquetado a ojo. El viejo modelo `_shared.css` + `dual-mode-shell.html` portado verbatim + golden-vs-mockup quedó **MUERTO** (canon §5 · `vitalia/.claude/rules/shell-mockup-per-component.md` reescrita). Esta checklist (N3 / EntityInfoCard / page-primitives / tokens / átomos) sigue vigente — solo cambia que la **base visual es Storybook**.
 

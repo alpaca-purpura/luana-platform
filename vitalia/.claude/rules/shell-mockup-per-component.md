@@ -3,7 +3,7 @@
 **Overlay:** extiende `.claude/rules/` raíz Luana platform (refuerza `frontend-visual-fidelity.md § Storybook` + `frontend-fsd.md`).
 **Brand:** vitalia (Salud + Bienestar — shell-organism agéntico)
 **SSoT visual:** **Storybook** (`core/@luana/ui-kit`, canon §5).
-**Cement-date:** 2026-05-22 (mockup-per-component original) → **Storybook-first 2026-06-22 (canon)**, **vitalia alineado 2026-06-23 · HB-104**.
+**Cement-date:** 2026-05-22 (mockup-per-component original) → **Storybook-first 2026-06-22 (canon)**, **vitalia alineado 2026-06-24 · HB-105**.
 **Doctrina binding:** `.claude/rules/frontend-visual-fidelity.md § Storybook` + `docs/architecture/luana-platform/design-system-canon.md §5`.
 
 > **★ SUPERSEDED — el modelo mockup-HTML per-componente (`_shared.css` + wrapper portado verbatim de `dual-mode-shell.html` + `ratified_visual_by_chris` + visual-golden-vs-mockup) quedó MUERTO (canon §5, cement 2026-06-22).** El SSoT visual de vitalia (como de TODAS las marcas) es **Storybook** (`core/@luana/ui-kit`): "lo que ves en Storybook = lo que se programa". El antiguo protocolo (ADR-vitalia-003) ya **NO es un gate activo**. El nombre del archivo (`shell-mockup-per-component`) es legacy; su contenido vigente es Storybook-first.
