@@ -145,6 +145,15 @@ export function PatientPickerWithCreate({
         setPendingDuplicate(result);
         setMode("duplicate");
       } else {
+        // Cosmético: reflejar el paciente recién creado en el trigger del picker
+        // (sin esto el trigger volvía a "— Buscar paciente…" aunque el form sí
+        // tenía el patientId). El EntityPicker pinta value.name.
+        setSelectedPatient({
+          id: result.patientId,
+          name: result.nameMasked,
+          phoneMasked: null,
+          channelFirst: null,
+        });
         setMode("picker");
         onChange(result.patientId);
       }
