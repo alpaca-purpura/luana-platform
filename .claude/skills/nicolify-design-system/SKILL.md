@@ -1,6 +1,6 @@
 ---
 name: nicolify-design-system
-description: SSoT cargable del sistema de diseño + shell-organism de Nicolify (índice narrado sobre los docs + código — NO duplica). Cargá ANTES de tocar cualquier `nicolify/frontend/src/**` UI. Cubre autoridad de tokens (globals.css + tailwind.config.ts brand-local), átomos/moléculas/organism consumidos de `@luana/ui-kit` + locales, el shell de Luana-orquestador + Ribbon de 5 agentes expertos (Abel/Brenda/Christian/Sara/Norvil) + Config, catálogo de agentes (colores hex), gates ADR-nicolify-001 (hereda ADR-vitalia-003/004) + SSR-safe store (ADR-vitalia-006), fidelidad del wrapper (portar verbatim de Vitalia re-temizado), y guardrails agénticos (tier gating + audit autonomía) en vez de PHI. Triggers: 'pantalla nicolify', 'componente nicolify', 'shell organism nicolify', 'átomos nicolify', 'colores de marca nicolify', 'agent color', 'ribbon', 'sub-tab', 'LuanaSidebar', 'tokens nicolify', 'cómo se hace este módulo en nicolify', 'fidelidad visual nicolify'. Es brand-scoped (instancia de la clase `{brand}-design-system`).
+description: SSoT cargable del sistema de diseño + shell-organism de Nicolify (índice narrado sobre los docs + código — NO duplica). Cargá ANTES de tocar cualquier `nicolify/frontend/src/**` UI. Cubre autoridad de tokens (globals.css + tailwind.config.ts brand-local), átomos/moléculas/organism consumidos de `@luana/ui-kit` + locales, el shell de Luana-orquestador + Ribbon de 5 agentes expertos (Abel/Brenda/Christian/Sara/Norvil) + Config, catálogo de agentes (colores hex), gates ADR-nicolify-001 (hereda ADR-vitalia-004) + **design-system Storybook-first** (`@luana/ui-kit` = SSoT visual, canon §5) + SSR-safe store (ADR-vitalia-006), fidelidad del wrapper (partir de Storybook re-temizado), y guardrails agénticos (tier gating + audit autonomía) en vez de PHI. Triggers: 'pantalla nicolify', 'componente nicolify', 'shell organism nicolify', 'átomos nicolify', 'colores de marca nicolify', 'agent color', 'ribbon', 'sub-tab', 'LuanaSidebar', 'tokens nicolify', 'cómo se hace este módulo en nicolify', 'fidelidad visual nicolify'. Es brand-scoped (instancia de la clase `{brand}-design-system`).
 ---
 
 <!-- voseo-allowed: internal skill doc (instrucciones al agente builder/architect), no user-facing -->
@@ -72,17 +72,11 @@ app/[tenantId]/(shell-organism)/[agent]/[subtab]/[subsubtab]/page.tsx
 ```
 Server Component default · SSR initial state · datos sensibles nunca en URL/searchParams.
 
-### ★ Fidelidad del wrapper — portar VERBATIM re-temizado (causa #1 de pérdida)
+### ★ Fidelidad del wrapper — partí de Storybook (SSoT visual · cement 2026-06-22)
 
-Cuando un componente/sub-tab aterriza dentro del shell, el wrapper de contexto (TopBar + Ribbon + SubTabsBar + LuanaSidebar/chat) se **porta verbatim de Vitalia y se re-temiza** — NO se reinventa simplificado (genera grises en vez de tokens, 50/50 hardcoded, chat inventado — learning `2026-05-27-shell-mockup-wrapper-fidelity`):
+El shell (TopBar + Ribbon + SubTabsBar + LuanaSidebar/chat) vive en **Storybook** (`core/@luana/ui-kit`, canon §5) — es el **SSoT visual**: "lo que ves en Storybook = lo que se programa". Navegá las stories `Shell/*` (build `pnpm --filter @luana/ui-kit build-storybook`, o dev `:6007`) para el componente REAL y partí de ahí; re-temizá con los tokens de nicolify (`globals.css`). **NUNCA** reinventarlo simplificado (genera grises en vez de tokens, 50/50 hardcoded, chat inventado — learning `2026-05-27-shell-mockup-wrapper-fidelity`).
 
-| Layer | Fuente canónica Vitalia (read-only · re-temizar a Nicolify) |
-|---|---|
-| Shell integral (macro) | `vitalia/docs/archive/2026/stories/vitalia-shell-organism/mockups/dual-mode-shell.html` |
-| Chat orquestador completo | `vitalia/docs/archive/2026/stories/vitalia-fase1-valeria-chat-skeleton/mockups/valeria-chat-sample.html` |
-| Rail (collapsed) | `vitalia/docs/archive/2026/stories/vitalia-fase1-valeria-rail-history/mockups/valeria-rail.html` |
-
-> Worktree de Vitalia al día: `~/Proyectos/luana-vitalia/`.
+> **★ SUPERSEDED 2026-06-22 (canon §5 · nicolify alineado 2026-06-23 · HB-103):** el viejo modelo de **portar verbatim los mockups HTML archivados de Vitalia** (`dual-mode-shell.html`, `valeria-chat-sample.html`, `valeria-rail.html`) + `_shared.css` quedó **MUERTO**. El shell real vive en `@luana/ui-kit` (Storybook). Ver `.claude/rules/frontend-visual-fidelity.md § Storybook` + `nicolify/.claude/rules/shell-mockup-per-component.md` (reescrita Storybook-first).
 
 ## 5 · Catálogo de agentes (6) — roles + nav (colores a definir en R0)
 
@@ -118,7 +112,7 @@ Cada agente con tab: `--agent-{slug}` + `--agent-{slug}-soft` en `globals.css`. 
 ## 6 · Gates de proceso (cumplir, no re-litigar)
 
 - **ADR-nicolify-001** (a crear · hereda ADR-vitalia-004 9 secciones): sub-tab nueva → patrón de 9 secciones (routing route-group · FSD-Lite · client root · React Query+Zustand · RHF+Zod · DDD Inside-Out **sin PHI** · migrations idempotent · telemetría `nicolify_growth_studio_event` · tests 4 capas). `01-spec.md`/`03-arch.md`/`checkpoint.md` citan `architecture_pattern: ADR-nicolify-001`.
-- **Mockup-per-component** (hereda ADR-vitalia-003): componente UI nuevo → mockup HTML por-componente ratificado por Chris ANTES de `refining→refined`. `/architect` REFUSE sin `ratified_visual_by_chris: true`.
+- **Design system = Storybook-first** (canon §5 · SUPERSEDES `ADR-nicolify-003` mockup-base, cement 2026-06-22): la ratificación/build visual ya NO es un mockup HTML por-componente — se hace **partiendo de Storybook** (`@luana/ui-kit`, el componente REAL) + promoviendo lo net-new al kit + story (vía `/pm-luana`). El modelo `_shared.css`/mockup-HTML quedó MUERTO. Ver `.claude/rules/frontend-visual-fidelity.md § Storybook` + `nicolify/.claude/rules/shell-mockup-per-component.md`.
 - **SSR-safe persisted store** (hereda ADR-vitalia-006): todo store Zustand `persist` bajo Next.js 16 → factory `createSsrSafePersistedStore` + `useStoreHydration` dentro del chunk `ssr:false`. NUNCA `persist` raw. (Candidato a consumir de `@luana/hooks` post-lift.)
 
 ## 7 · Superficies de autonomía + tier (en vez de PHI)
@@ -134,11 +128,11 @@ Nicolify NO tiene HIPAA/PHI. En su lugar, los guardrails agénticos (SSoT: `nico
 1. ¿Es sub-tab del shell? → seguí ADR-nicolify-001 (9 secciones) + routing en `shell-routes.ts`.
 2. Tokens: usá clases Tailwind mapeadas a `globals.css`. Cero hex/px nuevo. Z-index de `@luana/design-tokens`.
 3. Átomos: importá de `@luana/ui-kit`. Moléculas: reusá `components/shared/`. Dominio: reusá `@luana/api-client`. Solo si nada sirve → creá en `features/{agent}/components/` con átomos.
-4. Wrapper del shell: portá verbatim de Vitalia + re-temizá (§4). No reinventar.
+4. Wrapper del shell: partí de las stories `Shell/*` de Storybook + re-temizá a tokens nicolify (§4). No reinventar.
 5. Agent-color: usá `--agent-{slug}` del agente dueño de la tab (§5). Luana = sidebar, no tab.
 6. Guardrails: `TierGate`/`BudgetGuardGate` para features premium; `AgentActionAuditRow` para acciones autónomas (§7).
 7. Spanish neutro (tuteo, sin voseo — salvo output sales_agent). Estados empty/loading/error/success como el mockup.
-8. Tests: Vitest + Playwright visual golden vs mockup + axe. SSR-safe store (§6).
+8. Tests: Vitest + Playwright visual golden vs la story de Storybook + axe. SSR-safe store (§6).
 
 ## Referencias (SSoT — leer on-demand)
 

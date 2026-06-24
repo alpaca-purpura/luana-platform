@@ -65,7 +65,7 @@ echo "WS=$WS BRAND=$BRAND"
 
 1. `${WS}/CLAUDE.md` + `${WS}/AGENTS.md` — project constraints (multibrand reorg)
 2. `<pr_folder>/03-arch.md` (or `03-arch-fe.md`) — TypeScript types + API routes (verify FE types match)
-3. `<pr_folder>/01-spec.md § Wireframes` (inline) + `<pr_folder>/mockups/` — component hierarchy / data flow (verify implementation matches; `02-design-ui.md` RETIRED)
+3. `<pr_folder>/01-spec.md § Wireframes` (inline · mockup compuesto de Storybook) + la story de Storybook citada en `03-arch.md § FE` (`@luana/ui-kit`) — component hierarchy / data flow (verify composición; `02-design-ui.md` RETIRED · `mockups/*.html` SUPERSEDED por Storybook, canon §5)
 4. `${WS}/{brand}/docs/product/modules/{module}.md` — what the module exposes today; flag drift
 5. `${WS}/{brand}/config/brand.yaml` — brand-specific feature flags + domain config
 6. `.claude/skills/frontend-expert/references/` — fsd-cheatsheet, frontend-quality, eslint-patterns, frontend-patterns, component-rules, styling-rules, testing-patterns, e2e-testing, code-audit, studio-section-pages
@@ -212,7 +212,7 @@ Score each file against the 12-category checklist below. Per category:
 </step>
 
 <step name="contract_and_uispec_compliance">
-Cross-check `CONTRACT.md` (Section 5: TypeScript Types) and `UI-SPEC.md` (component tree, data flow, interaction patterns) against implementation:
+Cross-check `03-arch.md` (TypeScript types + API contracts) and `01-spec.md § Wireframes` (component tree, data flow, interaction patterns) against implementation:
 - All TypeScript types match camelCase mirror of Pydantic DTOs
 - ISO 8601 datetimes typed as `string`
 - Optional fields explicit
@@ -435,7 +435,7 @@ Referencias:
 
 - [ ] **Storybook-first / composición (SSoT visual · canon §5):** el FE se **compuso desde `@luana/ui-kit`** (las stories que `/architect` citó), no a mano. Reutiliza átomos `components/ui/` + moléculas `components/shared/` + tokens (SSoT `{brand}/frontend/src/app/globals.css` + `tailwind.config.ts` — NO `@luana/design-tokens`, que solo exporta z-index). El catálogo navegable de referencia = **Storybook** (`core/@luana/ui-kit`). NINGUNA primitiva reinventada, NINGÚN hex/px hardcodeado que ya es token. (Reinventar átomo → FAIL, también cae en Cat 13 mirror.)
 - [ ] **Promote check (net-new shared):** si la historia introdujo una primitiva shared genuinamente nueva, verificá que se **promovió a `core/@luana/ui-kit` + su story** (no quedó local en `features/{m}/` que driftea). Pieza shared local sin promover → CHANGES_REQUESTED.
-- [ ] **Mockup adherence:** elementos clave del mockup (`01-spec § Wireframes` + `mockups/`) presentes + estados (empty/loading/error/success) renderizados. Verificación: Playwright visual scoped (`04-validators § visual`) o `chrome-devtools-verify`.
+- [ ] **Mockup adherence:** elementos clave del mockup (`01-spec § Wireframes` compuesto de Storybook + la story de Storybook citada) presentes + estados (empty/loading/error/success) renderizados. Verificación: Playwright visual scoped (`04-validators § visual`) o `chrome-devtools-verify`.
 - [ ] **Scope discipline:** NO se construyó fuera de lo que scopean los scenarios de `01-spec.md` (el mockup puede mostrar de más; exceso = scope creep + posible isla).
 
 **FAIL** if:
@@ -557,8 +557,8 @@ If any baseline GREW without justified commit message → automatic FAIL Categor
 - **`IMPL-LOG.md § Skills Consulted` empty OR missing required skills** (frontend-expert baseline; + domain skill if domain touched; + forms patterns if forms; + Server/Client split patterns if Server+Client mix) → **overall FAIL** ("Skill routing violation")
 - **`frontend-expert/references/runtime-quality-checklist.md` not cited in IMPL-LOG** → **overall FAIL** (es OBLIGATORIO leerlo antes commit; ausencia = builder no validó anti-patterns useEffect/closures/routing)
 - **`chrome-devtools-verify` not invoked AND no Chris staging gate manual escalado documentado** → **overall FAIL** (live verification gate FE PR ≥ M es obligatoria — origen S4 PI-1 9 bugs slipped por skip)
-- **PR introduce nueva UI Y `UI-SPEC.md` + `design.md` ausentes** → **overall FAIL** "UX_HANDOFF_MISSING — builder skipped UX phase" (PR FE con UI nueva DEBE tener mockup approved by user antes de implementation; origen S4 PI-1: cuando UX se hizo sin design.md ni mockup approval, FE builder generó UI sin spec consensuada → bugs visibles solo cuando Chris cargó browser)
-- **UI-SPEC.md presente PERO design.md no tiene line "Aprobado por {user}"** → **overall FAIL** "UX_NOT_APPROVED — implementation began before user approval"
+- **PR introduce nueva UI Y la story NO está `refined` con `checkpoint.md::mockup_final_signed: true`** (firma 2 de Chris sobre el mockup compuesto de Storybook, vía `/po-ux`) **O `03-arch.md § FE` no cita la story de Storybook** → **overall FAIL** "UX_HANDOFF_MISSING — UI sin spec/Storybook consensuado" (origen S4 PI-1: UI sin spec consensuada → bugs visibles solo cuando Chris cargó browser; el flujo v4 lo cierra vía `/po-ux` `mockup_final_signed` + `/architect` que cita el lego de `@luana/ui-kit`)
+- **`mockup_final_signed: false` (firma 2 de Chris ausente) cuando la story introduce UI nueva** → **overall FAIL** "UX_NOT_APPROVED — implementation began before Chris signoff (RONDA 2)"
 - **`LIVE_VERIFY_MISSING`** → **overall FAIL**: story con `verification_nature ∈ {funcional, ambas}` o `demo_required: true` que llega SIN `dod_live_verified: true` + `dod_evidence` (writes reales + efecto observado en dev-app), O cuya e2e mockea el backend del propio surface bajo prueba, O cuyos specs FE importan `@playwright/test` directo en vez de `fixtures/base.ts` (gate anti-burbuja ausente), O sin `demo-script.md` cuando `demo_required: true`. El auditor DEBE EJERCER ≥1 write crítico live (Chrome DevTools MCP / skill `chrome-devtools-verify`) antes de firmar — no confiar en el self-report del builder. SSoT: `.claude/rules/definition-of-done-live-verify.md`.
 - Two or more category WARNs → **overall WARN**
 - Otherwise → **PASS**
