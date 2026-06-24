@@ -99,4 +99,6 @@ else
   echo "✓ READY. Correr:"
 fi
 echo "    cd ${BRAND}/frontend && E2E_BASE_URL=http://localhost:${FE_PORT} npx playwright test --project=smoke"
+echo "  ℹ si specs TARDÍOS (autosave) throttlean en suites largas → es el session-token TTL 60s de Clerk (no es bug):"
+echo "    .claude/skills/playwright-expert/references/clerk-auth-deep-dive.md § HB-28 (dashboard-only · mitigación retries=1 ya aceptada)"
 exit 0
