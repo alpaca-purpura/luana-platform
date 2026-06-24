@@ -2,7 +2,8 @@
 story_id: nicolify-r0-storybook-inventory
 brand: nicolify
 type: ui-story                        # cross-cutting design-system (como ds-adoption) — UI components 1:1 en Storybook
-state: ready                         # refined→ready 2026-06-24 (/architect cerró ready package: 03-arch + 04-validators + 05-guidelines + 06-tickets + dispatch-plan)
+state: developing                    # ready→developing 2026-06-24 (/dev-team T-1 · build-claim code:design-system lane=G)
+phase: BUILD_T6                      # T-1 clasif ✓ · T-2..T-5 ✓ (17 stories + infra, build-storybook GREEN, eslint 0-err) · T-6 contrato pendiente
 release: R0                          # Fundación — inventario completo ANTES de crecer hoja por hoja
 map_zone: infraestructura            # atributo de calidad (inventario navegable de la UI) · derivada SYSTEM-MAP::zones
 map_box: plataforma-tecnica
