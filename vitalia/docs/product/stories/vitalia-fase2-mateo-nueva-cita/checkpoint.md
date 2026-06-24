@@ -4,8 +4,13 @@ type: ui-story
 agent_owner: mateo
 module: scheduling
 capability: mateo.agenda
-state: developing
-phase: LIVE_VERIFY_FIXLOOP                           # 9 tickets construidos · live-verify destapó 5 bugs de integración · fix-loop en curso
+state: developed
+phase: AWAIT_CHRIS_VERIFY                            # G · verify-battery + auditoría UX live (16 fixes) verde + live-verified. Chris ejerce + firma chris_verify.signoff
+chris_verify:
+  required: true
+  signoff: null                                      # → {by: Chris, date, result: SATISFIED|SATISFIED_WITH_FOLLOWUPS|REJECTED, notes, open_items}
+  rounds: []                                         # allowlist de scope ratificado para el auditor
+reconciled: false                                    # /pm-vitalia lo pone true en R (precondición del auditor)
 build_started: 2026-06-22                           # /pm-vitalia ready→developing + handoff /dev-team
 dod_live_verified: true                             # ★ happy path core ejercido live (cita-create 201 + patient-create 201, filas reales). Falta G de Chris (full functional + 409 + toast + demo) + auditor de los 9 fixes
 dod_env: "localhost:3002 (FE) + localhost:8002 (BE docker) · dr.demo@vitalialat.com · Chrome DevTools MCP"
@@ -18,6 +23,10 @@ dod_evidence:
     observed: "POST /api/v1/scheduling/appointments → 201 · vitalia_appointments fila SCHEDULED (slot 2026-06-29T12:00Z=09:00 tz UTC-3, dur 30, origin walk_in, offer/clinic/patient set) + vitalia_appointment_clinic_map mirror 12:00→12:30 SCHEDULED (EXCLUDE anti-solape activo)"
     backend_log: "POST /api/v1/scheduling/appointments HTTP/1.1 201 Created"
     verified_at: 2026-06-23
+  - action: "auditoría UX live (Chrome MCP, dr.demo, :3002) + fix-loop de 16 hallazgos (commit 8075cd86) + re-verify live de los fixes"
+    observed: "H1 Hora-fin 09:00+30min → 09:30 (era 12:30, UTC bug) · H3 mini-día con header+eje 08–20+leyenda (era barra pelada) · H2 motivo de bloqueo 'Selecciona un paciente para continuar' · M1 columna intro '¿Qué verás aquí?' · M3 'Viene del servicio · editable' · M4 hint oculto en mobile (no colisiona FAB) · M6 warning controlled/uncontrolled GONE de consola · L1 'Sin cita'/'Teléfono' · L6 contador 0/500. Console 0 errores. Happy path intacto."
+    backend_log: "sin tracebacks; sin writes nuevos (verificación de presentación/cómputo client-side)"
+    verified_at: 2026-06-24
   pending_at_G: "409 solape live (cubierto por integration test) · toast 'Cita creada' + grilla refleja (no observado, sesión expiró tras el 201) · demo-script.md · firma Chris"
 live_verify_findings:                               # Chrome DevTools MCP (dr.demo · localhost:3002) 2026-06-22/23 — detalle en chris-input.md
   - "bug1 render token-isLoaded → skeleton eterno · FIXED+verificado (/offer/servicios 200, pickers pueblan)"
