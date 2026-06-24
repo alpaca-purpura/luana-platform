@@ -355,3 +355,58 @@ Chris: "revertí L1 a Walk-in Y resolvé L3 aquí y ahora". Hecho en paralelo:
 - **L1 revert** (builder-frontend, commit `fa8572d4`): canal de vuelta a "🚶 Walk-in"/"📞 Teléfono" (tu mockup firmado) + test revertido. Live ✅.
 - **L3 raíz** (builder-backend, commit `e4d1f170`): NO era seed — era **código**. `list_active_doctors` (availability_query_repository) sintetizaba `f"Dr. {doctor_id[:8]}"` y el docstring mentía ("router enriches" — nadie enriquecía). Fix: raw SQL LEFT JOIN a `vitalia_doctors` con `COALESCE(NULLIF(TRIM(CONCAT(first_name,' ',last_name)),''),'Sin asignar')` + dual-filter intacto (mismo patrón que agenda_grid). 5 tests real-DB nuevos (HB-108: no mock — el bug vive en el JOIN) + 272/272 scheduling verde. **Live ✅: el picker muestra "Ana Garcia Mendoza"** (el nombre estaba en la DB; el placeholder lo tapaba). Nota cosmética menor (no bloqueante): la DB guarda "Ana Garcia Mendoza" sin tilde ni prefijo "Dra." — pulido de datos, no de código.
 **Estado:** sigue en G (`developed · AWAIT_CHRIS_VERIFY`). 0 deuda de los 16 hallazgos. **Listo para tu G.**
+
+### 2026-06-24 · 🤖 claude · `/pm-vitalia` (G session resumed) · ⚠️ DUDA (esperando lista de observaciones)
+Chris: "continuar mateo crear-cita, tengo lista de observaciones para debatir". Estado confirmado: story en **G** (`developed · AWAIT_CHRIS_VERIFY`), verify-battery full GREEN, 16 hallazgos UX previos cerrados+live-verified. Esta es la ronda de Chris ejerciendo live. Cada observación se triagea: BUG/DIVERGE → fix-loop /dev-team antes del merge; scope ratificado → `chris_verify.rounds` + R reconcile. Esperando la lista para debatir uno a uno antes de despachar nada.
+
+### 2026-06-24 · 🤖 claude · `/pm-vitalia` (G · obs#1 header N3) · 💡 PROPONE → fix-loop (DIVERGE confirmado)
+Chris obs#1: el "‹Agenda" + título "Nueva cita" (botón-presionado) debe ser **sub-sub-tab permanente** — hoy se ve suelto, pierde coherencia. Apuntó al mockup `mockups/nueva-cita.html`.
+**Triage: DIVERGE·build (no design-decision). Chris tiene razón — la build no cumplió su propio mockup firmado.**
+- **Mockup (ratificado, `mockup_final_signed:true`) línea 61-69:** el header es una **"Franja N3 full-bleed · espeja EntitySubNavBar canon — MISMO lenguaje que ribbon/subtabs: bg-panel + border-bottom + sticky"** con `.back-pill` (‹ Agenda) + título-chip mateo-soft (el "botón presionado").
+- **Build (`NuevaCitaView.tsx:327`):** usó el átomo genérico `PageHeader` (flotante, redondeado, in-body) en vez de la franja N3 sticky full-bleed. Eso es lo que se ve "mal/suelto".
+- **Prior-art canon YA existe + el hermano lo hace bien:** `adrian/embudo/nuevo` (`NewLeadPage.tsx`) — create-leaf paralelo — usa `EntitySubNavBar` de `@luana/ui-kit` (full-bleed N3 ribbon: sticky, bg-card, border-bottom, radius:0) en workspace-mode `[‹ Embudo] · Nuevo lead`. Mateo debió usar el mismo lego.
+- **Fix (lazy, 1 swap):** `PageHeader` → `EntitySubNavBar` en NuevaCitaView, espejando NewLeadPage: `rootHref=/{tid}/mateo/agenda · rootLabel="Agenda" · entity={{id:"nueva-cita",name:"Nueva cita"}} · leaves=[] · activeLeaf=null`. Reusa kit, cero átomo nuevo, queda idéntico al mockup = la "sub-sub-tab permanente" que pedís (franja N3 = la posición/lenguaje del SubSubTabsBar). Nota técnica: NO es un AGENT_SUBSUBTABS nav-peer (una hoja de creación no es un "view" hermano de agenda); el hogar canon de un leaf drill-in ES EntitySubNavBar workspace-mode — mismo resultado visual.
+- **Ruteo:** fix-loop `/dev-team` (defecto de build vs mockup firmado), NO `chris_verify.rounds` (no es scope-change, es cumplir lo firmado).
+
+### 2026-06-24 · 🤖 claude · `/pm-vitalia` (G · obs#2 cuerpo 2-col) · 💡 PROPONE → fix-loop (DIVERGE confirmado)
+Chris obs#2 (mockup `/tmp/1.png`, NO literal — el mockup trae anotaciones de qué canon usar + optimizamos ancho responsive): el cuerpo difiere mucho — falta **contenedor** por columna, **título por columna**, y la **disponibilidad del médico con color**.
+**Triage: DIVERGE·build (vs mockup firmado). 3 sub-deltas:**
+- **D2a · Contenedores (cards):** mockup envuelve CADA columna en `.form-card` (border+bg-card+rounded+padding). Build (`NuevaCitaView.tsx:335-715`) tiene los campos **sueltos** (sin card). → envolver cada columna en card canon (`Section`/page-primitive). Responsive: cambiar el `lg:grid-cols-[1fr_380px]` hardcoded por ancho fluido (`minmax`/`1fr`) — optimizar ancho como pediste, no copiar 380px literal.
+- **D2b · Título por columna:** mockup = `.col-head` (uppercase + muted + tracking + regla horizontal a la derecha — se ve en /tmp/1.png). Build = `<h2 text-base font-semibold text-foreground>` (base, oscuro, sin regla). → swap a header de `Section` canon (uppercase/muted).
+- **D2c · Disponibilidad con color:** mockup = card con Badge `success` "✓ Disponible" + header de médico (`card/EntityInfoCard`) + `DayAvailabilityStrip` en bandas de COLOR (verde Horario-atención · gris Ocupado · amarillo-mateo Cita-nueva) + leyenda + helper. Build tiene el strip pero sin el card-wrapper + sin el chip Disponible + sin el header de médico dentro → "difiere". → componer en card canon.
+**★ Anti-literal (lo que NO se construye):** los tags `★ PROPUESTO` + la caja "Mapeo al canon @luana/ui-kit" del mockup son **meta-anotaciones** (marcan átomos a promover por /pm-luana), NO son UI. El builder NO renderiza pills "PROPUESTO" ni el legend canon-map.
+**Canon-map del mockup (qué usar):** Contenedor→`FormPageScaffold`✓(ya) · Canal→`TogglePill` · Servicio/Médico→`RichSelect` · Paciente→`EntityPicker`✓ · Médico card→`EntityInfoCard` · Chips→`Badge success/warning` · Mini-vista→`DayAvailabilityStrip`(feature).
+**Ruteo:** fix-loop `/dev-team` (junto a obs#1). NO scope-change.
+
+### 2026-06-24 · 🤖 claude · `/pm-vitalia` (G · obs#3 galería estados + átomos canon) · 💡 PROPONE (átomos ✓ · galería under-delivers · + reconcilia obs#1)
+Chris obs#3: contrastá la "Galería de estados — disponibilidad + paciente" + los "Átomos propuestos al canon" del mockup vs la build, y mejorá.
+
+**(3b) Átomos al canon — los 4 YA están en `@luana/ui-kit` 0.7.0 + consumidos ✓ (cero gap):**
+`FormActionBar` ✓ · `Badge success|warning` ✓ (kit badge.tsx tiene default/secondary/destructive/success/warning/outline) · `EntityPicker.createAction` ✓ · y `EntitySubNavBar` ✓.
+**★ Reconciliación con obs#1 (tensión interna del mockup):** el átomo propuesto #3 "PageHeader back-pill" dice *"para hojas-leaf, sin abusar de EntitySubNavBar (que es nav de entidad)"* — PERO la franja N3 del header del mockup (línea 61) dice *"espeja EntitySubNavBar canon"*. Veredicto: el átomo "PageHeader back-pill" es **redundante** con `EntitySubNavBar` en **workspace-mode** (`leaves=[]·activeLeaf=null`) — que YA es un header-leaf puro (sin tabs), ya shippeó, y el hermano `adrian/embudo/nuevo` lo prueba. → NO promover un segundo átomo leaf-header duplicado (anti-dup). obs#1 fix = `EntitySubNavBar`, confirmado. El razonamiento "es nav de entidad" quedó viejo (workspace-mode = leaf header).
+
+**(3a) Galería de estados — la build UNDER-DELIVERS 2 cosas:**
+- **Estados de bloqueo colapsados a un solo look.** `AvailabilityChip.tsx:133` mapea `available→success`, y **busy + out_of_hours + no_schedule TODOS → `warning`** (mismo ámbar). El mockup pide 4 visualmente distintos: ✓ Disponible=success(verde) · ✕ Ocupado=**destructive**(rojo, RN-1) · ✕ Fuera de horario=warning(ámbar, RN-3) · ○ Sin horario cargado=**secondary/neutral**(gris, RN-4). Las variants YA existen en el kit → solo mapear status→variant + íconos (○/✕). Cero átomo nuevo.
+- **Falta GUÍA contextual por estado.** El mockup da acción por bloqueo: out_of_hours→alert "elige hora dentro del horario o reasigna"; no_schedule→alert-info "**Carga el horario en Mi Clínica › Horarios**". Build (grep): NO existe esa guía — solo el chip ámbar + (para busy) `FreeDoctorsList` (reasignar ✓). out_of_hours y no_schedule quedan sin salida accionable. → agregar Alert contextual por estado.
+- **409 toast** "Ese horario acaba de ocuparse" → ya tracked (integration test ✓, pending live en G).
+- **Verificar** que `DayAvailabilityStrip` renderiza las 3 variantes de bloqueo (colisión roja / fuera-de-banda / vacío "Sin horario"), no solo el happy.
+
+**Ruteo:** fix-loop `/dev-team`, mismo batch (obs#1+2+3). Todo DIVERGE/mejora vs mockup firmado · NO scope-change.
+
+### 2026-06-24 · 🤖 claude · `/pm-vitalia` (DESPACHO batch obs#1+2+3) · ✓ APLICADO (handoff /dev-team)
+Chris: "despacha el batch y luego continúo con mis comentarios". Escribí el fix-spec SSoT `UX-FIXLOOP-2-2026-06-24.md` (3 obs · file+change+test+canon-lego + anti-literal + cierre live-verify) y encadeno `/dev-team vitalia` para el fix-loop FE (módulo scheduling, lock `code:scheduling` · adrian-canal-inbound=inbox no colisiona). Scope: brand-local FE, CONSUME `@luana/ui-kit` 0.7.0 (cero cambio kit), NO BE. Story sigue en **G** (no auto-handoff a auditor — Chris sigue dando observaciones). ⚠️ Mientras corre el builder NO toco los mismos files; nuevas observaciones tuyas sobre el mismo surface → batch-3 (follow-up), para no pisar el loop en vuelo.
+
+### 2026-06-24 · 🤖 claude · `builder-frontend` (FIX-LOOP batch-2) · ✓ APLICADO (obs#1+2+3 · commit 24270f1d)
+3 observaciones DIVERGE implementadas. TDD donde hay lógica (obs#3 status→variant). Scope: SOLO `vitalia/frontend/src/features/mateo/components/nueva-cita/**` · CERO cambio a `@luana/ui-kit` · NO BE.
+
+**obs#1 — Header N3 (EntitySubNavBar):** `PageHeader` (flotante, in-body) → `EntitySubNavBar` de `@luana/ui-kit` (franja N3 full-bleed, sticky, bg-card, border-bottom, sin radius). Props: `rootHref=/{tenantId}/mateo/agenda`, `rootLabel="Agenda"`, `entity={{ id:"nueva-cita", name:"Nueva cita" }}`. `FormPageScaffold` removido (requería `header` required prop — estructura directa como `NewLeadPage.tsx`). `handleBack`/`router.back()` → `handleCancel` → `router.push(/${tenantId}/mateo/agenda)` (nav determinística).
+
+**obs#2 — Body 2-col:** D2a: cada columna en card (`bg-card border border-border rounded-lg p-6`). D2b: títulos → header canónico (`text-xs font-semibold uppercase tracking-wider text-muted-foreground` + `<hr>`). D2c: grid `lg:grid-cols-[1fr_380px]` → `lg:grid-cols-[2fr_1fr]` (fluido, no ancho fijo).
+
+**obs#3 — Status gallery:** TDD RED→GREEN. `getStatusConfig()` reemplaza `statusLabel()`: `available`→success "✓ Médico disponible" · `busy`→destructive "✕ Ocupado — se solapa con HH:MM" · `out_of_hours`→warning "✕ Fuera del horario" + Alert guide · `no_schedule`→secondary "○ Sin horario registrado" + Alert guide. `Badge data-variant` para test assertions. `Alert`/`AlertDescription` de `@luana/ui-kit`.
+
+**Gates:** tsc 0 errors · eslint 0 errors · vitest mateo 395/395 PASS. 2 fallas arch pre-existentes (test-no-div-layout + kit-shell-fixture-mirror) confirmadas por `git stash` — NO introducidas por este diff.
+
+**Live-verify:** Chrome DevTools MCP no disponible en esta sesión (MCP no instrumentado como tool). **Requiere verificación manual de Chris** en `http://localhost:3002/{tenant}/mateo/agenda/nueva-cita`: (1) franja N3 sticky "‹ Agenda · Nueva cita"; (2) 2 columnas en card con títulos uppercase+muted+hr; (3) ≥1 chip distinto de bloqueo + Alert de guía. Console: 0 errores rojos. Happy path intacto.
+
+Story sigue en **developed · AWAIT_CHRIS_VERIFY** (G). Sin transición.
