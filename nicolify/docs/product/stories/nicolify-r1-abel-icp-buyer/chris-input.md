@@ -237,3 +237,15 @@ Chris ratificó **Opción B: agregar la primitiva al kit AHORA** (antes de cerra
 **Scope del lift:** (1) agregar a `@luana/ui-kit` una primitiva de micro-layout (`Stack`/`Flex` con gap parametrizable) + un `Grid` genérico (incl. 3-col) para layout interno de componente — distinta de las page-primitives existentes (PageContentStack/PageSection/FormLayout); (2) hacer el scanner HB-106 (`_ds-lock-scanner::countLayoutDivs`) altitude-aware (no marcar micro-layout interno como violación de page-primitive); (3) luego nicolify migra los 14 divs de abel contra la primitiva nueva → abel 100% canon-clean → baseline 32→18.
 
 **Estado abel:** APPROVED (kit-atom alignment) pero **cierre DIFERIDO** (reviewing) hasta que la primitiva del kit aterrice. No mergeo todavía. Encadeno a `/pm-luana` para que abra el promotion gate / core-ds story de la primitiva.
+
+### 2026-06-24 · 🤖 claude · `/pm-luana` · 💡 PROPONE
+Prior-art del lift (Modo Core): **ya existe `core-ds-foundation`** (platform story, `developing`/AWAIT_CHRIS_VERIFY) que es dueña de los layout-primitives de `@luana/ui-kit`. Pero su BATCH-2 es **page-level** (PageContainer/PageContentStack/PageSection/FormLayout…) — un `Stack`/`Grid` de **micro-layout** NO está en su scope. O sea, la primitiva que querés es net-new y su hogar natural es el track core-ds.
+
+**Boundary real:** esto es platform/engine (`core/@luana/ui-kit` + el scanner + la story bajo `docs/` raíz) → NO se hace desde el worktree de marca `luana-nicolify` (engine boundary + scope gate M13 + el `.pth`/checkout de core resuelve a main). El hogar correcto = **worktree main `~/Proyectos/luana-platform`**, bajo `core-ds-foundation` (o un delta core-ds focalizado).
+
+**Recomendación:**
+1. abel queda **APPROVED (kit-atom) + blocked_on_kit_primitive** en `reviewing` (banked: commits d3c91f93…a5c65b7e pushed).
+2. La primitiva `Stack`/`Grid` micro-layout + el scanner altitude-aware (HB-111) se hacen en el **worktree main**, como delta de `core-ds-foundation` (su dueña). `/pm-luana` ahí abre el scope (intake-handshake: API de la primitiva) → `/architect` → `/dev-team` (es chico: 2 primitivas thin tipo PageContentStack).
+3. Cuando aterrice + promueva a main + sync → nicolify migra los 14 divs de abel contra la primitiva nueva → baseline 32→18 → demo gate #37 → merge.
+
+No fuerzo la creación del story platform desde acá (worktree equivocado + scope gate). Lo natural: arrancás una sesión en `~/Proyectos/luana-platform` para el delta core-ds, y volvemos a nicolify para cerrar abel.
