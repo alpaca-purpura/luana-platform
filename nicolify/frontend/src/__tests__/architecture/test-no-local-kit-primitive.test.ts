@@ -21,8 +21,10 @@
  *
  * downstream-regression-na: brand-local arch fitness test; no cross-brand consumers.
  */
-import { describe, it, expect } from "vitest";
 import { resolve, join, basename } from "path";
+
+import { describe, it, expect } from "vitest";
+
 import { collectSourceFiles, relPosix } from "./_ds-lock-scanner";
 
 const ROOT = resolve(__dirname, "../../..");
@@ -31,12 +33,48 @@ const FEATURES = join(ROOT, "src", "features");
 // Kit primitives that must live in `@luana/ui-kit` (NOT re-implemented in a feature).
 // Exact basename match only (lowercased) — domain-prefixed names are exempt by design.
 const KIT_PRIMITIVES = new Set([
-  "accordion", "alert", "alertdialog", "avatar", "badge", "button", "calendar",
-  "card", "chart", "checkbox", "chip", "collapsible", "combobox", "command",
-  "dialog", "drawer", "dropdown", "dropdownmenu", "form", "input", "label",
-  "menu", "modal", "pagination", "popover", "progress", "radio", "radiogroup",
-  "scrollarea", "select", "separator", "sheet", "skeleton", "slider", "sonner",
-  "spinner", "switch", "table", "tabs", "textarea", "toast", "tooltip",
+  "accordion",
+  "alert",
+  "alertdialog",
+  "avatar",
+  "badge",
+  "button",
+  "calendar",
+  "card",
+  "chart",
+  "checkbox",
+  "chip",
+  "collapsible",
+  "combobox",
+  "command",
+  "dialog",
+  "drawer",
+  "dropdown",
+  "dropdownmenu",
+  "form",
+  "input",
+  "label",
+  "menu",
+  "modal",
+  "pagination",
+  "popover",
+  "progress",
+  "radio",
+  "radiogroup",
+  "scrollarea",
+  "select",
+  "separator",
+  "sheet",
+  "skeleton",
+  "slider",
+  "sonner",
+  "spinner",
+  "switch",
+  "table",
+  "tabs",
+  "textarea",
+  "toast",
+  "tooltip",
 ]);
 
 // ── Shrink-only baseline (MEASURED 2026-06-24 — HB-107) ───────
@@ -46,7 +84,9 @@ function scan(): string[] {
   const hits: string[] = [];
   for (const abs of collectSourceFiles(FEATURES, [".tsx"])) {
     if (!abs.replace(/\\/g, "/").includes("/components/")) continue;
-    const base = basename(abs).replace(/\.tsx$/, "").toLowerCase();
+    const base = basename(abs)
+      .replace(/\.tsx$/, "")
+      .toLowerCase();
     if (KIT_PRIMITIVES.has(base)) hits.push(relPosix(ROOT, abs));
   }
   return hits;

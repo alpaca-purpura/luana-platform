@@ -2,7 +2,7 @@
 story_id: nicolify-r0-design-system-adoption
 brand: nicolify
 type: ui-story                       # adopción visual cross-cutting — todas las hojas re-expresadas vía primitivas compartidas (esencia homologada · valores de marca propios)
-state: developed                     # idea → refining → refined → ready → developing → developed → reviewing → done · developed 2026-06-15 (/dev-team: 5/5 tickets + live-verify estructural OK)
+state: reviewing                     # idea → refining → refined → ready → developing → developed → reviewing → done · /auditor pickup 2026-06-24 (reconciled:true + chris_verify.signoff SATISFIED)
 release: R0                          # Fundación — homologar ANTES de crecer (ADR-014 HARD: "empezar homologado")
 map_zone: infraestructura            # paradigma 3 zonas — atributo de calidad (consistencia UI cross-hoja) · derivada de SYSTEM-MAP::zones (a confirmar /architect)
 map_box: plataforma-tecnica
@@ -13,8 +13,20 @@ cap_target: design-system/nicolify-ui-homologation
 cap_change_type: new                 # NUEVA cap (no existía design-system/nicolify-ui-homologation) — 03-arch crea el YAML schema v2. (revert de un flip erróneo del commit worker 3bbbabea: "adopción cero-creación de COMPONENTES" ≠ "no cap nueva"; el cap protocol mira la cap, no los componentes)
 route: null                          # cross-cutting — no es una hoja con ruta única
 demo_required: true                  # visual: las hojas deben render idéntico/mejor, cero regresión
-last_modified: 2026-06-16
-phase: AWAIT_CHRIS_VERIFY             # G · /dev-team cerró developed; live-verify estructural OK. Pausa-y-ofrece: Chris ejerce + firma chris_verify.signoff (pill demo #37 completa post kit-lift)
+last_modified: 2026-06-24
+phase: HANDOFF_TO_PM_MERGE            # /auditor APPROVED 2026-06-24 (Auditor Responsable v5). Carril R/A fixes aplicados (test-ds stale + eslint config dedup + prettier autofix); engine tsc #3 → /pm-luana HB-109. → /pm-nicolify merge.
+audit_verdict: APPROVED              # /auditor 2026-06-24 · CHECKPOINTS.md C1-C5 · gherkin 6/6 PASS · surface nicolify 100% verde
+audit_fixes:                         # fixes del auditor (Carril R/A) durante reviewing — re-verificados verdes
+  - "Carril R · test-ds-single-token-source.test.ts:168 — anti-FOUC stale (testeaba el script borrado por 42f759c8) → reescrito a next-themes + suppressHydrationWarning. test-ds 47/47."
+  - "Carril R · eslint.config.mjs — dedup @typescript-eslint (next/typescript vs tseslint) → eslint corre + ds-lock activo. 0 errores."
+  - "Carril A · eslint --fix prettier en src/__tests__/architecture/ (8 errores de HB-106 825ec59a). 0 errores restantes."
+  - "Boundary · #3 tsc engine core/@luana/hooks (zustand persist, pre-existente HB-78) → flag /pm-luana HB-109. nicolify src tsc limpio. NO bloquea."
+gate_state_final:                    # tras fixes del auditor (re-verificado 2026-06-24)
+  tsc: "nicolify src 0 errores (único: engine core/@luana/hooks → HB-109 out-of-scope)"
+  eslint: "0 errores (219 warnings pre-existentes, no bloquean)"
+  vitest: "549/549 (incl. arch suite 191)"
+  live_verify_37: "satisfecha (write PATCH 200 + persist + dark toggle real x3 + pill — Chrome MCP)"
+gherkin_matrix: 06-audit/gherkin-matrix.md
 dod_live_verified: true              # estructural — ejercido live en dev-app nicolify (Chrome DevTools MCP) 2026-06-15
 dod_env: "docker dev stack (BE :8001 + FE :3001) · Chrome DevTools MCP · tenant alpaca-purpura (7f464ab7) · owner.demo@nicolify.com"
 dod_evidence:
@@ -41,7 +53,21 @@ dod_caveats:
   - "FE dev-server (webpack, ~83% de 3GiB) reinicia en loop → cold-compile de /abel/icp (~20s) puede dejar 'Cargando' >15s o resetear socket → golden flaky (cae en el HB-68 guard, NO falso-verde). Dev-infra footgun, NO bug de adopción (BE 200/201/PATCH-200). Harness-issue capturado (dev-stack memory + CLERK_TESTING_TOKEN ausente)."
 chris_verify:
   required: true
-  signoff: null                      # AWAIT CHRIS — round-1 (dark CSS, INSUFICIENTE) + round-2 (pill) + round-3 (dark toggle REAL + login redirect) FIXED + live-verified. Pausa-y-ofrece: Chris re-ejerce demo #37 (toggle dark + controles pill + login) + firma.
+  signoff:                           # ✅ 2026-06-24 — Chris delegó la live-verify a Claude (Chrome DevTools MCP) + pre-autorizó cierre ("si me dices que ya está, pues lo cerramos")
+    by: "Chris (delegó live-verify a Claude · pre-autorizó cierre)"
+    date: 2026-06-24
+    result: SATISFIED
+    notes: >
+      Claude live-verificó el FE homologado en dev-app.nicolify.com (Clerk owner.demo@nicolify.com, tenant 7f464ab7):
+      (1) LOGIN redirect afterSignIn=/ → aterriza en /…/christian/pipeline, 0 'Rendered more hooks', edge-redirect proxy.ts (GET / 307).
+      (2) DARK toggle REAL (click del botón) ×3 en AMBAS direcciones LIMPIO: data-theme dark↔light, htmlClass='' SIEMPRE
+          (la clase .dark ya NUNCA queda pegada = el bug de round-3 resuelto), bodyBg rgb(18,18,28)↔rgb(255,255,255),
+          persiste localStorage nicolify-theme, 0 reglas @media prefers-color-scheme. Banner/molecules honran dark.
+      (3) PILL controls: --radius-control=9999px (vive en @theme), 4 control atoms border-radius 9999px.
+      (4) WRITE autosave: PATCH /api/v1/abel/icp/82aa34d1 200 + valor persiste tras reload (Vertical/industria).
+      Motivo real confirmado = el mismo mecanismo de vitalia (single-axis data-theme + anti-FOUC de next-themes, sin script custom);
+      el port a nicolify había dropeado eso → 42f759c8 lo alineó. Cero engine. 500s = avatar.svg/favicon placeholder (no regresión).
+    open_items: []
   rounds:
     - date: 2026-06-16
       by: Chris
@@ -93,10 +119,10 @@ chris_verify:
       gate_gap: "El dark se declaró 'live-verified' en round-1 testeando la RESOLUCIÓN del variant (evaluate_script seteando atributos), NO el botón real → falso verde. round-3 ejerce el click real. Login nunca se ejerció desde el path afterSignIn=/ (sólo con redirect_url)."
       resolution: fixed-pending-chris-reverify
       fix:
-        commits: [PENDING-pathspec-commit]
+        commits: [b5acab8e, 42f759c8]   # b5acab8e=round-3 · 42f759c8=align-to-vitalia (borra el script anti-FOUC custom, light default, sin system) — espejo exacto de vitalia
         changes:
           - "providers.tsx: attribute='data-theme' (eje ÚNICO) — eliminada la dualidad .dark/data-theme."
-          - "layout.tsx: script anti-FOUC setea SOLO data-theme='dark' (ya NO classList.add('dark')) → nada deja la clase .dark pegada."
+          - "layout.tsx: script anti-FOUC custom ELIMINADO (42f759c8) → anti-FOUC delegado al script propio de next-themes (= vitalia); nada agrega .dark al <html>."
           - "proxy.ts: redirect del root `/` movido al EDGE (307 antes de render, mismo patrón que isBareTenantRoute) → mata el redirect() in-render de RootPage en soft-nav. Resuelve tenant vía pickTenantSlug (fast-path JWT + fallback clerkClient)."
           - "resolve-primary-tenant.ts: extraído pickTenantSlug + exportado DEV_FALLBACK_TENANT/TenantMetadata (reuso proxy↔server, anti-dup)."
           - "test-ds-single-token-source.test.ts: +3 regression (anti-FOUC sin classList.add dark · seedea data-theme · providers attribute=data-theme)."
@@ -110,7 +136,22 @@ chris_verify:
           0 hook errors (sólo 500 conocido de avatar/favicon placeholder).
         gates: "tsc 0 · eslint 0 errors · arch suite test-ds 47/47 (+3 round-3) · vitest FE 542/542 (incl. los 2 ex-reds R0 ya verdes) · 0 regresiones"
       core_followup: "PENDIENTE /pm-luana — proposals del kit (dark-contract round-1 + rounded-control round-2) siguen; round-3 fue cableado brand-local (anti-FOUC dual-write + afterSignIn root redirect) — candidato a cláusula en SHELL-DESIGN-CONTRACT/ADR-nicolify (single-axis theme + edge-redirect del root)."
-reconciled: false                    # /pm-nicolify pone true en R (tras signoff) antes del /auditor
+    - date: 2026-06-24
+      by: Claude (re-verify final · live-verify delegada por Chris · Chrome DevTools MCP)
+      finding: "Re-verify del G tras 42f759c8 (align-to-vitalia). TODO VERDE — login + dark toggle real + pill + write/persist."
+      root_cause: "N/A — verificación, no bug. El motivo real del dark trabado (round-3) era la dualidad .dark/data-theme; 42f759c8 borró el script anti-FOUC custom y dejó SOLO el mecanismo de next-themes (= vitalia). Confirmado por click real del toggle."
+      scope: "N/A (verify)."
+      resolution: verified-live-pass
+      fix:
+        commits: []
+        live_verify: >
+          dev-app.nicolify.com autenticado (owner.demo, tenant 7f464ab7). DARK toggle ×3 ambas direcciones:
+          data-theme dark↔light, htmlClass='' siempre, bodyBg 18,18,28↔255,255,255, persiste nicolify-theme.
+          LOGIN afterSignIn=/ → shell, GET / 307 (edge), 0 'Rendered more hooks'. PILL --radius-control=9999px (4 atoms).
+          WRITE PATCH /api/v1/abel/icp/82aa34d1 200 + persiste tras reload. Console: solo 500 avatar.svg/favicon placeholder (no regresión).
+        gates: "live-verify Chrome DevTools MCP — 4/4 escenarios verdes."
+      core_followup: "Sin cambios — los followups de round-1/2/3 al kit siguen pendientes en /pm-luana (NO bloquean esta story)."
+reconciled: true                     # ✅ R aplicado /pm-nicolify 2026-06-24 (tras chris_verify.signoff SATISFIED): (1) round-3 commits PENDING→[b5acab8e,42f759c8]; (2) 04-validators cat-4 goldens A/C1/C2/D → deferred+must_pass:false (HB-79 anti-verde-fantasma, baselines nunca capturados, cubiertos por live-verify V8/#37); (3) V8-live-verify-dod37 blocked_on→null + status:satisfied; (4) scope-deltas round-1..4 (single-axis theme + edge-redirect) ya en chris_verify.rounds = allowlist auditor. cap YAML design-system/nicolify-ui-homologation existe (cap_change_type:new OK). → AUTO-HANDOFF /auditor.
 build_status:                        # /dev-team 2026-06-15 — 5/5 tickets pushed, green native
   T-1: { commit: cb8de344, status: tests-passing, note: "globals↔design-tokens + --radius-control + arch-test (39/39)" }
   T-2: { commit: facdd25b, status: tests-passing, note: "4 mirrors killed → @luana/ui-kit (518/518 + arch 160/160)" }
@@ -134,7 +175,7 @@ mockup_decisions:
   control_radius: "fully-rounded (pill) vía token --radius-control brand-overridable (RN-7) — flag /architect: kit Input/Button/Select debe exponerlo"
 mockup_base_set: true               # _shared.css + ADR-nicolify-003 + rule shell-mockup-per-component.md (mirror vitalia)
 last_artifact: 06-tickets.yaml
-next_action: "EN G (AWAIT_CHRIS_VERIFY). Round-2 (pill radius) found+fixed+live-verified (controles render pill 9999px · golden atoms.png capturado · arch 181/181 · tsc 0). Round-1 (dark) ya fixed. ÚNICO pendiente: Chris re-ejerce demo #37 (dark toggle + controles pill sobre el FE homologado) + firma chris_verify.signoff. Tras signoff → R (reconcile /pm-nicolify, reconciled: true) → /auditor → merge."
+next_action: "/auditor APPROVED 2026-06-24 (CHECKPOINTS.md). → /pm-nicolify MERGE: 07-merge.md 5 secciones (copiar gherkin-matrix §1 + comando verify §5; run Playwright visual/a11y = follow-up stack-estable, NO falso-verde) → cap design-system/nicolify-ui-homologation change_log[0] type=new → archive story (R2, git mv mismo commit) → state reviewing→done. Pendiente /pm-luana: HB-109 (engine tsc zustand) + learning eslint dep-drift (HB-110). Lock code:design-system se libera para storybook-inventory tras done."
 ready_package:                       # /architect 2026-06-16 — paquete completo FE-only
   - 03-arch.md                       # consolidado FE (= 03-arch-fe; cero BE/agentic)
   - 03-arch-fe.md                    # quick-ref builder-frontend

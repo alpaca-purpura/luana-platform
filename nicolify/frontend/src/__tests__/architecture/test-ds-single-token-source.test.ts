@@ -164,8 +164,18 @@ describe("DS dark-mode toggle wiring (ds-adoption G round-3 regression)", () => 
     ).not.toMatch(/classList\.add\(\s*["']dark["']\s*\)/);
   });
 
-  it("anti-FOUC script seeds data-theme (so first paint matches stored theme)", () => {
-    expect(layout).toMatch(/setAttribute\(\s*["']data-theme["']\s*,\s*["']dark["']\s*\)/);
+  it("anti-FOUC delegated to next-themes — <html suppressHydrationWarning> (no custom script)", () => {
+    // 42f759c8 (align-to-vitalia, ratified G round-3 signoff): the CUSTOM anti-FOUC script was
+    // REMOVED — it was the dual-write source of the stuck-dark bug. next-themes injects its OWN
+    // pre-paint script (reads storageKey → sets data-theme before first paint) when ThemeProvider
+    // is configured with attribute + storageKey; `suppressHydrationWarning` on <html> is REQUIRED
+    // so that injected script does not trip a hydration mismatch. Asserting a custom setAttribute
+    // in layout.tsx (the old approach) would re-introduce the dual-axis bug. Live-verified
+    // 2026-06-24 (Chrome DevTools MCP): toggle clean both directions, no FOUC, no stuck .dark.
+    expect(
+      layout,
+      "next-themes anti-FOUC needs suppressHydrationWarning on <html> (vitalia-aligned single-axis)",
+    ).toMatch(/suppressHydrationWarning/);
   });
 
   it('ThemeProvider uses attribute="data-theme"', () => {

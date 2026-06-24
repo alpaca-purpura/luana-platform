@@ -23,6 +23,25 @@ const nicolifyPlugin = {
   },
 };
 
+// eslint-config-next (flat) bundles its OWN "@typescript-eslint" plugin registration (config
+// "next/typescript"), which collides with typescript-eslint's typed configs spread below
+// → ESLint flat-config error: «Cannot redefine plugin "@typescript-eslint"» → lint NEVER runs
+// (the ds no-arbitrary lock becomes vapor). Single source of @typescript-eslint = `tseslint`
+// (recommendedTypeChecked + stylisticTypeChecked, spread first). Strip next's duplicate plugin
+// object; next's @typescript-eslint/* RULES still resolve via tseslint's registration.
+// (vitalia avoids this by not using eslint-config-next at all; nicolify keeps it for next rules.)
+const nextConfigArr = Array.isArray(nextConfig) ? nextConfig : [nextConfig];
+const nextConfigNoTsPluginDup = nextConfigArr.map((c) =>
+  c && c.plugins && c.plugins["@typescript-eslint"]
+    ? {
+        ...c,
+        plugins: Object.fromEntries(
+          Object.entries(c.plugins).filter(([key]) => key !== "@typescript-eslint"),
+        ),
+      }
+    : c,
+);
+
 /** @type {import("eslint").Linter.Config[]} */
 export default [
   // Base JS recommendations
@@ -44,8 +63,8 @@ export default [
     },
   },
 
-  // Next.js
-  ...nextConfig,
+  // Next.js (with @typescript-eslint plugin dup stripped — see nextConfigNoTsPluginDup above)
+  ...nextConfigNoTsPluginDup,
 
   // Storybook
   ...storybook.configs["flat/recommended"],

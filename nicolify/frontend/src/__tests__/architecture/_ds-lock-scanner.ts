@@ -25,6 +25,9 @@ import { join, relative } from "path";
 const MULTI_LINE_COMMENT = /\/\*[\s\S]*?\*\//g;
 const SINGLE_LINE_COMMENT = /\/\/.*$/gm;
 
+/**
+ *
+ */
 export function stripComments(source: string): string {
   return source
     .replace(MULTI_LINE_COMMENT, (m) => " ".repeat(m.length))
@@ -36,6 +39,9 @@ export function stripComments(source: string): string {
 // ---------------------------------------------------------------------------
 const SKIP_DIRS = new Set(["__tests__", "node_modules", ".next"]);
 
+/**
+ *
+ */
 export function collectSourceFiles(
   srcDir: string,
   extensions: string[] = [".tsx", ".ts"],

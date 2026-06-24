@@ -18,8 +18,10 @@
  *
  * downstream-regression-na: brand-local arch fitness test; no cross-brand consumers.
  */
-import { describe, it, expect } from "vitest";
 import { resolve, join } from "path";
+
+import { describe, it, expect } from "vitest";
+
 import { collectSourceFiles, countLayoutDivs, read, relPosix } from "./_ds-lock-scanner";
 
 const ROOT = resolve(__dirname, "../../..");
@@ -52,7 +54,7 @@ describe("HB-106 A-2 — raw <div> layout containers ratchet (canon §2.7, shrin
         `New raw layout <div> detected: ${total} > baseline ${BASELINE_TOTAL}.`,
         "Design System canon §2.7: a vertical flex stack or grid is layout that",
         "should use a page-primitive (Section / PageContentStack / grid primitive)",
-        "instead of a raw <div className=\"flex-col gap-…\"> / <div grid-cols-…>.",
+        'instead of a raw <div className="flex-col gap-…"> / <div grid-cols-…>.',
         "Migrate to a primitive, or lower this baseline if you removed one.",
       ].join("\n"),
     ).toBeLessThanOrEqual(BASELINE_TOTAL);

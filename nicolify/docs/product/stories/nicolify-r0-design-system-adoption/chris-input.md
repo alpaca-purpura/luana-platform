@@ -335,3 +335,23 @@ Patrón cross-brand (vitalia+nicolify) → candidate lift `/pm-luana`. Próximo:
 - wip/nicolify: fix checkpoint `132be2c7` + chris-input `a7f711a5` → pushed.
 - main: cherry-pick `-x` del fix → `4510f0c8` → pushed (fast-forward, ci-parity advisory por `.ci-parity-deferred`). main tenía el MISMO bug (sin `---` de cierre) → por eso el `:4000` multi mostraba idea; ahora parsea developed.
 - Ambos worktrees (wip :4001 + main :4000) leen state=developed. Resto de la story (3 fix-rounds) sigue sin mergear a main — solo viajó el fix del frontmatter.
+
+**2026-06-24 · ✓ APLICADO (Chris: "Hazlo tú con chrome devtools, si está lo cerramos, si no lo corriges con el motivo real ya que vitalia funciona"):**
+- **Live-verify delegada por Chris** (Chrome DevTools MCP, dev-app.nicolify.com, Clerk owner.demo, tenant 7f464ab7) → **4/4 escenarios VERDES**:
+  - LOGIN afterSignIn=`/` → aterriza en shell `/…/christian/pipeline`, `GET / 307` edge (proxy.ts), **0 "Rendered more hooks"**.
+  - DARK toggle REAL (click del botón) ×3 ambas direcciones LIMPIO: `data-theme` dark↔light, `htmlClass=""` SIEMPRE (la `.dark` ya NO queda pegada = bug round-3 muerto), bg `18,18,28`↔`255,255,255`, persiste `nicolify-theme`, 0 `@media prefers-color-scheme`.
+  - PILL `--radius-control=9999px` (en `@theme`), 4 control atoms 9999px.
+  - WRITE `PATCH /api/v1/abel/icp/82aa34d1 200` + persiste tras reload.
+- **Motivo real (lo que Chris pidió):** el dark trabado NO era CSS — era la **dualidad de ejes**. El port a nicolify tenía un script anti-FOUC custom que metía `.dark` al `<html>`; next-themes solo gestiona `data-theme` → al pasar a claro la `.dark` quedaba pegada → trabado oscuro. **Vitalia funciona porque NO tiene ese script** (single-axis `data-theme`, anti-FOUC del propio next-themes). Commit `42f759c8` borró el script = espejo exacto de vitalia.
+- **G CERRADO:** `chris_verify.signoff: SATISFIED` (por delegación + pre-autorización). round-3 commits `PENDING`→`[b5acab8e,42f759c8]`; round-4 (re-verify) registrado.
+- **R (reconcile) APLICADO:** `reconciled: true`. 04-validators cat-4 goldens A/C1/C2/D → `deferred + must_pass:false` (HB-79 anti-verde-fantasma; baselines nunca capturados, cubiertos por live-verify V8/#37); V8-live-verify-dod37 `blocked_on:null + status:satisfied`; cap YAML `design-system/nicolify-ui-homologation` existe.
+- **💡 PRÓXIMO:** AUTO-HANDOFF `/auditor` (developed→reviewing). Lock `code:design-system` se libera para `storybook-inventory` tras `done`.
+
+**2026-06-24 · ✓ APLICADO (/auditor — Auditor Responsable v5):** Verdict **APPROVED** (`CHECKPOINTS.md` C1-C5 · gherkin 6/6 PASS · `06-audit/gherkin-matrix.md`).
+- gate-runner inicial = `any_fail=true` (3 issues distintos, NO 1). El auditor los resolvió/ruteó:
+  1. **Carril R** — `test-ds-single-token-source.test.ts:168` anti-FOUC **stale** (asertaba el `setAttribute('data-theme')` del script custom que `42f759c8` borró) → reescrito al mecanismo real (next-themes + `suppressHydrationWarning`). test-ds **47/47**.
+  2. **Carril R** — `eslint.config.mjs` roto: `eslint-config-next` (`next/typescript`) re-registraba `@typescript-eslint` colisionando con `tseslint` typed → ConfigError → **eslint NUNCA corría → el ds-lock (deliverable central, SC-2) era VAPOR**. Dedup del plugin → eslint corre + `@luana/ds/no-arbitrary-value` activo. **0 errores**. (Origen: dep-drift del merge `c63c7930`; ningún gate lo cazó hasta este audit → HB-110.)
+  3. **Carril A** — 8× `prettier/prettier` errors en arch-tests de **HB-106** (`825ec59a`, batch harness de hoy, committeados sin formato porque eslint estaba roto) → `eslint --fix`. 0 errores.
+  4. **Boundary** — tsc `core/@luana/hooks` (zustand `persist`, **pre-existente** patch HB-78, NO esta story, solo type-check) → **NO self-fix** (engine), flag **/pm-luana HB-109**. nicolify src tsc **limpio**. NO bloquea esta story FE.
+- **Surface nicolify 100% verde:** tsc src 0 · eslint 0 errores · vitest **549/549** · live-verify #37 satisfecha (write PATCH 200 + persist + dark toggle real ×3 + pill, Chrome MCP).
+- **💡 PRÓXIMO:** AUTO-HANDOFF `/pm-nicolify MERGE` → 07-merge.md + cap change_log type=new + archive (R2) + `reviewing→done`. Follow-ups (NO bloquean): goldens visuales A/C1/C2/D + e2e a11y-subnav con stack estable; HB-109 (engine tsc) + HB-110 (eslint dep-drift) a /pm-luana.

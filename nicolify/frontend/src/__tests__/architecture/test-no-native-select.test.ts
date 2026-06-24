@@ -16,8 +16,10 @@
  *
  * downstream-regression-na: brand-local arch fitness test; no cross-brand consumers.
  */
-import { describe, it, expect } from "vitest";
 import { resolve, join } from "path";
+
+import { describe, it, expect } from "vitest";
+
 import { collectSourceFiles, read, relPosix, stripComments } from "./_ds-lock-scanner";
 
 const ROOT = resolve(__dirname, "../../..");

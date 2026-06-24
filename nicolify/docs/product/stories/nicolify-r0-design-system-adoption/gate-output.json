@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0",
+  "pr_folder": "nicolify/docs/product/stories/nicolify-r0-design-system-adoption",
+  "ticket": null,
+  "iter": "audit-1",
+  "command": "cd ${WS}/nicolify/frontend && npx tsc --noEmit && npx eslint src/ --cache && npx vitest run && npx vitest run src/__tests__/architecture/",
+  "command_alias": "test-frontend",
+  "started_at": "2026-06-24T07:37:33Z",
+  "finished_at": "2026-06-24T07:39:02Z",
+  "duration_ms": 89000,
+  "exit_code": 1,
+  "raw_log_path": "nicolify/docs/product/stories/nicolify-r0-design-system-adoption/gate-logs/iter-audit-1-test-frontend.log",
+  "gates": [
+    {
+      "name": "tsc",
+      "status": "FAIL",
+      "errors_count": 1,
+      "first_5_errors": [
+        "../../core/@luana/hooks/src/create-ssr-safe-persisted-store.ts(195,32): error TS2345: Argument of type 'StateCreator<T, [], [[\"zustand/persist\", T]]>' is not assignable to parameter of type 'StateCreator<T, [], [never, unknown][]>'.",
+        "  Type '\"zustand/persist\"' is not assignable to type 'never'. (error originates in core/@luana/hooks, NOT in nicolify/frontend/src)"
+      ]
+    },
+    {
+      "name": "eslint",
+      "status": "FAIL",
+      "errors_count": 0,
+      "first_5_errors": [
+        "TOOLING/CONFIG ERROR (not a lint finding): ESLint 9.39.4 — ConfigError: Config \"next/typescript\": Key \"plugins\": Cannot redefine plugin \"@typescript-eslint\".",
+        "ESLint never ran any rules — flat config failed to load. The no-arbitrary-value ds-lock rule was NOT evaluated. Exit code 2."
+      ]
+    },
+    {
+      "name": "vitest",
+      "status": "FAIL",
+      "errors_count": 1,
+      "first_5_errors": [
+        "FAIL src/__tests__/architecture/test-ds-single-token-source.test.ts > DS dark-mode toggle wiring (ds-adoption G round-3 regression) > anti-FOUC script seeds data-theme (so first paint matches stored theme)",
+        "AssertionError: expected layout.tsx to match /setAttribute\\(\\s*[\"']data-theme[\"']\\s*,\\s*[\"']dark[\"']\\s*\\)/ (at test-ds-single-token-source.test.ts:168:20)",
+        "Received: layout.tsx has NO custom anti-FOUC script — comment says 'Anti-FOUC delegado al script propio de next-themes (igual que vitalia; sin script custom)'.",
+        "Root cause: commit 42f759c8 (align-to-vitalia) removed the custom anti-FOUC script, but round-3 added this test requiring setAttribute('data-theme','dark') to exist in layout.tsx.",
+        "Summary line: Test Files 1 failed | 38 passed (39); Tests 1 failed | 548 passed (549)."
+      ]
+    },
+    {
+      "name": "arch-tests",
+      "status": "FAIL",
+      "errors_count": 1,
+      "first_5_errors": [
+        "FAIL src/__tests__/architecture/test-ds-single-token-source.test.ts:168 > anti-FOUC script seeds data-theme (so first paint matches stored theme)",
+        "AssertionError: expected '// cap: shell-organism.shell-nicolify...' to match /setAttribute\\(\\s*[\"']data-theme[\"']\\s*,\\s*[\"']dark[\"']\\s*\\)/",
+        "Same failure as the full vitest run (this subset is a strict subset). Summary: Test Files 1 failed | 11 passed (12); Tests 1 failed | 190 passed (191).",
+        "PASSED arch files: test-ds-tokens-lock, test-no-kit-mirror, test-no-cross-brand-import, test-no-div-layout, test-no-native-select, test_spanish_neutro, test-no-local-kit-primitive, test_agent_tw_classes, test_shell_routes_ssot, test-tenant-id-not-from-params, no-store-in-ssr-skeleton.",
+        "ONLY test-ds-single-token-source FAILED (1 of its 3 round-3 anti-FOUC assertions)."
+      ]
+    }
+  ],
+  "overall": {
+    "any_fail": true,
+    "fail_gate_names": ["tsc", "eslint", "vitest", "arch-tests"],
+    "summary": "tsc 1 error (in core/@luana/hooks, not nicolify src) | eslint CONFIG-BROKEN (next/typescript plugin redefine — lint never ran) | vitest 1 failed/548 passed/549 | arch-tests 1 failed/190 passed/191 — the SAME single test failure (test-ds-single-token-source anti-FOUC data-theme seed) accounts for both vitest+arch fails"
+  },
+  "notes": "AUDITOR ATTENTION (flagged in invocation): The anti-FOUC concern is CONFIRMED. test-ds-single-token-source.test.ts has 3 round-3 anti-FOUC regression tests; they are now mutually inconsistent with the code after commit 42f759c8 (align-to-vitalia, removed custom anti-FOUC script). RESULTS: (1) 'anti-FOUC script does NOT add the .dark class' = PASSES (layout no longer has classList.add('dark')). (2) 'anti-FOUC script seeds data-theme (so first paint matches stored theme)' = FAILS — asserts setAttribute('data-theme','dark') must exist in layout.tsx, but the custom script was removed (now delegated to next-themes). (3) 'ThemeProvider uses attribute=data-theme' = PASSES (checks providers.tsx). The exact failing assertion is at test-ds-single-token-source.test.ts:168. SECONDARY: tsc error originates in core/@luana/hooks (zustand persist StateCreator typing), NOT in nicolify/frontend/src — pre-existing engine typing issue surfaced by the FE tsc run. eslint failure is a flat-config tooling breakage (Cannot redefine plugin @typescript-eslint via next/typescript), meaning the no-arbitrary-value ds-lock eslint rule did NOT execute at all this run. Per-gate FAIL is mechanical; overall PR verdict left to auditor. Edit tool was unavailable in this context, so JSON written via single final Write (skeleton-first preserved; no truncation occurred)."
+}

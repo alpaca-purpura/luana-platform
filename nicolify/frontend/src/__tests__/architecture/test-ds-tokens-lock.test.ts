@@ -15,9 +15,9 @@
  *
  * downstream-regression-na: brand-local arch fitness test; no cross-brand consumers.
  */
-import { describe, it, expect } from "vitest";
-import { Linter } from "eslint";
 import noArbitraryValue from "@luana/eslint-config/no-arbitrary-value";
+import { Linter } from "eslint";
+import { describe, it, expect } from "vitest";
 
 const linter = new Linter();
 
@@ -31,7 +31,7 @@ function lint(code: string) {
 }
 
 describe("T-4 — no-arbitrary-value locks the four token axes (SC-1)", () => {
-  const locked: Array<[string, string, RegExp]> = [
+  const locked: [string, string, RegExp][] = [
     ["font-size", 'const c = "text-[13px]";', /font-size.*text-sm/],
     ["radius", 'const c = "rounded-[7px]";', /radius.*rounded-md/],
     ["spacing", 'const c = "p-[18px]";', /spacing.*p-4/],
