@@ -7,8 +7,9 @@
  * RN-9: BE is_duplicate=true → prompts "¿Usar existente?" before resolving.
  *
  * States:
- *   "picker"   — EntityPicker typeahead (default)
- *   "create"   — Inline mini-form (name + phone)
+ *   "picker"   — EntityPicker typeahead (default); when patient is selected
+ *                shows rich chip (avatar initials + name + masked PHI sub + ✕)
+ *   "create"   — Inline mini-form (name + phone + email optional)
  *   "duplicate"— Duplicate-phone confirmation prompt (RN-9)
  *
  * Controlled: value/onChange → parent stores patientId in RHF/Zustand.
@@ -32,14 +33,15 @@ import { cn } from "@/lib/cn";
 import { useSearchPatients, useCreatePatientInline } from "../../hooks/use-patients";
 import type { PatientPickerItem, PatientInlineCreateResult } from "../../hooks/use-patients";
 
-// ── Inline create schema (minimal — name required, phone optional per BE contract) ──
+// ── Inline create schema ──────────────────────────────────────────────────────
 // Bug #5 fix: phone defaults to "" from RHF defaultValues. An empty string is NOT
 // null/undefined, so z.string().min(6)... fails even when the field is blank.
 // Fix: accept "" as valid (empty = absent) and transform to null before BE payload.
+// Same pattern applied to email field (optional, "" → null).
 //
 // RHF + Zod transform typing note:
-//  - z.input<> = form field values (RHF sees: phone = string | "" | null | undefined)
-//  - z.output<> = submitted data after transform (phone = string | null)
+//  - z.input<> = form field values (RHF sees: phone/email = string | "" | null | undefined)
+//  - z.output<> = submitted data after transform (phone/email = string | null)
 //  - useForm<InlineCreateFormInput> to avoid TFieldValues mismatch
 //  - handleInlineSubmit receives InlineCreateFormOutput (post-transform)
 const InlineCreateSchema = z.object({
@@ -47,6 +49,14 @@ const InlineCreateSchema = z.object({
   phone: z
     .union([
       z.string().min(6, "Ingresa un teléfono válido").max(20),
+      z.literal(""),
+    ])
+    .nullable()
+    .optional()
+    .transform((v): string | null => (v === "" || v == null ? null : v)),
+  email: z
+    .union([
+      z.string().email("Ingresa un correo electrónico válido").max(254),
       z.literal(""),
     ])
     .nullable()
@@ -76,16 +86,26 @@ export interface PatientPickerWithCreateProps {
 
 type Mode = "picker" | "create" | "duplicate";
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+/** Extract initials (up to 2 chars) from a display name. */
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 0 || parts[0] === "") return "?";
+  if (parts.length === 1) return (parts[0]?.[0] ?? "?").toUpperCase();
+  return ((parts[0]?.[0] ?? "") + (parts[parts.length - 1]?.[0] ?? "")).toUpperCase();
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 /**
  * PatientPickerWithCreate
  *
- * Mode "picker": EntityPicker typeahead.
- *   - createAction fires when user types and clicks "+ Crear paciente «{q}»"
- *   - Selecting an existing patient calls onChange immediately
+ * Mode "picker": EntityPicker typeahead (no selection) OR rich chip (patient selected).
+ *   Rich chip: avatar (initials) + name + PHI-masked sub (DNI/phone) + ✕ button.
+ *   createAction fires when user types and clicks "+ Crear paciente «{q}»"
  *
- * Mode "create": Inline mini-form (name + phone).
+ * Mode "create": Inline mini-form (name + phone + email optional).
  *   - Submit → useCreatePatientInline mutation
  *   - On success + !isDuplicate → onChange(patientId), back to picker
  *   - On success + isDuplicate → mode "duplicate" (RN-9)
@@ -113,7 +133,7 @@ export function PatientPickerWithCreate({
 
   const form = useForm<InlineCreateFormInput, unknown, InlineCreateFormOutput>({
     resolver: zodResolver(InlineCreateSchema),
-    defaultValues: { name: "", phone: "" },
+    defaultValues: { name: "", phone: "", email: "" },
     mode: "onSubmit",
   });
 
@@ -123,10 +143,18 @@ export function PatientPickerWithCreate({
     onChange(item.id);
   };
 
+  // ── Remove selected patient ──────────────────────────────────────────────
+  const handleRemovePatient = () => {
+    setSelectedPatient(null);
+    // ponytail: onChange with empty string signals deselect to parent;
+    // parent stores "" in patientId which fails Zod → submit blocked correctly
+    onChange("");
+  };
+
   // ── createAction: user clicks "+ Crear…" in the dropdown ─────────────────
   const handleCreateOpen = (_query: string) => {
     // Prefill name from the typed query
-    form.reset({ name: _query, phone: "" });
+    form.reset({ name: _query, phone: "", email: "" });
     setMode("create");
   };
 
@@ -136,7 +164,7 @@ export function PatientPickerWithCreate({
       const result = await createMutation.mutateAsync({
         name: data.name,
         phone: data.phone,
-        email: null,
+        email: data.email,
         uiChannel,
         note: null,
       });
@@ -151,7 +179,7 @@ export function PatientPickerWithCreate({
         setSelectedPatient({
           id: result.patientId,
           name: result.nameMasked,
-          phoneMasked: null,
+          phoneMasked: result.phoneMasked ?? null,
           channelFirst: null,
         });
         setMode("picker");
@@ -175,7 +203,7 @@ export function PatientPickerWithCreate({
   const handleCancel = () => {
     setMode("picker");
     setPendingDuplicate(null);
-    form.reset({ name: "", phone: "" });
+    form.reset({ name: "", phone: "", email: "" });
   };
 
   // ── Render: Duplicate prompt (RN-9) ──────────────────────────────────────
@@ -224,7 +252,7 @@ export function PatientPickerWithCreate({
         className={cn("rounded-md border bg-card p-4", className)}
       >
         <p className="mb-3 text-sm font-medium">Nuevo paciente</p>
-        {/* ponytail: minimal create — name + phone only per T-FE-2 scope.
+        {/* ponytail: minimal create — name + phone + email optional per T-FE-2 scope.
             NOT a <form>: this picker mounts inside NuevaCitaView's outer <form>,
             and nested <form>s are invalid HTML → hydration error swallows the
             submit (no POST fires). Use a div + button onClick; Enter on a field
@@ -260,7 +288,7 @@ export function PatientPickerWithCreate({
             )}
           </div>
 
-          <div className="mb-4">
+          <div className="mb-3">
             <Label htmlFor="patient-inline-phone-field" className="mb-1 block text-xs">
               Teléfono
             </Label>
@@ -278,6 +306,28 @@ export function PatientPickerWithCreate({
                 role="alert"
               >
                 {form.formState.errors.phone.message}
+              </p>
+            )}
+          </div>
+
+          <div className="mb-4">
+            <Label htmlFor="patient-inline-email-field" className="mb-1 block text-xs">
+              Correo electrónico
+            </Label>
+            <Input
+              id="patient-inline-email-field"
+              data-testid="patient-inline-email"
+              {...form.register("email")}
+              placeholder="paciente@ejemplo.com"
+              type="email"
+            />
+            {form.formState.errors.email && (
+              <p
+                data-testid="patient-inline-email-error"
+                className="mt-1 text-xs text-destructive"
+                role="alert"
+              >
+                {form.formState.errors.email.message}
               </p>
             )}
           </div>
@@ -317,7 +367,50 @@ export function PatientPickerWithCreate({
     );
   }
 
-  // ── Render: EntityPicker (default) ────────────────────────────────────────
+  // ── Render: Rich chip (patient selected) ──────────────────────────────────
+  if (selectedPatient) {
+    const initials = getInitials(selectedPatient.name);
+    return (
+      <div
+        data-testid="patient-chip"
+        className={cn(
+          "flex items-center gap-3 rounded-md border border-border bg-card px-3 py-2",
+          className,
+        )}
+      >
+        {/* Avatar initials */}
+        <span
+          aria-hidden="true"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground"
+        >
+          {initials}
+        </span>
+        {/* Name + masked PHI sub */}
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium">{selectedPatient.name}</p>
+          {selectedPatient.phoneMasked ? (
+            <p className="truncate text-xs text-muted-foreground">
+              {selectedPatient.phoneMasked}
+            </p>
+          ) : null}
+        </div>
+        {/* Remove button */}
+        <button
+          type="button"
+          aria-label="Quitar paciente seleccionado"
+          data-testid="patient-chip-remove"
+          onClick={handleRemovePatient}
+          className="ml-auto shrink-0 rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    );
+  }
+
+  // ── Render: EntityPicker (default — no patient selected) ──────────────────
   return (
     <EntityPicker<PatientPickerItem>
       className={className}

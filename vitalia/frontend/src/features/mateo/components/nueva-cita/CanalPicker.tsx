@@ -30,8 +30,8 @@ export interface CanalPickerProps {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 const CANAL_OPTIONS: ReadonlyArray<{ value: CanalValue; label: string; testid: string }> = [
-  { value: "walk_in", label: "Presencial", testid: "canal-picker-walk-in" },
-  { value: "telefono", label: "Teléfono", testid: "canal-picker-telefono" },
+  { value: "walk_in", label: "🚶 Walk-in", testid: "canal-picker-walk-in" },
+  { value: "telefono", label: "📞 Teléfono", testid: "canal-picker-telefono" },
 ];
 
 /**
