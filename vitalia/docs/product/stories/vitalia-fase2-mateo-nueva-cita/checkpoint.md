@@ -27,6 +27,10 @@ dod_evidence:
     observed: "H1 Hora-fin 09:00+30min → 09:30 (era 12:30, UTC bug) · H3 mini-día con header+eje 08–20+leyenda (era barra pelada) · H2 motivo de bloqueo 'Selecciona un paciente para continuar' · M1 columna intro '¿Qué verás aquí?' · M3 'Viene del servicio · editable' · M4 hint oculto en mobile (no colisiona FAB) · M6 warning controlled/uncontrolled GONE de consola · L1 'Sin cita'/'Teléfono' · L6 contador 0/500. Console 0 errores. Happy path intacto."
     backend_log: "sin tracebacks; sin writes nuevos (verificación de presentación/cómputo client-side)"
     verified_at: 2026-06-24
+  - action: "L1 revert (commit fa8572d4) + L3 raíz (commit e4d1f170: list_active_doctors JOIN vitalia_doctors) — re-verify live"
+    observed: "L1 canal de vuelta a '🚶 Walk-in'/'📞 Teléfono' (mockup ratificado). L3: picker de médico muestra 'Ana Garcia Mendoza' (nombre real) — era 'Dr. 2b0d9466' placeholder; el nombre estaba en la DB, el query no lo joineaba. Era CÓDIGO (no seed)."
+    backend_log: "free-doctors endpoint ahora resuelve CONCAT(first_name,last_name) vía JOIN; 272/272 scheduling + 5/5 nuevos tests real-DB"
+    verified_at: 2026-06-24
   pending_at_G: "409 solape live (cubierto por integration test) · toast 'Cita creada' + grilla refleja (no observado, sesión expiró tras el 201) · demo-script.md · firma Chris"
 live_verify_findings:                               # Chrome DevTools MCP (dr.demo · localhost:3002) 2026-06-22/23 — detalle en chris-input.md
   - "bug1 render token-isLoaded → skeleton eterno · FIXED+verificado (/offer/servicios 200, pickers pueblan)"
