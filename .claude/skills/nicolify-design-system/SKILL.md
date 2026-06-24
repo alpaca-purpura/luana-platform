@@ -133,6 +133,7 @@ Nicolify NO tiene HIPAA/PHI. En su lugar, los guardrails agénticos (SSoT: `nico
 6. Guardrails: `TierGate`/`BudgetGuardGate` para features premium; `AgentActionAuditRow` para acciones autónomas (§7).
 7. Spanish neutro (tuteo, sin voseo — salvo output sales_agent). Estados empty/loading/error/success como el mockup.
 8. Tests: Vitest + Playwright visual golden vs la story de Storybook + axe. SSR-safe store (§6).
+   - **Golden solo para kit (§5.bis):** el golden de story aplica SOLO a componentes del kit (≥2 usos o genéricos cross-brand). Componentes feature-local no tienen golden de story — su calidad se verifica por la live-verify del feature que los usa.
 
 ## Referencias (SSoT — leer on-demand)
 

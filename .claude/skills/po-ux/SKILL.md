@@ -82,6 +82,7 @@ Checklist canon (parte del gate Step 5 — sin esto NO `refined`):
 - [ ] **`Select` canónico** (no `<select>` nativo) · **page-primitives** (no `<div>` de layout) · **tokens** (no arbitrary).
 - [ ] **`EntityInfoCard` Opción B** para cajas de entidad · **autosave** = 1 píldora flotante + barrita de agente.
 - [ ] Mockup **parte de Storybook** (cita las stories `@luana/ui-kit` que compone, por id) + cita `design-system-canon.md`. Pieza net-new → marcada PROMOTE con plan de promoción (en `§ Componentes`).
+- [ ] **Single-use → feature-local (§5.bis):** si el componente diseñado tiene un solo uso, anotar `feature-local` (sin PROMOTE, sin story del kit). PROMOTE solo si ≥2 features o cross-brand.
 
 **Anti-pattern (bloquea refined):** mockup que **inventa CSS / no parte de Storybook / copia `_shared.css`** (MUERTO), que inventa un layout/primitiva que el canon ya define, o que no cita el canon. Pieza shared net-new sin plan de promoción a `@luana/ui-kit` = isla futura. Lo que ya existe se **modifica** al canon (punto de partida nuevo 2026-06-08), no se replica como estaba.
 

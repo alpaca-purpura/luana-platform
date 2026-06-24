@@ -12,9 +12,7 @@
     "test:e2e:smoke": "E2E_BASE_URL=http://localhost:3000 npx playwright test --project=smoke",
     "test:e2e:marketing": "E2E_BASE_URL=http://localhost:3002 npx playwright test --project=smoke e2e/specs/smoke/marketing.smoke.spec.ts",
     "test:e2e:marketing:a11y": "E2E_BASE_URL=http://localhost:3002 npx playwright test --project=a11y e2e/specs/a11y/marketing.a11y.spec.ts",
-    "check:bundle": "node scripts/check-bowtie-bundle.mjs",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "check:bundle": "node scripts/check-bowtie-bundle.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.36.8",

@@ -49,7 +49,7 @@ related_stories:
 blocked_on: []                       # Fase 0 commiteada 891306d8 → desbloqueado para refine
 last_modified: 2026-06-24
 last_artifact: demo-script.md
-next_action: "DEVELOPED · G (AWAIT_CHRIS_VERIFY) 2026-06-24. T-1..T-6 GREEN (17 stories + infra + contrato § 9 1:1 + roster). Storybook dev :6006 navegable. → Chris navega + lee contrato + firma chris_verify.signoff (ver demo-script.md). Tras signoff → /pm-nicolify reconcile (R) → /auditor. Pendiente menor: ConfigTab sin story (anotado contrato § 9.1). build-claim code:design-system liberado."
+next_action: "★ PIVOT 2026-06-24 (Chris): storybook = inventario reutilizable kit-only, NO galería de features. Las 17 stories brand-local construidas en este ciclo eran el artefacto equivocado → BORRADAS. Ejecutado cross-brand: kit lifts (TenantBadge/Option/SubSubTabsBar) + 61 stories borradas + 2 .storybook/ marca eliminados + doctrina §5.bis + índice-uso. verificado tsc/build/machinery. → push a main + sync-all (Chris OK con diff). La story se convirtió en el refactor del modelo DS cross-brand; su nature original (inventario brand-local) quedó obsoleta. Ver chris-input § PIVOT + T-C-result/T-E-result."
 intake_handshake: "La conversación de diseño (zona/caja + extiende-o-nuevo + prior-art) ocurrió en sesión 2026-06-24 — ver 00-research.md § Intake + chris-input.md. La story NACE de esa conversación."
 ---
 

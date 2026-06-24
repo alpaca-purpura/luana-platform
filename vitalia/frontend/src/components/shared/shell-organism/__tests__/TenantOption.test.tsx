@@ -11,35 +11,36 @@
 
 import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { TenantOption } from "../TenantOption";
+import { TenantOption } from "@luana/ui-kit";
+import { pickPaletteColor } from "@/lib/tenant-palette";
 
 const SONRISA = { id: "sonrisa-plena", name: "Sonrisa Plena", city: "Lima" };
 
 describe("TenantOption", () => {
   it("renders TenantBadge initials (SP for Sonrisa Plena)", () => {
     const { getByText } = render(
-      <TenantOption tenant={SONRISA} active={false} />,
+      <TenantOption tenant={SONRISA} active={false} pickPaletteColor={pickPaletteColor} />,
     );
     expect(getByText("SP")).toBeInTheDocument();
   });
 
   it("renders tenant name", () => {
     const { getByText } = render(
-      <TenantOption tenant={SONRISA} active={false} />,
+      <TenantOption tenant={SONRISA} active={false} pickPaletteColor={pickPaletteColor} />,
     );
     expect(getByText("Sonrisa Plena")).toBeInTheDocument();
   });
 
   it("renders city subtitle", () => {
     const { getByText } = render(
-      <TenantOption tenant={SONRISA} active={false} />,
+      <TenantOption tenant={SONRISA} active={false} pickPaletteColor={pickPaletteColor} />,
     );
     expect(getByText("Lima")).toBeInTheDocument();
   });
 
   it("active=true renders Check icon (aria-hidden)", () => {
     const { container } = render(
-      <TenantOption tenant={SONRISA} active={true} />,
+      <TenantOption tenant={SONRISA} active={true} pickPaletteColor={pickPaletteColor} activeLabel="Clínica activa" />,
     );
     // Lucide Check renders as svg
     const svg = container.querySelector("svg");
@@ -48,7 +49,7 @@ describe("TenantOption", () => {
 
   it("active=true renders sr-only 'Clínica activa'", () => {
     const { getByText } = render(
-      <TenantOption tenant={SONRISA} active={true} />,
+      <TenantOption tenant={SONRISA} active={true} pickPaletteColor={pickPaletteColor} activeLabel="Clínica activa" />,
     );
     const srOnly = getByText("Clínica activa");
     expect(srOnly).toBeInTheDocument();
@@ -57,7 +58,7 @@ describe("TenantOption", () => {
 
   it("active=false does NOT render Check icon", () => {
     const { container } = render(
-      <TenantOption tenant={SONRISA} active={false} />,
+      <TenantOption tenant={SONRISA} active={false} pickPaletteColor={pickPaletteColor} />,
     );
     const svg = container.querySelector("svg");
     expect(svg).toBeNull();
@@ -65,14 +66,14 @@ describe("TenantOption", () => {
 
   it("active=false does NOT render 'Clínica activa'", () => {
     const { queryByText } = render(
-      <TenantOption tenant={SONRISA} active={false} />,
+      <TenantOption tenant={SONRISA} active={false} pickPaletteColor={pickPaletteColor} />,
     );
     expect(queryByText("Clínica activa")).toBeNull();
   });
 
   it("active row has bg-accent/40 class", () => {
     const { getByTestId } = render(
-      <TenantOption tenant={SONRISA} active={true} />,
+      <TenantOption tenant={SONRISA} active={true} pickPaletteColor={pickPaletteColor} activeLabel="Clínica activa" />,
     );
     const row = getByTestId(`tenant-option-${SONRISA.id}`);
     expect(row.className).toContain("bg-accent/40");
@@ -80,7 +81,7 @@ describe("TenantOption", () => {
 
   it("inactive row has hover:bg-muted class", () => {
     const { getByTestId } = render(
-      <TenantOption tenant={SONRISA} active={false} />,
+      <TenantOption tenant={SONRISA} active={false} pickPaletteColor={pickPaletteColor} />,
     );
     const row = getByTestId(`tenant-option-${SONRISA.id}`);
     expect(row.className).toContain("hover:bg-muted");
@@ -88,14 +89,14 @@ describe("TenantOption", () => {
 
   it("data-testid format is tenant-option-{tenantId}", () => {
     const { getByTestId } = render(
-      <TenantOption tenant={SONRISA} active={false} />,
+      <TenantOption tenant={SONRISA} active={false} pickPaletteColor={pickPaletteColor} />,
     );
     expect(getByTestId("tenant-option-sonrisa-plena")).toBeInTheDocument();
   });
 
   it("data-active attribute matches active prop (true)", () => {
     const { getByTestId } = render(
-      <TenantOption tenant={SONRISA} active={true} />,
+      <TenantOption tenant={SONRISA} active={true} pickPaletteColor={pickPaletteColor} activeLabel="Clínica activa" />,
     );
     expect(getByTestId("tenant-option-sonrisa-plena")).toHaveAttribute(
       "data-active",
@@ -105,7 +106,7 @@ describe("TenantOption", () => {
 
   it("data-active attribute matches active prop (false)", () => {
     const { getByTestId } = render(
-      <TenantOption tenant={SONRISA} active={false} />,
+      <TenantOption tenant={SONRISA} active={false} pickPaletteColor={pickPaletteColor} />,
     );
     expect(getByTestId("tenant-option-sonrisa-plena")).toHaveAttribute(
       "data-active",

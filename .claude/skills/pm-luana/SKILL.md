@@ -335,6 +335,18 @@ Si Chris pide algo que cae en alguna ❌ → handoff explícito al skill correct
 - Verificación contra el entorno real (dev-app) cuando la funcionalidad es visible; si no se puede ejercer de verdad (auth), **decirlo explícito**, no declararlo verificado.
 - Harness recomendado: test user de pruebas con rol suficiente (idealmente un "todopoderoso" con todos los roles sobre tenant(s) demo, vía **RBAC real, nunca bypass**) + project `smoke` (auth fresca) + spec SIN mocks del backend.
 
+## Design System promotion criteria (§5.bis)
+
+Una pieza visual entra al kit (`core/@luana/ui-kit`) SOLO si:
+- **≥2 brands o features** la consumen (cross-feature real, no proyectado), O
+- Es una **primitiva genérica cross-brand** (átomo, layout, shell)
+
+Feature-specific de 1 brand / 1 módulo → queda en `features/{m}/components/`. NO es lift candidate para `/pm-luana`. NO se toca en promotion-protocol.
+
+**Índice de uso:** para decidir si un componente califica para lift, consultá `{brand}/docs/architecture/COMPONENT-USAGE-INDEX.md` (generado por `make component-index`). Si el componente aparece en ≥2 features de ≥2 brands → candidate. Si aparece solo en 1 feature → feature-local.
+
+> SSoT: `docs/architecture/luana-platform/design-system-canon.md §5.bis` — criterio de entrada al kit (reusable-only).
+
 ## Anti-patterns
 
 - ❌ Declarar "verificado"/"verified-live"/"funciona" porque un GET dio 200 (sin ejercer writes ni leer logs) — ver § Verificación REAL

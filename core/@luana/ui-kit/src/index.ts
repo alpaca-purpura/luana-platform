@@ -119,6 +119,9 @@ export {
   PlaceholderCard,
   useKeyboardShortcuts,
   useViewportGuard,
+  TenantBadge,
+  getTenantInitials,
+  TenantOption,
 } from "./organism/shell";
 export type {
   SupervisorSidebarProps,
@@ -145,6 +148,10 @@ export type {
   HistoryGroupProps,
   HistoryItemProps,
   PlaceholderCardProps,
+  TenantBadgeProps,
+  KitTenant,
+  PaletteColor,
+  TenantOptionProps,
 } from "./organism/shell";
 // Shell-specific EmptyState variants aliased to avoid clash with ./layout EmptyState.
 export {

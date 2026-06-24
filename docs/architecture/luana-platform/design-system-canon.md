@@ -140,6 +140,12 @@ Reemplaza el `<select>` nativo del browser (feo, no-tokenizado). Componente cust
 | **0+1+2** | **`core-ds-foundation`** (consolidada 2026-06-08) | refining (/pm-luana → /architect) | **TODO el build en una story:** escala tokens + eslint no-arbitrary (Fase 0) · ~10 layout-primitives + archetypes + `EntityWorkspaceLayout`/`EntitySubNavBar`/`EntityInfoCard`/`EntityPicker` + `/showcase` route (Fase 1) · arch-test FE + D1 mecánico (Fase 2). **Bindings de skills/rule = YA hechos 2026-06-08 (no re-armar).** `Select`/`tooltip`/`AutosaveBadge` = ya en `@luana/ui-kit` (consumir). |
 | 3 | `{brand}-ds-adoption` ×N | ⬜ a armar (aparte, por marca) | adopción COMPREHENSIVA por marca (vitalia→nicolify→comunify), migrar pantallas existentes + encender el lock |
 
+### Índice de Uso (component→pantallas)
+
+El índice de uso mapea cada componente shared/kit a las features/pantallas donde se consume.
+Se genera con `make component-index` (brand-específico) y vive en `{brand}/docs/architecture/COMPONENT-USAGE-INDEX.md` (gitignored, fuente=código).
+Permite responder "qué toco si cambio X" sin browsear stories ni hacer grep manual.
+
 ---
 
 ## 5. Storybook = SSoT visual (render vivo · R-FID · cement 2026-06-22, ratificado Chris)
@@ -157,6 +163,32 @@ El catálogo de los **componentes REALES** vive en **Storybook** (`core/@luana/u
 5. **`builder-frontend` construye DESDE la story citada** (único lego = `@luana/ui-kit`) + promueve el net-new al kit con story. **`auditor-frontend` verifica composición** contra Storybook + que el net-new se promovió con story (no quedó local) → si no, CHANGES_REQUESTED.
 
 > SSoT enforce-able de este bucle: `.claude/rules/frontend-visual-fidelity.md` (lo citan los 5 actores). (R-FID, ADR-014 §5.)
+
+---
+
+## §5.bis — Criterio de entrada al kit (reusable-only)
+
+Una pieza visual entra al kit (`core/@luana/ui-kit` + Storybook) **SOLO** si cumple al menos uno de estos criterios:
+
+| Criterio | Ejemplos que SÍ entran |
+|---|---|
+| **(a) ≥2 usos reales cross-feature** (en la misma marca o en otra) | `Button`, `EntityInfoCard`, `StatusBadge`, `KPICard` |
+| **(b) Primitiva genérica cross-brand** (átomo de diseño, layout, shell) | `AppShell`, `EntityWorkspaceLayout`, `ThemeProvider` |
+
+**Fuera del kit (no se storía, no se marca PROMOTE):**
+
+| Caso | Dónde vive | Story? |
+|---|---|---|
+| Componente de feature de **un solo uso** (1 pantalla / 1 módulo) | `features/{m}/components/` usando átomos del kit | ❌ NO story — el auditor NO rechaza por falta de story |
+| Molécula **reutilizable dentro de la marca** pero brand-specific (PHI, dominio) | `features/{m}/components/` o `components/shared/` | ❌ NO story (el Storybook es kit-only, no per-brand) |
+
+**Ejemplos reales:**
+- `Button`, `EntityInfoCard` → kit, story obligatoria
+- `IcpMasterListView`, `FidelizacionKPIsHero` → feature-local, sin story, sin PROMOTE
+
+**El "qué toco si cambio X"** lo responde el **Índice de Uso** (`{brand}/docs/architecture/COMPONENT-USAGE-INDEX.md`, generado por `make component-index`), no browsear Storybook stories.
+
+> **Regla para el auditor:** un componente single-use en `features/{m}/components/` sin story en el kit NO es un hallazgo. El hallazgo es si un componente con ≥2 usos cross-feature NO tiene story en el kit.
 
 ---
 

@@ -115,6 +115,7 @@ UI que muestra PHI → `PiiMaskedSpan` + `RequireRole` (roles `doctor`/`nurse`/`
 6. PHI: `PiiMaskedSpan` + `RequireRole` (§7).
 7. Spanish neutro (sin voseo, salvo sales_agent). Estados empty/loading/error/success como el mockup.
 8. Tests: Vitest + Playwright visual scoped (composición vs la story de Storybook · canon §5 — el golden-vs-mockup de ADR-003 quedó SUPERSEDED) + axe.
+   - **Golden solo para kit (§5.bis):** el golden de story aplica SOLO a componentes del kit (≥2 usos o genéricos cross-brand). Componentes feature-local no tienen golden de story — su calidad se verifica por la live-verify del feature que los usa.
 
 ## Referencias (SSoT — leer on-demand)
 

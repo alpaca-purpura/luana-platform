@@ -216,6 +216,9 @@ portfolio-check:
 scan-promotables:
 	python3 scripts/scan_promotables.py
 
+component-index:  ## Índice de uso componente→pantallas por marca (§5.bis design-system-canon · gitignored). Uso: make component-index BRAND=nicolify
+	python3 scripts/generate_component_usage_index.py --brand $(or $(BRAND),nicolify)
+
 docs-graph:  ## Grafo de consumo root docs/ + manifest vivos (DOCS-SWEEP 2026-06-10 · reporte gitignored docs/process/DOCS-GRAPH.md)
 	python3 scripts/scan_docs_graph.py --manifest
 

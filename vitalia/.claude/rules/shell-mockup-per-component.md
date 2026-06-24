@@ -18,6 +18,8 @@ El diseño y el build de toda hoja user-reachable de vitalia **parten del set de
 
 `/architect` no arranca un ticket FE sin que `03-arch.md § FE` cite la(s) story(s) de Storybook a usar; net-new se marca `PROMOTE` (deliverable = crear el componente en `@luana/ui-kit` + story antes del merge).
 
+**Aplica a reusables (§5.bis):** esta regla aplica a componentes reutilizables del kit (≥2 usos o genéricos cross-brand). Componentes feature-local de un solo uso quedan en `features/{m}/components/` — OK sin story, sin enforcement de mockup de kit.
+
 ## Scope
 
 **Aplica:** toda story con UI nueva (sub-tab `lisa-*`/`mateo-*`/`adrian-*`/`lucas-*`/`camila-*`/`plataforma-*`/`onboarding-*`, componente del shell).

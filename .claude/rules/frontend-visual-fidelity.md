@@ -31,6 +31,8 @@ El catálogo de componentes **REALES** vive en **Storybook** (`core/@luana/ui-ki
 
 Detalle + el bucle por actor: `design-system-canon.md § 5`.
 
+**Criterio de entrada al kit (§5.bis):** un componente entra al Storybook del kit SOLO si es reutilizable (≥2 usos cross-feature o genérico cross-brand). Componentes de feature de un solo uso van en `features/{m}/components/` con átomos del kit — sin story, sin PROMOTE, sin rechazo del auditor por esa razón.
+
 **D1 se concreta así (deja de ser criterio, pasa a contrato verificable):**
 
 - **Contenedor HOJA:** 100% ancho · franjas N3 **full-bleed** (`bg-card` + `border-bottom` + sticky, mismo lenguaje que Ribbon/SubTabs — **NUNCA** card con borde redondeado) · contenido en `PageContainer` (padding `1.25/1.5rem`) + `PageContentStack`. (canon §1)

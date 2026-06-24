@@ -1,30 +1,42 @@
-// cap: shell-organism.shell-nicolify
-// story-origin: nicolify-r0-shell T-2
+// cap: platform.lift-shell-chrome-ui-kit
 /**
- * TenantBadge — agency initials badge atom.
- * nicolify-r0-shell T-2 — port from vitalia TenantBadge.tsx, re-themed to Nicolify.
+ * TenantBadge — tenant initials badge atom (brand-agnostic).
+ * Lifted from vitalia/nicolify shell-organism — platform-lift T-C.
  *
  * Server Component (no "use client").
  * Renders a 2-character initials badge with a deterministic background color
- * derived from the tenant ID via pickPaletteColor (tenant-palette.ts).
+ * derived via the injected pickPaletteColor function (brand-local palette).
+ *
+ * Brand coupling removed:
+ *   - pickPaletteColor injected as required prop (brand owns the palette)
+ *   - KitTenant type is generic (city optional — vitalia/nicolify compatible)
  *
  * Initials: first character of each word (max 2), uppercased.
  * Fallback: "?" when tenant name is empty.
  *
  * aria-hidden=true: decorative element — TenantOption provides accessible name via sr-only.
  *
- * Named export (no default export) per FSD-Lite enforce.
- * downstream-regression-na: brand-local shell-organism atom; no cross-brand consumers
+ * Named export (NO default) per FSD-Lite enforce.
  */
 
-import { pickPaletteColor } from "@/lib/tenant-palette";
-import { cn } from "@/lib/utils";
+import { cn } from "@luana/format/utils";
 
-import type { Tenant } from "./types";
+export interface KitTenant {
+  id: string;
+  name: string;
+  city?: string;
+}
+
+export interface PaletteColor {
+  bg: string;
+  text: string;
+}
 
 export interface TenantBadgeProps {
   /** The tenant to display initials and color for */
-  tenant: Tenant;
+  tenant: KitTenant;
+  /** Brand-injected palette color picker — called with tenant.id */
+  pickPaletteColor: (tenantId: string) => PaletteColor;
   /** Additional CSS classes to apply */
   className?: string;
 }
@@ -34,7 +46,7 @@ export interface TenantBadgeProps {
  * Takes the first character of each word (up to 2 words).
  * Falls back to "?" for empty names.
  */
-function getInitials(name: string): string {
+export function getTenantInitials(name: string): string {
   if (!name.trim()) return "?";
   return (
     name
@@ -46,12 +58,12 @@ function getInitials(name: string): string {
 }
 
 /**
- * TenantBadge — circular/rounded badge showing agency initials.
+ * TenantBadge — rounded badge showing tenant initials.
  * Server Component.
  */
-export function TenantBadge({ tenant, className }: TenantBadgeProps) {
+export function TenantBadge({ tenant, pickPaletteColor, className }: TenantBadgeProps) {
   const { bg, text } = pickPaletteColor(tenant.id);
-  const initials = getInitials(tenant.name);
+  const initials = getTenantInitials(tenant.name);
 
   return (
     <span

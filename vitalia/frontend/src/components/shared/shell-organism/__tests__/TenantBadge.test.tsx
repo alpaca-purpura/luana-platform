@@ -12,7 +12,7 @@
 
 import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { TenantBadge } from "../TenantBadge";
+import { TenantBadge } from "@luana/ui-kit";
 import { pickPaletteColor } from "@/lib/tenant-palette";
 
 const SONRISA = { id: "sonrisa-plena", name: "Sonrisa Plena", city: "Lima" };
@@ -25,35 +25,35 @@ const CLINCARE = {
 
 describe("TenantBadge", () => {
   it("renders 2-char uppercase initials from name (Sonrisa Plena → SP)", () => {
-    const { getByText } = render(<TenantBadge tenant={SONRISA} />);
+    const { getByText } = render(<TenantBadge tenant={SONRISA} pickPaletteColor={pickPaletteColor} />);
     expect(getByText("SP")).toBeInTheDocument();
   });
 
   it("renders 2-char uppercase initials (Dermalia MX → DM)", () => {
-    const { getByText } = render(<TenantBadge tenant={DERMALIA} />);
+    const { getByText } = render(<TenantBadge tenant={DERMALIA} pickPaletteColor={pickPaletteColor} />);
     expect(getByText("DM")).toBeInTheDocument();
   });
 
   it("renders 2-char uppercase initials from accented name (ClíniCare Bogotá → CB)", () => {
-    const { getByText } = render(<TenantBadge tenant={CLINCARE} />);
+    const { getByText } = render(<TenantBadge tenant={CLINCARE} pickPaletteColor={pickPaletteColor} />);
     expect(getByText("CB")).toBeInTheDocument();
   });
 
   it("has aria-hidden=true (decorative element)", () => {
-    const { container } = render(<TenantBadge tenant={SONRISA} />);
+    const { container } = render(<TenantBadge tenant={SONRISA} pickPaletteColor={pickPaletteColor} />);
     const badge = container.firstChild as HTMLElement;
     expect(badge).toHaveAttribute("aria-hidden", "true");
   });
 
   it("applies bg class from pickPaletteColor", () => {
-    const { container } = render(<TenantBadge tenant={SONRISA} />);
+    const { container } = render(<TenantBadge tenant={SONRISA} pickPaletteColor={pickPaletteColor} />);
     const badge = container.firstChild as HTMLElement;
     const { bg } = pickPaletteColor(SONRISA.id);
     expect(badge.className).toContain(bg.replace("bg-", ""));
   });
 
   it("applies text class from pickPaletteColor", () => {
-    const { container } = render(<TenantBadge tenant={SONRISA} />);
+    const { container } = render(<TenantBadge tenant={SONRISA} pickPaletteColor={pickPaletteColor} />);
     const badge = container.firstChild as HTMLElement;
     const { text } = pickPaletteColor(SONRISA.id);
     expect(badge.className).toContain(text.replace("text-", ""));
@@ -65,7 +65,7 @@ describe("TenantBadge", () => {
 
   it("accepts optional className prop", () => {
     const { container } = render(
-      <TenantBadge tenant={SONRISA} className="extra-class" />,
+      <TenantBadge tenant={SONRISA} pickPaletteColor={pickPaletteColor} className="extra-class" />,
     );
     const badge = container.firstChild as HTMLElement;
     expect(badge.className).toContain("extra-class");
@@ -73,13 +73,13 @@ describe("TenantBadge", () => {
 
   it("single word name produces 1-char initial (e.g. 'Vitalia' → 'V')", () => {
     const singleWord = { id: "vitalia-test", name: "Vitalia", city: "Lima" };
-    const { getByText } = render(<TenantBadge tenant={singleWord} />);
+    const { getByText } = render(<TenantBadge tenant={singleWord} pickPaletteColor={pickPaletteColor} />);
     expect(getByText("V")).toBeInTheDocument();
   });
 
   it("empty name falls back to '?'", () => {
     const emptyName = { id: "empty-test", name: "", city: "Lima" };
-    const { getByText } = render(<TenantBadge tenant={emptyName} />);
+    const { getByText } = render(<TenantBadge tenant={emptyName} pickPaletteColor={pickPaletteColor} />);
     expect(getByText("?")).toBeInTheDocument();
   });
 });

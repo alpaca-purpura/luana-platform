@@ -188,6 +188,9 @@ docs/portfolio/vitalia-capabilities.md
 # Per-brand areas/ user-facing (auto-gen scripts/generate_capability_index.py · 1 file por agent_owner)
 */docs/product/areas/*.md
 
+# Per-brand component usage index (auto-gen scripts/generate_component_usage_index.py · §5.bis · `make component-index`)
+*/docs/architecture/COMPONENT-USAGE-INDEX.md
+
 # Promotion-protocol dated scans (re-run cada vez con `make scan-promotables`)
 docs/promotion-protocol/scan-*.yaml
 

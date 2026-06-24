@@ -16,6 +16,7 @@ El FE construido debe **(1) reutilizar el design system existente, (2) parecerse
 - `/architect` **cita en `03-arch.md § FE` la story exacta** a usar (+ link). Una pieza net-new se marca `PROMOTE`.
 - `builder-frontend` lee la story citada (controles + todos los estados) **antes** de escribir código y construye desde `@luana/ui-kit`.
 - **Promover de vuelta:** si la historia introduce una primitiva shared genuinamente nueva, se **implementa en `core/@luana/ui-kit` + se agrega su story** (deliverable del ticket, antes del merge) y la feature la consume vía import. NUNCA una re-implementación local que driftea. "No limitarse a Storybook": proponer lo mejor → promoverlo → el catálogo crece para futuras historias.
+- **Single-use exception (§5.bis):** si el componente tiene un solo uso (1 feature / 1 pantalla), va en `features/{m}/components/` — NO en el kit, NO tiene story, NO se marca PROMOTE. El D0 solo aplica `kit-candidate` a componentes con ≥2 usos o genéricos cross-brand.
 
 ### D1 — Design system first (átomos/moléculas, NO reinventar)
 

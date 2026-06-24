@@ -54,10 +54,10 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, ChevronDown } from "lucide-react";
+import { TenantBadge, TenantOption } from "@luana/ui-kit";
 import { useTenants } from "@/hooks/useTenants";
 import { useTenantStore } from "@/stores/tenant-store";
-import { TenantBadge } from "./TenantBadge";
-import { TenantOption } from "./TenantOption";
+import { pickPaletteColor } from "@/lib/tenant-palette";
 import { AddClinicPlaceholderModal } from "./AddClinicPlaceholderModal";
 
 /**
@@ -139,7 +139,7 @@ export function TenantSwitcher() {
         >
           {activeTenant ? (
             <>
-              <TenantBadge tenant={activeTenant} />
+              <TenantBadge tenant={activeTenant} pickPaletteColor={pickPaletteColor} />
               <span className="hidden max-w-[120px] truncate sm:inline-block">
                 {activeTenant.name}
               </span>
@@ -218,6 +218,8 @@ export function TenantSwitcher() {
                 <TenantOption
                   tenant={tenant}
                   active={activeTenant?.id === tenant.id}
+                  pickPaletteColor={pickPaletteColor}
+                  activeLabel="Clínica activa"
                 />
               </div>
             ))}

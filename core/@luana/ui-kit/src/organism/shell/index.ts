@@ -103,6 +103,13 @@ export type { DelegateMarkerProps } from "./DelegateMarker";
 export { TogglePill, TogglePillContent } from "./TogglePill";
 export type { TogglePillProps, TogglePillItem } from "./TogglePill";
 
+// ── Tenant atoms ─────────────────────────────────────────────────────────────
+export { TenantBadge, getTenantInitials } from "./TenantBadge";
+export type { TenantBadgeProps, KitTenant, PaletteColor } from "./TenantBadge";
+
+export { TenantOption } from "./TenantOption";
+export type { TenantOptionProps } from "./TenantOption";
+
 // ── Misc molecules ───────────────────────────────────────────────────────────
 export { TopBarShell } from "./TopBarShell";
 export type { TopBarShellProps } from "./TopBarShell";

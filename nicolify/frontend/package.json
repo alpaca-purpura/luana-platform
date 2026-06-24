@@ -14,8 +14,6 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "prepare": "husky",
-    "storybook": "storybook dev -p 6006 --host 0.0.0.0",
-    "build-storybook": "storybook build",
     "test:e2e": "playwright test",
     "test:e2e:smoke": "playwright test --project=smoke",
     "test:e2e:fresh": "rm -rf playwright/.clerk/user.json && playwright test --project=smoke",
