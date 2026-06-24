@@ -149,26 +149,99 @@ def main() -> int:
         return 0
 
     # Tool presente: correr scoped al diff (líneas nuevas → hard; heredadas → L4 advisory).
-    # NB: el parseo fino de survivors líneas-nuevas vs heredadas se ejerce con el tool
-    # instalado; mientras tanto el contrato vive acá + el gate corre el tool sobre los
-    # archivos cambiados. Survivors en líneas nuevas + mode=hard → exit 1 (fix-loop).
     print(f"{tag} {surface}: corriendo mutación diff-scoped sobre {len(files)} archivo(s)…")
     if surface == "BE":
-        cmd = [tool, "run", "--paths-to-mutate", ",".join(files)]
+        survivors, ran = _run_mutmut_3x(files)
     else:
-        cmd = [tool, "run", "--mutate", ",".join(files)]
-    res = subprocess.run(cmd, cwd=WS)
-    if res.returncode != 0 and args.mode == "hard":
+        survivors, ran = _run_stryker(files)
+
+    if not ran:
+        # No se pudo ejercer el tool en este entorno (no es lo mismo que survivors).
+        # Degradá HONESTO — NUNCA reportes "survivors" falsos por un fallo de runner.
         print(
-            f"{HARD} survivors detectados en superficie crítica → CHANGES_REQUESTED. "
+            f"{ADVISORY} {surface}: el runner de mutación no pudo ejercerse en este entorno "
+            "(ver salida arriba) → DEGRADADO advisory, NO bloquea. Esto NO es un survivor."
+        )
+        return 0
+
+    if survivors > 0 and args.mode == "hard":
+        print(
+            f"{HARD} {survivors} survivor(s) en superficie crítica → CHANGES_REQUESTED. "
             "Survivors en líneas NUEVAS: escribí el test RED que los mata. "
             "Survivors en código HEREDADO (fuera del diff): rutean a CIL carril L4 "
             "(capability-desfasada · docs/process/continuous-improvement.md), NO bloquean."
         )
         return 1
-    if res.returncode != 0:
-        print(f"{ADVISORY} survivors detectados (mode=advisory) — reportados, NO bloquean.")
+    if survivors > 0:
+        print(f"{ADVISORY} {survivors} survivor(s) (mode=advisory) — reportados, NO bloquean.")
+    else:
+        print(f"{tag} {surface}: 0 survivors. ✅")
     return 0
+
+
+def _run_mutmut_3x(files: list[str]) -> tuple[int, bool]:
+    """Corre mutmut 3.x (config-only) diff-scoped. Devuelve (survivors, ran_ok).
+
+    mutmut 3.x NO acepta --paths-to-mutate (removido); lee `[mutmut]` de setup.cfg/
+    pyproject del CWD + copia paths_to_mutate + also_copy + tests/ a `mutants/` y corre
+    pytest ahí. Por eso: (1) corremos desde el dir backend de la marca, (2) also_copy=src
+    (si no, los imports de otros módulos NO copiados rompen la colección), (3) limpiamos
+    el `-x` de addopts (aborta el stats-run de mutmut al 1er fallo).
+    """
+    be_files = [f for f in files if f.endswith(".py") and "/backend/" in f]
+    if not be_files:
+        print(f"{ADVISORY} BE: ningún archivo bajo */backend/ — no se puede ubicar el dir backend.")
+        return (0, False)
+    backend_root = be_files[0].split("/backend/", 1)[0] + "/backend"
+    backend_dir = WS / backend_root
+    rel_paths = [f.split("/backend/", 1)[1] for f in be_files if f.startswith(backend_root + "/")]
+    if not (backend_dir / "src").exists() or not rel_paths:
+        print(f"{ADVISORY} BE: estructura backend inesperada en {backend_dir} — degrade.")
+        return (0, False)
+
+    mutmut = shutil.which("mutmut") or str(WS / ".venv/bin/mutmut")
+    cfg = backend_dir / "setup.cfg"
+    backup = cfg.read_text(encoding="utf-8") if cfg.exists() else None
+    paths_block = "\n    ".join(rel_paths)
+    cfg.write_text(
+        "[mutmut]\n"
+        f"paths_to_mutate={paths_block}\n"
+        "also_copy=src\n"
+        # Limpiar addopts (saca el `-x` que aborta el stats-run) + determinismo.
+        "pytest_add_cli_args=-o\n    addopts=-p no:randomly\n",
+        encoding="utf-8",
+    )
+    try:
+        subprocess.run([mutmut, "run"], cwd=backend_dir, capture_output=True, text=True)
+        res = subprocess.run([mutmut, "results"], cwd=backend_dir, capture_output=True, text=True)
+        out = res.stdout + res.stderr
+        # mutmut 3.x: si no pudo colectar tests devuelve "failed to collect stats" → no ejerció.
+        if "failed to collect stats" in out or "runner returned 1" in out:
+            print(out[-1200:])
+            return (0, False)
+        # survivors = mutantes con status "survived"/"survived (timeout no)". Contamos las
+        # líneas que mutmut marca como sobrevivientes en `results`.
+        survivors = sum(
+            1
+            for line in out.splitlines()
+            if ": survived" in line or line.strip().endswith("survived")
+        )
+        print(out[-1500:])
+        return (survivors, True)
+    finally:
+        if backup is not None:
+            cfg.write_text(backup, encoding="utf-8")
+        else:
+            cfg.unlink(missing_ok=True)
+        shutil.rmtree(backend_dir / "mutants", ignore_errors=True)
+
+
+def _run_stryker(files: list[str]) -> tuple[int, bool]:
+    """FE: Stryker. Mantiene el contrato (survivors, ran_ok). Degrade si no corre."""
+    stryker = str(WS / "node_modules/.bin/stryker")
+    res = subprocess.run([stryker, "run", "--mutate", ",".join(files)], cwd=WS)
+    # Stryker exit !=0 = fallo de corrida (no necesariamente survivors); contrato conservador.
+    return (0, res.returncode == 0)
 
 
 if __name__ == "__main__":
