@@ -142,4 +142,36 @@ describe("ServicePicker", () => {
       durationMinutes: null,
     });
   });
+
+  // H4: error state (UX-FIXLOOP-2026-06-24)
+  it("H4: shows error state with retry button when error=true", () => {
+    const onRetry = vi.fn();
+    render(
+      <ServicePicker
+        services={[]}
+        value={null}
+        onChange={vi.fn()}
+        loading={false}
+        error={true}
+        onRetry={onRetry}
+      />,
+    );
+    expect(screen.getByTestId("service-picker-error")).toBeInTheDocument();
+    const retryBtn = screen.getByRole("button", { name: /reintentar/i });
+    retryBtn.click();
+    expect(onRetry).toHaveBeenCalled();
+  });
+
+  it("H4: does not show error state when error=false (default)", () => {
+    render(
+      <ServicePicker
+        services={MOCK_SERVICES}
+        value={null}
+        onChange={vi.fn()}
+        loading={false}
+        error={false}
+      />,
+    );
+    expect(screen.queryByTestId("service-picker-error")).toBeNull();
+  });
 });

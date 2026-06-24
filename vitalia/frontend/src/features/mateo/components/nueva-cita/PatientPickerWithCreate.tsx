@@ -173,12 +173,11 @@ export function PatientPickerWithCreate({
         setPendingDuplicate(result);
         setMode("duplicate");
       } else {
-        // Cosmético: reflejar el paciente recién creado en el trigger del picker
-        // (sin esto el trigger volvía a "— Buscar paciente…" aunque el form sí
-        // tenía el patientId). El EntityPicker pinta value.name.
+        // L5: use data.name (typed name) not result.nameMasked (server-masked)
+        // so chip shows the name the user just typed, not a masked version.
         setSelectedPatient({
           id: result.patientId,
-          name: result.nameMasked,
+          name: data.name,
           phoneMasked: result.phoneMasked ?? null,
           channelFirst: null,
         });
@@ -290,7 +289,8 @@ export function PatientPickerWithCreate({
 
           <div className="mb-3">
             <Label htmlFor="patient-inline-phone-field" className="mb-1 block text-xs">
-              Teléfono
+              Teléfono{" "}
+              <span className="font-normal text-muted-foreground">(opcional)</span>
             </Label>
             <Input
               id="patient-inline-phone-field"
@@ -312,7 +312,8 @@ export function PatientPickerWithCreate({
 
           <div className="mb-4">
             <Label htmlFor="patient-inline-email-field" className="mb-1 block text-xs">
-              Correo electrónico
+              Correo electrónico{" "}
+              <span className="font-normal text-muted-foreground">(opcional)</span>
             </Label>
             <Input
               id="patient-inline-email-field"
@@ -374,7 +375,8 @@ export function PatientPickerWithCreate({
       <div
         data-testid="patient-chip"
         className={cn(
-          "flex items-center gap-3 rounded-md border border-border bg-card px-3 py-2",
+          // L5: stable min-h prevents layout shift when switching picker↔chip
+          "flex min-h-[40px] items-center gap-3 rounded-md border border-border bg-card px-3 py-2",
           className,
         )}
       >

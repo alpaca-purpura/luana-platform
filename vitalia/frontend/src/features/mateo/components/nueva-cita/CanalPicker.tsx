@@ -29,9 +29,10 @@ export interface CanalPickerProps {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
+// L1: labels updated to Spanish neutro (DIVERGE from signed mockup emoji labels)
 const CANAL_OPTIONS: ReadonlyArray<{ value: CanalValue; label: string; testid: string }> = [
-  { value: "walk_in", label: "🚶 Walk-in", testid: "canal-picker-walk-in" },
-  { value: "telefono", label: "📞 Teléfono", testid: "canal-picker-telefono" },
+  { value: "walk_in", label: "Sin cita", testid: "canal-picker-walk-in" },
+  { value: "telefono", label: "Teléfono", testid: "canal-picker-telefono" },
 ];
 
 /**

@@ -22,6 +22,8 @@ const BASE_PROPS = {
   dateLocal: "2026-06-22",
   selectedStartIso: "2026-06-22T10:00:00Z",
   selectedEndIso: "2026-06-22T10:30:00Z",
+  // H1 fix: pass UTC so local time = UTC time in tests (avoids timezone arithmetic)
+  timezone: "UTC",
 };
 
 describe("DayAvailabilityStrip", () => {

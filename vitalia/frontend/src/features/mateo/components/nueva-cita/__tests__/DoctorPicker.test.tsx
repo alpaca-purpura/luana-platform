@@ -103,4 +103,46 @@ describe("DoctorPicker", () => {
       screen.getByTestId("doctor-picker-empty"),
     ).toBeInTheDocument();
   });
+
+  // H4: error state (UX-FIXLOOP-2026-06-24)
+  it("H4: shows error state with retry button when error=true", () => {
+    const onRetry = vi.fn();
+    render(
+      <DoctorPicker
+        doctors={[]}
+        value={null}
+        onChange={vi.fn()}
+        loading={false}
+        disabled={false}
+        error={true}
+        onRetry={onRetry}
+      />,
+    );
+    expect(screen.getByTestId("doctor-picker-error")).toBeInTheDocument();
+    const retryBtn = screen.getByRole("button", { name: /reintentar/i });
+    retryBtn.click();
+    expect(onRetry).toHaveBeenCalled();
+  });
+
+  // L3: defensive label for UUID doctor seed data
+  // ponytail: Radix SelectContent renders in a portal — items not accessible in jsdom.
+  // Verify: component renders (no crash) when doctorLabel is a UUID.
+  // The UUID→fallback mapping is covered by unit test in nueva-cita-helpers.test.ts.
+  it("L3: renders without crashing when doctorLabel is a UUID", () => {
+    const doctorsWithUUID: NuevaCitaDoctorItem[] = [
+      { doctorId: "doc-uuid", doctorLabel: "550e8400-e29b-41d4-a716-446655440000" },
+    ];
+    render(
+      <DoctorPicker
+        doctors={doctorsWithUUID}
+        value={null}
+        onChange={vi.fn()}
+        loading={false}
+        disabled={false}
+      />,
+    );
+    // Trigger renders (not empty/error state because doctors.length > 0)
+    expect(screen.getByTestId("doctor-picker-trigger")).toBeInTheDocument();
+    expect(screen.queryByTestId("doctor-picker-empty")).toBeNull();
+  });
 });

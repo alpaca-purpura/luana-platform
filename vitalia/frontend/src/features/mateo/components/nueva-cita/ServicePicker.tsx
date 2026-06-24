@@ -42,6 +42,10 @@ export interface ServicePickerProps {
   value: string | null;
   onChange: (change: ServicePickerChange) => void;
   loading?: boolean;
+  /** H4: true when the services fetch failed */
+  error?: boolean;
+  /** H4: retry callback when error is true */
+  onRetry?: () => void;
   disabled?: boolean;
   className?: string;
 }
@@ -57,6 +61,8 @@ export function ServicePicker({
   value,
   onChange,
   loading = false,
+  error = false,
+  onRetry,
   disabled = false,
   className,
 }: ServicePickerProps) {
@@ -66,6 +72,31 @@ export function ServicePicker({
         data-testid="service-picker-loading"
         className={cn("h-10 w-full rounded-md", className)}
       />
+    );
+  }
+
+  // H4: fetch error — show error message + retry
+  if (error) {
+    return (
+      <div
+        data-testid="service-picker-error"
+        className={cn(
+          "flex items-center gap-2 rounded-md border border-destructive/50 bg-destructive/5 px-3 py-2 text-sm text-destructive",
+          className,
+        )}
+      >
+        No se pudieron cargar los servicios.
+        {onRetry ? (
+          <button
+            type="button"
+            className="underline hover:no-underline"
+            onClick={onRetry}
+            aria-label="Reintentar cargar servicios"
+          >
+            Reintentar
+          </button>
+        ) : null}
+      </div>
     );
   }
 
@@ -93,7 +124,8 @@ export function ServicePicker({
 
   return (
     <Select
-      value={value ?? undefined}
+      // M6: always controlled (empty string = no selection); avoids controlled→uncontrolled warning
+      value={value ?? ""}
       onValueChange={handleValueChange}
       disabled={disabled}
     >

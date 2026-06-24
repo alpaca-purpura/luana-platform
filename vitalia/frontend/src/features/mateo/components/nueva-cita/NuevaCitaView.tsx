@@ -110,13 +110,15 @@ function addMinutesToIso(isoStart: string, minutes: number): string {
   return d.toISOString();
 }
 
-/** Format ISO string to HH:mm wall-clock display. */
-function isoToHHMM(isoString: string): string {
+/** Format ISO string to HH:mm wall-clock display in the given timezone. H1 fix. */
+function isoToHHMM(isoString: string, timezone: string): string {
   try {
-    const d = new Date(isoString);
-    const h = d.getUTCHours().toString().padStart(2, "0");
-    const m = d.getUTCMinutes().toString().padStart(2, "0");
-    return `${h}:${m}`;
+    return new Intl.DateTimeFormat("es", {
+      timeZone: timezone,
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+    }).format(new Date(isoString));
   } catch {
     return "";
   }
@@ -198,15 +200,23 @@ export function NuevaCitaView({
   const origin = watch("origin");
 
   // ── React Query hooks ─────────────────────────────────────────────────────
-  const { data: servicesData, isPending: servicesLoading } =
-    useNuevaCitaServices({ tenantId });
+  const {
+    data: servicesData,
+    isPending: servicesLoading,
+    isError: servicesError,
+    refetch: servicesRefetch,
+  } = useNuevaCitaServices({ tenantId });
 
-  const { data: freeDoctorsData, isPending: doctorsLoading } =
-    useNuevaCitaFreeDoctors({
-      tenantId,
-      startIso: startTime,
-      durationMinutes,
-    });
+  const {
+    data: freeDoctorsData,
+    isPending: doctorsLoading,
+    isError: doctorsError,
+    refetch: doctorsRefetch,
+  } = useNuevaCitaFreeDoctors({
+    tenantId,
+    startIso: startTime,
+    durationMinutes,
+  });
 
   const createMutation = useNuevaCitaCreate({ tenantId });
 
@@ -281,6 +291,21 @@ export function NuevaCitaView({
 
   const submitDisabled = !isValid || isAvailabilityBlocked;
 
+  // H2: compute first blocking reason for hint (only shown when disabled)
+  const blockingReason = React.useMemo((): string | null => {
+    if (!submitDisabled) return null;
+    const w = watch();
+    if (!w.patientId) return "Selecciona un paciente para continuar.";
+    if (!w.serviceLabel) return "Selecciona un servicio para continuar.";
+    if (!w.startTime) return "Selecciona la fecha y hora de inicio.";
+    if (!w.doctorId) return "Selecciona un médico para continuar.";
+    if (w.endTime && w.startTime && w.endTime <= w.startTime)
+      return "La hora de fin debe ser posterior al inicio.";
+    if (availabilityStatus === null) return "Verificando disponibilidad del médico…";
+    if (availabilityStatus !== "available") return "El médico no está disponible en este horario.";
+    return "Completa todos los campos requeridos.";
+  }, [submitDisabled, availabilityStatus, watch]);
+
   // ── Date-only string for DayAvailabilityStrip ─────────────────────────────
   const dateLocal = startTime ? startTime.slice(0, 10) : "";
 
@@ -288,7 +313,7 @@ export function NuevaCitaView({
   const isLoading = servicesLoading && !servicesData;
 
   // ── Computed fin display ──────────────────────────────────────────────────
-  const endTimeDisplay = endTime ? isoToHHMM(endTime) : null;
+  const endTimeDisplay = endTime ? isoToHHMM(endTime, timezone) : null;
 
   return (
     <form
@@ -374,6 +399,8 @@ export function NuevaCitaView({
                 services={servicesData?.items ?? []}
                 value={selectedServiceId}
                 loading={servicesLoading}
+                error={servicesError}
+                onRetry={() => void servicesRefetch()}
                 onChange={({ offerId, durationMinutes: dur }) => {
                   setSelectedServiceId(offerId);
                   if (dur != null) {
@@ -411,12 +438,12 @@ export function NuevaCitaView({
                       value={field.value}
                       onChange={(iso) => {
                         field.onChange(iso);
-                        // Auto-update endTime when startTime changes
-                        setValue("endTime", addMinutesToIso(iso, durationMinutes), {
-                          shouldValidate: true,
-                        });
-                        // Exit manual edit mode — computed value re-syncs
-                        setEndTimeEditMode(false);
+                        // L2: only overwrite endTime when user hasn't manually set it
+                        if (!endTimeEditMode) {
+                          setValue("endTime", addMinutesToIso(iso, durationMinutes), {
+                            shouldValidate: true,
+                          });
+                        }
                       }}
                       timezone={timezone}
                       placeholder="Selecciona fecha y hora..."
@@ -452,14 +479,18 @@ export function NuevaCitaView({
                       parseInt(e.target.value, 10) || DEFAULT_DURATION_MINUTES,
                     );
                     setDurationMinutes(dur);
-                    if (startTime) {
+                    // L2: only overwrite endTime when user hasn't manually set it
+                    if (startTime && !endTimeEditMode) {
                       setValue("endTime", addMinutesToIso(startTime, dur), {
                         shouldValidate: true,
                       });
-                      setEndTimeEditMode(false);
                     }
                   }}
                 />
+                {/* M3: helper text — duration origin */}
+                <p className="mt-1 text-xs text-muted-foreground" data-testid="nc-duracion-hint">
+                  Viene del servicio · editable
+                </p>
               </section>
             </div>
 
@@ -560,8 +591,21 @@ export function NuevaCitaView({
                 loading={doctorsLoading && !!startTime}
                 disabled={!startTime}
                 disabledReason="Selecciona fecha y hora primero"
+                error={doctorsError}
+                onRetry={() => void doctorsRefetch()}
                 onChange={(doctorId) => setSelectedDoctorId(doctorId)}
               />
+              {/* M5: inline chip below DoctorPicker on mobile (hidden on lg+ where rail shows) */}
+              {selectedDoctorId && startTime ? (
+                <div className="mt-2 lg:hidden" data-testid="nc-availability-chip-inline">
+                  <AvailabilityChip
+                    tenantId={tenantId}
+                    doctorId={selectedDoctorId}
+                    startIso={startTime}
+                    durationMinutes={durationMinutes}
+                  />
+                </div>
+              ) : null}
               {errors.doctorId ? (
                 <p className="mt-1 text-xs text-destructive" role="alert">
                   {errors.doctorId.message}
@@ -585,16 +629,26 @@ export function NuevaCitaView({
                 name="notesInternal"
                 control={control}
                 render={({ field }) => (
-                  <Textarea
-                    id="nc-notas"
-                    placeholder="Notas visibles solo para el equipo..."
-                    maxLength={500}
-                    data-testid="nc-notas-textarea"
-                    value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value || null)}
-                    className="resize-none"
-                    rows={3}
-                  />
+                  <>
+                    <Textarea
+                      id="nc-notas"
+                      placeholder="Solo logística — sin información clínica. Ej: la paciente prefiere las mañanas."
+                      maxLength={500}
+                      data-testid="nc-notas-textarea"
+                      value={field.value ?? ""}
+                      onChange={(e) => field.onChange(e.target.value || null)}
+                      className="resize-none"
+                      rows={3}
+                    />
+                    {/* L6: character counter */}
+                    <p
+                      className="mt-1 text-right text-xs text-muted-foreground"
+                      aria-live="polite"
+                      data-testid="nc-notas-counter"
+                    >
+                      {(field.value ?? "").length}/500
+                    </p>
+                  </>
                 )}
               />
             </section>
@@ -603,6 +657,22 @@ export function NuevaCitaView({
           {/* ── RIGHT COLUMN: Disponibilidad del médico ────────────────────── */}
           <div className="flex flex-col gap-4" data-testid="nc-col-avail">
             <h2 className="text-base font-semibold text-foreground">Disponibilidad del médico</h2>
+
+            {/* M1: intro block — shown when no startTime yet */}
+            {!startTime ? (
+              <div
+                data-testid="nc-avail-intro"
+                className="rounded-md border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground"
+              >
+                <p className="font-medium text-foreground">¿Qué verás aquí?</p>
+                <ul className="mt-2 list-disc space-y-1 pl-4">
+                  <li>Disponibilidad del médico en el horario elegido</li>
+                  <li>Vista del día con bloques libres y ocupados</li>
+                  <li>Médicos disponibles en ese horario</li>
+                </ul>
+                <p className="mt-3 text-xs">Selecciona la fecha y hora de inicio para comenzar.</p>
+              </div>
+            ) : null}
 
             {/* AvailabilityChip: shows when doctor + slot selected (T-FE-3) */}
             {selectedDoctorId && startTime ? (
@@ -625,6 +695,7 @@ export function NuevaCitaView({
                   dateLocal={dateLocal}
                   selectedStartIso={startTime || null}
                   selectedEndIso={endTime || null}
+                  timezone={timezone}
                 />
               </div>
             ) : null}
@@ -644,12 +715,28 @@ export function NuevaCitaView({
       </FormPageScaffold>
 
       {/* ── NuevaCitaActions — sticky bottom (T-FE-4) ─────────────────────── */}
+      {/* H2: show blocking reason as role="status" when submit is disabled */}
+      {submitDisabled && blockingReason ? (
+        <p
+          role="status"
+          aria-live="polite"
+          data-testid="nc-blocking-reason"
+          className="px-4 pb-1 text-center text-xs text-muted-foreground"
+        >
+          {blockingReason}
+        </p>
+      ) : null}
       <NuevaCitaActions
         onCancel={handleBack}
         onSubmit={handleSubmit(onSubmit)}
         submitting={createMutation.isPending}
         submitDisabled={submitDisabled}
-        hint="Sin guardar todavía · los datos no se pierden si navegas dentro de la hoja."
+        hint={
+          // M4: hidden on mobile (≤sm) to avoid clash with Valeria FAB
+          <span className="hidden sm:inline">
+            Sin guardar todavía · los datos no se pierden si navegas dentro de la hoja.
+          </span>
+        }
       />
     </form>
   );

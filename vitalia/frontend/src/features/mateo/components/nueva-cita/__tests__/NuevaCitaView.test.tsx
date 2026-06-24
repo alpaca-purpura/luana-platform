@@ -363,4 +363,90 @@ describe("NuevaCitaView", () => {
     // nc-day-strip-container only renders when startTime is truthy
     expect(screen.queryByTestId("nc-day-strip-container")).toBeNull();
   });
+
+  // ── UX fix-loop tests (UX-FIXLOOP-2026-06-24) ────────────────────────────
+
+  it("M1: shows avail intro block when startTime not set", () => {
+    render(
+      React.createElement(NuevaCitaView, {
+        tenantId: "tenant-1",
+        prefillDate: undefined,
+        prefillTime: undefined,
+      }),
+    );
+    expect(screen.getByTestId("nc-avail-intro")).toBeInTheDocument();
+  });
+
+  it("M1: hides avail intro block when startTime is set", () => {
+    render(
+      React.createElement(NuevaCitaView, {
+        tenantId: "tenant-1",
+        prefillDate: "2026-07-01",
+        prefillTime: "10:00",
+      }),
+    );
+    expect(screen.queryByTestId("nc-avail-intro")).toBeNull();
+  });
+
+  it("M2: notes textarea has HIPAA logistics placeholder", () => {
+    render(
+      React.createElement(NuevaCitaView, {
+        tenantId: "tenant-1",
+        prefillDate: undefined,
+        prefillTime: undefined,
+      }),
+    );
+    const textarea = screen.getByTestId("nc-notas-textarea");
+    expect(textarea).toHaveAttribute("placeholder", expect.stringContaining("Solo logística"));
+  });
+
+  it("M3: duration section shows helper text", () => {
+    render(
+      React.createElement(NuevaCitaView, {
+        tenantId: "tenant-1",
+        prefillDate: undefined,
+        prefillTime: undefined,
+      }),
+    );
+    expect(screen.getByTestId("nc-duracion-hint")).toBeInTheDocument();
+    expect(screen.getByTestId("nc-duracion-hint").textContent).toContain("Viene del servicio");
+  });
+
+  it("H2: shows blocking reason when submit disabled (no patient)", () => {
+    render(
+      React.createElement(NuevaCitaView, {
+        tenantId: "tenant-1",
+        prefillDate: undefined,
+        prefillTime: undefined,
+      }),
+    );
+    // Submit is disabled (empty form) → blocking reason should be visible
+    expect(screen.getByTestId("nc-blocking-reason")).toBeInTheDocument();
+    expect(screen.getByTestId("nc-blocking-reason").textContent).toContain("paciente");
+  });
+
+  it("L1: CanalPicker shows 'Sin cita' label (not emoji Walk-in)", () => {
+    render(
+      React.createElement(NuevaCitaView, {
+        tenantId: "tenant-1",
+        prefillDate: undefined,
+        prefillTime: undefined,
+      }),
+    );
+    const walkInBtn = screen.getByTestId("canal-picker-walk-in");
+    expect(walkInBtn.textContent).toBe("Sin cita");
+    expect(walkInBtn.textContent).not.toContain("Walk-in");
+  });
+
+  it("L6: notes textarea renders character counter", () => {
+    render(
+      React.createElement(NuevaCitaView, {
+        tenantId: "tenant-1",
+        prefillDate: undefined,
+        prefillTime: undefined,
+      }),
+    );
+    expect(screen.getByTestId("nc-notas-counter")).toBeInTheDocument();
+    expect(screen.getByTestId("nc-notas-counter").textContent).toContain("/500");
+  });
 });

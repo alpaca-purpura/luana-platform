@@ -291,4 +291,67 @@ describe("PatientPickerWithCreate", () => {
       expect(onChange).toHaveBeenCalledWith("created-no-phone-uuid");
     });
   });
+
+  // L5: chip shows typed name, not server-masked name
+  it("L5: chip shows the typed name (data.name) after inline create, not nameMasked", async () => {
+    const onChange = vi.fn();
+    mockCreatePatient.mockResolvedValue({
+      patientId: "l5-patient-uuid",
+      nameMasked: "J*** G***",   // server-masked — should NOT appear in chip
+      phoneMasked: null,
+      isDuplicate: false,
+    });
+
+    const user = userEvent.setup();
+    render(
+      <PatientPickerWithCreate
+        value={null}
+        onChange={onChange}
+        tenantId="t-1"
+      />,
+    );
+
+    // Open inline form
+    const searchInput = screen.getByTestId("patient-picker-search");
+    await user.type(searchInput, "Juan");
+    const createBtn = await screen.findByTestId("patient-picker-create-action");
+    await user.click(createBtn);
+
+    // Fill and submit
+    const nameInput = screen.getByTestId("patient-inline-name");
+    await user.clear(nameInput);
+    await user.type(nameInput, "Juan García");
+    await user.click(screen.getByTestId("patient-inline-submit"));
+
+    // Chip should show the typed name, NOT the masked version
+    await waitFor(() => {
+      const chip = screen.getByTestId("patient-chip");
+      expect(chip).toBeInTheDocument();
+      expect(chip.textContent).toContain("Juan García");
+      expect(chip.textContent).not.toContain("J*** G***");
+    });
+  });
+
+  // L4: phone and email labels show (opcional) hint
+  it("L4: phone and email labels show (opcional) in inline create form", async () => {
+    const user = userEvent.setup();
+    render(
+      <PatientPickerWithCreate
+        value={null}
+        onChange={vi.fn()}
+        tenantId="t-1"
+      />,
+    );
+
+    const searchInput = screen.getByTestId("patient-picker-search");
+    await user.type(searchInput, "Test");
+    const createBtn = await screen.findByTestId("patient-picker-create-action");
+    await user.click(createBtn);
+
+    const phoneLabel = screen.getByText(/Teléfono/i).closest("label");
+    expect(phoneLabel?.textContent).toContain("opcional");
+
+    const emailLabel = screen.getByText(/Correo electrónico/i).closest("label");
+    expect(emailLabel?.textContent).toContain("opcional");
+  });
 });
