@@ -99,6 +99,7 @@ export function ServicePicker({
     >
       <SelectTrigger
         data-testid="service-picker-trigger"
+        aria-label="Servicio"
         className={cn("w-full", className)}
       >
         <SelectValue placeholder="Selecciona un servicio…" />

@@ -5,8 +5,49 @@ agent_owner: mateo
 module: scheduling
 capability: mateo.agenda
 state: developing
-phase: DEVELOPING                                   # /dev-team build · DAG 6 waves (9 tickets) · autonomous_mode:false → pausa en G
+phase: LIVE_VERIFY_FIXLOOP                           # 9 tickets construidos · live-verify destapó 5 bugs de integración · fix-loop en curso
 build_started: 2026-06-22                           # /pm-vitalia ready→developing + handoff /dev-team
+dod_live_verified: true                             # ★ happy path core ejercido live (cita-create 201 + patient-create 201, filas reales). Falta G de Chris (full functional + 409 + toast + demo) + auditor de los 9 fixes
+dod_env: "localhost:3002 (FE) + localhost:8002 (BE docker) · dr.demo@vitalialat.com · Chrome DevTools MCP"
+dod_evidence:
+  - action: "crear paciente inline (nombre 'Sofia', sin teléfono) desde el picker de nueva-cita (autenticado dr.demo)"
+    observed: "POST /api/v1/crm/patients → 201 · vitalia_patients count 29→30 (fila real, masked)"
+    backend_log: "POST /api/v1/crm/patients HTTP/1.1 201 Created"
+    verified_at: 2026-06-23
+  - action: "crear cita: Botox · 29-jun 09:00 · Dr.2464fad7 (chip 'Médico disponible') · paciente Sofia · Crear cita"
+    observed: "POST /api/v1/scheduling/appointments → 201 · vitalia_appointments fila SCHEDULED (slot 2026-06-29T12:00Z=09:00 tz UTC-3, dur 30, origin walk_in, offer/clinic/patient set) + vitalia_appointment_clinic_map mirror 12:00→12:30 SCHEDULED (EXCLUDE anti-solape activo)"
+    backend_log: "POST /api/v1/scheduling/appointments HTTP/1.1 201 Created"
+    verified_at: 2026-06-23
+  pending_at_G: "409 solape live (cubierto por integration test) · toast 'Cita creada' + grilla refleja (no observado, sesión expiró tras el 201) · demo-script.md · firma Chris"
+live_verify_findings:                               # Chrome DevTools MCP (dr.demo · localhost:3002) 2026-06-22/23 — detalle en chris-input.md
+  - "bug1 render token-isLoaded → skeleton eterno · FIXED+verificado (/offer/servicios 200, pickers pueblan)"
+  - "bug2 token 60s cacheado → writes 307 · FIXED 1d63734f (free-doctors POST 200, era 307)"
+  - "bug3 BE channel_first/notes columnas inexistentes → 500 · FIXED 0ff94f55 mig051 (crm GET 200, 29 pacientes)"
+  - "bug4 nested <form> hydration → submit tragado · FIXED faa643f7 (form→div, hydration limpio)"
+  - "bug5 inline-create no POSTeaba · FIXED faa643f7 (phone '' → null) · ★ el 'no POST' era ARTEFACTO del click Chrome-MCP (sintético no dispara onClick React) — native .click() → patient POST 201 (DB 29→30). Feature sana."
+  - "VERIFICADO live (native-click): login·shell·pickers·servicios·free-doctors POST 200·chip Médico-disponible·day-strip(AC-8)·reasignar 1-clic(AC-5)·patient search-by-name(decrypt)·patient CREATE 201(real)·Crear-cita se habilita"
+  - "bug6 cita-create 500 'notes_internal no existe' · FIXED 9feb302c (mig052 + test real-schema, scheduling 236/236)"
+  - "bug6b RESUELTO: INSERT llena clinic_id (contexto) + offer_id (FE manda selectedServiceId). BE 86b90904 + FE 453ea164"
+  - "bug8 cita-create 500 NoReferencedTableError (FK ORM mirror) · FIXED 2de80705 (fix-loop holístico + test integración real end-to-end 7/7, smoke-insert real)"
+  - "bug9 cita-create 500 AppointmentDetailDTO.currency requiere str pero es None · FIXED 193f1a7b (currency str|None, currency-handling rule). El INSERT+mirror YA funcionaban; fallaba la serialización de la respuesta"
+  - "✅ HAPPY PATH VERIFICADO LIVE (2026-06-23): cita-create 201 (fila vitalia_appointments SCHEDULED + mirror clinic_map 12:00→12:30) · patient-create 201 (DB 29→30). Núcleo funciona end-to-end tras 9 fixes"
+  - "★ patrón: 9 bugs en cascada en el create-path, NINGUNO agarrado por unit (mockean DB/Clerk). El test holístico cazó #8 pero no #9 (no probó el response DTO del router con currency null). Recomendación durable: test integración real-DB del ROUTER (no solo service) + contract FE↔BE (HB-42)"
+  - "pendiente live (G de Chris): 409 solape (cubierto por integration test) · toast + grilla refleja (sesión expiró tras el 201) · demo-script.md"
+  - "infra: scripts/git-hooks/pre-commit (+1655 sin commitear) tiene MARCADORES DE CONFLICTO git → rompió sweep-guard HB-31 (contaminación cross-sesión) → reparar"
+  - "e2e runner roto platform-wide (clerk.setup.ts:31 describe.configure, pre-existente) → HB pendiente"
+verify_battery_2026_06_24:                          # /dev-team VERIFY_BATTERY — correr TODA la batería del architect ANTES del auditor (Chris opt-A). Estado por gate:
+  be_suite: "✅ GREEN 632/632 (scheduling+crm). Incluye real-DB EXCLUDE/half-open/cancelled-reuse + adversarial (cross-clinic/cross-tenant/rbac/phi)."
+  fixed_be_test: "test_migration_050_exclude.py — estaba RED y descartado como 'flake pre-existente'. 2 bugs reales del TEST: (1) async_engine module-scoped vs loop function-scoped (pytest-asyncio) → usar conftest db_session; (2) INSERT al mirror con appointment_id huérfano → FK violation (helper _insert_map: parent vitalia_appointments primero). Ahora 18/18 GREEN real-DB."
+  mutation: "⚠️ DEGRADADO advisory — scripts/mutation_gate.py invoca mutmut con --paths-to-mutate, opción ELIMINADA en mutmut 3.5.0 (config-only). Wrapper roto, no mutmut. Root cause → HB-97. Compensación: los 4 targets tienen unit+integration+real-DB."
+  schemathesis: "⚠️ NO CORRIDO — binario schemathesis ausente del venv → degrada advisory (validator note)."
+  e2e_smoke: "🟡 4/5. happy-path + form-render + back-pill GREEN. a11y destapó 3 violaciones reales (axe)."
+  e2e_regression: "🟡 ERA HUÉRFANO (e2e/specs/regression/ no matcheaba ningún project testMatch → los 9 SC NUNCA corrieron = cobertura fantasma, HB-96). MOVIDO a e2e/regression/mateo/. Ahora 8/11: SC-crear-paciente (form not-found=dev-flake) · SC-mini-vista (nc-day-strip-container hidden=triage) · SC-a11y (engine ChatMessages) fallan."
+  a11y_fixed: "2 violaciones de scope-story FIXED: aria-valid-attr-value (CanalPicker misuso de Tabs sin TabsContent → radiogroup) + button-name (ServicePicker/DoctorPicker SelectTrigger sin aria-label)."
+  a11y_engine_debt: "1 violación queda: scrollable-region-focusable en core/@luana/ui-kit/.../ChatMessages.tsx (chat Valeria, TODAS las rutas). Engine/compartido → fix vía /pm-luana (no se edita desde story de marca). Fix trivial: tabIndex={0} en el log scrollable."
+  e2e_dev_flake: "Bloqueante e2e: `next dev --webpack` resetea intermitente los chunks de boundary (error.js/not-found.js) → ERR_CONNECTION_RESET → 'SyntaxError: Invalid or unexpected token' → rompe el client shell (data-shell-ready nunca true). El shell es SANO (probado dsr='true' en aislamiento). El gate anti-burbuja lo caza → falsos rojos. Fix real = e2e contra prod-build (next build) o estabilizar dev. HB pendiente."
+  fixed_e2e_helper: "assertShellMounted (base.ts, HB-68) chequeaba div[aria-label='Interfaz principal Vitalia'] del AppShell MUERTO (pre-migración @luana/ui-kit). Verde-fantasma latente que el runner roto (HB-98) ocultó. Reapuntado a main#main-content[data-shell-ready='true'] (señal del kit) + timeout 20s (cold-compile dev)."
+  ci_parity: "⬜ NO CORRIDO (pendiente decisión — heavy)."
+  next: "Decisiones Chris: (a) a11y engine fix vía /pm-luana; (b) e2e dev-flake → prod-build o aceptar retries; (c) triage SC-mini-vista hidden; (d) ci-parity. Recién con eso → G."
 input_spec_signed: true                             # ✍ FIRMA 1 funcional (Chris 2026-06-21)
 mockup_final_signed: true                           # ✍ FIRMA 2 mockup FINAL (Chris 2026-06-22)
 ratified_by_chris: true

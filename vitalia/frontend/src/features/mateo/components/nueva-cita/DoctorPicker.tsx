@@ -86,6 +86,7 @@ export function DoctorPicker({
     >
       <SelectTrigger
         data-testid="doctor-picker-trigger"
+        aria-label="Médico"
         className={cn("w-full", className)}
         title={disabled ? (disabledReason ?? undefined) : undefined}
       >

@@ -14,7 +14,6 @@
 "use client";
 
 import * as React from "react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/cn";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -30,16 +29,19 @@ export interface CanalPickerProps {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
+const CANAL_OPTIONS: ReadonlyArray<{ value: CanalValue; label: string; testid: string }> = [
+  { value: "walk_in", label: "Presencial", testid: "canal-picker-walk-in" },
+  { value: "telefono", label: "Teléfono", testid: "canal-picker-telefono" },
+];
+
 /**
- * CanalPicker — Controlled pill toggle for walk_in / telefono origin.
+ * CanalPicker — Controlled pill radiogroup for walk_in / telefono origin.
  *
- * Uses Shadcn Tabs (controlled mode via value/onValueChange) styled as pill.
- * TogglePill from @luana/ui-kit is uncontrolled (defaultValue only) so we use
- * Tabs directly for RHF controlled binding.
- *
- * ponytail: Tabs directly instead of TogglePill because TogglePill lacks
- * controlled value/onChange props. Add controlled mode to TogglePill if
- * reused in ≥2 more places (promotion candidate).
+ * Radix Tabs was wrong here: TabsTrigger auto-sets aria-controls to a tabpanel
+ * id, but a 2-option toggle has no panels → aria-valid-attr-value violation
+ * (axe wcag2aa). "Elegir uno de N" es un radiogroup, no tabs. role=radio +
+ * aria-checked, navegable por teclado (flechas via roving lo da el browser en
+ * un grupo de radios; acá Tab + Espacio/click).
  */
 export function CanalPicker({
   value,
@@ -48,34 +50,38 @@ export function CanalPicker({
   className,
 }: CanalPickerProps) {
   return (
-    <Tabs
-      value={value}
-      onValueChange={(v) => {
-        if (v === "walk_in" || v === "telefono") {
-          onChange(v);
-        }
-      }}
+    <div
+      role="radiogroup"
+      aria-label="Canal de origen"
       data-testid="canal-picker"
-      className={cn("w-full", className)}
+      className={cn(
+        "inline-flex h-9 w-full items-center gap-1 rounded-full border border-border bg-muted p-1",
+        className,
+      )}
     >
-      <TabsList className="h-9 rounded-full border border-border bg-muted p-1">
-        <TabsTrigger
-          value="walk_in"
-          disabled={disabled}
-          data-testid="canal-picker-walk-in"
-          className="rounded-full px-4 text-sm"
-        >
-          Presencial
-        </TabsTrigger>
-        <TabsTrigger
-          value="telefono"
-          disabled={disabled}
-          data-testid="canal-picker-telefono"
-          className="rounded-full px-4 text-sm"
-        >
-          Teléfono
-        </TabsTrigger>
-      </TabsList>
-    </Tabs>
+      {CANAL_OPTIONS.map((opt) => {
+        const selected = value === opt.value;
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            role="radio"
+            aria-checked={selected}
+            disabled={disabled}
+            data-testid={opt.testid}
+            data-state={selected ? "active" : "inactive"}
+            onClick={() => onChange(opt.value)}
+            className={cn(
+              "flex-1 rounded-full px-4 text-sm transition-colors disabled:pointer-events-none disabled:opacity-50",
+              selected
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
+    </div>
   );
 }

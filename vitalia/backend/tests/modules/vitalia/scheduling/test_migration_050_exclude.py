@@ -26,9 +26,8 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 import pytest
-import pytest_asyncio
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncSession
 
 # ---------------------------------------------------------------------------
 # Constants (synthetic PHI-free test data)
@@ -96,45 +95,59 @@ UPDATE_STATUS_SQL = text(
     """
 )
 
+# Parent row in vitalia_appointments — the mirror has a DB-level FK
+# vitalia_appointment_clinic_map.appointment_id → vitalia_appointments(id), so a
+# parent MUST exist before the mirror insert (matches the repo create-path:
+# parent first, then mirror). vitalia_appointments itself has NO overlap
+# constraint (the EXCLUDE under test lives on the mirror), so overlapping parents
+# coexist and only the mirror insert raises 23P01.
+_INSERT_PARENT = text(
+    """
+    INSERT INTO vitalia_appointments
+        (id, tenant_id, clinic_id, offer_id, patient_id, doctor_id,
+         slot_iso, duration_minutes, status, origin, notes_internal,
+         currency, created_at)
+    VALUES
+        (:id, :tenant_id, :clinic_id, :offer_id, :patient_id, :doctor_id,
+         :slot_iso, :dur, :status, :origin, NULL, 'USD', NOW())
+    """
+)
+
+
+async def _insert_map(db_session, row: dict) -> None:  # type: ignore[no-untyped-def]
+    """Insert the FK parent (vitalia_appointments) + flush, then the clinic_map
+    mirror + flush. The mirror flush is what raises 23P01 on EXCLUDE overlap.
+    """
+    dur = int((row["end_time"] - row["start_time"]).total_seconds() // 60) or 30
+    await db_session.execute(
+        _INSERT_PARENT,
+        {
+            "id": row["appointment_id"],
+            "tenant_id": row["tenant_id"],
+            "clinic_id": row["clinic_id"],
+            "offer_id": uuid4(),
+            "patient_id": row["patient_id"],
+            "doctor_id": row["doctor_id"],
+            "slot_iso": row["start_time"],
+            "dur": dur,
+            "status": row["status"],
+            "origin": row["origin"],
+        },
+    )
+    await db_session.flush()
+    await db_session.execute(INSERT_SQL, row)
+    await db_session.flush()
+
 
 # ---------------------------------------------------------------------------
-# Fixtures
+# Fixtures: uses the shared conftest `db_session` (function-scoped, loop-safe).
+#
+# A home-rolled module-scoped `async_engine` bound its asyncpg connection pool
+# to the FIRST test's event loop; pytest-asyncio (asyncio_mode=auto) gives each
+# test a function-scoped loop → "got Future attached to a different loop". The
+# conftest `db_session`/`engine` pair is the canonical pattern (same one the
+# green test_create_appointment_e2e_integration.py uses).
 # ---------------------------------------------------------------------------
-
-
-@pytest.fixture(scope="module")
-def pg_url(request: pytest.FixtureRequest) -> str:  # noqa: ARG001
-    """Postgres URL from conftest env defaults or env var."""
-    import os
-
-    user = os.environ.get("POSTGRES_USER", "postgres")
-    password = os.environ.get("POSTGRES_PASSWORD", "password")
-    host = os.environ.get("POSTGRES_HOST", "localhost")
-    port = os.environ.get("POSTGRES_PORT", "5435")
-    db = os.environ.get("POSTGRES_DB", "luana_vitalia")
-    return f"postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}"
-
-
-@pytest_asyncio.fixture(scope="module")
-async def async_engine(pg_url: str):  # type: ignore[no-untyped-def]
-    """Create async engine for the integration tests."""
-    engine = create_async_engine(pg_url, echo=False)
-    try:
-        async with engine.connect() as conn:
-            await conn.execute(text("SELECT 1"))
-    except Exception as exc:
-        pytest.skip(f"Postgres unreachable — skipping integration test: {exc}")
-    yield engine
-    await engine.dispose()
-
-
-@pytest_asyncio.fixture
-async def session(async_engine) -> AsyncSession:  # type: ignore[no-untyped-def]
-    """Provide a per-test async session with rollback isolation."""
-    async with async_engine.begin() as conn:
-        session = AsyncSession(bind=conn)  # type: ignore[call-arg]
-        yield session
-        await conn.rollback()
 
 
 # ---------------------------------------------------------------------------
@@ -146,9 +159,9 @@ async def session(async_engine) -> AsyncSession:  # type: ignore[no-untyped-def]
 class TestMigration050Applied:
     """Verify migration 050 DDL artifacts exist in the database."""
 
-    async def test_start_time_column_exists(self, session: AsyncSession) -> None:
+    async def test_start_time_column_exists(self, db_session: AsyncSession) -> None:
         """vitalia_appointment_clinic_map.start_time column must exist."""
-        result = await session.execute(
+        result = await db_session.execute(
             text(
                 """
                 SELECT column_name FROM information_schema.columns
@@ -161,9 +174,9 @@ class TestMigration050Applied:
             "Column start_time not found in vitalia_appointment_clinic_map. Run migration 050 first."
         )
 
-    async def test_end_time_column_exists(self, session: AsyncSession) -> None:
+    async def test_end_time_column_exists(self, db_session: AsyncSession) -> None:
         """vitalia_appointment_clinic_map.end_time column must exist."""
-        result = await session.execute(
+        result = await db_session.execute(
             text(
                 """
                 SELECT column_name FROM information_schema.columns
@@ -174,9 +187,9 @@ class TestMigration050Applied:
         )
         assert result.fetchone() is not None, "Column end_time not found."
 
-    async def test_status_column_exists(self, session: AsyncSession) -> None:
+    async def test_status_column_exists(self, db_session: AsyncSession) -> None:
         """vitalia_appointment_clinic_map.status column must exist."""
-        result = await session.execute(
+        result = await db_session.execute(
             text(
                 """
                 SELECT column_name FROM information_schema.columns
@@ -187,9 +200,9 @@ class TestMigration050Applied:
         )
         assert result.fetchone() is not None, "Column status not found."
 
-    async def test_exclude_constraint_exists(self, session: AsyncSession) -> None:
+    async def test_exclude_constraint_exists(self, db_session: AsyncSession) -> None:
         """EXCLUDE constraint 'no_overlap_per_doctor' must exist in pg_constraint."""
-        result = await session.execute(
+        result = await db_session.execute(
             text(
                 """
                 SELECT conname FROM pg_constraint
@@ -202,9 +215,9 @@ class TestMigration050Applied:
             "EXCLUDE constraint 'no_overlap_per_doctor' not found. Run migration 050 to create it."
         )
 
-    async def test_btree_gist_extension_exists(self, session: AsyncSession) -> None:
+    async def test_btree_gist_extension_exists(self, db_session: AsyncSession) -> None:
         """btree_gist extension must be installed."""
-        result = await session.execute(text("SELECT extname FROM pg_extension WHERE extname = 'btree_gist'"))
+        result = await db_session.execute(text("SELECT extname FROM pg_extension WHERE extname = 'btree_gist'"))
         assert result.fetchone() is not None, "btree_gist extension not installed."
 
 
@@ -217,7 +230,7 @@ class TestMigration050Applied:
 class TestExcludeOverlapBlocks:
     """SC-race + SC-half-open-block: overlapping inserts must be rejected."""
 
-    async def test_exact_overlap_blocked(self, session: AsyncSession) -> None:
+    async def test_exact_overlap_blocked(self, db_session: AsyncSession) -> None:
         """Two inserts for the exact same range [09:00, 09:30) → second raises 23P01."""
         from sqlalchemy.exc import IntegrityError
 
@@ -226,8 +239,7 @@ class TestExcludeOverlapBlocks:
             end_time=_start(9, 30),
             status="SCHEDULED",
         )
-        await session.execute(INSERT_SQL, row1)
-        await session.flush()
+        await _insert_map(db_session, row1)
 
         row2 = _appt_row(
             start_time=_start(9, 0),
@@ -235,8 +247,7 @@ class TestExcludeOverlapBlocks:
             status="SCHEDULED",
         )
         with pytest.raises(IntegrityError) as exc_info:
-            await session.execute(INSERT_SQL, row2)
-            await session.flush()
+            await _insert_map(db_session, row2)
 
         # SQLSTATE 23P01 = exclusion_violation
         err_str = str(exc_info.value).lower()
@@ -244,7 +255,7 @@ class TestExcludeOverlapBlocks:
             f"Expected SQLSTATE 23P01 exclusion violation, got: {exc_info.value}"
         )
 
-    async def test_partial_overlap_blocked(self, session: AsyncSession) -> None:
+    async def test_partial_overlap_blocked(self, db_session: AsyncSession) -> None:
         """10:00-10:30 + 10:15-10:45 → second blocked (overlaps by 15 min)."""
         from sqlalchemy.exc import IntegrityError
 
@@ -253,8 +264,7 @@ class TestExcludeOverlapBlocks:
             end_time=_start(10, 30),
             status="SCHEDULED",
         )
-        await session.execute(INSERT_SQL, row1)
-        await session.flush()
+        await _insert_map(db_session, row1)
 
         row2 = _appt_row(
             start_time=_start(10, 15),
@@ -262,13 +272,12 @@ class TestExcludeOverlapBlocks:
             status="SCHEDULED",
         )
         with pytest.raises(IntegrityError) as exc_info:
-            await session.execute(INSERT_SQL, row2)
-            await session.flush()
+            await _insert_map(db_session, row2)
 
         err_str = str(exc_info.value).lower()
         assert "23p01" in err_str or "exclusion" in err_str or "no_overlap_per_doctor" in err_str
 
-    async def test_superset_overlap_blocked(self, session: AsyncSession) -> None:
+    async def test_superset_overlap_blocked(self, db_session: AsyncSession) -> None:
         """09:30-10:30 blocked by existing 10:00-10:30 (superset from left)."""
         from sqlalchemy.exc import IntegrityError
 
@@ -277,8 +286,7 @@ class TestExcludeOverlapBlocks:
             end_time=_start(10, 30),
             status="SCHEDULED",
         )
-        await session.execute(INSERT_SQL, row1)
-        await session.flush()
+        await _insert_map(db_session, row1)
 
         row2 = _appt_row(
             start_time=_start(9, 30),
@@ -286,8 +294,7 @@ class TestExcludeOverlapBlocks:
             status="SCHEDULED",
         )
         with pytest.raises(IntegrityError) as exc_info:
-            await session.execute(INSERT_SQL, row2)
-            await session.flush()
+            await _insert_map(db_session, row2)
 
         err_str = str(exc_info.value).lower()
         assert "23p01" in err_str or "exclusion" in err_str or "no_overlap_per_doctor" in err_str
@@ -297,7 +304,7 @@ class TestExcludeOverlapBlocks:
 class TestHalfOpenRangesCoexist:
     """SC-half-open-ok (RN-2): back-to-back appointments must coexist."""
 
-    async def test_back_to_back_10_and_1030(self, session: AsyncSession) -> None:
+    async def test_back_to_back_10_and_1030(self, db_session: AsyncSession) -> None:
         """10:00-10:30 and 10:30-11:00 coexist (half-open '[)' semantics)."""
         row1 = _appt_row(
             start_time=_start(10, 0),
@@ -310,13 +317,11 @@ class TestHalfOpenRangesCoexist:
             status="SCHEDULED",
         )
         # Both must insert without exception
-        await session.execute(INSERT_SQL, row1)
-        await session.flush()
-        await session.execute(INSERT_SQL, row2)
-        await session.flush()
+        await _insert_map(db_session, row1)
+        await _insert_map(db_session, row2)
 
         # Verify both rows exist
-        result = await session.execute(
+        result = await db_session.execute(
             text(
                 """
                 SELECT COUNT(*) FROM vitalia_appointment_clinic_map
@@ -336,7 +341,7 @@ class TestHalfOpenRangesCoexist:
         count = result.scalar()
         assert count == 2, f"Expected 2 back-to-back rows, got {count}"
 
-    async def test_back_to_back_three_consecutive(self, session: AsyncSession) -> None:
+    async def test_back_to_back_three_consecutive(self, db_session: AsyncSession) -> None:
         """Three consecutive 30-min slots for same doctor coexist."""
         rows = [
             _appt_row(start_time=_start(14, 0), end_time=_start(14, 30), status="SCHEDULED"),
@@ -344,10 +349,9 @@ class TestHalfOpenRangesCoexist:
             _appt_row(start_time=_start(15, 0), end_time=_start(15, 30), status="SCHEDULED"),
         ]
         for row in rows:
-            await session.execute(INSERT_SQL, row)
-            await session.flush()
+            await _insert_map(db_session, row)
 
-        result = await session.execute(
+        result = await db_session.execute(
             text(
                 "SELECT COUNT(*) FROM vitalia_appointment_clinic_map "
                 "WHERE doctor_id = :did AND tenant_id = :tid AND status = 'SCHEDULED' "
@@ -358,7 +362,7 @@ class TestHalfOpenRangesCoexist:
         count = result.scalar()
         assert count == 3, f"Expected 3 consecutive rows, got {count}"
 
-    async def test_different_doctors_same_time_allowed(self, session: AsyncSession) -> None:
+    async def test_different_doctors_same_time_allowed(self, db_session: AsyncSession) -> None:
         """Different doctors can have overlapping appointment times (constraint is per-doctor)."""
         row1 = _appt_row(
             doctor_id=DOCTOR_ID,
@@ -373,17 +377,15 @@ class TestHalfOpenRangesCoexist:
             status="SCHEDULED",
         )
         # Must NOT raise — different doctors
-        await session.execute(INSERT_SQL, row1)
-        await session.flush()
-        await session.execute(INSERT_SQL, row2)
-        await session.flush()
+        await _insert_map(db_session, row1)
+        await _insert_map(db_session, row2)
 
 
 @pytest.mark.integration
 class TestCancelledSlotReuse:
     """SC-cancelled-reuse (RN-6): CANCELLED appointment frees the slot for rebooking."""
 
-    async def test_cancelled_does_not_count_as_conflict(self, session: AsyncSession) -> None:
+    async def test_cancelled_does_not_count_as_conflict(self, db_session: AsyncSession) -> None:
         """Insert CANCELLED, then insert SCHEDULED on same range → no conflict."""
         # Step 1: Insert an appointment that will be cancelled
         appt_id = uuid4()
@@ -399,8 +401,7 @@ class TestCancelledSlotReuse:
             "end_time": _start(13, 30),
             "status": "CANCELLED",  # Already cancelled from the start
         }
-        await session.execute(INSERT_SQL, row1)
-        await session.flush()
+        await _insert_map(db_session, row1)
 
         # Step 2: Insert SCHEDULED on same range → must succeed (CANCELLED excluded from constraint)
         row2 = _appt_row(
@@ -409,10 +410,9 @@ class TestCancelledSlotReuse:
             status="SCHEDULED",
         )
         # Should NOT raise
-        await session.execute(INSERT_SQL, row2)
-        await session.flush()
+        await _insert_map(db_session, row2)
 
-    async def test_active_becomes_cancelled_allows_rebook(self, session: AsyncSession) -> None:
+    async def test_active_becomes_cancelled_allows_rebook(self, db_session: AsyncSession) -> None:
         """SCHEDULED→CANCELLED frees the slot; new SCHEDULED in same range is allowed.
 
         This is the real SC-cancelled-reuse scenario: an existing appointment is
@@ -433,8 +433,7 @@ class TestCancelledSlotReuse:
             "end_time": _start(16, 30),
             "status": "SCHEDULED",
         }
-        await session.execute(INSERT_SQL, row1)
-        await session.flush()
+        await _insert_map(db_session, row1)
 
         # Verify duplicate would fail before cancel
         row2 = _appt_row(
@@ -443,20 +442,18 @@ class TestCancelledSlotReuse:
             status="SCHEDULED",
         )
         with pytest.raises(IntegrityError):
-            await session.execute(INSERT_SQL, row2)
-            await session.flush()
+            await _insert_map(db_session, row2)
 
         # Rollback to try again after cancel
-        await session.rollback()
+        await db_session.rollback()
 
         # Now re-insert row1 and cancel it
-        await session.execute(INSERT_SQL, row1)
-        await session.flush()
-        await session.execute(
+        await _insert_map(db_session, row1)
+        await db_session.execute(
             UPDATE_STATUS_SQL,
             {"status": "CANCELLED", "appointment_id": appt_id},
         )
-        await session.flush()
+        await db_session.flush()
 
         # New SCHEDULED booking on freed slot should succeed
         row3 = _appt_row(
@@ -464,10 +461,9 @@ class TestCancelledSlotReuse:
             end_time=_start(16, 30),
             status="SCHEDULED",
         )
-        await session.execute(INSERT_SQL, row3)
-        await session.flush()
+        await _insert_map(db_session, row3)
 
-    async def test_two_cancelled_same_range_allowed(self, session: AsyncSession) -> None:
+    async def test_two_cancelled_same_range_allowed(self, db_session: AsyncSession) -> None:
         """Two CANCELLED rows for the same range are allowed (both excluded from constraint)."""
         row1 = _appt_row(
             start_time=_start(8, 0),
@@ -479,10 +475,8 @@ class TestCancelledSlotReuse:
             end_time=_start(8, 30),
             status="CANCELLED",
         )
-        await session.execute(INSERT_SQL, row1)
-        await session.flush()
-        await session.execute(INSERT_SQL, row2)
-        await session.flush()
+        await _insert_map(db_session, row1)
+        await _insert_map(db_session, row2)
 
 
 # ---------------------------------------------------------------------------
@@ -498,27 +492,27 @@ class TestMigrationIdempotent:
     This mirrors gate 10 of /test-backend (migration idempotency clone).
     """
 
-    async def test_extension_create_if_not_exists_idempotent(self, session: AsyncSession) -> None:
+    async def test_extension_create_if_not_exists_idempotent(self, db_session: AsyncSession) -> None:
         """CREATE EXTENSION IF NOT EXISTS btree_gist is safe to run again."""
         # Must not raise
-        await session.execute(text("CREATE EXTENSION IF NOT EXISTS btree_gist"))
+        await db_session.execute(text("CREATE EXTENSION IF NOT EXISTS btree_gist"))
 
-    async def test_column_add_if_not_exists_idempotent(self, session: AsyncSession) -> None:
+    async def test_column_add_if_not_exists_idempotent(self, db_session: AsyncSession) -> None:
         """ALTER TABLE ADD COLUMN IF NOT EXISTS is safe to run again (columns exist)."""
-        await session.execute(
+        await db_session.execute(
             text("ALTER TABLE vitalia_appointment_clinic_map ADD COLUMN IF NOT EXISTS start_time timestamptz")
         )
-        await session.execute(
+        await db_session.execute(
             text("ALTER TABLE vitalia_appointment_clinic_map ADD COLUMN IF NOT EXISTS end_time timestamptz")
         )
-        await session.execute(
+        await db_session.execute(
             text("ALTER TABLE vitalia_appointment_clinic_map ADD COLUMN IF NOT EXISTS status varchar(32)")
         )
 
-    async def test_constraint_add_do_block_idempotent(self, session: AsyncSession) -> None:
+    async def test_constraint_add_do_block_idempotent(self, db_session: AsyncSession) -> None:
         """DO $$ IF NOT EXISTS pg_constraint check is safe to run again (constraint exists)."""
         # The DO block checks pg_constraint before adding — safe to re-run
-        await session.execute(
+        await db_session.execute(
             text(
                 """
                 DO $$ BEGIN
@@ -535,9 +529,9 @@ class TestMigrationIdempotent:
             )
         )
 
-    async def test_index_create_if_not_exists_idempotent(self, session: AsyncSession) -> None:
+    async def test_index_create_if_not_exists_idempotent(self, db_session: AsyncSession) -> None:
         """CREATE INDEX IF NOT EXISTS is safe to run again."""
-        await session.execute(
+        await db_session.execute(
             text(
                 "CREATE INDEX IF NOT EXISTS ix_acm_doctor_range "
                 "ON vitalia_appointment_clinic_map (doctor_id, start_time)"

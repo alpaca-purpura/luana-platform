@@ -183,11 +183,19 @@ export const test = base.extend<RuntimeErrorFixtures>({
  * contenido no tiene hijos · sigue visible el estado "Cargando".
  */
 export async function assertShellMounted(page: Page): Promise<void> {
-  // 1. El root del shell DEBE existir (AppShell: aria-label="Interfaz principal Vitalia")
+  // 1. El shell CLIENTE del kit (@luana/ui-kit ShellLayout) DEBE estar montado Y
+  //    reconciliado: <main id="main-content" data-shell-ready="true">. La SSR
+  //    skeleton es aria-label="Cargando" SIN data-shell-ready → no matchea, así
+  //    que esto espera al cliente real (anti falso-negativo HB-68).
+  //    Reemplaza el viejo div[aria-label="Interfaz principal Vitalia"] del AppShell
+  //    pre-migración a @luana/ui-kit (shell/AppShell.tsx MUERTO; ShellLayoutWire T-V1).
+  // Timeout holgado: el cliente es dynamic({ssr:false}) y en `next dev` la PRIMERA
+  // carga de una ruta compila on-demand (>5s en frío). Es un wait-for, resuelve
+  // apenas reconcilia — no penaliza el caso warm. (Probado: dsr="true" ~10s en frío.)
   await expect(
-    page.locator('div[aria-label="Interfaz principal Vitalia"]'),
-    "Shell no montado — el root del AppShell no está en el DOM (¿shell colgado?)",
-  ).toHaveCount(1);
+    page.locator('main#main-content[data-shell-ready="true"]'),
+    "Shell no montado — el cliente del kit no reconcilió (data-shell-ready≠true; ¿shell colgado?)",
+  ).toHaveCount(1, { timeout: 20000 });
 
   // 2. El área de contenido (#main-content) DEBE existir con ≥1 hijo real
   const main = page.locator("main#main-content");
