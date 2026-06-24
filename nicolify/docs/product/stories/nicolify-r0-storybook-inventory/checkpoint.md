@@ -28,7 +28,6 @@ cap_change_type: extend              # Chris ratificó OQ-2 — extend de nicoli
 route: null                          # cross-cutting — no es una hoja con ruta
 demo_required: true                  # storybook navegable + componentes render fiel
 verification_nature: técnica         # render-sanity + a11y + completitud contrato + clasificación. Sin demo funcional de usuario.
-last_artifact: 06-tickets.yaml       # ready package completo (/architect 2026-06-24): 03-arch{,-fe,-docs} + 04-validators + 05-guidelines + 06-tickets + dispatch-plan
 ready_package:                       # /architect 2026-06-24
   - 03-arch.md                       # consolidado FE+DOCS · § Prior art · § Existing systems audit (NO-NEW-LAYER) · § FE clasificación 3 baldes + 15 stories balde-3 · § Patrón decorators · § Esquema contrato 1:1 · § Integration design (CONN)
   - 03-arch-fe.md                    # surface FE (builder-frontend, auditor-frontend, workhorse)
