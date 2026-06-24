@@ -133,8 +133,10 @@ Cada agente con tab: `--agent-{slug}` + `--agent-{slug}-soft`. Default chat = `l
 
 ## 7. Gates de proceso (ver `ADR-nicolify-001`)
 
-- **Mockup-per-component**: componente shell nuevo → mockup HTML ratificado por Chris ANTES de `refining→refined`. `/architect` REFUSE sin `ratified_visual_by_chris: true`.
-- **★ Mockup-base reusable (ADR-nicolify-003 · cement 2026-06-15)**: todo mockup nicolify **linkea `_shared.css`** (SSoT: `nicolify-r0-design-system-adoption/mockups/_shared.css` — tokens espejo de `globals.css` + átomos + moléculas + layout-primitives + shell wrapper) y porta el wrapper **verbatim**; solo cambia `.panel-content`. Cero estilo inline de layout, cero arbitrary → "lo que veo = lo que programo". Rule: `nicolify/.claude/rules/shell-mockup-per-component.md`.
+> **★ SUPERSEDED (Fase 0 · HB-103 · 891306d8 2026-06-22):** el modelo mockup-HTML `_shared.css` per-componente quedó MUERTO. El SSoT visual es **Storybook** (canon §5 · ver **§ 9**). El diseño/build parte de las stories del kit + `nicolify/frontend/.storybook`; net-new se PROPONE + PROMUEVE al kit. Las 2 viñetas de abajo se conservan como **registro histórico** — NO son gate activo. Doctrina vigente: `.claude/rules/frontend-visual-fidelity.md § Storybook` + `nicolify/.claude/rules/shell-mockup-per-component.md` (reescrita).
+
+- **~~Mockup-per-component~~ (histórico)**: componente shell nuevo → mockup HTML ratificado por Chris ANTES de `refining→refined`. `/architect` REFUSE sin `ratified_visual_by_chris: true`.
+- **~~★ Mockup-base reusable (ADR-nicolify-003 · histórico)~~**: todo mockup nicolify **linkea `_shared.css`** (SSoT: `nicolify-r0-design-system-adoption/mockups/_shared.css` — tokens espejo de `globals.css` + átomos + moléculas + layout-primitives + shell wrapper) y porta el wrapper **verbatim**; solo cambia `.panel-content`. Cero estilo inline de layout, cero arbitrary → "lo que veo = lo que programo". Rule: `nicolify/.claude/rules/shell-mockup-per-component.md`.
 - **Shell-feature pattern (9 secciones)**: toda sub-tab cita `architecture_pattern: ADR-nicolify-001`.
 - **SSR-safe persisted store**: factory `createSsrSafePersistedStore` + `useStoreHydration` (skeleton store-free).
 - **RN-6 · AC-6 (ds-adoption 2026-06-15):** todo mockup nicolify **compone del mismo canon y tokens** que el código React (`design-system-canon.md` + `@luana/design-tokens` + `@luana/ui-kit`). El `_shared.css` es espejo exacto de `globals.css`. Visual golden `maxDiffPixelRatio:0.001` verifica la convergencia mockup↔producción. Cero arbitrary-values en mockups ni en código.
@@ -142,6 +144,70 @@ Cada agente con tab: `--agent-{slug}` + `--agent-{slug}-soft`. Default chat = `l
 ## 8. Testing
 
 Visual goldens Playwright side-by-side vs el mockup ratificado (3 secciones × 2 themes) + Vitest unit + axe a11y. Mapping `mockup → golden → component → este contrato`.
+
+## 9. Inventario 1:1 — Storybook (Fase 1 · `nicolify-r0-storybook-inventory` 2026-06-24)
+
+> **El mapa "¿qué componentes toco si cambio la UI?".** SSoT visual = **Storybook** (canon §5). Cada componente brand-local de nicolify cae en un **balde**; los compartidos viven en el storybook del **kit** (`@luana/ui-kit`, 82 stories) con el **brand-toggle** (`[data-brand=nicolify]` → skin indigo #635BFF/pill). Storybook de marca (`nicolify/frontend/.storybook` · `pnpm --filter nicolify-frontend storybook` → :6006) = solo los **únicos de nicolify** (balde-3). Clasificación verificada por grep-cross-kit post-merge ds-adoption (ver story `T-1-result.md`).
+
+### 9.1 — Balde (3) · único de nicolify → tiene `.stories.tsx` (17)
+
+| Componente | Path | Story | Estados |
+|---|---|---|---|
+| IcpCard | `features/abel/components/icp/IcpCard.tsx` | `Features/Abel/ICP/IcpCard` | Default/Selected |
+| IcpMasterListView | `features/abel/components/icp/IcpMasterListView.tsx` | `…/IcpMasterListView` | Default/Empty/Loading |
+| IcpWorkspaceView | `features/abel/components/icp/IcpWorkspaceView.tsx` | `…/IcpWorkspaceView` | Default |
+| IcpDatosForm | `features/abel/components/icp/IcpDatosForm.tsx` | `…/IcpDatosForm` | Default |
+| BuyerLeafForm | `features/abel/components/icp/BuyerLeafForm.tsx` | `…/BuyerLeafForm` | Default |
+| IcpEntityLayoutClient | `features/abel/components/icp/IcpEntityLayoutClient.tsx` | `…/IcpEntityLayoutClient` | Default |
+| IcpIntakeOverlay | `features/abel/components/icp/IcpIntakeOverlay.tsx` | `…/IcpIntakeOverlay` | Default |
+| AgentAvatar | `components/shared/agents/AgentAvatar.tsx` | `Shared/Agents/AgentAvatar` | por agente |
+| ProposalBanner | `components/shared/ProposalBanner.tsx` | `Shared/ProposalBanner` | Default |
+| DraftFirstStarter | `components/shared/DraftFirstStarter.tsx` | `Shared/DraftFirstStarter` | Default |
+| WhatForChip | `components/shared/WhatForChip.tsx` | `Shared/WhatForChip` | Default |
+| UniversalIntake | `components/shared/intake/UniversalIntake.tsx` | `Shared/Intake/UniversalIntake` | Default |
+| AddAgencyPlaceholderModal | `components/shared/shell-organism/AddAgencyPlaceholderModal.tsx` | `Shared/ShellOrganism/AddAgencyPlaceholderModal` | Default |
+| LogoMark | `components/shared/shell-organism/LogoMark.tsx` | `Shared/ShellOrganism/LogoMark` | light/dark |
+| ThemeToggle | `components/shared/shell-organism/ThemeToggle.tsx` | `Shared/ShellOrganism/ThemeToggle` | light/dark |
+| TenantSwitcher | `components/shared/shell-organism/TenantSwitcher.tsx` (compone TenantBadge+TenantOption) | `Shared/ShellOrganism/TenantSwitcher` | Default |
+| AgentRoster (doc-story) | `components/shared/agents/AgentRoster.stories.tsx` | `Agentes/Roster` | — (RN-8) |
+
+> Pendiente de storiar (balde-3, no cubierto en este pase): `ConfigTab` — agregar en una iteración.
+
+### 9.2 — Balde (2) · port local de pieza del kit → NO story propia · deuda consumir-kit (`ds-adoption`)
+
+| Componente local | Twin del kit | Acción |
+|---|---|---|
+| `components/ui/{button,input,dialog,badge,alert,dropdown-menu,skeleton,tooltip}.tsx` (8) | `atoms.*` / `overlays.*` | consumir del kit (la story la tiene el kit) |
+| `components/shared/shell-organism/SubSubTabsBar.tsx` | `shell.SubSubTabsBar` | consumir del kit |
+
+### 9.3 — Infra / no-storiable (wire · dispatcher · helper · ruta Next)
+
+`ShellLayoutWire` (wire de `shell.ShellLayout`) · `SubTabContent` (dispatcher) · `SubSubTab` (fragmento hijo) · `_agent-tw-classes.ts` (helper JIT) · `app/**/{page,layout,not-found}.tsx` (rutas Next). No tienen story (no son componentes visuales aislables).
+
+### 9.4 — Roster de agentes (RN-8 · status, no story falsa)
+
+| Agente | Audiencia | Color | Status | Superficies |
+|---|---|---|---|---|
+| Luana | supervisora (sidebar) | indigo `#635BFF` | construido | ShellLayoutWire + chat (kit) |
+| Abel | interno (copilot) | brand.yaml | **construido** | `features/abel/icp/` (7 stories) |
+| Brenda | interno (copilot) | brand.yaml | pendiente | growth/budget (anticipado) |
+| Christian | bifronte (copilot+sales_agent) | brand.yaml | pendiente | outbound/SDR (anticipado) |
+| Sara | interno (copilot) | ámbar `#F59E0B` | pendiente | "Mi Día"/delivery (anticipado) |
+| Norvil | interno (copilot) | brand.yaml | pendiente | account-health/retención (anticipado) |
+
+Visible en Storybook: doc-story `Agentes/Roster` (avatar + color + pill Construido|Pendiente).
+
+### 9.5 — Token-overrides de nicolify por átomo compartido (RN-4 · divergencia = token, no fork)
+
+Para re-skinnear un átomo del kit en nicolify se toca `globals.css` (tokens), NUNCA el componente del kit. Overrides nicolify:
+
+| Token | Valor nicolify | Efecto |
+|---|---|---|
+| `--radius-control` | `var(--radius-pill)` (9999px) | controls (Input/Button/Select) = pill |
+| `--primary` (indigo) | `#635BFF` | identidad nicolify.com |
+| `--radius-pill` | 9999px | base pill |
+
+Modelo: **token > variante > fork** (fork = último recurso). Nombres de token compartidos (`@luana/design-tokens`); valores brand-owned (`globals.css`).
 
 ## Referencias
 

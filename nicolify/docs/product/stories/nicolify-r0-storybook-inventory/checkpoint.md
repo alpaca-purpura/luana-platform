@@ -2,8 +2,21 @@
 story_id: nicolify-r0-storybook-inventory
 brand: nicolify
 type: ui-story                        # cross-cutting design-system (como ds-adoption) — UI components 1:1 en Storybook
-state: developing                    # ready→developing 2026-06-24 (/dev-team T-1 · build-claim code:design-system lane=G)
-phase: BUILD_T6                      # T-1 clasif ✓ · T-2..T-5 ✓ (17 stories + infra, build-storybook GREEN, eslint 0-err) · T-6 contrato pendiente
+state: developed                     # developing→developed 2026-06-24 (/dev-team · T-1..T-6 GREEN)
+phase: AWAIT_CHRIS_VERIFY            # G · Chris navega storybook :6006 + lee contrato § 9 → firma chris_verify.signoff (autonomous_mode:false → pausa-y-ofrece)
+dod_live_verified: true              # técnica: Claude ejerció build-storybook (17/17 render) + dev server :6006 navegable + completeness_check
+dod_evidence:
+  - action: "build-storybook (cd nicolify/frontend && npx storybook build) — render-sanity de las 17 stories balde-3"
+    observed: "exit 0 · storybook-static generado · 17/17 stories compilan+renderizan (Abel ICP 7 + moléculas 9 + roster doc-story)"
+    log: "Storybook build completed successfully · Vite built in 12.01s"
+  - action: "storybook dev :6006 navegable (dev server live) + completeness_check (cada componente clasificado en SHELL-DESIGN-CONTRACT § 9)"
+    observed: "HTTP 200 · completeness_check exit 0 (cero componente sin clasificar) · eslint 0 errores"
+    log: "contrato § 9: balde-3 (17) + balde-2 ports (9) + infra + roster (6 con status) + token-overrides"
+dod_live_verified_note: "story técnica: la verificación es render-sanity + contrato completo, NO writes a dev-app (no es funcional). Chris ejerce en G navegando el storybook."
+chris_verify:
+  required: true
+  signoff: null                      # → Chris firma tras navegar :6006 + leer contrato § 9
+  rounds: []
 release: R0                          # Fundación — inventario completo ANTES de crecer hoja por hoja
 map_zone: infraestructura            # atributo de calidad (inventario navegable de la UI) · derivada SYSTEM-MAP::zones
 map_box: plataforma-tecnica
@@ -36,7 +49,8 @@ related_stories:
   - "nicolify-r0-design-system-adoption (homologación — la base que esto inventaría · MISMO bucket code:design-system · en G AWAIT_CHRIS_VERIFY, exenta WIP-cap; idealmente cerrar su demo+signoff antes del BUILD de esta para inventariar piezas estables)"
 blocked_on: []                       # Fase 0 commiteada 891306d8 → desbloqueado para refine
 last_modified: 2026-06-24
-next_action: "READY 2026-06-24 (/architect cerró ready package). → /dev-team nicolify nicolify-r0-storybook-inventory (autonomous_mode:false default — Chris opt-in). DAG: T-1 clasificación grep-cross-kit BLOQUEA TODO → T-2 infra storybook (decorators/mocks/fixtures) → T-3 Abel ICP (7) + T-4 moléculas shared (8) → T-5 roster doc-story → T-6 contrato 1:1. Tier workhorse (builder-frontend, NO flagship). NOTA build-time: lock code:design-system lo ocupa ds-adoption (en G) — idealmente cerrar su demo+signoff antes del BUILD de esta. DoD técnica = storybook navegable + contrato 1:1 (NO write live → dev_app_verified.required:false)."
+last_artifact: demo-script.md
+next_action: "DEVELOPED · G (AWAIT_CHRIS_VERIFY) 2026-06-24. T-1..T-6 GREEN (17 stories + infra + contrato § 9 1:1 + roster). Storybook dev :6006 navegable. → Chris navega + lee contrato + firma chris_verify.signoff (ver demo-script.md). Tras signoff → /pm-nicolify reconcile (R) → /auditor. Pendiente menor: ConfigTab sin story (anotado contrato § 9.1). build-claim code:design-system liberado."
 intake_handshake: "La conversación de diseño (zona/caja + extiende-o-nuevo + prior-art) ocurrió en sesión 2026-06-24 — ver 00-research.md § Intake + chris-input.md. La story NACE de esa conversación."
 ---
 
