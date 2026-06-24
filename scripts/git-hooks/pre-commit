@@ -1,16 +1,6 @@
 #!/usr/bin/env bash
-# Pre-commit DISPATCHER — thin orchestrator (god-file decomposition 2026-06-08).
-#
-# tier: hybrid · core = dispatcher orchestration (branch GATE_LEVEL · fail-open
-#       preamble · explicit-order sourcing · staged-file collection) · project =
-#       check-list composition + sales_agent/venv exclusions → seam brands[]/toolchain (W5)
-#
-# Architecture: this file owns the shared PREAMBLE (REPO_ROOT, sweep-guard,
-# DoD gate, GATE_LEVEL/branch detection, staged-file collection) and then
-# SOURCES each numbered gate from scripts/git-hooks/checks/NN-name.sh in an
-# EXPLICIT order. Every check inherits this preamble's env; a check `exit 1`
-# aborts the commit. To add/edit a gate, touch ONE small file in checks/ — not
-# this monolith. PRECOMMIT_VERBOSE=1 traces which check runs. (SRP per check.)
+# Pre-commit hook — voseo detection + ruff check + ruff format + R3 SSoT
+# freshness gate on staged Python/TypeScript/Markdown files.
 #
 # Why
 # ===
@@ -56,29 +46,6 @@ set -euo pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 cd "${REPO_ROOT}"
-
-# ─────────────────────────────────────────────────────────────────
-# MULTI-SESSION SWEEP GUARD (HB-31 · cement 2026-06-04)
-# Chris permitió paralelo de varias sesiones sobre el MISMO hub (aceleramos);
-# este guard impide la contaminación cross-sesión (una sesión que barre los
-# archivos de otra, típico de `git add -A/-u/.`). Bloquea si el set staged toca
-# el scope EXCLUSIVO de ≥2 sesiones VIVAS distintas. Fail-OPEN ante error propio.
-# Override intencional: MULTI_SESSION_ACK=1. SSoT: scripts/git/multi-session-scope-guard.sh
-# ─────────────────────────────────────────────────────────────────
-if [ -x "${REPO_ROOT}/scripts/git/multi-session-scope-guard.sh" ]; then
-  "${REPO_ROOT}/scripts/git/multi-session-scope-guard.sh" || exit 1
-fi
-
-# ─────────────────────────────────────────────────────────────────
-# DoD LIVE-VERIFY GATE (Layer 6 · Critical Rule #37 · cement 2026-06-04)
-# Backstop MECÁNICO del live-verify: bloquea commitear una TRANSICIÓN de checkpoint
-# a `state: developed|done` (story funcional) sin `dod_live_verified: true` +
-# `dod_evidence` (≥1 action). Exención técnica: `dod_live_verified_skip_reason`.
-# Fail-OPEN. Override: DOD_GATE_ACK=1. SSoT: scripts/git/dod-evidence-gate.sh
-# ─────────────────────────────────────────────────────────────────
-if [ -x "${REPO_ROOT}/scripts/git/dod-evidence-gate.sh" ]; then
-  "${REPO_ROOT}/scripts/git/dod-evidence-gate.sh" || exit 1
-fi
 
 # ─────────────────────────────────────────────────────────────────
 # BRANCH DETECTION — added T-9 S-GIT-STRATEGY-CORE (2026-05-15)
@@ -140,31 +107,1913 @@ ALL_TEXT_STAGED=$(printf '%s\n%s\n' "${STAGED_PY}" "${STAGED_TS}" \
   | grep -v '^$' || true)
 
 # ─────────────────────────────────────────────────────────────────
-# CHECK DISPATCHER (god-file decomposition — HB-33/34 maintainability + observability)
-# Each numbered gate now lives in scripts/git-hooks/checks/NN-name.sh and is
-# SOURCED in order, sharing this preamble's env (REPO_ROOT, GATE_LEVEL,
-# CURRENT_BRANCH, STAGED_PY/TS/MD, set -euo pipefail). A check `exit 1` aborts
-# the commit exactly as before. PRECOMMIT_VERBOSE=1 traces which check runs.
-# Order is EXPLICIT (not glob) so it never depends on filesystem sort.
+# 2. Voseo regex check on added lines only
 # ─────────────────────────────────────────────────────────────────
-CHECKS_DIR="${REPO_ROOT}/scripts/git-hooks/checks"
-PRECOMMIT_CHECKS=(
-  02-voseo 03-ruff 04-r3-ssot 05-r32-cap-story
-  05b-cap-advisory 05c-code-cap-index 05d-bidirectional 05e-cap-gates
-  06-backlog 07-checkpoint-enum 08-pii-seed 09-pii-goldens
-  10-infra-matrix 11-worktree 12-story-closure 13-scope-branch
-  14-brand-docs-schema 15-cap-ledger 15.5-system-map 16-chris-input
-  17-checkpoint-dupkeys 18-machinery 19-docs-orphan
-)
-for _chk in "${PRECOMMIT_CHECKS[@]}"; do
-  _chk_file="${CHECKS_DIR}/${_chk}.sh"
-  if [ -f "${_chk_file}" ]; then
-    [ "${PRECOMMIT_VERBOSE:-0}" = "1" ] && echo "→ [pre-commit] check ${_chk}" >&2
-    # shellcheck source=/dev/null
-    source "${_chk_file}"
+
+# Glosario sourced from .claude/rules/spanish-text.md
+VOSEO_REGEX='\b(vos|sos|tenés|querés|podés|sabés|hacés|venís|decís|mirá|dejá|dejalo|poné|ponelo|usá|usalo|hacé|hacelo|elegí|elegilo|seleccioná|arrancá|empezá|agregá|configurá|revisá|escribí|guardá|subí|bajá|abrí|volvé|andá|cambiá|cambialo|ofrecés|cobrás|ejecutás|acompañás|activás|desactivás|linkeá|despublicala|reactivá|cancelala|validá|considerá|formulala|marcá|referís|atendés|integrás|listá|probá|mostrá|compartí|contá|explicá|fijate|acordate)\b'
+
+VOSEO_HITS=""
+
+if [ -n "${ALL_TEXT_STAGED}" ]; then
+  while IFS= read -r FILE; do
+    [ -z "${FILE}" ] && continue
+
+    # Voseo neutro aplica SOLO a interfaces de usuario (web UI / agentic output).
+    # NUNCA al harness interno (.claude/), docs, tooling (tools/, scripts/), ni
+    # tests. (Chris 2026-06-01: el voseo solo molesta cuando se mete en lo interno.)
+    case "${FILE}" in
+      .claude/*|docs/*|scripts/*|tools/*|\
+      */tests/*|*/__tests__/*|*/e2e/*|*.test.*|*test_*.py)
+        continue
+        ;;
+    esac
+
+    # Per spanish-text.md exception: sales_agent voice output respects tenant
+    # voice (puede ser voseo si AR). Skip personality compiler / specialist
+    # prompt templates that LLM consumes as voice instructions.
+    # Also skip goldens/ directory: golden transcripts may contain voseo when
+    # dialect_code=es-AR (Story D D10 + sales_agent voice exception). Path-based
+    # exclusion avoids per-file magic comment proliferation (05-guidelines.md).
+    case "${FILE}" in
+      */modules/sales_agent/*personality*|\
+      */modules/sales_agent/*specialist*|\
+      */modules/sales_agent/*.j2|\
+      */modules/sales_agent/*system_instruction*|\
+      */modules/sales_agent/agent_identity*|\
+      */tests/modules/sales_agent/*goldens*|\
+      */agentic_evals/sales_agent/goldens/*)
+        continue
+        ;;
+    esac
+
+    # Per spanish-text.md exception: skill SKILL.md / rules/*.md / process docs
+    # may quote voseo glosario or example wrong-then-right pairs. Honor magic
+    # comment in any of these forms (R25 flexible regex 2026-05-05 + TS fix 2026-05-26):
+    #   # voseo-allowed                     (Python/shell comment, no reason)
+    #   # voseo-allowed: optional reason    (Python/shell comment, with reason)
+    #   # voseo-allowed — optional reason   (any unicode separator + reason)
+    #   // voseo-allowed                    (TypeScript/JS comment, no reason)
+    #   // voseo-allowed: optional reason   (TypeScript/JS comment, with reason)
+    #   <!-- voseo-allowed -->              (Markdown/HTML/JSX, no reason)
+    #   <!-- voseo-allowed: optional -->    (Markdown/HTML/JSX, with reason inside)
+    #   <!-- voseo-allowed — reason -->     (any unicode separator + reason)
+    #
+    # Regex strategy: avoid unicode chars in character classes (locale issues
+    # with multi-byte chars in POSIX ERE). Use `[^>]*` for MD and end-of-line
+    # tolerance for Py/TS. Both anchored at literal `voseo-allowed`.
+    # Supports: # voseo-allowed (Python/shell), // voseo-allowed (TypeScript/JS),
+    #           <!-- voseo-allowed --> (HTML/Markdown/JSX)
+    if grep -qE '((#|//)\s*voseo-allowed([: \t]|$)|<!--\s*voseo-allowed[^>]*-->)' "${FILE}" 2>/dev/null; then
+      continue
+    fi
+
+    # Examine ONLY added lines in this commit (-U0 zero context)
+    HITS=$(git diff --cached -U0 -- "${FILE}" 2>/dev/null \
+      | grep -E '^\+' \
+      | grep -vE '^\+\+\+' \
+      | grep -niE "${VOSEO_REGEX}" \
+      || true)
+
+    if [ -n "${HITS}" ]; then
+      VOSEO_HITS+="${FILE}:"$'\n'"${HITS}"$'\n\n'
+    fi
+  done <<< "${ALL_TEXT_STAGED}"
+fi
+
+if [ -n "${VOSEO_HITS}" ]; then
+  printf "\033[31m"
+  cat <<EOF
+─────────────────────────────────────────────────────────────
+PRE-COMMIT BLOCKED: voseo detected in staged changes.
+
+EOF
+  printf "%s" "${VOSEO_HITS}"
+  cat <<EOF
+─────────────────────────────────────────────────────────────
+Per .claude/rules/spanish-text.md: tuteo (tú) only on user-facing
+strings. Convert + re-stage.
+
+Glosario voseo→neutro: see .claude/rules/spanish-text.md table.
+
+Common conversions:
+  vos     → tú          sos     → eres        tenés   → tienes
+  podés   → puedes      mirá    → mira        dejá    → deja
+  poné    → pon         hacé    → haz         elegí   → elige
+  agregá  → agrega      configurá → configura  revisá  → revisa
+
+Exception: modules/sales_agent/ voice templates (already excluded).
+If false positive, mark file:
+  # voseo-allowed: <reason>           (Python/shell comment)
+  // voseo-allowed: <reason>          (TypeScript/JS comment)
+  <!-- voseo-allowed: <reason> -->    (Markdown/HTML)
+
+NEVER use --no-verify (.claude/rules/git-safety.md prohibits).
+─────────────────────────────────────────────────────────────
+EOF
+  printf "\033[0m"
+  exit 1
+fi
+
+# ─────────────────────────────────────────────────────────────────
+# 3. Ruff check + format on staged Python — MULTIBRAND-AWARE
+# (refactor 2026-05-15 post multibrand reorg: cubre todos los workspace
+# members — backend/ legacy + {brand}/backend/ + core/luana-core-*/.)
+# ─────────────────────────────────────────────────────────────────
+#
+# Regex captura cualquier Python en workspace member backend o core:
+#   - backend/                  (legacy single-target, mantenido por backcompat)
+#   - {brand}/backend/          (vitalia, nicolify, comunify, lupulo, + futuras)
+#   - core/luana-core-{pkg}/    (26 packages engine compartido)
+#
+# Venv canónico: ${REPO_ROOT}/.venv/bin/ruff (uv workspace root, instala TODOS
+# los members en editable mode — un solo venv compartido). Fallback al venv
+# legacy backend/.venv/ si root venv ausente (compat con setups antiguos).
+#
+# Ruff auto-descubre el pyproject.toml correcto (cada workspace member tiene
+# el suyo) subiendo directorios desde el archivo. No requiere pushd manual.
+
+STAGED_BACKEND_PY_REPO=$(echo "${STAGED_PY}" \
+  | grep -E '^(backend|[a-z][a-z0-9_-]*/backend|core/luana-core-[a-z][a-z0-9-]*)/' \
+  || true)
+
+if [ -n "${STAGED_BACKEND_PY_REPO}" ]; then
+  # Resolver venv canónico
+  if [ -x "${REPO_ROOT}/.venv/bin/ruff" ]; then
+    RUFF="${REPO_ROOT}/.venv/bin/ruff"
+  elif [ -x "${REPO_ROOT}/backend/.venv/bin/ruff" ]; then
+    RUFF="${REPO_ROOT}/backend/.venv/bin/ruff"
+    printf "\033[33m"
+    echo "WARNING: usando legacy backend/.venv/bin/ruff — recomendado migrar a root .venv via 'uv sync'."
+    printf "\033[0m"
   else
-    echo "WARNING: pre-commit check missing: ${_chk_file} (skipped)" >&2
+    RUFF=""
   fi
-done
+
+  if [ -z "${RUFF}" ]; then
+    printf "\033[33m"
+    echo "─────────────────────────────────────────────────────────────"
+    echo "WARNING: ruff not found en .venv/bin/ ni backend/.venv/bin/ — skipping ruff checks."
+    echo "  Run: uv sync   (instala todos los workspace members + dev deps en .venv root)"
+    echo "─────────────────────────────────────────────────────────────"
+    printf "\033[0m"
+  else
+    RUFF_FAIL_FILES=""
+    FORMAT_FAIL_FILES=""
+
+    # Ruff check + format on STAGED content (via `git show :file` stdin) — not
+    # working tree, which may diverge if dev edited post-stage. Fixes pre-existing
+    # silent-pass bug where pre-commit hook accepted broken staged content if
+    # working tree was clean.
+    #
+    # Multibrand: cd al workspace root (no a backend/) — ruff auto-descubre el
+    # pyproject.toml correcto desde --stdin-filename. Cada workspace member
+    # (backend/, {brand}/backend/, core/luana-core-X/) tiene su propio
+    # pyproject.toml con line-length=120 + reglas heredadas.
+    pushd "${REPO_ROOT}" >/dev/null
+    while IFS= read -r FILE; do
+      [ -z "${FILE}" ] && continue
+
+      # --stdin-filename con path relativo al REPO_ROOT permite a ruff
+      # descubrir el pyproject.toml correcto del workspace member.
+      if ! git -C "${REPO_ROOT}" show ":${FILE}" 2>/dev/null \
+          | "${RUFF}" check --no-cache --quiet --stdin-filename "${FILE}" - >/dev/null 2>&1; then
+        RUFF_FAIL_FILES+="${FILE} "
+      fi
+
+      if ! git -C "${REPO_ROOT}" show ":${FILE}" 2>/dev/null \
+          | "${RUFF}" format --check --quiet --stdin-filename "${FILE}" - >/dev/null 2>&1; then
+        FORMAT_FAIL_FILES+="${FILE} "
+      fi
+    done <<< "${STAGED_BACKEND_PY_REPO}"
+    popd >/dev/null
+
+    if [ -n "${RUFF_FAIL_FILES}" ]; then
+      printf "\033[31m"
+      cat <<EOF
+─────────────────────────────────────────────────────────────
+PRE-COMMIT BLOCKED: ruff check failures on STAGED content (multibrand)
+─────────────────────────────────────────────────────────────
+Files with ruff violations in staged content:
+${RUFF_FAIL_FILES}
+
+Re-run con detalles (paths absolutos, ruff descubre pyproject.toml del workspace member):
+  ${RUFF} check --no-cache ${RUFF_FAIL_FILES}
+
+Fix:
+  ${RUFF} check --fix ${RUFF_FAIL_FILES}
+
+Después \`git add\` para re-stage. NEVER use --no-verify.
+─────────────────────────────────────────────────────────────
+EOF
+      printf "\033[0m"
+      exit 1
+    fi
+
+    if [ -n "${FORMAT_FAIL_FILES}" ]; then
+      printf "\033[31m"
+      cat <<EOF
+─────────────────────────────────────────────────────────────
+PRE-COMMIT BLOCKED: ruff format violations on STAGED content (multibrand)
+─────────────────────────────────────────────────────────────
+Files con format violations en staged content:
+${FORMAT_FAIL_FILES}
+
+Fix:
+  ${RUFF} format ${FORMAT_FAIL_FILES}
+
+Después \`git add\` para re-stage. NEVER use --no-verify.
+─────────────────────────────────────────────────────────────
+EOF
+      printf "\033[0m"
+      exit 1
+    fi
+  fi
+fi
+
+# ─────────────────────────────────────────────────────────────────
+# 4. R3 SSoT freshness gate (origen C1 2026-05-05 R21) — MULTIBRAND-AWARE
+# (refactor 2026-05-15 post multibrand reorg: cubre shared/ legacy +
+# per-brand shared raro + engine packages core/luana-core-*)
+# Gate: FULL only (wip/* branches skip — WIP files may not yet have SSoT entry)
+# ─────────────────────────────────────────────────────────────────
+# New file under shared cross-consumer surface MUST appear in the inventory
+# tabla of .claude/rules/auditor-downstream-regression.md, OR carry magic
+# comment `# downstream-regression-na: <reason>` within first 20 lines.
+#
+# Surfaces detectadas (multibrand):
+#   - backend/src/shared/                       (legacy single-target backcompat)
+#   - {brand}/backend/src/shared/               (per-brand shared raro)
+#   - core/luana-core-*/src/luana_core_*/       (engine packages — afecta TODAS
+#                                                las brands consumidoras)
+#
+# Lookup en tabla SSoT:
+#   - Engine file core/luana-core-X/src/luana_core_X/Y/Z.py → lookup exact path
+#     y dirname/
+#   - Per-brand shared {brand}/backend/src/shared/Y.py → lookup shared/Y.py
+#     (convención tabla strips brand prefix)
+#   - Legacy backend/src/shared/Y.py → lookup shared/Y.py
+#
+# Detects status A (added) AND R (renamed-into).
+
+if [ "${GATE_LEVEL}" = "full" ]; then
+
+NEW_SHARED_FILES=$(git diff --cached --name-only --diff-filter=AR 2>/dev/null \
+  | grep -E '^(backend/src/shared|[a-z][a-z0-9_-]*/backend/src/shared|core/luana-core-[a-z][a-z0-9-]*/src/luana_core_[a-z0-9_]+)/.+\.py$' \
+  | grep -vE '(__pycache__/|\.venv/|migrations/versions/|tests/)' \
+  || true)
+
+if [ -n "${NEW_SHARED_FILES}" ]; then
+  SSoT_TABLE="${REPO_ROOT}/.claude/rules/auditor-downstream-regression.md"
+  MISSING_FILES=""
+
+  if [ ! -f "${SSoT_TABLE}" ]; then
+    printf "\033[33m"
+    echo "─────────────────────────────────────────────────────────────"
+    echo "WARNING: ${SSoT_TABLE} not found — skipping R3 SSoT freshness gate."
+    echo "─────────────────────────────────────────────────────────────"
+    printf "\033[0m"
+  else
+    while IFS= read -r FILE; do
+      [ -z "${FILE}" ] && continue
+
+      # Compute lookup paths según tipo de surface multibrand.
+      # Engine packages (core/luana-core-X/src/luana_core_X/Y/Z.py) → lookup full path.
+      # Per-brand shared ({brand}/backend/src/shared/Y.py) → strip prefix, lookup shared/Y.py.
+      # Legacy (backend/src/shared/Y.py) → strip prefix, lookup shared/Y.py.
+      case "${FILE}" in
+        core/luana-core-*/src/luana_core_*/*)
+          LOOKUP_PATH="${FILE}"
+          ;;
+        */backend/src/shared/*)
+          # Strip up to and including 'backend/src/' (works for legacy y per-brand)
+          LOOKUP_PATH="${FILE##*backend/src/}"
+          ;;
+        backend/src/shared/*)
+          LOOKUP_PATH="${FILE#backend/src/}"
+          ;;
+        *)
+          LOOKUP_PATH="${FILE}"
+          ;;
+      esac
+      LOOKUP_DIR="$(dirname "${LOOKUP_PATH}")/"
+
+      # Check tabla — either exact path OR parent directory listed
+      # (e.g. `shared/billing/` covers all Py files under that dir).
+      if grep -qF "\`${LOOKUP_PATH}\`" "${SSoT_TABLE}" 2>/dev/null; then
+        continue
+      fi
+      if grep -qF "\`${LOOKUP_DIR}\`" "${SSoT_TABLE}" 2>/dev/null; then
+        continue
+      fi
+
+      # Check magic-comment escape hatch in staged file content
+      if git show ":${FILE}" 2>/dev/null | head -20 | grep -qE '#\s*downstream-regression-na:'; then
+        continue
+      fi
+
+      MISSING_FILES+="  - ${FILE}"$'\n'
+      MISSING_FILES+="    looked up: \`${LOOKUP_PATH}\` and \`${LOOKUP_DIR}\`"$'\n'
+    done <<< "${NEW_SHARED_FILES}"
+
+    if [ -n "${MISSING_FILES}" ]; then
+      printf "\033[31m"
+      cat <<EOF
+─────────────────────────────────────────────────────────────
+PRE-COMMIT BLOCKED: R3 SSoT freshness gate (downstream-regression — multibrand)
+─────────────────────────────────────────────────────────────
+You're adding new file(s) under a shared cross-consumer surface that are
+NOT listed in the downstream-regression SSoT tabla. Surfaces cubiertas:
+  - backend/src/shared/ (legacy)
+  - {brand}/backend/src/shared/ (per-brand shared raro)
+  - core/luana-core-*/src/luana_core_*/ (engine — afecta TODAS las brands)
+
+Auditors rely on that tabla to spawn cross-surface tests
+(.claude/rules/auditor-downstream-regression.md caso D4 origen).
+
+Files missing from tabla:
+${MISSING_FILES}
+
+Resolution (pick one):
+
+A) Add a row to .claude/rules/auditor-downstream-regression.md tabla
+   with downstream_test_targets enumerating which test paths consume
+   this surface. Format:
+
+   | \`shared/<your_path>.py\` | \`tests/...\`<br>\`tests/...\` | <reason — 1 line> |
+
+B) Mark file as truly self-contained (no cross-consumers) by adding
+   to first 20 lines:
+
+   # downstream-regression-na: <one-line reason — e.g. "private helper
+   #                          for shared/X internal use, no module imports">
+
+   Justification scrutinized at audit time — false NA = REVERT.
+
+NEVER use --no-verify.
+─────────────────────────────────────────────────────────────
+EOF
+      printf "\033[0m"
+      exit 1
+    fi
+  fi
+fi
+
+fi  # end GATE_LEVEL=full guard (section 4)
+
+# ─────────────────────────────────────────────────────────────────
+# 5. R32 capability ↔ story status freshness (origen 2026-05-05) — MULTIBRAND
+# (refactor 2026-05-15 post multibrand reorg, --brand flag wired 2026-05-15)
+# Gate: FULL only (wip/* branches skip — capability reconciliation may
+# produce false positives on in-progress stories)
+# ─────────────────────────────────────────────────────────────────
+# Capability YAML at {brand}/docs/product/capabilities/{m}/{c}.yaml (per-brand)
+# o docs/product/capabilities/{m}/{c}.yaml (platform/legacy) carries derived
+# fields (status, stories_live, stories_planned, stories_total) que MUST stay
+# synced con stories referenced.
+#
+# Trigger: any staged change touching:
+#   - docs/product/{capabilities,stories}/             (platform/legacy)
+#   - {brand}/docs/product/{capabilities,stories}/     (per-brand)
+#
+# Action por trigger:
+#   - Path raíz docs/product/... → reconciler sin flag (legacy/platform behavior).
+#   - Path {brand}/docs/product/... → reconciler con `--brand {brand}` (multibrand).
+
+if [ "${GATE_LEVEL}" = "full" ]; then
+
+PRODUCT_TOUCHED=$(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null \
+  | grep -E '^(docs/product|[a-z][a-z0-9_-]*/docs/product)/(capabilities|stories)/' \
+  || true)
+
+if [ -n "${PRODUCT_TOUCHED}" ]; then
+  RECONCILER="${REPO_ROOT}/scripts/reconcile_capabilities.py"
+  # Prefer root venv (uv workspace), fallback legacy backend venv
+  if [ -x "${REPO_ROOT}/.venv/bin/python" ]; then
+    VENV_PY="${REPO_ROOT}/.venv/bin/python"
+  elif [ -x "${REPO_ROOT}/backend/.venv/bin/python" ]; then
+    VENV_PY="${REPO_ROOT}/backend/.venv/bin/python"
+  else
+    VENV_PY=""
+  fi
+
+  # Detectar si hay paths per-brand vs raíz para invocar correctamente.
+  BRAND_PATHS_TOUCHED=$(echo "${PRODUCT_TOUCHED}" \
+    | grep -E '^[a-z][a-z0-9_-]*/docs/product/' \
+    | cut -d/ -f1 | sort -u || true)
+  ROOT_PATHS_TOUCHED=$(echo "${PRODUCT_TOUCHED}" \
+    | grep -E '^docs/product/' || true)
+
+  if [ -n "${VENV_PY}" ] && [ -f "${RECONCILER}" ]; then
+    # Caso 1: paths raíz docs/product/ → invocar reconciler legacy (sin --brand).
+    if [ -n "${ROOT_PATHS_TOUCHED}" ]; then
+      if ! "${VENV_PY}" "${RECONCILER}" --check >/tmp/reconcile-out.txt 2>&1; then
+        printf "\033[31m"
+        cat <<EOF
+─────────────────────────────────────────────────────────────
+PRE-COMMIT BLOCKED: R32 capability status drift (platform/legacy)
+─────────────────────────────────────────────────────────────
+You're staging changes under docs/product/{capabilities,stories}/ but the
+capability YAML derived fields (status, stories_live, stories_planned,
+stories_total) no longer match the referenced stories.
+
+Drift detail:
+$(cat /tmp/reconcile-out.txt)
+
+Resolution:
+  python scripts/reconcile_capabilities.py
+  git add docs/product/capabilities/
+  git commit ...
+
+NEVER use --no-verify.
+─────────────────────────────────────────────────────────────
+EOF
+        printf "\033[0m"
+        exit 1
+      fi
+    fi
+
+    # Caso 2: paths per-brand → invocar reconciler con --brand per cada brand.
+    if [ -n "${BRAND_PATHS_TOUCHED}" ]; then
+      while IFS= read -r BRAND; do
+        [ -z "${BRAND}" ] && continue
+        if ! "${VENV_PY}" "${RECONCILER}" --check --brand "${BRAND}" >/tmp/reconcile-${BRAND}.txt 2>&1; then
+          printf "\033[31m"
+          cat <<EOF
+─────────────────────────────────────────────────────────────
+PRE-COMMIT BLOCKED: R32 capability status drift (brand: ${BRAND})
+─────────────────────────────────────────────────────────────
+You're staging changes under ${BRAND}/docs/product/{capabilities,stories}/
+but the capability YAML derived fields (status, stories_live,
+stories_planned, stories_total) no longer match the referenced stories.
+
+Drift detail:
+$(cat /tmp/reconcile-${BRAND}.txt)
+
+Resolution:
+  python scripts/reconcile_capabilities.py --brand ${BRAND}
+  git add ${BRAND}/docs/product/capabilities/
+  git commit ...
+
+NEVER use --no-verify.
+─────────────────────────────────────────────────────────────
+EOF
+          printf "\033[0m"
+          exit 1
+        fi
+      done <<< "${BRAND_PATHS_TOUCHED}"
+    fi
+  else
+    printf "\033[33m"
+    echo "WARNING: skipping R32 reconciler — venv or script missing."
+    printf "\033[0m"
+  fi
+fi
+
+fi  # end GATE_LEVEL=full guard (section 5)
+
+# ─────────────────────────────────────────────────────────────────
+# 5b. Capability advisory — wip/* light gate (cement 2026-05-28)
+# ─────────────────────────────────────────────────────────────────
+# Runs ONLY in GATE_LEVEL=light (wip/* branches). Two sub-checks:
+#
+# Advisory (no exit 1):
+#   If cap YAML files or story checkpoint.md files are staged, run
+#   reconcile_capabilities.py --check --brand {brand} as advisory.
+#   Output is printed but NEVER blocks the commit (|| true).
+#
+# HARD block (exit 1):
+#   If a staged checkpoint.md declares cap_change_type ∈ {new, extend}
+#   but NO cap YAML is staged in the same commit → BLOCK.
+#   Rationale: Fase F.3 requires both checkpoint + cap YAML to be committed
+#   together so the ledger stays coherent. Committing the checkpoint without
+#   the cap YAML leaves the ledger in an inconsistent state visible to
+#   reconcile_capabilities.py --validate-ledger.
+#
+# Override HARD block:
+#   * env: CAP_ADVISORY_SKIP=1 git commit ...
+#
+# Note: reconcile_capabilities.py has no --advisory flag; we achieve
+# advisory behavior by appending `|| true` to the invocation.
+# ─────────────────────────────────────────────────────────────────
+
+if [ "${GATE_LEVEL}" = "light" ] && [ "${CAP_ADVISORY_SKIP:-0}" != "1" ]; then
+
+  # Detect staged capability YAML files (per-brand, not platform/legacy)
+  CAP5B_STAGED=$(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null \
+    | grep -E '^(vitalia|nicolify|comunify|lupulo|saasora|inmoflow|retailly|fixia|guestly|fitflow)/docs/product/capabilities/[^/]+/[^/]+\.yaml$' \
+    || true)
+
+  # Detect staged story checkpoint.md files (per-brand)
+  CHECKPOINT5B_STAGED=$(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null \
+    | grep -E '^(vitalia|nicolify|comunify|lupulo|saasora|inmoflow|retailly|fixia|guestly|fitflow)/docs/product/stories/[^/]+/checkpoint\.md$' \
+    || true)
+
+  if [ -n "${CAP5B_STAGED}" ] || [ -n "${CHECKPOINT5B_STAGED}" ]; then
+    # Derive brand(s) from staged files (first segment of path)
+    BRANDS5B=$(printf '%s\n%s\n' "${CAP5B_STAGED}" "${CHECKPOINT5B_STAGED}" \
+      | grep -v '^$' \
+      | cut -d/ -f1 \
+      | sort -u || true)
+
+    # ── Advisory: run reconcile --check per brand (non-blocking) ──
+    RECONCILER5B="${REPO_ROOT}/scripts/reconcile_capabilities.py"
+    if [ -x "${REPO_ROOT}/.venv/bin/python" ]; then
+      VENV5B="${REPO_ROOT}/.venv/bin/python"
+    elif [ -x "${REPO_ROOT}/backend/.venv/bin/python" ]; then
+      VENV5B="${REPO_ROOT}/backend/.venv/bin/python"
+    else
+      VENV5B=""
+    fi
+
+    if [ -n "${VENV5B}" ] && [ -f "${RECONCILER5B}" ] && [ -n "${BRANDS5B}" ]; then
+      echo ""
+      echo "[5b] Capability advisory (wip/* light gate — non-blocking)"
+      while IFS= read -r B5B; do
+        [ -z "${B5B}" ] && continue
+        ADVISORY_OUT=$("${VENV5B}" "${RECONCILER5B}" --check --brand "${B5B}" 2>&1 || true)
+        if [ -n "${ADVISORY_OUT}" ]; then
+          printf "\033[33m"
+          echo "  [5b advisory · ${B5B}]"
+          echo "${ADVISORY_OUT}" | head -30 | sed 's/^/    /'
+          printf "\033[0m"
+        fi
+      done <<< "${BRANDS5B}"
+      echo "[5b] advisory done (warnings above do not block commit)"
+    fi
+
+    # ── HARD check: cap_change_type ∈ {new, extend} without cap YAML staged ──
+    if [ -n "${CHECKPOINT5B_STAGED}" ]; then
+      while IFS= read -r CP5B; do
+        [ -z "${CP5B}" ] && continue
+        [ ! -f "${CP5B}" ] && continue
+
+        # Read cap_change_type from staged content (git show) to check the
+        # version being committed, not just the working-tree version.
+        STAGED_CP_CONTENT=$(git show ":${CP5B}" 2>/dev/null || true)
+        [ -z "${STAGED_CP_CONTENT}" ] && continue
+
+        CCT=$(echo "${STAGED_CP_CONTENT}" \
+          | grep -E '^cap_change_type:' \
+          | head -1 \
+          | sed -E 's/^cap_change_type:[[:space:]]*//' \
+          | sed -E 's/[[:space:]]*#.*$//' \
+          | tr -d '"'"'" \
+          | xargs 2>/dev/null || true)
+
+        if [ "${CCT}" = "new" ] || [ "${CCT}" = "extend" ]; then
+          if [ -z "${CAP5B_STAGED}" ]; then
+            printf "\033[31m"
+            cat <<EOF
+
+─────────────────────────────────────────────────────────────
+PRE-COMMIT BLOCKED: cap_change_type=${CCT} declared without cap YAML staged
+(Section 5b HARD check — cement 2026-05-28)
+
+Checkpoint: ${CP5B}
+cap_change_type: ${CCT}
+
+Cuando cap_change_type ∈ {new, extend}, el cap YAML target DEBE estar
+staged en el mismo commit (Fase F.3 enforce — capability-protocol.md § 5).
+
+Sin cap YAML staged, reconcile_capabilities.py --validate-ledger reportará
+inconsistencia al siguiente full-gate commit (main/release/*).
+
+Acciones:
+  1. Stage el cap YAML correspondiente junto con este checkpoint:
+       git add {brand}/docs/product/capabilities/{module}/{cap-slug}.yaml
+  2. Si la story aún está en progreso y el cap YAML no está listo:
+       Quitar cap_change_type: ${CCT} del checkpoint por ahora, o usar
+       cap_change_type: fix hasta que el YAML esté listo.
+  3. Override emergencia (solo si Chris ratificó):
+       CAP_ADVISORY_SKIP=1 git commit ...
+
+SSoT: _cap-verification-decisions.md § F + docs/process/capability-protocol.md § 5
+─────────────────────────────────────────────────────────────
+EOF
+            printf "\033[0m"
+            exit 1
+          fi
+        fi
+      done <<< "${CHECKPOINT5B_STAGED}"
+    fi
+  fi
+
+fi  # end GATE_LEVEL=light guard (section 5b)
+
+# ─────────────────────────────────────────────────────────────────
+# 5c. Code-to-cap index regen advisory (cement 2026-05-28 · Fase A)
+# ─────────────────────────────────────────────────────────────────
+# Re-genera `{brand}/docs/product/capabilities/_code-index.json` cuando
+# archivos de código (.py / .ts / .tsx) son staged. Output gitignored R3 v2.
+#
+# Behavior:
+#   Advisory (never blocks): regenera índice silenciosamente. Si detecta
+#   archivos NUEVOS sin header `# cap:` / `// cap:`, imprime warning
+#   con paths sugeridos.
+#
+# Override:
+#   * env: CODE_INDEX_SKIP=1 git commit ...
+#
+# SSoT: docs/process/capability-protocol.md § Sección 12 v3.2 (Fase A)
+#       .claude/rules/anti-duplication-refining.md
+# ─────────────────────────────────────────────────────────────────
+
+if [ "${CODE_INDEX_SKIP:-0}" != "1" ]; then
+
+  # Detect staged code files (per-brand backend/frontend/src)
+  CODE_STAGED=$(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null \
+    | grep -E '^(vitalia|nicolify|comunify|lupulo|saasora|inmoflow|retailly|fixia|guestly|fitflow)/(backend|frontend)/src/.*\.(py|ts|tsx)$' \
+    || true)
+
+  if [ -n "${CODE_STAGED}" ]; then
+    # Derive brand(s) from staged paths
+    BRANDS_CODE=$(echo "${CODE_STAGED}" | cut -d/ -f1 | sort -u)
+
+    INDEX_SCRIPT="${REPO_ROOT}/scripts/generate_code_to_cap_index.py"
+    if [ -x "${REPO_ROOT}/.venv/bin/python" ]; then
+      VENV_CODE="${REPO_ROOT}/.venv/bin/python"
+    elif [ -x "${REPO_ROOT}/backend/.venv/bin/python" ]; then
+      VENV_CODE="${REPO_ROOT}/backend/.venv/bin/python"
+    else
+      VENV_CODE=""
+    fi
+
+    if [ -n "${VENV_CODE}" ] && [ -f "${INDEX_SCRIPT}" ]; then
+      while IFS= read -r B_CODE; do
+        [ -z "${B_CODE}" ] && continue
+
+        # Regen silently (output gitignored)
+        CODE_OUT=$("${VENV_CODE}" "${INDEX_SCRIPT}" --brand "${B_CODE}" 2>&1 || true)
+
+        # Parse no_header count from output
+        NO_HEADER_COUNT=$(echo "${CODE_OUT}" | grep -oE 'no_header=[0-9]+' | head -1 | sed 's/no_header=//')
+
+        if [ -n "${NO_HEADER_COUNT}" ] && [ "${NO_HEADER_COUNT}" -gt 0 ]; then
+          # Get list of files without header from JSON
+          INDEX_JSON="${REPO_ROOT}/${B_CODE}/docs/product/capabilities/_code-index.json"
+          if [ -f "${INDEX_JSON}" ]; then
+            NO_HEADER_FILES=$("${VENV_CODE}" -c "
+import json
+d = json.load(open('${INDEX_JSON}'))
+# Only show NEWLY staged files without header
+import sys
+staged = set('''${CODE_STAGED}'''.strip().split('\n'))
+new_orphans = [f for f in d.get('no_header', []) if f in staged]
+for f in new_orphans[:5]:
+    print(f'    {f}')
+" 2>/dev/null || true)
+
+            if [ -n "${NO_HEADER_FILES}" ]; then
+              printf "\033[33m"
+              echo ""
+              echo "[5c] Code-index advisory · ${B_CODE} (non-blocking)"
+              echo "  ${NO_HEADER_COUNT} archivos sin header \`# cap:\` / \`// cap:\`:"
+              echo "${NO_HEADER_FILES}"
+              echo ""
+              echo "  Agregá header al archivo (2 líneas) per docs/process/capability-protocol.md § 12:"
+              echo "    Python: # cap: {module}.{slug}"
+              echo "            # story-origin: TBD"
+              echo "    TS/TSX: // cap: {module}.{slug}"
+              echo "            // story-origin: TBD"
+              echo "  Special markers: __orphan__ · __shared__ · __skip__"
+              printf "\033[0m"
+            fi
+          fi
+        fi
+      done <<< "${BRANDS_CODE}"
+    fi
+  fi
+
+fi  # end CODE_INDEX_SKIP guard (section 5c)
+
+# ─────────────────────────────────────────────────────────────────
+# 5d. Bidirectional validator advisory (cement 2026-05-28 · Fase B)
+# ─────────────────────────────────────────────────────────────────
+# Runs `validate_code_cap_bidirectional.py --brand {brand}` cuando archivos
+# de código (.py/.ts/.tsx) O cap YAMLs son staged. Output advisory only.
+#
+# HARD pre-push enforce vive en scripts/git-hooks/pre-push (Section 4d).
+#
+# Behavior:
+#   Advisory (never blocks): regenera _bidirectional-validation.json silente.
+#   Si detecta drift en cross_check_1 (atomics→headers) o cross_check_3
+#   (scenarios e2e_test paths), imprime warning con caps afectados.
+#
+# Override:
+#   * env: BIDIRECTIONAL_SKIP=1 git commit ...
+#
+# SSoT: docs/process/capability-protocol.md § Sección 13 (cement 2026-05-28)
+# ─────────────────────────────────────────────────────────────────
+
+if [ "${BIDIRECTIONAL_SKIP:-0}" != "1" ]; then
+
+  # Trigger: any code file OR cap YAML staged
+  BIDIR_STAGED=$(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null \
+    | grep -E '^(vitalia|nicolify|comunify|lupulo|saasora|inmoflow|retailly|fixia|guestly|fitflow)/(backend|frontend)/src/.*\.(py|ts|tsx)$|^(vitalia|nicolify|comunify|lupulo|saasora|inmoflow|retailly|fixia|guestly|fitflow)/docs/product/capabilities/[^/]+/[^/]+\.yaml$' \
+    || true)
+
+  if [ -n "${BIDIR_STAGED}" ]; then
+    BRANDS_BIDIR=$(echo "${BIDIR_STAGED}" | cut -d/ -f1 | sort -u)
+
+    BIDIR_SCRIPT="${REPO_ROOT}/scripts/validate_code_cap_bidirectional.py"
+    if [ -x "${REPO_ROOT}/.venv/bin/python" ]; then
+      VENV_BIDIR="${REPO_ROOT}/.venv/bin/python"
+    elif [ -x "${REPO_ROOT}/backend/.venv/bin/python" ]; then
+      VENV_BIDIR="${REPO_ROOT}/backend/.venv/bin/python"
+    else
+      VENV_BIDIR=""
+    fi
+
+    if [ -n "${VENV_BIDIR}" ] && [ -f "${BIDIR_SCRIPT}" ]; then
+      while IFS= read -r B_BIDIR; do
+        [ -z "${B_BIDIR}" ] && continue
+
+        BIDIR_OUT=$("${VENV_BIDIR}" "${BIDIR_SCRIPT}" --brand "${B_BIDIR}" 2>&1 || true)
+        BIDIR_VERDICT=$(echo "${BIDIR_OUT}" | grep -oE 'Verdict: \w+' | head -1 | sed 's/Verdict: //')
+
+        if [ "${BIDIR_VERDICT}" = "HARD_FAIL" ] || [ "${BIDIR_VERDICT}" = "SOFT_DRIFT" ]; then
+          printf "\033[33m"
+          echo ""
+          echo "[5d] Bidirectional validator advisory · ${B_BIDIR} · verdict=${BIDIR_VERDICT}"
+          echo "${BIDIR_OUT}" | grep -E "drift=|Drift" | head -5 | sed 's/^/  /'
+          echo ""
+          if [ "${BIDIR_VERDICT}" = "HARD_FAIL" ]; then
+            echo "  ⚠ HARD checks failing (cross_check_1 atomics→headers o cross_check_3 e2e_test)"
+            echo "  Pre-push hook bloqueará push a main/release/* si HARD persiste."
+          fi
+          echo "  Detalle: ${B_BIDIR}/docs/product/capabilities/_bidirectional-validation.json"
+          printf "\033[0m"
+        fi
+      done <<< "${BRANDS_BIDIR}"
+    fi
+  fi
+
+fi  # end BIDIRECTIONAL_SKIP guard (section 5d)
+
+# ─────────────────────────────────────────────────────────────────
+# 6. R33 BACKLOG.yaml + BACKLOG.md freshness (origen 2026-05-05) — MULTIBRAND
+# (refactor 2026-05-15 post multibrand reorg)
+# Gate: FULL only (wip/* branches skip — backlog regen during WIP commits
+# adds noise; regen happens at squash-merge to main)
+# ─────────────────────────────────────────────────────────────────
+# BACKLOG.{yaml,md} auto-generated por scripts/generate_backlog.py desde
+# sources (ideas-pool.yaml, outcomes/, stories/, capabilities/, modules/).
+# Cross-brand portfolio cement: docs/portfolio/PORTFOLIO.md via
+# scripts/generate_portfolio.py.
+#
+# Trigger: any staged change touching backlog source paths:
+#   - docs/product/(ideas-pool.yaml|outcomes/|stories/|capabilities/|modules/)
+#                                                        (platform/legacy)
+#   - {brand}/docs/product/(ideas-pool.yaml|outcomes/|stories/|capabilities/|modules/)
+#                                                        (per-brand)
+#   - docs/projects/active/+/checkpoint.md               (legacy projects)
+#
+# Action por trigger:
+#   - Path raíz docs/product/... → invocar generator legacy (regen platform
+#     BACKLOG + auto-stage). Considerar también `make portfolio` para
+#     PORTFOLIO.md cross-brand (manual hoy, futuro auto-stage).
+#   - Path {brand}/docs/product/... → TODO --brand flag pendiente en generator;
+#     por ahora warning + nota TODO.
+#
+# Note: pm-nico/pis/active/ removed Wave 2 (2026-05-06) — generator returns []
+# defensively. Path NOT included in trigger regex anymore.
+
+if [ "${GATE_LEVEL}" = "full" ]; then
+
+BACKLOG_SOURCES_TOUCHED=$(git diff --cached --name-only --diff-filter=ACMRD 2>/dev/null \
+  | grep -E '^(docs/(product/(ideas-pool\.yaml|outcomes/|stories/|capabilities/|modules/)|projects/active/.+/checkpoint\.md)|[a-z][a-z0-9_-]*/docs/product/(ideas-pool\.yaml|outcomes/|stories/|capabilities/|modules/))' \
+  || true)
+
+if [ -n "${BACKLOG_SOURCES_TOUCHED}" ]; then
+  GENERATOR="${REPO_ROOT}/scripts/generate_backlog.py"
+  # Prefer root venv (uv workspace), fallback legacy backend venv
+  if [ -x "${REPO_ROOT}/.venv/bin/python" ]; then
+    VENV_PY="${REPO_ROOT}/.venv/bin/python"
+  elif [ -x "${REPO_ROOT}/backend/.venv/bin/python" ]; then
+    VENV_PY="${REPO_ROOT}/backend/.venv/bin/python"
+  else
+    VENV_PY=""
+  fi
+
+  # Detectar brands tocadas vs paths raíz.
+  BRAND_BACKLOG_TOUCHED=$(echo "${BACKLOG_SOURCES_TOUCHED}" \
+    | grep -E '^[a-z][a-z0-9_-]*/docs/product/' \
+    | cut -d/ -f1 | sort -u || true)
+  ROOT_BACKLOG_TOUCHED=$(echo "${BACKLOG_SOURCES_TOUCHED}" \
+    | grep -E '^docs/' || true)
+
+  if [ -n "${VENV_PY}" ] && [ -f "${GENERATOR}" ]; then
+    # Caso 1: paths raíz docs/product/ → invocar generator legacy.
+    # NOTE 2026-05-20: BACKLOG.* es gitignored (.gitignore § "Auto-generated docs").
+    # Regeneramos working-tree local para mantener fresh, NO auto-stage.
+    if [ -n "${ROOT_BACKLOG_TOUCHED}" ]; then
+      if ! "${VENV_PY}" "${GENERATOR}" --check >/tmp/backlog-check.txt 2>&1; then
+        # Drift detected — regenerate local (gitignored, no stage)
+        "${VENV_PY}" "${GENERATOR}" >/tmp/backlog-regen.txt 2>&1 || true
+        printf "\033[33m"
+        cat <<EOF
+─────────────────────────────────────────────────────────────
+R33 BACKLOG auto-regenerated (platform/legacy) — gitignored
+─────────────────────────────────────────────────────────────
+Sources changed → docs/product/BACKLOG.{yaml,md} regenerated localmente
+(gitignored desde 2026-05-20). NO se incluye en el commit.
+
+Cuando necesites la vista actualizada: cat docs/product/BACKLOG.md
+
+Generator output:
+$(tail -10 /tmp/backlog-regen.txt)
+─────────────────────────────────────────────────────────────
+EOF
+        printf "\033[0m"
+      fi
+    fi
+
+    # Caso 2: paths per-brand → invocar generator con --brand per cada brand.
+    # Same gitignored policy aplica per-brand.
+    if [ -n "${BRAND_BACKLOG_TOUCHED}" ]; then
+      while IFS= read -r BRAND; do
+        [ -z "${BRAND}" ] && continue
+        if ! "${VENV_PY}" "${GENERATOR}" --check --brand "${BRAND}" >/tmp/backlog-check-${BRAND}.txt 2>&1; then
+          # Drift detected — regenerate local (gitignored, no stage)
+          "${VENV_PY}" "${GENERATOR}" --brand "${BRAND}" >/tmp/backlog-regen-${BRAND}.txt 2>&1 || true
+          printf "\033[33m"
+          cat <<EOF
+─────────────────────────────────────────────────────────────
+R33 BACKLOG auto-regenerated (brand: ${BRAND}) — gitignored
+─────────────────────────────────────────────────────────────
+Sources changed → ${BRAND}/docs/product/BACKLOG.{yaml,md,TLDR.md}
+regenerados localmente (gitignored desde 2026-05-20). NO incluidos en commit.
+
+Vista actualizada: cat ${BRAND}/docs/product/BACKLOG.md
+
+Generator output:
+$(tail -10 /tmp/backlog-regen-${BRAND}.txt)
+
+Nota: si la story tocada es candidata cross-brand (promotion to core),
+considerar también:
+  make portfolio   # regenera docs/portfolio/PORTFOLIO.md (también gitignored)
+─────────────────────────────────────────────────────────────
+EOF
+          printf "\033[0m"
+        fi
+      done <<< "${BRAND_BACKLOG_TOUCHED}"
+    fi
+  else
+    printf "\033[33m"
+    echo "WARNING: skipping R33 backlog generator — venv or script missing."
+    printf "\033[0m"
+  fi
+fi
+
+fi  # end GATE_LEVEL=full guard (section 6)
+
+# ─────────────────────────────────────────────────────────────────
+# 7. Checkpoint state enum validator (v4 paradigma — Punto 4 2026-05-06)
+# Gate: FULL only (wip/* branches skip — checkpoint may be in mid-transition
+# during WIP commits)
+# ─────────────────────────────────────────────────────────────────
+# Staged checkpoint.md files MUST use v4 vocabulary (10 estados):
+#   idea | refining | refined | ready | developing | developed |
+#   reviewing | done | parked | dropped
+#
+# Legacy v3 states (validated/building/review) are coerced at runtime by
+# generate_backlog.py LEGACY_STATE_MAP, but new commits should use v4
+# vocabulary directly to avoid stale paradigm leak.
+#
+# Bypass: rare — magic comment `<!-- state-enum-na: <reason> -->` if needed
+# (e.g., archive snapshots). Adding to active checkpoints requires Chris approval.
+
+if [ "${GATE_LEVEL}" = "full" ]; then
+
+# Multibrand: capturar checkpoints en docs/ raíz (platform/legacy) + per-brand
+# {brand}/docs/product/stories/{story}/checkpoint.md. Validación v4 states es
+# universal cross-brand (mismo paradigma 10 estados).
+CHECKPOINT_FILES_STAGED=$(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null \
+  | grep -E '^(docs/(product/stories/[^/]+/checkpoint\.md|projects/active/.+/checkpoint\.md)|[a-z][a-z0-9_-]*/docs/product/stories/[^/]+/checkpoint\.md)$' \
+  || true)
+
+if [ -n "${CHECKPOINT_FILES_STAGED}" ]; then
+  V4_STATES_REGEX='^state:[[:space:]]*(idea|refining|refined|ready|developing|developed|reviewing|done|parked|dropped|blocked)\b'
+  STATE_VIOLATIONS=""
+
+  while IFS= read -r FILE; do
+    [ -z "${FILE}" ] && continue
+    [ ! -f "${FILE}" ] && continue
+    # Bypass via magic comment
+    if grep -qE '<!--[[:space:]]*state-enum-na' "${FILE}"; then
+      continue
+    fi
+    # Legacy folder gets relaxed enforcement (coercion handles it)
+    if echo "${FILE}" | grep -qE '^docs/projects/active/'; then
+      continue
+    fi
+    # Extract state line(s) from staged content (use git show :file for staged)
+    STAGED_CONTENT=$(git show ":${FILE}" 2>/dev/null || true)
+    [ -z "${STAGED_CONTENT}" ] && continue
+    STATE_LINE=$(echo "${STAGED_CONTENT}" | grep -m1 -E '^state:' || true)
+    if [ -n "${STATE_LINE}" ]; then
+      if ! echo "${STATE_LINE}" | grep -qE "${V4_STATES_REGEX}"; then
+        STATE_VIOLATIONS="${STATE_VIOLATIONS}${FILE}: ${STATE_LINE}"$'\n'
+      fi
+    fi
+  done <<< "${CHECKPOINT_FILES_STAGED}"
+
+  if [ -n "${STATE_VIOLATIONS}" ]; then
+    printf "\033[31m"
+    cat <<EOF
+─────────────────────────────────────────────────────────────
+PRE-COMMIT BLOCKED: invalid checkpoint state(s) — v4 paradigma.
+
+Staged checkpoint(s) use legacy or unknown state. Fix:
+
+${STATE_VIOLATIONS}
+
+V4 valid states (Punto 4 2026-05-06):
+  idea | refining | refined | ready | developing | developed |
+  reviewing | done | parked | dropped
+
+Legacy → v4 mapping:
+  validated → refining (drafts) | refined (ratified)
+  building  → developing (active) | developed (validators GREEN)
+  review    → reviewing
+
+Per docs/process/pm-redesign-2026-05.md § Punto 4.
+
+Bypass (rare): add <!-- state-enum-na: <reason> --> to checkpoint.md
+NEVER use --no-verify (.claude/rules/git-safety.md).
+─────────────────────────────────────────────────────────────
+EOF
+    printf "\033[0m"
+    exit 1
+  fi
+fi
+
+fi  # end GATE_LEVEL=full guard (section 7)
+
+# ─────────────────────────────────────────────────────────────────
+# 8. PII scan on staged eval seed YAMLs (origen T-2 eval-foundation-tenant-seed-data)
+# (refactor 2026-05-15 post multibrand reorg — per-brand seed dirs)
+# Gate: FULL only (wip/* branches skip — PII scan is a final-commit quality gate)
+# ─────────────────────────────────────────────────────────────────
+# Activates si hay YAML files staged en:
+#   - backend/tests/fixtures/eval/tenants/            (legacy single-target)
+#   - {brand}/backend/tests/fixtures/eval/tenants/    (per-brand)
+#
+# Para cada path detectado se invoca scan_seed_pii.py contra el directorio
+# completo correspondiente (no solo el diff), para catch PII en archivos
+# que cambiaron previamente clean.
+#
+# Scanner path: backend/scripts/scan_seed_pii.py (legacy). TODO multibrand:
+# scanner aún no migrado a core/luana-core-extraction/scripts/ — si falta,
+# hook warning + skip. Verificar futura migración engine.
+#
+# Scanner exit codes: 0=clean, 1=PII detected, 2=error.
+# Bypass: NEVER use --no-verify. Whitelist por brand:
+#   {brand_or_root}/backend/tests/fixtures/eval/tenants/.eval-whitelist
+
+if [ "${GATE_LEVEL}" = "full" ]; then
+
+STAGED_SEED_YAMLS=$(git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+  | grep -E '^([a-z][a-z0-9_-]*/)?backend/tests/fixtures/eval/tenants/.*\.yaml$' \
+  || true)
+
+if [ -n "${STAGED_SEED_YAMLS}" ]; then
+  # Prefer root venv (uv workspace), fallback legacy backend venv
+  if [ -x "${REPO_ROOT}/.venv/bin/python" ]; then
+    VENV_PY="${REPO_ROOT}/.venv/bin/python"
+  elif [ -x "${REPO_ROOT}/backend/.venv/bin/python" ]; then
+    VENV_PY="${REPO_ROOT}/backend/.venv/bin/python"
+  else
+    VENV_PY=""
+  fi
+
+  # Resolver scanner: legacy primero, futuro engine como TODO.
+  # TODO multibrand: si scanner migra a core/luana-core-extraction/scripts/
+  # scan_seed_pii.py, agregar aquí como primera opción.
+  if [ -f "${REPO_ROOT}/backend/scripts/scan_seed_pii.py" ]; then
+    SCANNER_PY="${REPO_ROOT}/backend/scripts/scan_seed_pii.py"
+  else
+    SCANNER_PY=""
+  fi
+
+  if [ -z "${VENV_PY}" ]; then
+    printf "\033[33m"
+    echo "WARNING: venv not found (.venv ni backend/.venv) — skipping PII scan (Section 8)."
+    printf "\033[0m"
+  elif [ -z "${SCANNER_PY}" ]; then
+    printf "\033[33m"
+    echo "WARNING: scan_seed_pii.py not found en backend/scripts/ — skipping PII scan (Section 8)."
+    echo "  TODO multibrand: verificar si migró a core/luana-core-extraction/scripts/"
+    printf "\033[0m"
+  else
+    # Derivar dirs a scanear desde paths staged (uno por brand + legacy raíz).
+    SEED_DIRS_TO_SCAN=$(echo "${STAGED_SEED_YAMLS}" \
+      | sed -E 's|(.*backend/tests/fixtures/eval/tenants)/.*|\1|' \
+      | sort -u)
+
+    SCAN_FAILED=0
+    SCAN_ERROR_OUTPUT=""
+    while IFS= read -r SEED_DIR; do
+      [ -z "${SEED_DIR}" ] && continue
+      if [ ! -d "${REPO_ROOT}/${SEED_DIR}" ]; then
+        continue
+      fi
+      if ! "${VENV_PY}" "${SCANNER_PY}" "${REPO_ROOT}/${SEED_DIR}" 2>/tmp/pii-scan-err.txt; then
+        SCAN_FAILED=1
+        SCAN_ERROR_OUTPUT+="── ${SEED_DIR}/ ──"$'\n'
+        SCAN_ERROR_OUTPUT+="$(cat /tmp/pii-scan-err.txt 2>/dev/null || true)"$'\n\n'
+      fi
+    done <<< "${SEED_DIRS_TO_SCAN}"
+
+    if [ "${SCAN_FAILED}" -eq 1 ]; then
+      printf "\033[31m"
+      cat <<EOF
+─────────────────────────────────────────────────────────────
+PRE-COMMIT BLOCKED: PII detected in seed/ — commit blocked (multibrand).
+─────────────────────────────────────────────────────────────
+Dirs scanned:
+${SEED_DIRS_TO_SCAN}
+
+Errors:
+${SCAN_ERROR_OUTPUT}
+
+Resolution:
+  1. Replace real PII con synthetic equivalents (e.g., +99 0 1234 5678 for phones,
+     user@example.com for emails, fake ID numbers).
+  2. Si el flagged value es legitimate public reference, agregar a
+     {brand_or_root}/backend/tests/fixtures/eval/tenants/.eval-whitelist
+     con justificación.
+
+NEVER use --no-verify (.claude/rules/git-safety.md prohibits).
+─────────────────────────────────────────────────────────────
+EOF
+      printf "\033[0m"
+      exit 1
+    fi
+  fi
+fi
+
+fi  # end GATE_LEVEL=full guard (section 8)
+
+# ─────────────────────────────────────────────────────────────────
+# 9. PII scan on staged goldens YAMLs (Story D — synthetic-first ground truth)
+# (refactor 2026-05-15 post multibrand reorg — per-brand goldens dirs)
+# Gate: FULL only (wip/* branches skip — PII scan is a final-commit quality gate)
+# ─────────────────────────────────────────────────────────────────
+# Activates si hay YAMLs staged en:
+#   - backend/tests/agentic_evals/sales_agent/goldens/          (legacy)
+#   - {brand}/backend/tests/agentic_evals/sales_agent/goldens/  (per-brand)
+#
+# Para cada path detectado se invoca scan_goldens_pii.py contra el
+# directorio completo correspondiente.
+#
+# Strict block — NO whitelist (spec D10). Synthetic-first invariant:
+# all PII in goldens is a bug, no legitimate exceptions.
+#
+# Scanner path: backend/scripts/scan_goldens_pii.py (legacy). TODO multibrand:
+# si scanner migra a core/luana-core-sales-agent/scripts/ o similar, agregar
+# como primera opción.
+#
+# Scanner exit codes: 0=clean, 1=PII detected, 2=error.
+# Bypass: NEVER use --no-verify.
+
+if [ "${GATE_LEVEL}" = "full" ]; then
+
+STAGED_GOLDEN_YAMLS=$(git diff --cached --name-only --diff-filter=ACM 2>/dev/null \
+  | grep -E '^([a-z][a-z0-9_-]*/)?backend/tests/agentic_evals/sales_agent/goldens/.*\.yaml$' \
+  || true)
+
+if [ -n "${STAGED_GOLDEN_YAMLS}" ]; then
+  # Prefer root venv (uv workspace), fallback legacy backend venv
+  if [ -x "${REPO_ROOT}/.venv/bin/python" ]; then
+    VENV_PY="${REPO_ROOT}/.venv/bin/python"
+  elif [ -x "${REPO_ROOT}/backend/.venv/bin/python" ]; then
+    VENV_PY="${REPO_ROOT}/backend/.venv/bin/python"
+  else
+    VENV_PY=""
+  fi
+
+  # Resolver scanner: legacy primero, futuro engine como TODO.
+  # TODO multibrand: si scanner migra a core/luana-core-sales-agent/scripts/
+  # scan_goldens_pii.py, agregar aquí como primera opción.
+  if [ -f "${REPO_ROOT}/backend/scripts/scan_goldens_pii.py" ]; then
+    GOLDEN_SCANNER_PY="${REPO_ROOT}/backend/scripts/scan_goldens_pii.py"
+  else
+    GOLDEN_SCANNER_PY=""
+  fi
+
+  if [ -z "${VENV_PY}" ]; then
+    printf "\033[33m"
+    echo "WARNING: venv not found (.venv ni backend/.venv) — skipping PII goldens scan (Section 9)."
+    printf "\033[0m"
+  elif [ -z "${GOLDEN_SCANNER_PY}" ]; then
+    printf "\033[33m"
+    echo "WARNING: scan_goldens_pii.py not found en backend/scripts/ — skipping (Section 9)."
+    echo "  TODO multibrand: verificar si migró a core/luana-core-sales-agent/scripts/"
+    printf "\033[0m"
+  else
+    # Derivar dirs a scanear desde paths staged (uno por brand + legacy raíz).
+    GOLDENS_DIRS_TO_SCAN=$(echo "${STAGED_GOLDEN_YAMLS}" \
+      | sed -E 's|(.*backend/tests/agentic_evals/sales_agent/goldens)/.*|\1|' \
+      | sort -u)
+
+    GOLDEN_SCAN_FAILED=0
+    GOLDEN_ERROR_OUTPUT=""
+    while IFS= read -r GOLDENS_DIR; do
+      [ -z "${GOLDENS_DIR}" ] && continue
+      if [ ! -d "${REPO_ROOT}/${GOLDENS_DIR}" ]; then
+        continue
+      fi
+      if ! "${VENV_PY}" "${GOLDEN_SCANNER_PY}" "${REPO_ROOT}/${GOLDENS_DIR}" 2>/tmp/pii-goldens-err.txt; then
+        GOLDEN_SCAN_FAILED=1
+        GOLDEN_ERROR_OUTPUT+="── ${GOLDENS_DIR}/ ──"$'\n'
+        GOLDEN_ERROR_OUTPUT+="$(cat /tmp/pii-goldens-err.txt 2>/dev/null || true)"$'\n\n'
+      fi
+    done <<< "${GOLDENS_DIRS_TO_SCAN}"
+
+    if [ "${GOLDEN_SCAN_FAILED}" -eq 1 ]; then
+      printf "\033[31m"
+      cat <<EOF
+─────────────────────────────────────────────────────────────
+PRE-COMMIT BLOCKED: PII detected in goldens/ — strict block (multibrand).
+─────────────────────────────────────────────────────────────
+Synthetic-first invariant: zero PII en golden YAMLs (spec D10).
+NO whitelist disponible para goldens.
+
+Dirs scanned:
+${GOLDENS_DIRS_TO_SCAN}
+
+Errors:
+${GOLDEN_ERROR_OUTPUT}
+
+Resolución:
+  1. Reemplaza PII real con equivalentes sintéticos (nombres como
+     "Cliente Ejemplo", teléfono "+99 0 1234 5678", email "usuario@example.com").
+  2. O elimina el golden y regénéralo con generate_golden_candidates.py
+     (path scoped a {brand}/backend/scripts/ o root backend/scripts/ según
+     dónde viva el script para esa brand).
+
+NEVER use --no-verify (.claude/rules/git-safety.md prohibits).
+─────────────────────────────────────────────────────────────
+EOF
+      printf "\033[0m"
+      exit 1
+    fi
+  fi
+fi
+
+fi  # end GATE_LEVEL=full guard (section 9)
+
+# ─────────────────────────────────────────────────────────────────
+# 10. INFRA-MATRIX auto-freshness (S-DOCKER-DEV-MULTIBRAND T-9 — 2026-05-15)
+# (dynamic brand discovery wired 2026-05-15 post audit aislamiento brand)
+# Gate: ALL branches (infra matrix freshness is always valuable)
+# ─────────────────────────────────────────────────────────────────
+# Si se edita cualquier {brand}/config/brand.yaml de las brands activas,
+# regenerar INFRA-MATRIX.md y agregarlo al commit automaticamente.
+#
+# Patron "metadata-en-su-lugar + auto-gen index":
+#   SSoT: {brand}/config/brand.yaml::infra
+#   Index: docs/portfolio/INFRA-MATRIX.md (auto-generado)
+#
+# Sin este hook, un cambio de puerto en brand.yaml quedaria desincronizado
+# con el INFRA-MATRIX.md hasta que alguien corriera make infra-matrix manualmente.
+#
+# Dynamic brand discovery: detecta brands del filesystem (dirs con
+# config/brand.yaml). Escala automaticamente cuando se bootstrappean
+# saasora/inmoflow/retailly/fixia/guestly/fitflow o cualquier brand futura
+# sin requerir update manual del regex.
+
+# Build pipe-separated brand list dinamicamente (vacio si no hay brands aun)
+BRANDS_REGEX=$(find "${REPO_ROOT}" -maxdepth 3 -mindepth 3 -type f -path "${REPO_ROOT}/*/config/brand.yaml" 2>/dev/null \
+  | sed -E "s|^${REPO_ROOT}/||; s|/config/brand\.yaml$||" \
+  | sort -u \
+  | paste -sd'|' -)
+
+if [ -z "${BRANDS_REGEX}" ]; then
+  # No brands bootstrappeadas todavia — skip Section 10 sin error
+  CHANGED_BRAND_YAML=""
+else
+  CHANGED_BRAND_YAML=$(git diff --cached --name-only 2>/dev/null \
+    | grep -E "^(${BRANDS_REGEX})/config/brand\.yaml\$" \
+    || true)
+fi
+
+if [ -n "${CHANGED_BRAND_YAML}" ]; then
+  echo "[pre-commit] brand.yaml editado — regenerando INFRA-MATRIX.md..."
+  INFRA_SCRIPT="${REPO_ROOT}/scripts/generate_infra_matrix.py"
+  VENV_PY_ROOT="${REPO_ROOT}/.venv/bin/python"
+
+  if [ ! -f "${INFRA_SCRIPT}" ]; then
+    printf "\033[33m"
+    echo "WARNING: scripts/generate_infra_matrix.py not found — skipping INFRA-MATRIX regen."
+    printf "\033[0m"
+  elif [ ! -x "${VENV_PY_ROOT}" ]; then
+    printf "\033[33m"
+    echo "WARNING: .venv/bin/python not found — skipping INFRA-MATRIX regen (Section 10)."
+    printf "\033[0m"
+  else
+    if "${VENV_PY_ROOT}" "${INFRA_SCRIPT}" 2>/tmp/infra-matrix-err.txt; then
+      # NOTE 2026-05-20: INFRA-MATRIX.md es gitignored — regen sin auto-stage.
+      echo "[pre-commit] INFRA-MATRIX.md regenerado localmente (gitignored, no incluido en commit). Vista: cat docs/portfolio/INFRA-MATRIX.md"
+    else
+      printf "\033[31m"
+      cat <<EOF
+─────────────────────────────────────────────────────────────
+PRE-COMMIT BLOCKED: generate_infra_matrix.py fallo (Section 10).
+─────────────────────────────────────────────────────────────
+$(cat /tmp/infra-matrix-err.txt 2>/dev/null || true)
+
+Resolucion:
+  .venv/bin/python scripts/generate_infra_matrix.py
+  # Corrige el error y vuelve a git add + commit.
+
+NEVER use --no-verify.
+─────────────────────────────────────────────────────────────
+EOF
+      printf "\033[0m"
+      exit 1
+    fi
+  fi
+fi
+
+# ─────────────────────────────────────────────────────────────────
+# Section 11 — Worktree D11 enforcement (added 2026-05-18 ADR-005 worktree-policy)
+# Block direct commit to main unless squash-merge/merge in progress.
+# Pre-commit no puede leer commit message (eso es commit-msg hook);
+# usamos signal git-native: .git/SQUASH_MSG | .git/MERGE_MSG.
+# ─────────────────────────────────────────────────────────────────
+if [[ "${GATE_LEVEL:-light}" = "full" ]]; then
+  CURRENT_BRANCH="$(git branch --show-current 2>/dev/null || echo '')"
+  if [[ "${CURRENT_BRANCH}" = "main" ]]; then
+    GIT_DIR="$(git rev-parse --git-dir 2>/dev/null || echo '.git')"
+    if [[ -f "${GIT_DIR}/SQUASH_MSG" ]] || [[ -f "${GIT_DIR}/MERGE_MSG" ]]; then
+      :  # OK — squash-merge o merge en progreso (/pm-{brand} territory)
+    elif [[ -n "${LUANA_ALLOW_MAIN_COMMIT:-}" ]]; then
+      :  # OK — bypass explícito (meta-commits del worktree-protocol)
+    else
+      printf "\033[31m"
+      cat <<'EOF'
+
+─────────────────────────────────────────────────────────────
+PRE-COMMIT BLOCKED: commit directo a 'main' (ADR-005 D11).
+
+main solo recibe squash-merges desde branches wip/* via
+/pm-{brand} al cerrar story state=done. Commits directos a
+main están prohibidos.
+
+Acciones:
+  1. Si esto es WIP: crear worktree wip/* primero:
+     scripts/git/new-session.sh <brand> <type> <slug>
+  2. Si esto es squash-merge: el flow correcto es
+     `git merge --squash wip/<branch>` + `git commit` —
+     pre-commit detecta .git/SQUASH_MSG automáticamente.
+  3. Si esto es meta-commit del protocolo:
+     LUANA_ALLOW_MAIN_COMMIT=1 git commit -m "..."
+
+NEVER use --no-verify.
+─────────────────────────────────────────────────────────────
+EOF
+      printf "\033[0m"
+      exit 1
+    fi
+  fi
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 12. Story closure gate (origen 2026-05-18 — caso vitalia auditor-no-disparado)
+# ─────────────────────────────────────────────────────────────────────────────
+# SSoT: .claude/rules/story-closure-gate.md (Layer 4 enforcement)
+#
+# NOTE: numerada Section 12 porque main introdujo Section 11 (worktree D11
+# enforcement) concurrentemente en commit 25bd3bf (mismo cement-date 2026-05-18).
+# Las dos secciones son complementarias y operan en distintos planos:
+#   Section 11 (main) → bloquea commits directos a 'main' branch
+#   Section 12 (este) → bloquea cross-story commits dentro del mismo worktree
+#
+# Bloquea stage de archivos de story B si story A del mismo worktree esta en
+# state ∈ {developed, reviewing} SIN defer_audit:true.
+#
+# Razon: caso vitalia 2026-05-18. /dev-team cerro infra-cross-cutting en
+# state=developed (sin auditar/mergear) y arranco copilot-tools-impl en mismo
+# worktree. Esta seccion bloquea ese patron.
+#
+# Toggle override: STORY_CLOSURE_GATE_SKIP=1 (solo emergencias documentadas)
+
+if [ "${STORY_CLOSURE_GATE_SKIP:-0}" != "1" ]; then
+  # Stories tocadas por este commit (paths {brand}/docs/product/stories/{id}/...)
+  STAGED_STORIES=$(git diff --cached --name-only 2>/dev/null \
+    | grep -oE "^[a-z]+/docs/product/stories/[a-z0-9_-]+/" \
+    | sort -u \
+    || true)
+
+  # Listar stories en state developed|reviewing sin defer_audit en todo el worktree
+  OPEN_STORIES_LIST=""
+  for B in vitalia nicolify comunify lupulo saasora inmoflow retailly fixia guestly fitflow; do
+    [ -d "${REPO_ROOT}/${B}/docs/product/stories" ] || continue
+    for cp in "${REPO_ROOT}/${B}/docs/product/stories/"*/checkpoint.md; do
+      [ -f "$cp" ] || continue
+      STORY_ID=$(basename "$(dirname "$cp")")
+      STATE=$(grep -E "^state:" "$cp" 2>/dev/null | head -1 | awk '{print $2}' || echo "")
+      DEFER=$(grep -E "^defer_audit:" "$cp" 2>/dev/null | awk '{print $2}' || echo "")
+      if [[ "$STATE" =~ ^(developed|reviewing)$ ]] && [[ "$DEFER" != "true" ]]; then
+        OPEN_STORIES_LIST+="${B}/docs/product/stories/${STORY_ID}/|"
+      fi
+    done
+  done
+
+  # Si hay stories OPEN sin defer_audit + commit toca files de OTRA story → BLOCK
+  if [ -n "${OPEN_STORIES_LIST}" ] && [ -n "${STAGED_STORIES}" ]; then
+    OFFENDING_STAGED=""
+    for staged in ${STAGED_STORIES}; do
+      if [[ "${OPEN_STORIES_LIST}" != *"${staged}"* ]]; then
+        OFFENDING_STAGED+="  - ${staged}"$'\n'
+      fi
+    done
+
+    if [ -n "${OFFENDING_STAGED}" ]; then
+      printf "\033[31m"
+      cat <<EOF
+─────────────────────────────────────────────────────────────
+PRE-COMMIT BLOCKED: Story closure gate (Section 12, Layer 4).
+─────────────────────────────────────────────────────────────
+Hay stories abiertas en state developed/reviewing sin defer_audit:true
+en este worktree:
+
+$(echo "${OPEN_STORIES_LIST}" | tr '|' '\n' | sed 's/^/  - /' | grep -v '^  - $' || true)
+
+Pero este commit toca files de OTRAS stories:
+
+${OFFENDING_STAGED}
+Resolver primero la story open (auto-handoff /auditor → /pm-{brand} merge)
+antes de tocar otras stories. SSoT: .claude/rules/story-closure-gate.md
+
+Acciones disponibles:
+  1. Continuar story open hasta state=done (default forward-motion)
+  2. Ratificar defer_audit:true en checkpoint.md con razon documentada
+  3. Override emergencia: STORY_CLOSURE_GATE_SKIP=1 git commit ...
+     (solo si Chris ratifico explicitamente)
+
+NEVER use --no-verify.
+─────────────────────────────────────────────────────────────
+EOF
+      printf "\033[0m"
+      exit 1
+    fi
+  fi
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Section 13 — Scope per branch enforcement (v2 cementado 2026-05-18)
+# ─────────────────────────────────────────────────────────────────────────────
+# SSoT: docs/process/worktree-protocol-v2-plan.md § CORE #4
+#
+# Bloquea staging de files que violan scope de la branch actual.
+# Patterns:
+#   wip/{brand}            → solo {brand}/** + raíz brand-agnostic
+#   wip/{brand}-{story-id} → mismo que wip/{brand}
+#   wip/protocol-*         → solo docs/process/, docs/architecture/, .claude/, scripts/
+#   wip/core-*             → solo core/luana-core-*/
+#   main                   → bloqueado por Section 11
+#
+# Override: SCOPE_GATE_SKIP=1 (emergencias documentadas, auditor escruta)
+
+if [ "${SCOPE_GATE_SKIP:-0}" != "1" ]; then
+  CURRENT_BRANCH_SCOPE=$(git branch --show-current 2>/dev/null || echo "")
+  STAGED_SCOPE=$(git diff --cached --name-only 2>/dev/null)
+
+  # Helper para reportar violación + exit
+  scope_violation() {
+    local file="$1"
+    local reason="$2"
+    local hint="$3"
+    printf "\033[31m"
+    cat <<EOF
+
+─────────────────────────────────────────────────────────────
+SCOPE GATE BLOCKED: $reason
+
+File staged: $file
+Branch:      $CURRENT_BRANCH_SCOPE
+
+$hint
+
+Override (emergencias): SCOPE_GATE_SKIP=1 git commit ...
+SSoT: docs/process/worktree-protocol-v2-plan.md § CORE #4
+─────────────────────────────────────────────────────────────
+EOF
+    printf "\033[0m"
+    exit 1
+  }
+
+  # wip/{brand} or wip/{brand}-{story-id} pattern
+  if [[ "$CURRENT_BRANCH_SCOPE" =~ ^wip/(vitalia|nicolify|comunify|lupulo|saasora|inmoflow|retailly|fixia|guestly|fitflow)(-.*)?$ ]]; then
+    SCOPE_BRAND="${BASH_REMATCH[1]}"
+    while IFS= read -r f; do
+      [[ -z "$f" ]] && continue
+      # OK: brand propia
+      [[ "$f" =~ ^${SCOPE_BRAND}/ ]] && continue
+      # OK: raíz brand-agnostic
+      [[ "$f" =~ ^(CLAUDE\.md|AGENTS\.md|README\.md|Makefile|pnpm-lock\.yaml|uv\.lock|pyproject\.toml|pnpm-workspace\.yaml|\.gitignore|\.env\.example)$ ]] && continue
+      # OK: scripts brand-agnostic (no scripts/git/ que es transversal-modelo)
+      [[ "$f" =~ ^scripts/ ]] && [[ ! "$f" =~ ^scripts/git/ ]] && [[ ! "$f" =~ ^scripts/git-hooks/ ]] && continue
+      # OK: gitignored o untracked dirs (vendor/coverage/etc)
+      [[ "$f" =~ /coverage/|/node_modules/|/\.venv/|/__pycache__/ ]] && continue
+
+      # BLOCK: cross-brand
+      if [[ "$f" =~ ^(vitalia|nicolify|comunify|lupulo|saasora|inmoflow|retailly|fixia|guestly|fitflow)/ ]]; then
+        OTHER_BRAND="${BASH_REMATCH[1]}"
+        scope_violation "$f" \
+          "Cross-brand staging blocked (branch=$CURRENT_BRANCH_SCOPE expects only ${SCOPE_BRAND}/)" \
+          "El archivo es de brand '${OTHER_BRAND}'. Cada brand mergea desde su propio wip/{brand}.
+Acciones:
+  1. Si es trabajo de ${OTHER_BRAND}: cambiar a worktree luana-${OTHER_BRAND}/
+  2. Si confundiste branch: git restore --staged $f"
+      fi
+      # BLOCK: transversal modelo
+      if [[ "$f" =~ ^(\.claude/(rules|skills)/|docs/(process|architecture)/|scripts/git/|scripts/git-hooks/) ]]; then
+        scope_violation "$f" \
+          "Transversal modelo staging blocked (branch=$CURRENT_BRANCH_SCOPE no toca modelo/protocolo)" \
+          "El archivo es transversal al modelo (rules/skills/process/architecture/scripts git).
+Acciones:
+  1. Crear worktree dedicado: scripts/git/new-session.sh protocol exp <slug>
+  2. O abandonar el cambio si no era intencional: git restore --staged $f"
+      fi
+      # BLOCK: core engine
+      if [[ "$f" =~ ^core/luana-core- ]]; then
+        scope_violation "$f" \
+          "Core engine staging blocked (branch=$CURRENT_BRANCH_SCOPE no toca core)" \
+          "El archivo es del engine luana-core-*. Requiere promotion proposal.
+Acciones:
+  1. Crear worktree core: EXPLICIT_USER_REQUEST=1 scripts/git/new-session.sh core lift <slug>
+  2. Crear promotion proposal en docs/promotion-protocol/proposals/"
+      fi
+    done <<< "$STAGED_SCOPE"
+  fi
+
+  # wip/protocol-* pattern → solo modelo
+  if [[ "$CURRENT_BRANCH_SCOPE" =~ ^wip/protocol- ]]; then
+    while IFS= read -r f; do
+      [[ -z "$f" ]] && continue
+      # OK: paths de modelo/proceso/skills/scripts-git
+      [[ "$f" =~ ^(\.claude/|docs/(process|architecture|specs)/|scripts/) ]] && continue
+      [[ "$f" =~ ^(CLAUDE\.md|AGENTS\.md|README\.md|Makefile)$ ]] && continue
+
+      # BLOCK: brand
+      if [[ "$f" =~ ^(vitalia|nicolify|comunify|lupulo|saasora|inmoflow|retailly|fixia|guestly|fitflow)/ ]]; then
+        scope_violation "$f" \
+          "Brand staging blocked en wip/protocol-* (branch=$CURRENT_BRANCH_SCOPE solo toca modelo)" \
+          "Acciones:
+  1. Si es trabajo del modelo: el archivo no debería ser de brand. Reconsiderá.
+  2. Si es trabajo de brand: cambiar a worktree de esa brand."
+      fi
+      # BLOCK: core engine
+      if [[ "$f" =~ ^core/luana-core- ]]; then
+        scope_violation "$f" \
+          "Core engine staging blocked en wip/protocol-* (branch=$CURRENT_BRANCH_SCOPE solo toca modelo)" \
+          "Crear worktree core dedicado o promotion proposal."
+      fi
+    done <<< "$STAGED_SCOPE"
+  fi
+
+  # wip/core-* pattern → solo core
+  if [[ "$CURRENT_BRANCH_SCOPE" =~ ^wip/core- ]]; then
+    while IFS= read -r f; do
+      [[ -z "$f" ]] && continue
+      # OK: core engine
+      [[ "$f" =~ ^core/luana-core- ]] && continue
+      # OK: docs promotion + ADRs
+      [[ "$f" =~ ^docs/(promotion-protocol|architecture|core-modules)/ ]] && continue
+      # OK: raíz lockfiles si bump deps
+      [[ "$f" =~ ^(uv\.lock|pnpm-lock\.yaml|pyproject\.toml|pnpm-workspace\.yaml)$ ]] && continue
+
+      # BLOCK: brand
+      if [[ "$f" =~ ^(vitalia|nicolify|comunify|lupulo|saasora|inmoflow|retailly|fixia|guestly|fitflow)/ ]]; then
+        scope_violation "$f" \
+          "Brand staging blocked en wip/core-* (branch=$CURRENT_BRANCH_SCOPE solo toca engine)" \
+          "Lift core es independiente de brand. Si necesitás brand consumer changes,
+hacer en wip/{brand} separado después del lift."
+      fi
+    done <<< "$STAGED_SCOPE"
+  fi
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Section 14 — Brand docs schema R1 enforcement (cement 2026-05-19)
+# ─────────────────────────────────────────────────────────────────────────────
+# SSoT: .claude/rules/brand-docs-schema.md § R1
+#
+# Bloquea staging de archivos .md sueltos en {brand}/docs/ raíz.
+# {brand}/docs/ solo permite sub-dirs canónicos: product/, archive/,
+# learnings/, architecture/, domains/.
+#
+# Contenido ad-hoc debe ir a sub-dir apropiado:
+#   ADR              → {brand}/docs/architecture/ADR-{brand}-{NNN}-{slug}.md
+#   Process doc      → {brand}/docs/domains/{component}.md
+#   Learning         → {brand}/docs/learnings/{date}-{slug}.md
+#   Outcome (epica)  → {brand}/docs/product/outcomes/{slug}.md
+#
+# Override: BRAND_DOCS_SCHEMA_SKIP=1 (emergencias documentadas, auditor escruta)
+# ─────────────────────────────────────────────────────────────────────────────
+
+if [ "${BRAND_DOCS_SCHEMA_SKIP:-0}" != "1" ]; then
+  STAGED_R1=$(git diff --cached --name-only 2>/dev/null)
+  while IFS= read -r f; do
+    [[ -z "$f" ]] && continue
+    # Detectar {brand}/docs/X.md (un solo nivel después de docs/)
+    if [[ "$f" =~ ^(vitalia|nicolify|comunify|lupulo|saasora|inmoflow|retailly|fixia|guestly|fitflow)/docs/[^/]+\.md$ ]]; then
+      BRAND_R1="${BASH_REMATCH[1]}"
+      FILE_NAME=$(basename "$f")
+      printf "\033[31m"
+      cat <<EOF
+
+─────────────────────────────────────────────────────────────
+BRAND DOCS SCHEMA VIOLATION (R1): MD suelto en {brand}/docs/ raíz
+
+File:    $f
+Brand:   $BRAND_R1
+Schema:  .claude/rules/brand-docs-schema.md § R1
+
+${BRAND_R1}/docs/ raíz NO permite archivos .md sueltos. Solo sub-dirs:
+  - ${BRAND_R1}/docs/product/   (outcomes, stories, capabilities, modules)
+  - ${BRAND_R1}/docs/archive/   (stories done immutable snapshot)
+  - ${BRAND_R1}/docs/learnings/ (insights brand-local)
+  - ${BRAND_R1}/docs/architecture/ (ADRs locales brand)
+  - ${BRAND_R1}/docs/domains/   (tools/workflows registrados via Extension SDK)
+
+Reubicar '${FILE_NAME}' al sub-dir apropiado según contenido:
+  - ¿ADR/decisión arquitectónica? → ${BRAND_R1}/docs/architecture/ADR-${BRAND_R1}-NNN-{slug}.md
+  - ¿Procedimiento operacional?    → ${BRAND_R1}/docs/domains/{component}.md
+  - ¿Learning/insight histórico?   → ${BRAND_R1}/docs/learnings/{date}-{slug}.md
+  - ¿Spec de feature?              → ${BRAND_R1}/docs/product/stories/{story-id}/01-spec.md
+  - ¿Outcome (épica)?              → ${BRAND_R1}/docs/product/outcomes/{slug}.md
+  - ¿Handoff cross-session?        → dentro de la story relevante
+
+Override (emergencias documentadas): BRAND_DOCS_SCHEMA_SKIP=1 git commit ...
+SSoT: .claude/rules/brand-docs-schema.md
+─────────────────────────────────────────────────────────────
+EOF
+      printf "\033[0m"
+      exit 1
+    fi
+  done <<< "$STAGED_R1"
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Section 15 — Capability ledger consistency (cement schema v2 2026-05-27)
+# ─────────────────────────────────────────────────────────────────────────────
+# SSoT: docs/process/release-protocol.md (schema v2 cap ledger).
+#
+# Verifica que las capacidades modificadas en este commit tengan:
+#   * change_log:  field presente (post Phase 3 migration)
+#
+# (atomics killed 2026-05-28 — ver docs/process/lifecycle.md. El check de
+#  atomics[].label ↔ change_log[].atomics_added fue removido.)
+#
+# Override:
+#   * frontmatter del cap YAML: `# cap-ledger-skip: razón` (cualquier línea)
+#   * env: CAP_LEDGER_SKIP=1 git commit ...
+# ─────────────────────────────────────────────────────────────────────────────
+
+if [ "${CAP_LEDGER_SKIP:-0}" != "1" ]; then
+  STAGED_CAPS=$(git diff --cached --name-only --diff-filter=AM 2>/dev/null \
+    | grep -E '^(vitalia|nicolify|comunify|lupulo|saasora|inmoflow|retailly|fixia|guestly|fitflow)/docs/product/capabilities/[^/]+/[^/]+\.yaml$' \
+    || true)
+
+  if [ -n "$STAGED_CAPS" ]; then
+    while IFS= read -r cap_file; do
+      [[ -z "$cap_file" ]] && continue
+      [[ ! -f "$cap_file" ]] && continue
+
+      # Honor magic comment escape (anywhere in file)
+      if grep -qE '^\s*#\s*cap-ledger-skip([: \t]|$)' "$cap_file"; then
+        continue
+      fi
+
+      # Run inline Python validator (using workspace venv for yaml lib)
+      WS_VENV="$(git rev-parse --show-toplevel)/.venv/bin/python"
+      if [ ! -x "$WS_VENV" ]; then
+        # Fallback: system python3 (yaml usually available)
+        WS_VENV="python3"
+      fi
+
+      RESULT=$("$WS_VENV" - "$cap_file" <<'PYEOF' 2>&1
+import sys
+import re
+
+cap_path = sys.argv[1]
+try:
+    import yaml
+except ImportError:
+    print("SKIP:yaml-not-available")
+    sys.exit(0)
+
+try:
+    with open(cap_path, "r", encoding="utf-8") as fh:
+        text = fh.read()
+except OSError as exc:
+    print(f"ERROR:read-failed:{exc}")
+    sys.exit(2)
+
+# Strip leading comment lines / blanks
+lines = text.splitlines(keepends=True)
+cursor = 0
+for line in lines:
+    s = line.lstrip()
+    if s.startswith("#") or s in {"", "\n"}:
+        cursor += len(line)
+        continue
+    break
+body = text[cursor:]
+# Accept both frontmatter-style (with leading ---) AND plain YAML files (cap legacy + new)
+if body.startswith("---"):
+    after = body[3:].lstrip("\n")
+    yaml_text = after.split("\n---", 1)[0]
+else:
+    yaml_text = body
+try:
+    data = yaml.safe_load(yaml_text) or {}
+except yaml.YAMLError as exc:
+    # Pre-existing legacy data may have unquoted strings con caracteres especiales
+    # (paréntesis, dos puntos, brackets). Convertir bloqueo → advisory.
+    # Chris ratifica fix per-cap eventualmente. Hook no bloquea por data pre-existente.
+    print(f"SKIP:yaml-parse-failed:{exc}")
+    sys.exit(0)
+if not isinstance(data, dict):
+    print("SKIP:frontmatter-not-dict")
+    sys.exit(0)
+
+errors = []
+
+# Check 1: change_log field must exist post-Phase-3
+if "change_log" not in data:
+    errors.append("MISSING_CHANGE_LOG: capability lacks change_log field (post-Phase-3 schema v2 cement 2026-05-27)")
+
+# (atomics killed 2026-05-28 — atomics[].label ↔ change_log[].atomics_added
+#  consistency check removed; ver docs/process/lifecycle.md)
+
+if errors:
+    print("FAIL")
+    for e in errors:
+        print(f"  - {e}")
+    sys.exit(1)
+print("OK")
+sys.exit(0)
+PYEOF
+)
+      RC=$?
+      if [ "$RC" -ne 0 ]; then
+        printf "\033[31m"
+        cat <<EOF
+
+─────────────────────────────────────────────────────────────
+CAPABILITY LEDGER VIOLATION (schema v2 cement 2026-05-27)
+
+File: $cap_file
+
+$RESULT
+
+Schema v2 requires:
+  * change_log: field present (Phase 3 migration script ya lo agregó)
+
+Fix:
+  * Editar $cap_file y agregar el field change_log: con la entrada de la
+    story que introdujo la capability
+  * Si es advisory legítimo: agregar al cap YAML una línea:
+        # cap-ledger-skip: razón aquí
+  * Emergency override: CAP_LEDGER_SKIP=1 git commit ...
+
+SSoT: docs/process/release-protocol.md (schema v2)
+─────────────────────────────────────────────────────────────
+EOF
+        printf "\033[0m"
+        exit 1
+      fi
+    done <<< "$STAGED_CAPS"
+  fi
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Section 15.5 — SYSTEM-MAP.yaml cross-vocabulary validation (cement 2026-05-27)
+# ─────────────────────────────────────────────────────────────────────────────
+# SSoT: vitalia/docs/architecture/ADR-vitalia-005-capability-model-4-dimensions.md
+# Script: scripts/validate_system_map.py
+#
+# Gate: FULL only (wip/* branches skip — vocabulario puede estar drifting durante WIP)
+# Solo corre si commit toca SYSTEM-MAP.yaml O capabilities/*.yaml O stories/checkpoint.md
+#
+# Override:
+#   * env: SYSTEM_MAP_SKIP=1 git commit ...
+# ─────────────────────────────────────────────────────────────────────────────
+
+if [ "$GATE_LEVEL" = "full" ] && [ "${SYSTEM_MAP_SKIP:-0}" != "1" ]; then
+  STAGED_SM=$(git diff --cached --name-only 2>/dev/null \
+    | grep -E '(SYSTEM-MAP\.yaml|docs/product/capabilities/.*\.yaml|docs/product/stories/[^/]+/checkpoint\.md)' \
+    || true)
+
+  if [ -n "$STAGED_SM" ]; then
+    # Identify affected brands
+    SM_BRANDS=$(echo "$STAGED_SM" | sed -nE 's|^([a-z]+)/.*|\1|p' | sort -u)
+    for SM_BRAND in $SM_BRANDS; do
+      if [ -f "$SM_BRAND/docs/architecture/SYSTEM-MAP.yaml" ]; then
+        printf "\033[36m[hook 15.5] Validating SYSTEM-MAP cross-vocabulary for %s...\033[0m\n" "$SM_BRAND"
+        if ! "${REPO_ROOT}/.venv/bin/python" "${REPO_ROOT}/scripts/validate_system_map.py" --brand "$SM_BRAND" 2>&1; then
+          printf "\033[31m"
+          cat <<EOF
+
+─────────────────────────────────────────────────────────────
+SYSTEM-MAP CROSS-VOCABULARY VALIDATION FAILED ($SM_BRAND)
+
+ADR: $SM_BRAND/docs/architecture/ADR-vitalia-005-capability-model-4-dimensions.md
+Script: scripts/validate_system_map.py
+
+Posibles causas:
+  - Cap declara functional_area que NO existe en SYSTEM-MAP.yaml
+  - Story declara cap_target con formato <agent>.<area> que NO existe en SYSTEM-MAP.yaml
+
+Fixes:
+  1. Si el área es nueva → agregarla a SYSTEM-MAP.yaml (status: planned)
+  2. Si el name está mal → rename en cap/story para matchear SYSTEM-MAP
+  3. Si es legacy/exploration → renombrar a área existente o usar otro slug
+
+Override (emergencias documentadas):
+  SYSTEM_MAP_SKIP=1 git commit ...
+─────────────────────────────────────────────────────────────
+EOF
+          printf "\033[0m"
+          exit 1
+        fi
+      fi
+    done
+  fi
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Section 16 — chris-input.md consistency (R4 brand-docs-schema, cement 2026-05-27)
+# ─────────────────────────────────────────────────────────────────────────────
+# SSoT: .claude/rules/brand-docs-schema.md § R4
+#
+# Si el commit toca {brand}/docs/product/stories/{id}/checkpoint.md y el state
+# está en {idea, refining, refined, ready, developing, developed, reviewing},
+# debe existir chris-input.md en el mismo directorio. chris-input.md nace con
+# la idea (R4 v3 cement 2026-05-28) — es el buzón de inputs de Chris desde el
+# día cero.
+#
+# Override:
+#   * frontmatter del checkpoint.md: `# chris-input-skip: razón` (advisory log)
+#   * env: CHRIS_INPUT_SKIP=1 git commit ...
+# ─────────────────────────────────────────────────────────────────────────────
+
+if [ "${CHRIS_INPUT_SKIP:-0}" != "1" ]; then
+  STAGED_CHECKPOINTS=$(git diff --cached --name-only --diff-filter=AM 2>/dev/null \
+    | grep -E '^(vitalia|nicolify|comunify|lupulo|saasora|inmoflow|retailly|fixia|guestly|fitflow)/docs/product/stories/[^/]+/checkpoint\.md$' \
+    || true)
+
+  if [ -n "$STAGED_CHECKPOINTS" ]; then
+    while IFS= read -r cp_file; do
+      [[ -z "$cp_file" ]] && continue
+      [[ ! -f "$cp_file" ]] && continue
+
+      # Honor magic comment escape in checkpoint frontmatter
+      if grep -qE '^\s*#\s*chris-input-skip([: \t]|$)' "$cp_file"; then
+        continue
+      fi
+
+      # Extract state field via grep (frontmatter line: `state: <value>`).
+      # Tolerates trailing inline comments (# ...).
+      STATE_RAW=$(grep -E '^state:[[:space:]]+' "$cp_file" | head -1 \
+        | sed -E 's/^state:[[:space:]]+//' \
+        | sed -E 's/[[:space:]]*#.*$//' \
+        | tr -d '"' | tr -d "'" | xargs)
+
+      case "$STATE_RAW" in
+        idea|refining|refined|ready|developing|developed|reviewing)
+          STORY_DIR=$(dirname "$cp_file")
+          CHRIS_INPUT="$STORY_DIR/chris-input.md"
+          if [ ! -f "$CHRIS_INPUT" ]; then
+            printf "\033[31m"
+            cat <<EOF
+
+─────────────────────────────────────────────────────────────
+CHRIS-INPUT.MD MISSING (R4 brand-docs-schema, cement 2026-05-27)
+
+File:  $cp_file
+State: $STATE_RAW
+Story dir: $STORY_DIR
+
+Story en state '$STATE_RAW' requiere chris-input.md presente.
+
+Crear con:
+  cp docs/specs/templates/00-chris-input-template.md $CHRIS_INPUT
+
+Si el template no existe aún, crear un chris-input.md mínimo:
+  - file: $CHRIS_INPUT
+  - contiene: ratificaciones Chris + decisiones humanas + scope confirmations
+
+Override (advisory, audit escruta):
+  * En checkpoint frontmatter agregar: # chris-input-skip: razón
+  * Emergency env: CHRIS_INPUT_SKIP=1 git commit ...
+
+SSoT: .claude/rules/brand-docs-schema.md § R4
+─────────────────────────────────────────────────────────────
+EOF
+            printf "\033[0m"
+            exit 1
+          fi
+          ;;
+        *)
+          # states {done, parked, dropped} — no chris-input.md required
+          # (idea ahora SÍ lo requiere — nace con la idea, R4 v3 cement 2026-05-28)
+          ;;
+      esac
+    done <<< "$STAGED_CHECKPOINTS"
+  fi
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Section 17 — checkpoint.md frontmatter: NO duplicate top-level keys (cement 2026-05-28)
+# ─────────────────────────────────────────────────────────────────────────────
+# Causa raíz del bug "la story no aparece en el board": una key top-level repetida
+# en el frontmatter (ej. `phase:` dos veces) rompe el parse YAML → el cockpit no
+# puede leer el checkpoint (cae a state=idea o lo descarta).
+#
+# Disciplina (SSoT docs/process/checkpoint-protocol.md § Frontmatter edit discipline):
+# al editar checkpoint.md se ACTUALIZA la key existente en la cabecera, NUNCA se
+# appendea una nueva. Este gate bloquea el commit si detecta keys duplicadas.
+# Override emergencia: CHECKPOINT_DUPKEY_SKIP=1 git commit ...
+# ─────────────────────────────────────────────────────────────────────────────
+if [ "${CHECKPOINT_DUPKEY_SKIP:-0}" != "1" ]; then
+  DUP_CKPTS=$(git diff --cached --name-only --diff-filter=AM 2>/dev/null \
+    | grep -E '/checkpoint\.md$' || true)
+  if [ -n "$DUP_CKPTS" ]; then
+    DUPKEY_FOUND=0
+    while IFS= read -r cp_file; do
+      [[ -z "$cp_file" || ! -f "$cp_file" ]] && continue
+      DUPS=$(awk '
+        /^---[[:space:]]*$/ { fm++; next }
+        fm==1 && /^[A-Za-z_][A-Za-z0-9_]*:/ {
+          k=$0; sub(/:.*/, "", k)
+          if (seen[k]++) print k
+        }
+        fm>=2 { exit }
+      ' "$cp_file" | sort -u)
+      if [ -n "$DUPS" ]; then
+        DUPKEY_FOUND=1
+        printf "\033[31m"
+        cat <<EOF
+
+─────────────────────────────────────────────────────────────
+CHECKPOINT FRONTMATTER · KEY DUPLICADA (cement 2026-05-28)
+
+File: $cp_file
+Keys duplicadas: $(echo "$DUPS" | tr '\n' ' ')
+
+Una key top-level repetida rompe el parse YAML → el cockpit no puede
+leer el checkpoint (cae a state=idea o lo descarta del board).
+
+FIX: actualiza la key EXISTENTE en la cabecera, no agregues una nueva.
+     (caso típico: 'outcome:'/'phase:' legacy viejos + el nuevo encima)
+
+Override emergencia: CHECKPOINT_DUPKEY_SKIP=1 git commit ...
+SSoT: docs/process/checkpoint-protocol.md § Frontmatter edit discipline
+─────────────────────────────────────────────────────────────
+EOF
+        printf "\033[0m"
+      fi
+    done <<< "$DUP_CKPTS"
+    [ "$DUPKEY_FOUND" = "1" ] && exit 1
+  fi
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 13. Machinery consistency (anti-drift doctrina↔templates↔agentes — 2026-05-28)
+# ─────────────────────────────────────────────────────────────────────────────
+# SSoT: scripts/validate_machinery_consistency.py + docs/process/audits/2026-05-28-*.
+# Corre (ambos gate levels — barato, sin red) cuando el commit toca la maquinaria
+# agéntica (.claude/{rules,skills,agents}/ o docs/specs/templates/). Evita el
+# bug-class #1 de la auditoría 2026-05-28: drift silencioso entre la doctrina
+# (rules/skills) y los templates/agentes que la materializan.
+MACHINERY_STAGED=$(git diff --cached --name-only --diff-filter=ACM \
+  | grep -E '^\.claude/(rules|skills|agents)/|^docs/specs/templates/' || true)
+if [ -n "${MACHINERY_STAGED}" ] && [ "${MACHINERY_CHECK_SKIP:-0}" != "1" ]; then
+  REPO_ROOT_MC=$(git rev-parse --show-toplevel)
+  if [ -f "${REPO_ROOT_MC}/scripts/validate_machinery_consistency.py" ]; then
+    echo "→ machinery-check (anti-drift, Section 13)…"
+    if ! python3 "${REPO_ROOT_MC}/scripts/validate_machinery_consistency.py"; then
+      printf "\033[31m"
+      cat <<'EOF'
+❌ MACHINERY DRIFT detectado (Section 13)
+La doctrina (rules/skills) y los templates/agentes que la materializan divergieron.
+Corré: make machinery-check  (o python3 scripts/validate_machinery_consistency.py)
+y corregí los CHECK en rojo antes de commitear.
+Override emergencia: MACHINERY_CHECK_SKIP=1 git commit ...
+─────────────────────────────────────────────────────────────
+EOF
+      printf "\033[0m"
+      exit 1
+    fi
+  fi
+fi
 
 exit 0

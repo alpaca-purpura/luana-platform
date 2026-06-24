@@ -55,10 +55,12 @@ functional:
     rule: "Inbound Telegram en decide → califica + responde (sin PHI) + activity + costo"
     must_pass: true
     scenario: SC-1
+    note: "★ 2026-06-22 audit: responde+costo = LIVE; el sub-clause '+ activity' NO está cableado (GAP-3: el loop escribe solo audit_log, no emite vitalia_activity_events). RED hasta GAP-3. NO false-green el activity. Ver RECONCILE-2026-06-22."
   - id: V-FN-2   # SC-2 consulta
     rule: "Consulta → borrador, 0 outbound Telegram hasta firma humana"
     must_pass: true
     scenario: SC-2
+    note: "★ 2026-06-22 audit: NO cableado en el loop inbound (GAP-2: HonorModeBridge solo gate del endpoint operator-instruction; sin pre-send interceptor). decide+pausa(human) sí; consulta NO. RED hasta GAP-2 (/architect: ¿EP pre-send brand o seam engine?). Ver RECONCILE-2026-06-22."
   - id: V-FN-3   # SC-3a/3b pausa + ráfaga
     rule: "Pausa → 0 reply · ráfaga 3 msgs <6s → exactamente 1 reply (debounce)"
     must_pass: true
@@ -83,7 +85,7 @@ functional:
   - id: V-FN-8   # SC-7 tools acción (payment/reschedule)
     rule: "decide → payment_link/reschedule enviado + idempotente · consulta → borrador"
     must_pass: false
-    deferred: "ESC-17/Tier-2.4a — el seam dispatch/advertise (ESC-2) YA está live; el blocker es el ABI del handler (EP-3 handlers son StructuredTools async, no callable sync). OLA-2 (2.4a→2.4b)."
+    deferred: "★ ACTUALIZADO 2026-06-22 (post GAP-1, commit 0fd45f31): ESC-17 + autonomous-dispatch + GAP-1 (resolvers) RESUELTOS → payment_link y reschedule ahora RECHAN sus services live. payment_link = end-to-end (pendiente live-verify full en G). reschedule = reacha service pero degrada en GAP-5 (lane scheduling `update_slot` stub, dominio scheduling). Subir a must_pass:true tras live-verify de payment en G + cierre de GAP-5. Ver RECONCILE-2026-06-22-doc-vs-reality.md."
     scenario: SC-7
   - id: V-FN-9   # SC-9 book happy
     rule: "decide → match → slots reales → book hold proactivo_adrian + slot marcado + seña"
