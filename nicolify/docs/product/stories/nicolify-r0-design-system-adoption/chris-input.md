@@ -330,3 +330,8 @@ Patrón cross-brand (vitalia+nicolify) → candidate lift `/pm-luana`. Próximo:
 - **Alcance del fix:** `:4001` (cockpit de este worktree wip/nicolify) ya lo ve developed al releer. Si el "multi" es el cross-brand `:4000` (corre desde main), lee el filesystem de main que tiene el mismo archivo roto → no se corrige ahí hasta sincronizar el fix a main.
 - **Clase de bug:** mismo patrón que "header huérfano → caja vacía" — doc estructural malformado hace que la caja del cockpit mienta. Candidato a gate mecánico (cap-deterministic-enforcement ya valida caps; faltaría un check "frontmatter de checkpoint cierra con ---"). Lo flaggeo a harness-backlog si querés.
 - **💡 PROPONE:** ¿commiteo el fix por pathspec? + ¿lo llevo a main (si tu multi es :4000) o lo dejo para el merge de la story?
+
+**/pm-nicolify → ✓ APLICADO (commit + llevado a main, pedido Chris):**
+- wip/nicolify: fix checkpoint `132be2c7` + chris-input `a7f711a5` → pushed.
+- main: cherry-pick `-x` del fix → `4510f0c8` → pushed (fast-forward, ci-parity advisory por `.ci-parity-deferred`). main tenía el MISMO bug (sin `---` de cierre) → por eso el `:4000` multi mostraba idea; ahora parsea developed.
+- Ambos worktrees (wip :4001 + main :4000) leen state=developed. Resto de la story (3 fix-rounds) sigue sin mergear a main — solo viajó el fix del frontmatter.
