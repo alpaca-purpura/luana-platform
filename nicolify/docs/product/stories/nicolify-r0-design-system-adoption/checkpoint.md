@@ -95,6 +95,8 @@ arch_decisions:
   - "globals.css = valores de marca + escala compartida (Q1: espejo @theme + arch-test drift); --radius-control/--radius-pill brand-scoped agregados"
   - "RN-7 (kit controls consumen --radius-control) = /pm-luana lift EN PARALELO, NUNCA en esta story; gatea golden pill + demo #37"
   - "anti-default-flip al encender no-arbitrary lock off→on (migrar first, flip second, suite verde ambos lados)"
+---
+
 ## Prior art scan (anti-duplication-refining — corrido 2026-06-15 · /pm-nicolify+/pm-luana)
 
 > Resultado: **ADOPCIÓN PURA, cero creación**. Todo lo que esta story consume YA existe en el engine. No se recrea nada.

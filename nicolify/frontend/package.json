@@ -93,10 +93,10 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
-    "@luana/eslint-config": "workspace:*",
     "@axe-core/playwright": "^4.11.3",
     "@clerk/testing": "^2.0.8",
-    "@playwright/test": "^1.59.1",
+    "@luana/eslint-config": "workspace:*",
+    "@playwright/test": "^1.61.1",
     "@storybook/addon-a11y": "^10.3.4",
     "@storybook/addon-themes": "^10.3.4",
     "@storybook/nextjs-vite": "^10.3.4",
