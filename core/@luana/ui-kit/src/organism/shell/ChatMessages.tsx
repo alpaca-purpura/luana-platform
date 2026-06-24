@@ -183,6 +183,10 @@ export function ChatMessages({
       role="log"
       aria-live="polite"
       aria-label={`Conversación con ${supervisor.name}`}
+      // a11y (axe wcag2aa scrollable-region-focusable): una región scrollable
+      // debe ser alcanzable por teclado. tabIndex={0} permite enfocarla y
+      // scrollear con flechas sin mouse.
+      tabIndex={0}
       className={`flex-1 min-h-0 overflow-y-auto px-4 py-4 flex flex-col gap-3 ${className ?? ""}`}
     >
       {messages.length === 0 ? (
