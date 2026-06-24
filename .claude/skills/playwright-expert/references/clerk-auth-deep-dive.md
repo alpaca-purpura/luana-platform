@@ -201,9 +201,20 @@ La carga sobre dev-FAPI la genera **el propio código de la app** vía `useAuth(
 
 En una suite larga, el JWT cacheado expira → `getToken()` hace round-trip a dev-FAPI (`/v1/client/sessions/.../tokens`) para mintear uno nuevo. Las instancias **dev** de Clerk rate-limitean FAPI → los specs de autosave tardíos se throttlean (el `PATCH` llega lento → la assertion hace timeout). Los specs tempranos/aislados pasan porque el JWT todavía está caliente y no hay minteo mid-suite.
 
-### El fix real (durable, no retry-mask) — **acción de Chris**
+### ¿Se puede setear por Backend API (con la CLERK_SECRET_KEY)? — **NO. Probado en vivo 2026-06-23.**
 
-Subir el **session-token lifetime de la instancia DEV de Clerk** de 60s a su máximo (~1 día) en el dashboard: **Clerk dashboard → Sessions → token lifetime**. Es config, no código → `getToken()` resuelve desde cache y mintea ~98% menos veces mid-suite. **Por marca** (cada brand tiene su propia instancia dev de Clerk → repetir en cada dashboard). Esta es una acción que **solo Chris puede hacer** (acceso al dashboard).
+> **No re-investigar esto.** Se verificó con la key real de vitalia (`sk_test_…`, instancia `ins_…` dev):
+> - `GET https://api.clerk.com/v1/instance` devuelve SOLO `{id, object, environment_type, allowed_origins}` — **no hay campo de session/token lifetime**. `PATCH /v1/instance` (`UpdateInstance`) tampoco lo expone (schema: test_mode/hibp/support_email/clerk_js_version/url_based_session_syncing/preferred_sign_in_strategy). El `default_token_ttl` del Backend API es **solo para tokens M2M/Machine**, NO para sesiones de usuario.
+> - El **único lever por API** es un **JWT template** (`POST /v1/jwt_templates` con `lifetime` 30..315360000s) — pero SOLO aplica cuando el código llama `getToken({ template: 'nombre' })`. Los ~110 call-sites de la app usan el `getToken()` default → un template NO los ayuda sin tocar prod (rechazado abajo). Por eso crear el template = cargo-cult para HB-28.
+> - Evidencia Clerk: el `exp` del session token default "Determined using the Token lifetime setting in the Dashboard" + maintainer answer `clerk/javascript#3021` ("default session token lifetime appears fixed at 60 seconds"). Es **dashboard-only by design**.
+
+### El fix durable — **acción de dashboard (la única no-código; la key NO la cubre)**
+
+Subir el **session-token lifetime de la instancia DEV** de 60s a su máximo (~1 día): **Clerk dashboard → Sessions → Customize session token → Token lifetime**. Config, no código → `getToken()` resuelve desde cache y mintea ~98% menos veces mid-suite. **Por marca** (cada brand = instancia dev distinta → repetir). Requiere **login al dashboard** (la `CLERK_SECRET_KEY` da Backend API, NO sesión de dashboard) → solo lo hace quien tiene la cuenta Clerk.
+
+### Mitigación vigente (ya aceptada · NO es deuda)
+
+`retries: 1` en `playwright.config.ts` = **verde-de-infra-externa aceptado por Chris 2026-06-03** (estándar Playwright para transients de infra). El throttle es un transient de rate-limit de una instancia DEV gratuita, no un bug de producto ni de selector. Con la mitigación + esta doc, **HB-28 está cerrado a nivel harness**: el único upside restante es el dashboard-TTL (opcional, elimina hasta el retry).
 
 ### Fallback (si no hay acceso al dashboard)
 

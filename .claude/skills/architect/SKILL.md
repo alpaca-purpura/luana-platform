@@ -257,268 +257,19 @@ Reglas:
 Template (paths brand-scoped; workspace root parametrizado via `${WS}` o `cd {brand}/...`):
 
 ```yaml
-# {brand}/docs/product/stories/{story-id}/04-validators.yaml
-# v4 schema: 4 categories — non_functional / functional / visual / agentic_eval
-# NOTE: validator cmds usan paths relativos al workspace root. `${WS}` o `git rev-parse --show-toplevel`
-# debe ser resuelto por gate-runner antes de ejecutar.
-
-validators:
-  # ─── NON-FUNCTIONAL (lint, arch fitness, type-check, format) ───
-  - id: be_arch_fitness
-    category: non_functional
-    type: pytest
-    cmd: "cd {brand}/backend && ../../.venv/bin/pytest tests/architecture/ -x -q --override-ini='addopts='"
-    must_pass: true
-    timeout_sec: 120
-
-  - id: be_lint
-    category: non_functional
-    type: shell
-    cmd: "cd {brand}/backend && ../../.venv/bin/ruff check src/modules/{brand}/{m}/ tests/modules/{brand}/{m}/ --no-cache && ../../.venv/bin/ruff format --check src/modules/{brand}/{m}/ tests/modules/{brand}/{m}/"
-    must_pass: true
-    timeout_sec: 30
-
-  - id: fe_typecheck
-    category: non_functional
-    type: shell
-    cmd: "cd {brand}/frontend && npx tsc --noEmit"
-    must_pass: true
-    timeout_sec: 90
-
-  # ─── FUNCTIONAL (Gherkin scenarios — happy/negative/edge/adversarial) ───
-  - id: be_unit_create_endpoint
-    category: functional
-    type: pytest
-    cmd: "cd {brand}/backend && ../../.venv/bin/pytest tests/modules/{brand}/{m}/test_create.py -v --tb=short"
-    must_pass: true
-    timeout_sec: 60
-
-  - id: fe_unit
-    category: functional
-    type: shell
-    cmd: "cd {brand}/frontend && npx vitest run src/features/{m}/"
-    must_pass: true
-    timeout_sec: 60
-
-  - id: e2e_happy
-    category: functional
-    type: playwright
-    cmd: "cd {brand}/frontend && E2E_BASE_URL=http://localhost:300X npx playwright test --project=smoke e2e/regression/{m}-{story}.spec.ts"
-    must_pass: true
-    timeout_sec: 180
-
-  # ─── VISUAL (responsive + visual fidelity Playwright + screenshots) ───
-  - id: visual_fidelity
-    category: visual
-    type: playwright
-    cmd: "cd {brand}/frontend && npx playwright test e2e/visual/{story}.spec.ts --update-snapshots=false"
-    capture: screenshots
-    must_pass: true
-    timeout_sec: 240
-
-  - id: responsive_breakpoints
-    category: visual
-    type: playwright
-    cmd: "cd {brand}/frontend && npx playwright test e2e/visual/{story}-responsive.spec.ts --project=mobile,tablet,desktop"
-    must_pass: true
-    timeout_sec: 240
-
-  # ─── AGENTIC EVAL (pass^k, rubrics, trajectory, cost/latency budgets) ───
-  # Solo si story toca {brand}/backend/src/modules/{brand}/{copilot,sales_agent}/ brand-extension surface
-  # (engine `core/luana-core-{copilot,sales-agent}/` requiere /pm-luana — NO se edita en story brand)
-  - id: agentic_pass_k
-    category: agentic_eval
-    type: shell
-    cmd: "cd {brand}/backend && ../../.venv/bin/python scripts/run_agent_evals.py --story={story-id} --personas=A,B,C"
-    rubrics: [voice-fidelity, goal-completion, tool-call-accuracy]
-    pass_k:
-      trials: 3
-      per_trial_threshold: 0.66
-      pass_k_threshold: 0.5
-    must_pass: true
-    timeout_sec: 600
-
-  - id: agentic_trajectory
-    category: agentic_eval
-    type: shell
-    cmd: "cd {brand}/backend && ../../.venv/bin/python scripts/run_trajectory_eval.py --expected={brand}/docs/specs/trajectories/{story-id}.yaml"
-    must_pass: true
-    timeout_sec: 300
-
-  - id: agentic_cost_budget
-    category: agentic_eval
-    type: shell
-    cmd: "cd {brand}/backend && ../../.venv/bin/python scripts/check_cost_budget.py --story={story-id}"
-    threshold: { cost_usd_max: 0.50, tokens_max: 6000, latency_p95_max: 8.0 }
-    must_pass: true
-    timeout_sec: 60
-
-  # ─── ARCHITECTURAL VALIDATION (★ v4.1 — separada de non_functional) ───
-  # Verificación arquitectónica explícita: DDD/FSD boundaries, anti-dup scan, tenant isolation grep, cross-module audit
-  - id: arch_ddd_boundaries
-    category: architectural_validation
-    type: pytest
-    cmd: "cd {brand}/backend && ../../.venv/bin/pytest tests/architecture/test_ddd_boundaries.py -v"
-    must_pass: true
-    timeout_sec: 30
-    description: "DDD layers domain→infra→app→api boundary enforcement"
-
-  - id: arch_tenant_isolation_grep
-    category: architectural_validation
-    type: shell
-    cmd: "! grep -rn 'select.*Model)' {brand}/backend/src/modules/{brand}/{m}/ | grep -v 'tenant_id' | grep -v test_"
-    must_pass: true
-    timeout_sec: 10
-    description: "Cada query debe filtrar tenant_id (regex scan + auditor doble check)"
-
-  - id: arch_anti_duplication_scan
-    category: architectural_validation
-    type: shell
-    cmd: "scripts/scan_cross_brand_mirror.sh {brand} {m}"
-    must_pass: true
-    timeout_sec: 30
-    description: "Detecta mirrors cross-brand del módulo. Match → spawn promotion proposal."
-
-  - id: arch_fsd_boundaries
-    category: architectural_validation
-    type: shell
-    cmd: "cd {brand}/frontend && npx vitest run src/__tests__/architecture/test_fsd_boundaries.test.ts"
-    must_pass: true
-    timeout_sec: 60
-    description: "FSD-Lite boundaries — feature → feature own/shared/lib only"
-
-scenario_coverage:
-  - scenario_id: happy
-    validators: [be_unit_create_endpoint, fe_unit, e2e_happy]
-  - scenario_id: negative
-    validators: [be_unit_create_endpoint, fe_unit]
-  - scenario_id: edge
-    validators: [be_unit_create_endpoint, e2e_edge_race]
-  - scenario_id: adversarial
-    validators: [be_unit_create_endpoint, e2e_adversarial]
-  - scenario_id: empty_state
-    validators: [fe_unit, e2e_empty_state]
-  - scenario_id: network_failure
-    validators: [fe_unit, e2e_network_failure]
-  - scenario_id: concurrent_users
-    validators: [be_unit_create_endpoint, e2e_concurrent]
-  - scenario_id: large_dataset
-    validators: [fe_unit, e2e_large_dataset]
-  - scenario_id: accessibility
-    validators: [a11y_axe]
-  - scenario_id: i18n
-    validators: [fe_unit_voseo_check, e2e_locale_AR_MX_CL]
-
-# ★ v4.1 cement 2026-05-19 — Test Construction Plan (mandatory para stories con surface funcional)
-test_construction_plan:
-  # Architect dicta el orden + estructura. Dev-team CONSTRUYE siguiendo este plan, no inventa.
-
-  playwright_required: true     # toda story funcional MUST tener Playwright behavior tests
-  base_path: "{brand}/frontend/e2e/regression/{story-id}/"
-
-  # Orden de creación (dependencias entre tests)
-  creation_order:
-    - step: 1
-      file: "{brand}/frontend/e2e/fixtures/{story-id}.fixture.ts"
-      content: "Fixtures compartidos — tenant setup, Clerk auth state, DB seed minimal"
-      depends_on: []
-    - step: 2
-      file: "{brand}/frontend/e2e/regression/{story-id}/poms/{m}-list-page.pom.ts"
-      content: "Page Object Model para lista {m}"
-      depends_on: [1]
-    - step: 3
-      file: "{brand}/frontend/e2e/regression/{story-id}/poms/{m}-detail-page.pom.ts"
-      content: "Page Object Model para detail {m}"
-      depends_on: [1]
-    - step: 4
-      file: "{brand}/frontend/e2e/regression/{story-id}/{m}-happy.spec.ts"
-      content: "Scenario happy — usa POMs"
-      depends_on: [2, 3]
-    - step: 5
-      file: "{brand}/frontend/e2e/regression/{story-id}/{m}-negative.spec.ts"
-      content: "Scenario negative — input inválido"
-      depends_on: [2, 3]
-    - step: 6
-      file: "{brand}/frontend/e2e/regression/{story-id}/{m}-edge.spec.ts"
-      content: "Scenarios edge (race, concurrent, empty, large, network failure)"
-      depends_on: [2, 3]
-    - step: 7
-      file: "{brand}/frontend/e2e/regression/{story-id}/{m}-adversarial.spec.ts"
-      content: "Scenarios adversarial (cross-tenant, XSS, prompt injection si aplica)"
-      depends_on: [2, 3]
-    - step: 8
-      file: "{brand}/frontend/e2e/a11y/{story-id}.spec.ts"
-      content: "Accessibility axe-core scan"
-      depends_on: [4]
-
-  # Mapping explícito scenario Gherkin (01-spec.md) → spec.ts file → assertions
-  scenario_to_test:
-    - gherkin_scenario: "Scenario 1 — happy-path"
-      test_file: "{brand}/frontend/e2e/regression/{story-id}/{m}-happy.spec.ts"
-      test_function: "test('user creates {entity} successfully'"
-      assertions:
-        - "expect(toast).toContainText('{entity} guardada')"
-        - "expect(page.url()).toContain('/detail/')"
-        - "DB check: SELECT * FROM {table} WHERE tenant_id={tid} AND ... returns 1 row"
-    - gherkin_scenario: "Scenario 2 — negative invalid input"
-      test_file: "{brand}/frontend/e2e/regression/{story-id}/{m}-negative.spec.ts"
-      test_function: "test('rejects empty required field'"
-      assertions:
-        - "expect(form errors).toContainText('Campo requerido')"
-        - "DB check: NO row inserted"
-    - gherkin_scenario: "Scenario 3 — edge concurrent"
-      test_file: "{brand}/frontend/e2e/regression/{story-id}/{m}-edge.spec.ts"
-      test_function: "test('handles concurrent create same slug'"
-      assertions:
-        - "expect(second request).toHaveStatus(409 or 422)"
-        - "DB check: only 1 row exists with that slug"
-    - gherkin_scenario: "Scenario 4 — adversarial cross-tenant"
-      test_file: "{brand}/frontend/e2e/regression/{story-id}/{m}-adversarial.spec.ts"
-      test_function: "test('rejects cross-tenant access'"
-      assertions:
-        - "expect(request as tenant B for tenant A resource).toHaveStatus(404 or 403)"
-        - "NO leak en error body"
-
-  # ★ Seam coverage (HB-95) — cada escenario de COSTURA → test del tipo que la ejerce de verdad
-  # (NO unit-mocked). Gate: scripts/check_seam_coverage.py. Ver template para el detalle de enums.
-  seam_coverage:
-    - { sc: "SC-happy-create", seam: code-db,         test_type: integration-realdb, target: "{brand}/backend/tests/modules/{brand}/{m}/test_{m}_create_realdb.py" }
-    - { sc: "SC-payload",      seam: fe-be,           test_type: contract,           target: "{brand}/backend/tests/modules/{brand}/{m}/test_{m}_contract.py" }
-    - { sc: "SC-response-dto", seam: router,          test_type: router,             target: "{brand}/backend/tests/modules/{brand}/{m}/test_{m}_router.py" }
-    - { sc: "SC-auth-write",   seam: auth,            test_type: live-verify,        target: "live (#37 dod_evidence)" }
-    - { sc: "SC-form-in-shell",seam: component-shell, test_type: e2e-live,           target: "{brand}/frontend/e2e/regression/{story-id}/{m}-happy.spec.ts" }
-
-  # POMs requeridos (Page Object Models) — qué métodos exponen
-  poms_required:
-    - file: "{m}-list-page.pom.ts"
-      methods:
-        - "goto()"
-        - "filterBy(criteria)"
-        - "clickCreateButton()"
-        - "getRowCount() → number"
-        - "getRowByName(name)"
-    - file: "{m}-detail-page.pom.ts"
-      methods:
-        - "goto(id)"
-        - "fillForm(data)"
-        - "submit()"
-        - "getErrorMessage() → string|null"
-
-  # Fixtures compartidos requeridos
-  fixtures_required:
-    - name: "authedAs(role: 'admin' | 'user')"
-      content: "Clerk storage state + tenant setup"
-    - name: "dbSeed({m}: count)"
-      content: "Insert N rows in {table} para el tenant del test"
-    - name: "networkFailure(endpoint)"
-      content: "Mock route con 500/503 para simular network failure"
-
-iteration:
-  max_iterations: 10
-  on_fail: "fix targeted file based on test output, re-run failing validator only"
-  on_all_pass: "set state=developing→developed, append iteration_log to T-{n}-impl-log.md"
-  on_cap_reached: "set state=developing→blocked, escalate to Chris with last error trace"
+# Esqueleto (forma) — el TEMPLATE COMPLETO (SSoT) vive en docs/specs/templates/04-validators-template.yaml.
+# Leelo + expandilo. NO copiar verbatim acá (DRY · single-source-of-truth · HB-24).
+story_id: STORY_ID
+brand: BRAND_SLUG            # vitalia | nicolify | comunify | lupulo
+schema_version: v4.1
+verification:                # Critical Rule #37 — nature + technical_gates.mutation + dev_app_verified + playwright_visual_scope + business_rules
+validators:                  # 5 categorías: non_functional / functional / visual / agentic_eval / architectural_validation (cada uno must_pass:true + cmd shell)
+scenario_coverage:           # cada scenario del 01-spec.md → N validators
+test_construction_plan:      # creation_order + scenario_to_test + seam_coverage (HB-95) + poms_required + fixtures_required
+iteration:                   # max_iterations + on_fail + on_all_pass + on_cap_reached
 ```
+
+Template completo (SSoT) en `docs/specs/templates/04-validators-template.yaml` — leelo + expandí cada key. Incluye los enums de `seam_coverage` (code-db/fe-be/router/auth/component-shell → integration-realdb/contract/router/e2e-live/live-verify) + el bloque `verification.technical_gates.mutation` (enabled/mode/surfaces · proceso v5 §5.6).
 
 **Validation gate v4.1:** Every scenario in `01-spec.md` MUST appear en `scenario_coverage` AND `test_construction_plan.scenario_to_test`. If any uncovered → architect itera hasta cubrirlos. **Sub-categorías scenarios obligatorias (v4.1 /po-ux refused refined sin ellas):** race conditions, concurrent users, network failures, empty states, large datasets, accessibility, i18n. Si /po-ux ratificó refined SIN estas sub-categorías → flag para Chris (spec quality gap).
 
@@ -533,106 +284,20 @@ Patterns concretos que Sonnet debe seguir/evitar. SIN AMBIGÜEDAD.
 Template:
 
 ```markdown
-# 05-guidelines.md — Story {id}
-
-## Patterns required
-- SQLAlchemy 2.0 `select(Model).where(...)` — NO `session.query()`
-- All DB queries filter `tenant_id` (incluye `get_by_id`)
-- Soft deletes only (`deleted_at`)
-- Pydantic v2 `model_config = ConfigDict(...)` — NO inner `class Config`
-- `structlog` logging — NO `print` / `logging`
-- Migrations idempotentes (`IF NOT EXISTS` / `IF EXISTS`)
-- FastAPI endpoints `response_model=` mandatory (PII allowlist)
-- Use `datetime` fields with `timezone=True`
-- Use `utc_now()` from `shared/domain/datetime_utils.py` (no `datetime.utcnow()`)
-- React Server Components default; `"use client"` solo cuando necesario
-- React Query (TanStack) para data fetching
-- RHF + Zod para forms
-- Tailwind utility classes con tokens semánticos (no hex literals)
-- Spanish neutro LatAm en TODA UI string (no voseo, no léxico regional)
-
+# Esqueleto (forma) — el TEMPLATE COMPLETO (SSoT) vive en docs/specs/templates/05-guidelines-template.md.
+# Leelo + expandilo. NO copiar verbatim acá (DRY · HB-24).
+---
+story_id / brand / arch_version            # frontmatter
+---
+## must_load_skills (★ v4.1 enforceable — builder reporta "Skills consulted" en T-{n}-result.md)
+## reference_artifacts                      # 01-spec / 03-arch / 04-validators / 06-tickets
+## Patterns required                        # ### Backend · ### Frontend · ### Agentic
 ## Patterns forbidden
-- `datetime.utcnow()` — use `utc_now()`
-- Hardcoded `'USD'` en monetary fields — use `tenant.currency`
-- Cross-module imports (excepto `copilot`)
-- `session.query()` (SA 1.x)
-- `sa.Enum()` en `op.create_table()` (broken SA 2.0.27)
-- `op.create_table()` / `add_column()` / `create_index()` no idempotente
-- `// eslint-disable` sin justification comment
-- `any` en TypeScript (use `unknown` + type guards)
-- Default exports (excepto Next.js pages)
-- Hex colors hardcoded en components/styles
-
-## Files in scope (Sonnet edits ONLY these — todos brand-scoped bajo {brand}/)
-- {brand}/backend/src/modules/{brand}/{m}/api/routes.py
-- {brand}/backend/src/modules/{brand}/{m}/application/services/...
-- {brand}/backend/src/modules/{brand}/{m}/domain/...
-- {brand}/backend/src/modules/{brand}/{m}/infrastructure/...
-- {brand}/backend/alembic/versions/{timestamp}_{slug}.py (NEW migration brand-scoped)
-- {brand}/backend/tests/modules/{brand}/{m}/test_{name}.py
-- {brand}/frontend/src/features/{m}/...
-- {brand}/frontend/src/app/{m}/page.tsx
-- {brand}/frontend/e2e/regression/{m}-{story}.spec.ts
-
-## Files Sonnet NEVER touches (escalate to Chris / /pm-luana)
-- core/luana-core-*/src/luana_core_*/** (engine — requires lift via /pm-luana promotion gate; NUNCA en story brand-específica)
-- {brand}/backend/src/modules/{brand}/{copilot,sales_agent}/** runtime (agentic — solo via builder-agentic (tier flagship); brand-extension surface OK con R23 check)
-- {other_brand}/** (cross-brand edit — escalate /pm-luana outcome platform)
-- {brand}/backend/src/core/config.py (default flag flips require R31 anti-default-flip-audit)
-- {brand}/frontend/src/components/ui/** (Shadcn primitives per-brand — extend via wrappers, no edit; cross-brand reuse = promotion candidate /pm-luana)
-- {brand}/frontend/src/lib/api/fetchClient.ts (cross-cutting per-brand — escalate)
-- .claude/** y {brand}/.claude/** (skill/rule edits — manual only)
-
-## must_load_skills (★ v4.1 enforceable — builder MUST cargar todas + reportar "Skills consulted" en T-{n}-result.md)
-required:
-  # Skills core obligatorios por surface
-  - id: backend-expert
-    when: "surface=BE o BE-test"
-    purpose: "DDD patterns, arch fitness, currency, master-data, currency-handling"
-  - id: frontend-expert
-    when: "surface=FE"
-    purpose: "FSD-Lite, Shadcn reuse, form-runtime, tailwind tokens"
-  - id: "{domain}-expert"
-    when: "module touched (brand-expert / offer-expert / metrics-expert / copilot-expert / sales-agent-expert)"
-    purpose: "Domain invariants + reference docs por módulo"
-  - id: playwright-expert
-    when: "test_construction_plan.playwright_required=true"
-    purpose: "POM patterns, Clerk auth fixture, network mocking, smoke debugging"
-
-  # Rules obligatorias siempre
-  - id: ".claude/rules/tenant-isolation.md"
-    purpose: "Every query filter tenant_id"
-  - id: ".claude/rules/backend-ddd.md o frontend-fsd.md"
-    purpose: "Layer boundaries"
-  - id: ".claude/rules/spanish-text.md"
-    purpose: "Voseo glosario + magic comment escape"
-  - id: ".claude/rules/anti-duplication.md"
-    purpose: "Cross-brand mirror ban + shared abstractions inventory"
-  - id: ".claude/rules/tdd-mandatory.md"
-    purpose: "TDD RED→GREEN→REFACTOR discipline"
-  - id: ".claude/rules/auditor-self-fix-policy.md"
-    purpose: "Conocer qué findings auditor self-fix vs spawn dev-team (forward motion)"
-
-  # Canonical docs / patterns si aplica
-  - id: "FastAPI canonical patterns"
-    when: "BE endpoint nuevo"
-  - id: "pytest async testing patterns"
-    when: "BE tests nuevos"
-  - id: "React patterns baseline + Shadcn UI conventions + Tailwind conventions"
-    when: "FE component nuevo"
-  - id: "Zod validation"
-    when: "FE form con validation"
-  - id: "Vitest conventions"
-    when: "FE tests nuevos"
-  - id: "LangGraph canonical docs + claude-api"
-    when: "AGENTIC surface"
-
-reference_artifacts:
-  # Documentos del ready package que builder re-lee mid-build cuando surge ambigüedad
-  - "{brand}/docs/product/stories/{story-id}/01-spec.md" (re-read Gherkin scenarios)
-  - "{brand}/docs/product/stories/{story-id}/03-arch.md" (re-read decisiones técnicas)
-  - "{brand}/docs/product/stories/{story-id}/04-validators.yaml § test_construction_plan" (re-read orden + POMs + fixtures)
+## Files in scope                           # Sonnet edita SOLO estos, brand-scoped
+## Files Builder NEVER touches              # engine / copilot+sales_agent runtime / other_brand / config flags / ui primitives / .claude
 ```
+
+Template completo (SSoT) en `docs/specs/templates/05-guidelines-template.md` — leelo + expandí. Trae `must_load_skills` con `chrome-devtools-verify` (DoD #37) + `git-safety.md`, los patterns split por surface (BE/FE/AGENTIC), y la lista NEVER-touches completa.
 
 ### Step 7 — Producir 06-tickets.yaml
 
