@@ -17,7 +17,7 @@ Sin `architecture_pattern: ADR-nicolify-001` en el frontmatter de `01-spec.md` �
 ## Gates (de ADR-nicolify-001)
 
 - **G0 — 9 secciones**: routing route-group · FSD-Lite · client root · React Query+Zustand · RHF+Zod · DDD Inside-Out (SIN PhiRepositoryBase · CON guardrails `agent-revenue-engine.md` + tier gating) · migrations idempotent · telemetría `nicolify_growth_studio_event` · tests 4 capas.
-- **G1 — Mockup-per-component** (ADR-vitalia-003): componente shell nuevo → mockup HTML ratificado por Chris (`ratified_visual_by_chris: true`) ANTES de `refining→refined`. Wrapper portado verbatim de Vitalia re-temizado.
+- **G1 — Storybook-first** (canon §5 · SUPERSEDES el viejo mockup-per-component, cement 2026-06-22): el diseño/build parte de **Storybook** (`@luana/ui-kit` = SSoT visual); componente net-new se PROPONE + PROMUEVE al kit + story (vía `/pm-luana`). Ver `.claude/rules/frontend-visual-fidelity.md § Storybook` + `shell-mockup-per-component.md` (reescrita Storybook-first).
 - **G2 — SSR-safe store** (ADR-vitalia-006): `persist` → factory `createSsrSafePersistedStore` + `useStoreHydration` en chunk `dynamic({ssr:false})`. Skeleton store-free.
 - **G3 — Tailwind JIT-safe**: NUNCA template literals en class strings (usar `_agent-tw-classes.ts`).
 
@@ -31,7 +31,7 @@ Sin `architecture_pattern: ADR-nicolify-001` en el frontmatter de `01-spec.md` �
 
 - `/architect` arranca sin verificar la cita del ADR.
 - Shadcn `Tabs` internas para agrupar 3+ vistas de una hoja → usar N3-static (SubSubTabsBar).
-- Reinventar el wrapper del shell simplificado en vez de portarlo verbatim de Vitalia.
+- Reinventar el wrapper del shell simplificado en vez de partir de las stories `Shell/*` de Storybook (`@luana/ui-kit`, canon §5).
 - `persist` raw (sin factory SSR-safe).
 - Repo con dual-filter clínico / `PhiRepositoryBase` (eso es Vitalia · Nicolify usa tenant-isolation raíz + guardrails agénticos).
 - Telemetría en `copilot_trace_event` engine en vez de `nicolify_growth_studio_event`.

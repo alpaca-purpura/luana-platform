@@ -1,11 +1,16 @@
 ---
 id: ADR-vitalia-003
-title: Protocolo mockup-per-component como gate bloqueante pre-/architect (shell-organism)
-status: Accepted
+title: Protocolo mockup-per-component como gate bloqueante pre-/architect (shell-organism) [SUPERSEDED]
+status: Superseded
 date: 2026-05-22
+superseded_date: 2026-06-23
 deciders: [/po-ux, /pm-vitalia, Chris]
 brand: vitalia
 supersedes: []
+superseded_by:
+  - docs/architecture/luana-platform/design-system-canon.md            # §5 Storybook = SSoT visual
+  - docs/architecture/luana-platform/ADR-014-design-system-homologation.md
+  - .claude/rules/frontend-visual-fidelity.md                          # § Storybook (doctrina binding)
 references:
   - vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md
   - vitalia/docs/architecture/ADR-vitalia-001-shared-vs-fork.md
@@ -16,6 +21,8 @@ references:
 ---
 
 # ADR-vitalia-003 — Protocolo mockup-per-component como gate bloqueante pre-/architect
+
+> **★ SUPERSEDED 2026-06-22 (vitalia alineado 2026-06-23 · HB-104).** El modelo de esta ADR — mockup HTML por-componente compuesto de `_shared.css` + wrapper portado verbatim de `dual-mode-shell.html` + ratificación `ratified_visual_by_chris` + visual-golden-side-by-side-vs-mockup — quedó **MUERTO**. El SSoT visual de TODAS las marcas es **Storybook** (`core/@luana/ui-kit`, canon §5): "lo que ves en Storybook = lo que se programa". Se conserva como **registro histórico del por qué** del viejo modelo; **NO es un gate activo**. Doctrina vigente: `.claude/rules/frontend-visual-fidelity.md § Storybook` + `docs/architecture/luana-platform/design-system-canon.md §5`. Enforcement vigente: `vitalia/.claude/rules/shell-mockup-per-component.md` (reescrita Storybook-first). El valor durable que sobrevive: *partir de una base canónica reusable, no maquetar a ojo* — pero esa base ahora es Storybook, no `_shared.css`. La firma de Chris (`mockup_final_signed`, po-ux RONDA 2) sigue viva, ahora sobre el mockup **compuesto de Storybook** (no el `ratified_visual_by_chris` de mockups HTML por-componente).
 
 ## Contexto
 
@@ -124,3 +131,4 @@ Pattern documentado como `promotable: candidate` en `vitalia/docs/learnings/2026
 | Versión | Fecha | Cambio |
 |---|---|---|
 | 1.0 | 2026-05-22 | Decisión inicial. Ratificada por Chris durante refining loop F1-S0 (sesión `/po-ux` batch 3 conclusion). |
+| 1.1 | 2026-06-23 | **SUPERSEDED** por Storybook-first (canon §5, cement 2026-06-22). HB-104: doctrina design-system de vitalia alineada al canon cross-brand (paridad con nicolify HB-103). El modelo `_shared.css`/mockup-HTML/`ratified_visual_by_chris` queda como registro histórico; el SSoT visual pasa a Storybook (`@luana/ui-kit`). Enforcement vigente en `vitalia/.claude/rules/shell-mockup-per-component.md` (reescrita). |

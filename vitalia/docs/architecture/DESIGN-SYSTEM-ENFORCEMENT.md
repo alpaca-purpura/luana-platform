@@ -1,6 +1,8 @@
-# Design System Enforcement — Patrones canónicos vitalia (post-showcase)
+# Design System Enforcement — Patrones canónicos vitalia (Storybook-first)
 
-> **Fecha:** 2026-06-11. **Basado en:** `vitalia-ds-showcase` (state: done). **Aplica a:** todas las historias UI vitalia (refining / idea). **Enforcement:** pre-commit lint + `/po-ux` gate refining→refined + `/auditor` cat 9 (visual fidelity).
+> **Fecha:** 2026-06-11 · **Storybook-first 2026-06-23 (HB-104).** **Basado en:** el canon cross-brand (`docs/architecture/luana-platform/design-system-canon.md §5`). **Aplica a:** todas las historias UI vitalia (refining / idea). **Enforcement:** pre-commit lint (`no-arbitrary`) + `/po-ux` gate refining→refined + `/auditor` cat 9 (visual fidelity).
+>
+> **★ SSoT visual = Storybook** (`core/@luana/ui-kit`): el diseño/build **parte de las stories de Storybook**, no de un mockup HTML maquetado a ojo. El viejo modelo `_shared.css` + `dual-mode-shell.html` portado verbatim + golden-vs-mockup quedó **MUERTO** (canon §5 · `vitalia/.claude/rules/shell-mockup-per-component.md` reescrita). Esta checklist (N3 / EntityInfoCard / page-primitives / tokens / átomos) sigue vigente — solo cambia que la **base visual es Storybook**.
 
 ## ★ Checklist obligatorio POR STORY UI
 
@@ -60,13 +62,14 @@ Toda story tipo `ui-story` que refine en vitalia MUST completar este checklist A
 - [ ] CERO arbitraries en color/radius/spacing/font-size (ruff lint bloquea)
 - [ ] Agent-color policy: acción primaria adopta `--agent-active` del contexto
 
-### § Mockup (ADR-003 vitalia — si es sub-tab shell)
+### § Mockup compuesto de Storybook (si es sub-tab shell · canon §5 · ex ADR-003 SUPERSEDED)
 
-- [ ] Mockup ratificado Chris (`checkpoint.mockup_final_signed: true`)
-- [ ] Mockup DENTRO del shell real (Ribbon + SubTabs + hoja)
-- [ ] Shell wrapper portado verbatim de `vitalia/docs/product/stories/vitalia-shell-organism/mockups/dual-mode-shell.html`
-- [ ] Tokens inlineados VERBATIM de `globals.css` (NO copia)
+- [ ] Mockup **compuesto de las stories de Storybook** (`@luana/ui-kit` · `Shell/*` para el wrapper), NO maquetado a ojo ni con `_shared.css`
+- [ ] Mockup ratificado por Chris (`checkpoint.mockup_final_signed: true`) — la firma sigue viva, ahora sobre el mockup Storybook-composed
+- [ ] Mockup DENTRO del shell real (Ribbon + SubTabs + hoja), partiendo de las stories `Shell/*`
+- [ ] Tokens vía clases Tailwind mapeadas a `globals.css` (NO copiar `_shared.css`)
 - [ ] Dark mode soportado (splitter 3 estados: collapsed/narrow/50-50)
+- [ ] Net-new shared → PROPONE + PROMUEVE a `@luana/ui-kit` + story (no local que driftea)
 - [ ] Datos LatAm realistas (no Lorem ipsum)
 - [ ] Spanish neutro LatAm (no voseo)
 
@@ -115,7 +118,7 @@ Toda story tipo `ui-story` que refine en vitalia MUST completar este checklist A
 ### `/auditor` cat 9 (visual fidelity)
 
 **FAIL si:**
-- [ ] Mockup final diverge del build real (golden snapshot mismatch > 0.1%)
+- [ ] Build se compuso a mano / con CSS inventado en vez de partir de la story de Storybook citada (canon §5), o primitiva shared net-new dejada local sin promover a `@luana/ui-kit`
 - [ ] Componentes NO en canónico (audit jscpd + cross-check @luana/ui-kit)
 - [ ] Tokens driftean del showcase (spot-check 3 random colores/radius)
 
@@ -126,7 +129,7 @@ Toda story tipo `ui-story` que refine en vitalia MUST completar este checklist A
 1. **Copia esta checklist a `{story-id}/checklist-ENFORCE.md`**
 2. **Before `/po-ux` refina,** punto 1 di a Chris:
    > "Esta historia seguirá el patrón vitalia-ds-showcase (N3 si lista/detalle · Autosave 600ms+coalesce si form · EntityInfoCard B si cajas · page-primitives siempre · átomos @luana/ui-kit · tokens globals.css derivados). ¿OK?"
-3. **Mockup MUST render `dual-mode-shell.html` wrapper** (shell verbatim, no reinventar)
+3. **Mockup MUST partir de las stories `Shell/*` de Storybook** (`@luana/ui-kit` — el wrapper real, no reinventar ni portar `dual-mode-shell.html`)
 4. **Scenario debe ejercer writes REALES** (live-verify: no GET 200 suficiente)
 
 ## ★ Template per tipo
@@ -161,9 +164,9 @@ Pagination: lazy-load si >100 items
 | Page scaffold | `PageContainer`, `PageHeader`, `Section` | `@luana/ui-kit` |
 | Átomos | 21 componentes Shadcn | `@luana/ui-kit/src/components/ui/` |
 | Tokens | CSS vars | vitalia `app/globals.css` líneas 30-67 |
-| Shell wrapper | `dual-mode-shell.html` | vitalia `docs/product/stories/vitalia-shell-organism/mockups/` |
-| Mockup patrón | ADR-003 | `vitalia/.claude/rules/shell-mockup-per-component.md` |
-| Design system showcase | story done | `vitalia/docs/product/stories/vitalia-ds-showcase/` |
+| Shell wrapper | stories `Shell/*` de Storybook | `core/@luana/ui-kit` (`build-storybook` / `:6007`) |
+| Design system (Storybook-first) | `shell-mockup-per-component.md` (reescrita) + canon §5 | `vitalia/.claude/rules/` + `docs/architecture/luana-platform/design-system-canon.md` |
+| SSoT visual | Storybook (componente REAL) | `core/@luana/ui-kit/.storybook` (82 stories) |
 
 ## ★ Penalización (anti-pattern recurrente)
 
@@ -171,7 +174,7 @@ Pagination: lazy-load si >100 items
 |---|---|
 | Inventar componente nuevo | `/architect` REFUSE ready + refactor spec |
 | Hardcodear tokens (hex/px/rem) | ruff lint FAIL pre-commit |
-| Mockup sin shell wrapper | `/po-ux` REFUSE refining→refined |
+| Mockup no parte de Storybook (maquetado a ojo / `_shared.css`) | `/po-ux` REFUSE refining→refined |
 | N3 cableado propio | `/auditor` FAIL visual fidelity + refactor fixture |
 | Scenario sin write real | `/auditor` FAIL verification (GET 200 ≠ verificado) |
 

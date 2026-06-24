@@ -1,71 +1,62 @@
-# Nicolify — Mockup-Base Protocol (cero alucinación UI)
+# Nicolify — Design System (Storybook-first · ex Mockup-Base Protocol)
 
-**Overlay:** extiende `.claude/rules/` raíz (refuerza `frontend-visual-fidelity.md` + `frontend-fsd.md`).
-**Brand:** nicolify · **Cement-date:** 2026-06-15 · **SSoT:** `nicolify/docs/architecture/ADR-nicolify-003-mockup-base-protocol.md`.
-**Mirror de:** `vitalia/.claude/rules/shell-mockup-per-component.md` (adaptado: sin PHI · guardrails agénticos).
+**Overlay:** extiende `.claude/rules/` raíz (refuerza `frontend-visual-fidelity.md § Storybook` + `frontend-fsd.md`).
+**Brand:** nicolify · **SSoT visual:** **Storybook** (`core/@luana/ui-kit`, canon §5).
+**Cement-date:** 2026-06-15 (mockup-base original) → **Storybook-first 2026-06-22 (canon)**, **nicolify alineado 2026-06-23 · HB-103**.
+**Doctrina binding:** `.claude/rules/frontend-visual-fidelity.md § Storybook` + `docs/architecture/luana-platform/design-system-canon.md §5`.
 
-## Regla cardinal
+> **★ SUPERSEDED — el modelo `_shared.css` / mockup-HTML per-componente quedó MUERTO (canon §5, cement 2026-06-22).** El SSoT visual de nicolify (como de TODAS las marcas) es **Storybook** (`core/@luana/ui-kit`): "lo que ves en Storybook = lo que se programa". El antiguo protocolo (todo mockup linkea `_shared.css` + wrapper verbatim de `shell.html`) ya **NO es un gate activo**. El nombre del archivo (`shell-mockup-per-component`) es legacy; su contenido vigente es Storybook-first.
 
-Todo mockup HTML de nicolify se **compone de la base canónica reusable**, obligatoriamente:
+## Regla cardinal (Storybook-first)
 
-1. **`<link rel="stylesheet" href="_shared.css">`** — la base (tokens espejo de `globals.css` + átomos + moléculas + layout-primitives + shell wrapper). SSoT: `nicolify/docs/product/stories/nicolify-r0-design-system-adoption/mockups/_shared.css`. El mockup SOLO escribe su `.panel-content`. **Cero estilo inline de layout, cero arbitrary-value.**
-2. **Shell wrapper VERBATIM** — Luana sidebar + Ribbon N1 + SubTabs N2 + EntitySubNavBar N3 viven en `_shared.css`, portados verbatim de `nicolify-r0-shell-organism/mockups/shell.html`. **Prohibido reinventarlos.** Solo cambia `.panel-content`.
-3. **Visual golden** — `01-spec.md § Visual Goldens` mapea `mockup HTML → golden → componente React (@luana/ui-kit/feature) → canon ref`. `/dev-team` genera Playwright side-by-side (`maxDiffPixelRatio: 0.001`). Ratchet shrink-only.
+El diseño y el build de toda hoja user-reachable de nicolify **parten del set de Storybook** (`@luana/ui-kit`), no de un mockup HTML hecho a ojo. El bucle (canon §5 · 3 pasos):
 
-Sin (1)+(2)+ratificación (`mockup_final_signed: true`) → `/architect` REFUSE arrancar.
+1. **Partir de Storybook** — el componente REAL vive en `@luana/ui-kit`. Se consume como HTML renderizado (`storybook-static/` vía `pnpm --filter @luana/ui-kit build-storybook`, o dev `:6007`, o `…/iframe.html?id=<story>&viewMode=story`) → misma base que el build. **NO inventar CSS, NO copiar `_shared.css`, NO maquetar a ojo.**
+2. **No limitarse** — si falta una pieza o hay algo genuinamente mejor, se **PROPONE** (Storybook es el piso, no el techo).
+3. **Promover de vuelta** — lo que se usa y prueba bien se **PROMUEVE a `@luana/ui-kit` + su story** (vía `core-ds-*` / promotion gate `/pm-luana`). Una pieza net-new que queda local en `features/{agent}/` sin promover = **deuda** (la caza el auditor).
+
+`/architect` no arranca un ticket FE sin que `03-arch.md § FE` cite la(s) story(s) de Storybook a usar; net-new se marca `PROMOTE` (deliverable = crear el componente en `@luana/ui-kit` + story antes del merge).
 
 ## Scope
 
-**Aplica** (gate bloqueante): toda story con UI nueva (sub-tab `abel-*`/`brenda-*`/`christian-*`/`sara-*`/`norvil-*`/`config-*`, componente del shell).
-**NO aplica:** service-only · agentic-conversacional pura (`/ux-agentico`) · componentes atómicos aislados sin shell · las stories origen (`nicolify-r0-shell-organism`, `nicolify-r0-design-system-adoption`).
+**Aplica:** toda story con UI nueva (sub-tab `abel-*`/`brenda-*`/`christian-*`/`sara-*`/`norvil-*`/`config-*`, componente del shell).
+**NO aplica:** service-only · agentic-conversacional pura (`/ux-agentico`) · componentes atómicos ya en el kit.
 
-## Constraints
+## Constraints (composición del canon)
 
-- Tokens del `_shared.css` = espejo HSL de `nicolify/frontend/src/app/globals.css` (NUNCA inventar). Identidad de marca (#635BFF + agent colors + League Spartan/Bree Serif) verificada vs nicolify.com.
+- **Tokens:** clases Tailwind mapeadas a `nicolify/frontend/src/app/globals.css` (identidad `#635BFF` + agent colors + League Spartan/Bree Serif vs nicolify.com). **Cero hex/px nuevo, cero arbitrary-value** (canon §0).
+- **Átomos/moléculas/primitivas:** consumir de `@luana/ui-kit` (canon §6) — NUNCA reinventar (`frontend-visual-fidelity.md` D1).
+- **List/detail:** `EntityWorkspaceLayout` (canon §2.1-2.2) · franjas N3 **full-bleed** (NUNCA card redondeada) · `Select` canónico (NUNCA `<select>` nativo, canon §2.5).
+- **Guardrails agénticos (vs PHI de vitalia):** superficie que un agente opera (Brenda kill-switch, Christian outbound) muestra el **audit/consentimiento** en la hoja (`agent-revenue-engine.md`). Sin PHI.
 - Datos LatAm B2B realistas (no Lorem ipsum). Spanish neutro (tuteo, sin voseo).
-- Átomos/moléculas/primitivas = clases que reflejan `@luana/ui-kit` + `design-system-canon.md §6`. NO inventar primitivas (`frontend-visual-fidelity.md` D1).
-- Superficie que un agente opera → mostrar audit/consentimiento en la hoja (guardrails agénticos `agent-revenue-engine.md`). Sin PHI.
 
-## Servidor local
+## Verificación visual (ex visual golden)
 
-```bash
-WS=$(git rev-parse --show-toplevel)
-cd ${WS}/nicolify/docs/product/stories/{story-id}/mockups && python3 -m http.server 8888
-# Chris abre http://localhost:8888/{mockup}.html · itera con /po-ux hasta ratificar
-```
-
-## Ratificación (checkpoint.md)
-
-```yaml
-ratified_visual_by_chris: true
-mockup_final_signed: true
-ratified_visual_mockups: [nicolify/docs/product/stories/{id}/mockups/{mockup}.html]
-```
+`01-spec.md § Visual Goldens` mapea `story de Storybook → componente React (@luana/ui-kit o feature) → canon ref`. `/dev-team` verifica **composición** contra la story de Storybook (no contra un mockup HTML). Net-new sin promover al kit + story = CHANGES_REQUESTED.
 
 ## Anti-patterns
 
-- ❌ Mockup con `<style>` de layout inline en vez de `<link _shared.css>` (caso origen: `ds-base.html` v1)
-- ❌ Reinventar el shell wrapper simplificado en vez de portarlo verbatim de `shell.html`
-- ❌ Tokens HSL inventados/divergentes de `globals.css`
-- ❌ `/architect` arranca sin `mockup_final_signed: true` + `_shared.css` linkeado
-- ❌ `/po-ux` transition refining→refined sin mockup compuesto de la base
-- ❌ Arbitrary-value o `<div>` de layout a mano en el mockup (rompe "lo que veo = lo que programo")
+- ❌ Diseñar/maquetar UI sin partir de Storybook — inventar CSS, copiar `_shared.css` o el mockup-kit (mecanismos MUERTOS, canon §5)
+- ❌ Pieza shared net-new que queda local en `features/{agent}/components/` sin promover a `@luana/ui-kit` + story (drift garantizado · futuras historias no la reusan)
+- ❌ Reinventar un átomo/primitiva que ya vive en `@luana/ui-kit`
+- ❌ `<select>` nativo · arbitrary-value · `<div>` de layout donde hay page-primitive · franja N3 en card redondeada (canon §2.5/§0/§2.7/§2.2)
+- ❌ `/architect` que NO cita la story de Storybook a usar (builder improvisa sin saber qué lego)
 
 ## Enforcement layers
 
 | Layer | Mecanismo |
 |---|---|
-| `/po-ux` Step 5 | verifica `<link _shared.css>` + wrapper verbatim + `mockup_final_signed` |
-| `/architect` REFUSE | gate pre-arch: sin base+ratificación no arranca |
-| `/dev-team` | genera visual golden mockup↔React (`maxDiffPixelRatio: 0.001`) |
-| `/auditor` | score fidelidad (D1 mecánico: lint no-arbitrary + arch-test no-div-layout) |
+| `/po-ux` | parte de Storybook para componer la hoja + cita `design-system-canon.md §5`; pieza que falta/mejor → la **PROPONE** (con plan de promoción) |
+| `/architect` | `03-arch.md § FE` cita la story de Storybook (+ link); net-new = `PROMOTE` deliverable + `04-validators` gates mecánicos (eslint no-arbitrary + arch-test no-div-layout) |
+| `/dev-team` | construye **desde la story citada** (`@luana/ui-kit` = único lego); net-new se PROMUEVE al kit + story |
+| `/auditor` | verifica **composición** vs Storybook + que el net-new se promovió al kit con story (no quedó local) → si no, CHANGES_REQUESTED |
 
 ## Referencias
 
-- `nicolify/docs/architecture/ADR-nicolify-003-mockup-base-protocol.md` — SSoT (el por qué)
-- `nicolify/docs/architecture/SHELL-DESIGN-CONTRACT.md` — átomos/moléculas/shell + props
-- `nicolify/docs/product/stories/nicolify-r0-design-system-adoption/mockups/_shared.css` — la base
-- `nicolify/docs/product/stories/nicolify-r0-shell-organism/mockups/shell.html` — wrapper SSoT
-- `docs/architecture/luana-platform/design-system-canon.md` — contratos cross-brand
-- `vitalia/.claude/rules/shell-mockup-per-component.md` — el mirror origen
-- `nicolify/.claude/rules/shell-feature-architecture.md` — ADR-nicolify-001 (build pattern, complementario)
+- `.claude/rules/frontend-visual-fidelity.md § Storybook` — ★ **doctrina binding** (D1 = partir de Storybook + promover)
+- `docs/architecture/luana-platform/design-system-canon.md §5` — el bucle de los 5 actores
+- `docs/architecture/luana-platform/ADR-014-design-system-homologation.md` — homologación cross-brand
+- `.claude/skills/nicolify-design-system/SKILL.md` — índice cargable del DS de nicolify (Storybook-first)
+- `nicolify/docs/architecture/ADR-nicolify-003-mockup-base-protocol.md` — **SUPERSEDED** (registro histórico del por qué del viejo modelo `_shared.css`)
+- `nicolify/.claude/rules/shell-feature-architecture.md` — ADR-nicolify-001 (patrón de build, complementario)
+- `vitalia/.claude/skills/vitalia-design-system/SKILL.md` §4/§6 — análogo aligned (espejo cross-brand)

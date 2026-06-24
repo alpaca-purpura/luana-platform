@@ -1,142 +1,65 @@
-# Vitalia — Shell Mockup-per-Component Protocol
+# Vitalia — Design System (Storybook-first · ex Shell Mockup-per-Component Protocol)
 
-**Overlay:** extiende `.claude/rules/` raíz Luana platform (refuerza `frontend-fsd.md` + paradigm v4 § Conv 1 DISCOVERY workflow).
+**Overlay:** extiende `.claude/rules/` raíz Luana platform (refuerza `frontend-visual-fidelity.md § Storybook` + `frontend-fsd.md`).
 **Brand:** vitalia (Salud + Bienestar — shell-organism agéntico)
-**Scope:** stories Vitalia Fase 1+2 que construyen componentes UI shell-organism.
-**Cement-date:** 2026-05-22.
-**SSoT:** `vitalia/docs/architecture/ADR-vitalia-003-shell-mockup-per-component-protocol.md`.
+**SSoT visual:** **Storybook** (`core/@luana/ui-kit`, canon §5).
+**Cement-date:** 2026-05-22 (mockup-per-component original) → **Storybook-first 2026-06-22 (canon)**, **vitalia alineado 2026-06-23 · HB-104**.
+**Doctrina binding:** `.claude/rules/frontend-visual-fidelity.md § Storybook` + `docs/architecture/luana-platform/design-system-canon.md §5`.
 
-## Regla cardinal
+> **★ SUPERSEDED — el modelo mockup-HTML per-componente (`_shared.css` + wrapper portado verbatim de `dual-mode-shell.html` + `ratified_visual_by_chris` + visual-golden-vs-mockup) quedó MUERTO (canon §5, cement 2026-06-22).** El SSoT visual de vitalia (como de TODAS las marcas) es **Storybook** (`core/@luana/ui-kit`): "lo que ves en Storybook = lo que se programa". El antiguo protocolo (ADR-vitalia-003) ya **NO es un gate activo**. El nombre del archivo (`shell-mockup-per-component`) es legacy; su contenido vigente es Storybook-first.
 
-Toda story Vitalia que construye componente UI nuevo bajo `vitalia/frontend/src/components/{ui,shared/shell-organism}/` o `vitalia/frontend/src/features/{agent}/components/` MUST producir mockup HTML por-componente en `vitalia/docs/product/stories/{story-id}/mockups/{component}.html` ratificado por Chris ANTES de transition `refining → refined`.
+## Regla cardinal (Storybook-first)
 
-Sin esta ratificación visual: `/architect` REFUSE arrancar.
+El diseño y el build de toda hoja user-reachable de vitalia **parten del set de Storybook** (`@luana/ui-kit`), no de un mockup HTML maquetado a ojo. El bucle (canon §5 · 3 pasos):
+
+1. **Partir de Storybook** — el componente REAL vive en `@luana/ui-kit`. Se consume como HTML renderizado (`storybook-static/` vía `pnpm --filter @luana/ui-kit build-storybook`, o dev `:6007`, o `…/iframe.html?id=<story>&viewMode=story`) → misma base que el build. **NO inventar CSS, NO copiar `_shared.css`, NO portar verbatim mockups HTML archivados.**
+2. **No limitarse** — si falta una pieza o hay algo genuinamente mejor, se **PROPONE** (Storybook es el piso, no el techo).
+3. **Promover de vuelta** — lo que se usa y prueba bien se **PROMUEVE a `@luana/ui-kit` + su story** (vía `core-ds-*` / promotion gate `/pm-luana`). Una pieza net-new que queda local en `features/{agent}/` sin promover = **deuda** (la caza el auditor).
+
+`/architect` no arranca un ticket FE sin que `03-arch.md § FE` cite la(s) story(s) de Storybook a usar; net-new se marca `PROMOTE` (deliverable = crear el componente en `@luana/ui-kit` + story antes del merge).
 
 ## Scope
 
-### Aplica (gate bloqueante)
+**Aplica:** toda story con UI nueva (sub-tab `lisa-*`/`mateo-*`/`adrian-*`/`lucas-*`/`camila-*`/`plataforma-*`/`onboarding-*`, componente del shell).
+**NO aplica:** service-only · agentic-conversacional pura (`/ux-agentico`) · componentes atómicos ya en el kit.
 
-- F1-S1 `vitalia-fase1-design-tokens-theme` → mockup `theme-toggle.html`
-- F1-S2 `vitalia-fase1-topbar-global` → mockups `topbar-global.html` · `logo-mark.html`
-- F1-S3 `vitalia-fase1-tenant-switcher` → mockups `tenant-switcher-closed.html` · `tenant-switcher-open.html`
-- F1-S4 `vitalia-fase1-shell-layout-5050` → mockup `shell-layout-agentic.html` + `shell-layout-web.html`
-- F1-S5 `vitalia-fase1-valeria-rail-history` → mockups `valeria-rail.html` · `valeria-history.html` + estados collapsed/rail/full
-- F1-S6 `vitalia-fase1-valeria-chat-skeleton` → mockup `valeria-chat-sample.html`
-- F1-S7 `vitalia-fase1-ribbon-6-tabs` → mockup `ribbon-6-tabs.html` con 6 variants per active tab
-- F1-S8 `vitalia-fase1-sub-tabs-line2` → mockup `sub-tabs.html` con 6 variants per agente
-- F1-S9 `vitalia-fase1-routing-shell` → N/A (routing puro, sin componente visual nuevo — usar mockups F1-S2..S8 como referencia integral)
-- F1-S10 `vitalia-fase1-empty-states` → mockup `empty-states-grid.html` con 22 sub-tab placeholders
-- Toda story Fase 2 que construye componente UI sub-tab-specific (PipelineColumn, AgendaSlot, etc.) — aprox 20-22 stories según outcome master
+## Constraints (composición del canon)
 
-### NO aplica (excepciones explícitas)
+- **Tokens:** clases Tailwind mapeadas a `vitalia/frontend/src/app/globals.css` (primario cian `#01B2F8` · accent púrpura `#7B2D91` · gradiente mariposa · agent colors). **Cero hex/px nuevo, cero arbitrary-value** (canon §0).
+- **Átomos/moléculas/primitivas:** consumir de `@luana/ui-kit` (canon §6) — NUNCA reinventar (`frontend-visual-fidelity.md` D1).
+- **List/detail:** `EntityWorkspaceLayout` (canon §2.1-2.2) · franjas N3 **full-bleed** (NUNCA card redondeada) · `Select` canónico (NUNCA `<select>` nativo, canon §2.5).
+- **Shell:** Ribbon 5 especialistas (Lisa·Mateo·Adrián·Lucas·Camila) + Plataforma + `ValeriaSidebar` supervisora viven en Storybook (`Shell/*`) — partir de ahí, NO reinventar el wrapper simplificado.
+- **PHI:** UI que muestra PHI → `PiiMaskedSpan` + `RequireRole` (`vitalia/.claude/rules/hipaa-lite.md`). Nunca PHI en `localStorage`/`searchParams`.
+- Datos LatAm realistas (no Lorem ipsum). Spanish neutro LatAm (sin voseo).
 
-- F1-S0 `vitalia-fase1-stack-stability` — infra-only (Shadcn install + tokens + plan). NO crea componentes user-facing nuevos. Las 2 test pages auxiliares son fixtures Playwright (`primitives-showcase.tsx`, `agent-tokens-swatch.tsx`), no UI prod.
-- Service-stories (`vitalia-payment-adapter-mvp`, `vitalia-fiscal-emission-pe`, etc.) — BE only.
-- Agentic-stories conversacionales puras (usar `/ux-agentico` flow design en su lugar, no mockup HTML).
-- Stories Fase 2 que solo agregan data a componentes ya ratificados Fase 1 (e.g., sub-tab que reusa Ribbon + SubTabsBar + adds solo placeholder content).
+## Verificación visual (ex visual golden)
 
-## Constraints
+`01-spec.md § Visual Goldens` mapea `story de Storybook → componente React (@luana/ui-kit o feature) → canon ref`. `/dev-team` verifica **composición** contra la story de Storybook (no contra un mockup HTML). Net-new sin promover al kit + story = CHANGES_REQUESTED. El signoff visual de Chris (`mockup_final_signed`, po-ux RONDA 2) ratifica el mockup **compuesto de Storybook** — ya no un HTML maquetado a ojo.
 
-### Mockup HTML structure obligatoria
+## Anti-patterns
 
-Todo mockup en `vitalia/docs/product/stories/{story-id}/mockups/{component}.html` debe:
+- ❌ Diseñar/maquetar UI sin partir de Storybook — inventar CSS, copiar `_shared.css`, o portar verbatim `dual-mode-shell.html` (mecanismos MUERTOS, canon §5)
+- ❌ Pieza shared net-new que queda local en `features/{agent}/components/` sin promover a `@luana/ui-kit` + story (drift garantizado)
+- ❌ Reinventar un átomo/primitiva que ya vive en `@luana/ui-kit`
+- ❌ `<select>` nativo · arbitrary-value · `<div>` de layout donde hay page-primitive · franja N3 en card redondeada (canon §2.5/§0/§2.7/§2.2)
+- ❌ `/architect` que NO cita la story de Storybook a usar (builder improvisa sin saber qué lego)
 
-- Usar **Tailwind CSS CDN** (`https://cdn.tailwindcss.com`) o Tailwind precompilado equivalente
-- Cargar **tokens Vitalia via CSS vars** (mismo schema que Design Contract § 5.1: `:root { --background: ...; --agent-lisa: ...; ... }` y `.dark { ... }`)
-- Renderizar **datos LatAm realistas** (no Lorem ipsum, no placeholders genéricos)
-- **Spanish neutro LatAm** en todos los strings (validar contra `.claude/rules/spanish-text.md` glosario)
-- Mostrar **todas las variantes** del componente (e.g., Button default/secondary/ghost/destructive/outline, ValeriaSidebar collapsed/rail/full)
-- Incluir **dark mode** si el componente lo soporta (toggle button local en el mockup)
-- **Sin frameworks externos** (NO Bootstrap, NO Material UI) — Shadcn-style copy-paste o markup Tailwind nativo
+## Enforcement layers
 
-### ★ Shell wrapper fidelity (cementado 2026-05-27 — origen lisa-marca v2.1 refactor)
-
-Cuando el mockup per-component aterriza dentro del shell-organism (sub-tab / sub-sub-tab / componente Fase 2 que ocupa el panel-content), el **wrapper visual de contexto** (TopBar global, Ribbon agentes, SubTabsBar, ValeriaSidebar/chat) MUST ser **portado verbatim** desde las fuentes canónicas archivadas. Reinventarlo simplificado genera 4 problemas observados:
-
-1. Falsos "regression flags" de Chris al ver pestañas padre con apariencia distinta a producción
-2. Colores grisáceos en vez de tokens marca (gradient mariposa, agent colors)
-3. Layout estático (50/50 hardcoded) sin reflejar splitter resizable real
-4. Chat de Valeria inventado simplificado en vez del componente shipped
-
-**Fuentes canónicas obligatorias del wrapper** (Read-only, port verbatim):
-
-| Layer del shell | Fuente canónica (archivada, immutable) |
+| Layer | Mecanismo |
 |---|---|
-| Shell integral (referencia macro) | `vitalia/docs/archive/2026/stories/vitalia-shell-organism/mockups/dual-mode-shell.html` |
-| TopBar global + logo gradient | idem § `.topbar`, `.topbar-logo`, `.tenant-switcher` (líneas ~109-200) |
-| Splitter resizable 3 estados | idem § `.shell`, `.panel-valeria[data-state]` (líneas ~203-225) |
-| Ribbon 5 especialistas + Plataforma con agent-color borders | idem § `.ribbon`, `.ribbon-tab[data-color]` (líneas ~485-538) · ★★ v1.2: Lisa · Mateo · Adrián · Lucas · Camila + PlataformaTab |
-| SubTabsBar línea 2 con agent-soft active | idem § `.sub-tabs`, `.sub-tab[data-color]` (líneas ~540-568) |
-| ValeriaChat con avatar + status + composer | `vitalia/docs/archive/2026/stories/vitalia-fase1-valeria-chat-skeleton/mockups/valeria-chat-sample.html` (completo) |
-| ValeriaRail (modo collapsed icons) | `vitalia/docs/archive/2026/stories/vitalia-fase1-valeria-rail-history/mockups/valeria-rail.html` |
-
-**Workflow correcto:**
-
-1. Crear/editar `_shared.css` del story-folder con tokens HSL **idénticos** a `vitalia/frontend/src/app/globals.css` (NO inventar)
-2. Definir clases del wrapper (`.shell-root`, `.shell-body[data-splitter-state]`, `.topbar`, `.chat-side`, `.chat-content`, `.chat-rail-only`, `.ribbon`, `.subtabs-bar`, `.subsubtabs-bar`, `.panel-side`) portando markup + nombres desde los canónicos
-3. En cada `{component}.html` el wrapper es **idéntico cross-mockup** — solo cambia el `.panel-content` (la story owna eso)
-4. Agregar `.splitter-control` en topbar (mockup-only widget) que cambia `data-splitter-state` ∈ `{chat-collapsed, chat-narrow, 50-50}` para que Chris verifique responsividad
-5. `.panel-inner` **sin** `max-width` hard — usa `width: 100%` + `.cards-grid` con `repeat(auto-fit, minmax(...))` para fluidez real
-
-**Cuándo NO aplica:** cuando el componente se ratifica aislado (`theme-toggle.html`, `logo-mark.html`, `tenant-switcher-open.html`) — esos NO necesitan shell, son atómicos. La regla aplica a mockups que muestran el componente **dentro del slot** (cualquier sub-tab Fase 2, cualquier integración intra-shell).
-
-### Servidor local para revisión Chris
-
-```bash
-WS=$(git rev-parse --show-toplevel)
-cd ${WS}/vitalia/docs/product/stories/{story-id}/mockups
-python3 -m http.server 8888
-# Chris abre http://localhost:8888/{component}.html
-# Chris itera con /po-ux hasta ratificación
-```
-
-### Ratificación tracking en `checkpoint.md`
-
-Frontmatter de la story checkpoint MUST agregar al ratify:
-
-```yaml
-ratified_visual_by_chris: true                     # ★ NEW field mandatory para stories scope
-ratified_visual_at: 2026-MM-DDTHH:MM:SSZ           # timestamp ratificación final
-ratified_visual_iter: N                            # iteración final (1-N)
-ratified_visual_mockups:                           # lista mockups ratificados con paths absolutos
-  - vitalia/docs/product/stories/{story-id}/mockups/topbar-global.html
-  - vitalia/docs/product/stories/{story-id}/mockups/logo-mark.html
-```
-
-Sin `ratified_visual_by_chris: true`: state NO transitions `refining → refined`.
-
-## Tests requeridos (que la implementación debe cumplir)
-
-Cuando `/dev-team` builde el componente, los tests obligatorios incluyen:
-
-1. **Playwright visual golden side-by-side** del componente React real vs mockup HTML montado en viewport idéntico. `maxDiffPixelRatio: 0.001` (0.1% tolerance).
-2. **Mapping trazable** en `01-spec.md § 7 Visual Goldens`: tabla `mockup HTML path → golden snapshot path → componente React path → Design Contract ref`.
-3. **Ratchet shrink-only:** una vez generado y ratificado el golden, cualquier PR que lo modifique requiere re-ratificación explícita Chris (no se renueva silencioso).
-
-## Anti-patterns prohibidos
-
-- `/architect` arranca sin verificar `checkpoint.md::ratified_visual_by_chris == true` (gate bloqueante violado)
-- `/po-ux` transitions `refining → refined` sin mockup HTML por componente nuevo (gate bloqueante violado)
-- Mockup HTML con Lorem ipsum, placeholders genéricos, o data USA (use AR/MX/CO/PE/CL realistic)
-- Mockup HTML con Bootstrap, Material UI, u otros frameworks (debe ser Tailwind + Shadcn-style para fidelidad post-implementación)
-- Mockup HTML committed sin Chris ratificado explícito (estado tracking: draft → review → ratified en checkpoint)
-- Reusar mockup integral `dual-mode-shell.html` (1439 líneas) como sustituto de mockups-per-component (eso es SSoT del shell completo, no de componentes individuales)
-- Skipear protocolo argumentando "es un componente trivial" — la regla aplica TODOS los componentes user-facing del shell, sin excepción más allá de las listadas en § Scope NO aplica
-- Mockup HTML que diverja del componente final SIN actualizar el mockup en el mismo PR (genera ratchet roto)
-- ★ **Reinventar el wrapper del shell** (topbar/ribbon/sub-tabs/chat-side) en lugar de portarlo verbatim desde `dual-mode-shell.html` + `valeria-chat-sample.html` + `valeria-rail.html` (cementado 2026-05-27 — caso origen: `vitalia-fase2-lisa-marca` v2 → v2.1 refactor obligado por Chris)
-- ★ **Mockup con layout 50/50 hardcoded** sin permitir simular los 3 splitter states (`chat-collapsed`, `chat-narrow`, `50-50`) — pierde fidelidad responsive del shell real
-- ★ **Panel-content con `max-width` fijo** en píxeles (ej. `max-width: 680px`) — debe ser fluido (`width: 100%`) + cards-grid con `auto-fit/minmax` para aprovechar el ancho dictado por el splitter
-- ★ **Tokens HSL inventados o divergentes** de `vitalia/frontend/src/app/globals.css` — el `_shared.css` del story-folder MUST ser espejo de los tokens reales (paleta primario cian #01B2F8, accent púrpura #7B2D91, agent-lisa #00D084, agent-valeria #7B2D91, agent-camila #180D95, **agent-mateo #FEE209** ★★ v1.2, gradient mariposa)
-- ★ **ChatValeria simplificado** (textarea suelto sin avatar + dot status + mode pill + composer con adornos 📎🎙️⚡ + Cmd+K hint) — debe portar markup verbatim de `valeria-chat-sample.html`
+| `/po-ux` | parte de Storybook para componer la hoja + cita `design-system-canon.md §5`; pieza que falta/mejor → la **PROPONE**. Firma 2 (`mockup_final_signed`) ratifica el mockup compuesto de Storybook |
+| `/architect` | `03-arch.md § FE` cita la story de Storybook (+ link); net-new = `PROMOTE` deliverable + `04-validators` gates mecánicos (eslint no-arbitrary + arch-test no-div-layout) |
+| `/dev-team` | construye **desde la story citada** (`@luana/ui-kit` = único lego); net-new se PROMUEVE al kit + story |
+| `/auditor` | verifica **composición** vs Storybook + que el net-new se promovió al kit con story (no quedó local) → si no, CHANGES_REQUESTED |
 
 ## Referencias
 
-- `vitalia/docs/architecture/ADR-vitalia-003-shell-mockup-per-component-protocol.md` — autoridad arquitectónica brand-local (SSoT del por qué)
-- `vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md` — atomic design SSoT del shell (qué componentes existen + sus props)
-- `vitalia/docs/product/stories/vitalia-shell-organism/mockups/dual-mode-shell.html` — mockup integral SSoT visual del shell completo (referencia macro)
-- `vitalia/docs/specs/templates/01-spec-shell-template.md` § 7 Visual Goldens — sección spec donde se cita el mockup
-- `vitalia/docs/learnings/2026-05-22-shell-mockup-per-component-protocol.md` — promotable candidate cross-brand
-- `.claude/skills/po-ux/SKILL.md` § Workflow Step 3 — donde se inserta gate visual obligatorio
-- `.claude/skills/architect/SKILL.md` — gate REFUSE pre-arch (consume este protocolo via overlay rule load)
-- `.claude/rules/frontend-fsd.md` — boundaries FSD-Lite que el componente final respeta
-- `.claude/rules/spanish-text.md` — Spanish neutro LatAm glosario
+- `.claude/rules/frontend-visual-fidelity.md § Storybook` — ★ **doctrina binding** (D1 = partir de Storybook + promover)
+- `docs/architecture/luana-platform/design-system-canon.md §5` — el bucle de los 5 actores
+- `docs/architecture/luana-platform/ADR-014-design-system-homologation.md` — homologación cross-brand
+- `.claude/skills/vitalia-design-system/SKILL.md` — índice cargable del DS de vitalia (Storybook-first)
+- `vitalia/docs/architecture/ADR-vitalia-003-shell-mockup-per-component-protocol.md` — **SUPERSEDED** (registro histórico del por qué del viejo modelo `_shared.css`)
+- `vitalia/.claude/rules/shell-feature-architecture-mandatory.md` — ADR-vitalia-004 (patrón de build, complementario)
+- `vitalia/.claude/rules/hipaa-lite.md` — overlay PHI (dual filter, audit, retention)
+- `nicolify/.claude/rules/shell-mockup-per-component.md` — análogo aligned (espejo cross-brand · HB-103)

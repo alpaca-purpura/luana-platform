@@ -1,11 +1,16 @@
 ---
 id: ADR-nicolify-003
-title: Protocolo mockup-base reusable (_shared.css + wrapper verbatim + visual golden) — gate pre-/architect
-status: Accepted
+title: Protocolo mockup-base reusable (_shared.css + wrapper verbatim + visual golden) — gate pre-/architect [SUPERSEDED]
+status: Superseded
 date: 2026-06-15
+superseded_date: 2026-06-23
 deciders: [Chris, /po-ux, /pm-nicolify]
 brand: nicolify
 supersedes: []
+superseded_by:
+  - docs/architecture/luana-platform/design-system-canon.md            # §5 Storybook = SSoT visual
+  - docs/architecture/luana-platform/ADR-014-design-system-homologation.md
+  - .claude/rules/frontend-visual-fidelity.md                          # § Storybook (doctrina binding)
 mirrors: vitalia/docs/architecture/ADR-vitalia-003-shell-mockup-per-component-protocol.md
 references:
   - nicolify/docs/architecture/SHELL-DESIGN-CONTRACT.md
@@ -16,6 +21,8 @@ references:
 ---
 
 # ADR-nicolify-003 — Protocolo mockup-base reusable (cero alucinación UI)
+
+> **★ SUPERSEDED 2026-06-22 (nicolify alineado 2026-06-23 · HB-103).** El modelo de esta ADR — todo mockup HTML compuesto de `_shared.css` + wrapper portado verbatim — quedó **MUERTO**. El SSoT visual de TODAS las marcas es **Storybook** (`core/@luana/ui-kit`, canon §5): "lo que ves en Storybook = lo que se programa". Se conserva como **registro histórico del por qué** del viejo modelo; **NO es un gate activo**. Doctrina vigente: `.claude/rules/frontend-visual-fidelity.md § Storybook` + `docs/architecture/luana-platform/design-system-canon.md §5`. Enforcement vigente: `nicolify/.claude/rules/shell-mockup-per-component.md` (reescrita Storybook-first). El valor durable que sobrevive: *partir de una base canónica reusable, no maquetar a ojo* — pero esa base ahora es Storybook, no `_shared.css`.
 
 > **Mirror brand de [ADR-vitalia-003](../../../vitalia/docs/architecture/ADR-vitalia-003-shell-mockup-per-component-protocol.md)**, adaptado a nicolify (sin PHI · con guardrails agénticos). Ratificado por Chris 2026-06-15 tras revisar el sistema de vitalia. **Patrón cross-brand → candidate lift `/pm-luana`** a `.claude/rules/` raíz cuando ≥2 brands lo corran (vitalia + nicolify ya).
 
@@ -73,3 +80,4 @@ Donde vitalia pone PHI/dual-filter, nicolify pone **guardrails de autonomía** (
 | Versión | Fecha | Cambio |
 |---|---|---|
 | 1.0 | 2026-06-15 | Decisión inicial — Chris ratifica tras revisar el sistema de vitalia. Base `_shared.css` cementada en `nicolify-r0-design-system-adoption`. |
+| 1.1 | 2026-06-23 | **SUPERSEDED** por Storybook-first (canon §5, cement 2026-06-22). HB-103: doctrina design-system de nicolify alineada al canon cross-brand. El modelo `_shared.css`/mockup-HTML queda como registro histórico; el SSoT visual pasa a Storybook (`@luana/ui-kit`). Enforcement vigente en `nicolify/.claude/rules/shell-mockup-per-component.md` (reescrita). |

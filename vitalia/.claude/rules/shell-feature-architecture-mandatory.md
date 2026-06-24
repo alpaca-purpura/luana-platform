@@ -39,7 +39,7 @@ Toda story scope MUST cumplir:
 6. **Backend DDD Inside-Out**: domain → infrastructure → application → api; `PhiRepositoryBase` mandatory para repos PHI; dual filter `tenant_id+clinic_id`; audit log sync write pre-response
 7. **Migrations**: raw SQL idempotent (`IF NOT EXISTS`); nunca `op.create_table()` ni `sa.Enum(create_type=True)`
 8. **Telemetría**: tabla brand-local `vitalia_growth_studio_event` (NO `copilot_trace_event` engine); bucketed amounts; emitter shipped en `_shared/telemetry/`
-9. **Tests**: Vitest unit + Playwright funcional + Playwright visual golden 3×2=6 PNGs + axe + BE pytest dual-tenant + arch fitness EXTEND
+9. **Tests**: Vitest unit + Playwright funcional + Playwright visual scoped (composición vs la story de Storybook citada · canon §5 — NO golden-vs-mockup-HTML, MUERTO) + axe + BE pytest dual-tenant + arch fitness EXTEND
 
 ## Frontmatter requirements
 
@@ -107,7 +107,7 @@ Arch fitness tests (`vitalia/backend/tests/architecture/` + `vitalia/frontend/sr
 - Migration con `op.create_table()` o `sa.Enum(create_type=True)` (no idempotente)
 - Telemetría escribe en `copilot_trace_event` engine en lugar de `vitalia_growth_studio_event` brand-local
 - Forms sin Zod schema o sin RHF (custom state useState)
-- Visual goldens omitidos (gate ADR-vitalia-003 cubre componentes; este ADR cubre integración completa)
+- FE compuesto a mano / con CSS inventado en vez de partir de la story de Storybook citada (`@luana/ui-kit`, canon §5 · ex gate ADR-vitalia-003 SUPERSEDED); este ADR cubre la integración completa de la sub-tab
 - Capability YAML post-merge omitido (gate `pm-vitalia/SKILL.md § Capability inventory post-merge`)
 - Divergir del patrón sin documentar rationale en `03-arch.md § Architecture Decisions`
 
@@ -128,7 +128,7 @@ Arch fitness tests (`vitalia/backend/tests/architecture/` + `vitalia/frontend/sr
 - `vitalia/docs/architecture/ADR-vitalia-004-shell-feature-architecture.md` — autoridad arquitectónica brand-local (SSoT del patrón)
 - `vitalia/docs/product/stories/vitalia-fase2-valeria-agenda/03-arch.md` — source story que origina el patrón
 - `vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md` — atomic design SSoT del shell
-- `vitalia/docs/architecture/ADR-vitalia-003-shell-mockup-per-component-protocol.md` — mockup gate (complementario)
+- `vitalia/docs/architecture/ADR-vitalia-003-shell-mockup-per-component-protocol.md` — **SUPERSEDED** por Storybook-first (canon §5); enforcement vigente en `vitalia/.claude/rules/shell-mockup-per-component.md` (reescrita)
 - `.claude/rules/backend-ddd.md` — DDD raíz
 - `.claude/rules/frontend-fsd.md` — FSD-Lite raíz
 - `.claude/rules/backend-migrations.md` — migrations idempotent
