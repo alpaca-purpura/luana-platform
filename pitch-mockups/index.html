@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comunify · Mi Día con Luana</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="pitch.css" />
+</head>
+<body>
+  <div class="shell">
+
+    <!-- ================= TopBar ================= -->
+    <header class="topbar">
+      <a class="logo" href="index.html">
+        <img class="mark" src="brand/Logo.png" alt="Comunify" />
+        <span class="word">Comunify</span>
+      </a>
+      <div class="right">
+        <button class="icon-btn" title="Tema">🌙</button>
+        <div class="tenant-switch">
+          <div class="av sm" style="background:var(--gradient);color:#fff">C</div>
+          <div style="display:flex;flex-direction:column;line-height:1.1">
+            <span class="nm">Carla Méndez</span>
+            <span class="ca">Finanzas para Freelancers</span>
+          </div>
+          <span style="color:var(--muted)">▾</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ================= Body split ================= -->
+    <div class="body">
+
+      <!-- ===== Luana · supervisor chat panel ===== -->
+      <aside class="supervisor">
+        <div class="sup-head">
+          <div class="av md av-luana">L</div>
+          <div class="meta">
+            <div class="nm">Luana <span class="status-dot" title="en línea"></span></div>
+            <div class="role">Tu jefa de gabinete · coordina al equipo</div>
+          </div>
+          <div class="tools">
+            <button class="icon-btn" title="Historial">🕘</button>
+            <button class="icon-btn" title="Nueva conversación">＋</button>
+          </div>
+        </div>
+
+        <div class="chat">
+          <div class="msg">
+            <div class="av sm av-luana">L</div>
+            <div>
+              <div class="bubble brand">
+                Buenos días, Carla ☀️. Buena semana: entraron <b>$1.240</b> y hay <b>$1.940</b>
+                a punto de cerrar. Te dejé <b>3 decisiones</b> a la derecha — la más jugosa es la
+                de María: lleva 2 días caliente y solo falta que apruebes el link.
+              </div>
+              <div class="time">hoy 8:02</div>
+            </div>
+          </div>
+
+          <div class="msg">
+            <div class="av sm av-luana">L</div>
+            <div>
+              <div class="bubble">
+                Una cosa que quiero que veas: el <b>Club Finanzas</b> sumó 6 miembros, pero
+                <b>4 llevan 30 días sin entrar</b> — ahí se te puede escapar MRR. Lucía ya les
+                escribió un check-in. ¿Querés que arme un <b>mini-reto de 5 días</b> para
+                reengancharlos antes del próximo cobro?
+              </div>
+              <div class="time">hoy 8:03</div>
+            </div>
+          </div>
+
+          <div class="quick">
+            <button class="qp">Sí, armá el mini-reto 💪</button>
+            <button class="qp">¿Cómo viene el mes?</button>
+            <button class="qp">Mostrame quiénes están en riesgo</button>
+          </div>
+        </div>
+
+        <div class="composer">
+          <button class="cicon" title="Adjuntar archivo (PDF, imagen, CSV…)">📎</button>
+          <input placeholder="Escribile a Luana…  (ej: “¿qué oferta conviene empujar esta semana?”)" />
+          <button class="cicon" title="Enviar audio a Luana">🎤</button>
+          <button class="send">➤</button>
+        </div>
+      </aside>
+
+      <div class="seam"></div>
+
+      <!-- ===== App panel ===== -->
+      <div class="app">
+
+        <!-- Ribbon: 5 especialistas + Plataforma (Luana NO está acá — es la supervisora) -->
+        <nav class="ribbon">
+          <a class="rtab inicio active" href="index.html"><span class="rav">🏠</span><span class="rlab"><span class="role">Inicio</span><span class="nm">Mi Día</span></span></a>
+          <a class="rtab nina"  href="nina.html"><span class="rav"></span><span class="rlab"><span class="role">Estratega</span><span class="nm">Nina</span></span></a>
+          <a class="rtab tomas" href="tomas.html"><span class="rav"></span><span class="rlab"><span class="role">Atraer</span><span class="nm">Tomás</span></span></a>
+          <a class="rtab sofia" href="sofia.html"><span class="rav"></span><span class="rlab"><span class="role">Vender</span><span class="nm">Sofía</span></span></a>
+          <a class="rtab bruno" href="#"><span class="rav"></span><span class="rlab"><span class="role">Operar</span><span class="nm">Bruno</span></span></a>
+          <a class="rtab lucia" href="#"><span class="rav"></span><span class="rlab"><span class="role">Retener</span><span class="nm">Lucía</span></span></a>
+          <a class="rtab plat"  href="#"><span class="rav">⚙️</span><span class="rlab"><span class="role">Plataforma</span><span class="nm">Config</span></span></a>
+        </nav>
+
+        <!-- Mi Día content (Luana's home — app panel) -->
+        <div class="appcontent">
+          <div class="wrap">
+
+            <div class="page-h">
+              <div class="crumb">🏠 INICIO · resumen de Luana</div>
+              <h1>Mi Día</h1>
+              <div class="sub">Resumen de anoche · lunes 22 de junio</div>
+            </div>
+
+            <!-- pulso del negocio -->
+            <div class="pulse">
+              <div class="stat accent">
+                <div class="l">💰 Ingresos · esta semana</div>
+                <div class="v">$1.240</div>
+                <div class="d"><span class="up">▲ 18%</span> vs. semana pasada</div>
+              </div>
+              <div class="stat">
+                <div class="l">🔥 En cierre · pipeline</div>
+                <div class="v">$1.940</div>
+                <div class="d">5 leads calientes · 2 piden pago</div>
+              </div>
+              <div class="stat">
+                <div class="l">🔄 MRR · Club Finanzas</div>
+                <div class="v">$2.310</div>
+                <div class="d"><span class="up">+6</span> miembros · 78 activos</div>
+              </div>
+              <div class="stat risk">
+                <div class="l">⚠️ En riesgo</div>
+                <div class="v">$486</div>
+                <div class="d">1 pago fallido · 4 bajas posibles</div>
+              </div>
+            </div>
+
+            <!-- decisiones | en la mira -->
+            <div class="cols mt24">
+
+              <div>
+                <div class="section-title" style="margin-top:0">🔔 Necesitan tu OK <span class="count">3</span></div>
+                <div class="decisions">
+
+                  <div class="card dcard">
+                    <div class="av md av-sofia">S</div>
+                    <div>
+                      <div class="top"><span class="tag sofia">Sofía · Vender</span><span class="chip warn">💳 cierre caliente · 2 días</span></div>
+                      <div class="what">Enviar el link de pago a María González — “Finanzas para Freelancers” ($149).</div>
+                      <div class="why">Preguntó precio 2 veces y abrió el último mensaje 3 veces. Redacté la respuesta con el link + 10% si paga hoy.</div>
+                      <div class="actions"><button class="btn ghost sm">Editar mensaje</button><button class="btn ok">✓ Enviar a María</button></div>
+                    </div>
+                  </div>
+
+                  <div class="card dcard">
+                    <div class="av md av-nina">N</div>
+                    <div>
+                      <div class="top"><span class="tag nina">Nina · Estratega</span><span class="chip brand">📈 +$2.100/mes</span></div>
+                      <div class="what">Subir “Finanzas para Freelancers” de $149 a $179.</div>
+                      <div class="why">Es tu mejor conversión (8.2%) y el precio no frena la compra. Sin tocar tu tripwire ni la membresía. <a href="nina.html" style="color:var(--primary);font-weight:600">Ver en tu escalera ›</a></div>
+                      <div class="actions"><button class="btn ghost sm">Ver datos</button><button class="btn primary">Aplicar precio</button></div>
+                    </div>
+                  </div>
+
+                  <div class="card dcard">
+                    <div class="av md av-tomas">T</div>
+                    <div>
+                      <div class="top"><span class="tag tomas">Tomás · Atraer</span><span class="chip">🎬 reel listo · en tu voz</span></div>
+                      <div class="what">Publicar el reel “3 errores al ahorrar siendo freelancer”, mañana 9:00.</div>
+                      <div class="why">Adaptado de un tema que esta semana rinde +340% en tus referentes — reescrito a tu voz y tu audiencia.</div>
+                      <div class="actions"><a class="btn ghost sm" href="tomas.html">Ver reel + guion</a><button class="btn primary">Programar</button></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div class="section-title" style="margin-top:0">👀 En la mira <span class="count">ya manejado</span></div>
+                <div class="card watch">
+                  <a class="wrow" href="#" style="text-decoration:none;color:inherit">
+                    <div class="wico warn">💳</div>
+                    <div><div class="wt">Pago fallido · membresía de Diego</div><div class="ws">Lucía reintenta el cobro automáticamente en 24 h. <b>Sin acción tuya.</b></div></div>
+                  </a>
+                  <a class="wrow" href="sofia.html" style="text-decoration:none;color:inherit">
+                    <div class="wico cool">❄️</div>
+                    <div><div class="wt">3 leads se están enfriando</div><div class="ws">Sin responder hace 6 h. Sofía ya les mandó follow-up.</div></div>
+                  </a>
+                  <a class="wrow" href="#" style="text-decoration:none;color:inherit">
+                    <div class="wico churn">📉</div>
+                    <div><div class="wt">4 miembros sin actividad (30 días)</div><div class="ws">Lucía envió check-in. Luana propone un mini-reto. <b>Ver en el chat.</b></div></div>
+                  </a>
+                  <a class="wrow" href="#" style="text-decoration:none;color:inherit">
+                    <div class="wico mod">🛡️</div>
+                    <div><div class="wt">1 mensaje sensible en el Club</div><div class="ws">Bruno lo retuvo y te lo dejó para que decidas vos.</div></div>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- equipo anoche -->
+            <div class="section-title">🌙 Tu equipo trabajó anoche <span class="count">5 empleados · 1 motor</span></div>
+            <div class="team-grid">
+
+              <a class="tcard" href="nina.html">
+                <div class="th"><div class="av sm av-nina">N</div><div><div class="nm">Nina</div><div class="role">Estratega</div></div></div>
+                <div class="what">Tu curso core rinde 8.2% y te falta el escalón de membresía anual: ahí dejás LTV.</div>
+                <div class="foot"><span class="chip brand">1 oportunidad</span><span class="arrow">›</span></div>
+              </a>
+
+              <a class="tcard" href="tomas.html">
+                <div class="th"><div class="av sm av-tomas">T</div><div><div class="nm">Tomás</div><div class="role">Atraer</div></div></div>
+                <div class="what">3 temas funcionan en tus referentes; dejé 4 piezas en tu voz listas para aprobar.</div>
+                <div class="foot"><span class="chip">4 listas</span><span class="arrow">›</span></div>
+              </a>
+
+              <a class="tcard" href="sofia.html">
+                <div class="th"><div class="av sm av-sofia">S</div><div><div class="nm">Sofía</div><div class="role">Vender</div></div></div>
+                <div class="what">Reactivé 6 leads fríos de hasta 14 días; 2 ya piden link de pago.</div>
+                <div class="foot"><span class="metric sofia">$1.940 en juego</span><span class="arrow">›</span></div>
+              </a>
+
+              <a class="tcard" href="#">
+                <div class="th"><div class="av sm av-bruno">B</div><div><div class="nm">Bruno</div><div class="role">Operar</div></div></div>
+                <div class="what">El Club quedó al día: respondí las dudas de la noche y retuve 1 mensaje sensible.</div>
+                <div class="foot"><span class="chip ok">Club al día</span><span class="arrow">›</span></div>
+              </a>
+
+              <a class="tcard" href="#">
+                <div class="th"><div class="av sm av-lucia">L</div><div><div class="nm">Lucía</div><div class="role">Retener</div></div></div>
+                <div class="what">Rescaté 1 pago fallido y escribí a 4 miembros en riesgo antes de que se vayan.</div>
+                <div class="foot"><span class="metric lucia">$486 defendidos</span><span class="arrow">›</span></div>
+              </a>
+            </div>
+
+            <div class="mt24 muted" style="text-align:center;font-size:12.5px">
+              Luana coordina a los 5 empleados sobre un solo motor. Vos decidís; ellos ejecutan.
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-flag">Mockup de visión · Comunify · organism shell real</div>
+</body>
+</html>

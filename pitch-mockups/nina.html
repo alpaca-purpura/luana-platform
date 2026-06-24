@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comunify · Nina · Escalera de valor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="pitch.css" />
+</head>
+<body>
+  <div class="shell">
+
+    <!-- ================= TopBar ================= -->
+    <header class="topbar">
+      <a class="logo" href="index.html">
+        <img class="mark" src="brand/Logo.png" alt="Comunify" />
+        <span class="word">Comunify</span>
+      </a>
+      <div class="right">
+        <button class="icon-btn" title="Tema">🌙</button>
+        <div class="tenant-switch">
+          <div class="av sm" style="background:var(--gradient);color:#fff">C</div>
+          <div style="display:flex;flex-direction:column;line-height:1.1">
+            <span class="nm">Carla Méndez</span>
+            <span class="ca">Finanzas para Freelancers</span>
+          </div>
+          <span style="color:var(--muted)">▾</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ================= Body split ================= -->
+    <div class="body">
+
+      <!-- ===== Luana · supervisor chat panel ===== -->
+      <aside class="supervisor">
+        <div class="sup-head">
+          <div class="av md av-luana">L</div>
+          <div class="meta">
+            <div class="nm">Luana <span class="status-dot" title="en línea"></span></div>
+            <div class="role">Tu jefa de gabinete · coordina al equipo</div>
+          </div>
+          <div class="tools">
+            <button class="icon-btn" title="Historial">🕘</button>
+            <button class="icon-btn" title="Nueva conversación">＋</button>
+          </div>
+        </div>
+
+        <div class="chat">
+          <div class="msg">
+            <div class="av sm av-luana">L</div>
+            <div>
+              <div class="bubble brand">
+                Le pedí a <b>Nina</b> que ordene lo que vendés. Le contaste que ayudás a
+                freelancers con su plata y tenés un curso + una membresía — lo armó en
+                tu <b>escalera de valor</b>, a la derecha.
+              </div>
+              <div class="time">hoy 8:08</div>
+            </div>
+          </div>
+
+          <div class="msg">
+            <div class="av sm av-nina" style="background-image:url(agents/lisa.png)">N</div>
+            <div>
+              <div class="bubble">
+                Tu escalera está casi completa: <b>4 de 5 peldaños</b>. Te falta el
+                <b>peldaño premium</b> — el de mayor valor. Hoy tu curso de $149 salta
+                directo a la membresía de $19/mes; en el medio hay gente dispuesta a pagar
+                más por algo más cercano. <b>Ahí estás dejando LTV.</b> Te dejé 3 ideas para
+                llenarlo.
+              </div>
+              <div class="time">hoy 8:08</div>
+            </div>
+          </div>
+
+          <div class="quick">
+            <button class="qp">Creá mi peldaño premium 👑</button>
+            <button class="qp">¿Qué precio le pondrías?</button>
+            <button class="qp">Mostrame el catálogo completo</button>
+          </div>
+        </div>
+
+        <div class="composer">
+          <button class="cicon" title="Adjuntar archivo (PDF, imagen, CSV…)">📎</button>
+          <input placeholder="Escribile a Luana…  (ej: “quiero sumar una mentoría grupal”)" />
+          <button class="cicon" title="Enviar audio a Luana">🎤</button>
+          <button class="send">➤</button>
+        </div>
+      </aside>
+
+      <div class="seam"></div>
+
+      <!-- ===== App panel ===== -->
+      <div class="app">
+
+        <!-- Ribbon: Nina activa -->
+        <nav class="ribbon">
+          <a class="rtab inicio" href="index.html"><span class="rav">🏠</span><span class="rlab"><span class="role">Inicio</span><span class="nm">Mi Día</span></span></a>
+          <a class="rtab nina active" href="nina.html"><span class="rav"></span><span class="rlab"><span class="role">Estratega</span><span class="nm">Nina</span></span></a>
+          <a class="rtab tomas" href="tomas.html"><span class="rav"></span><span class="rlab"><span class="role">Atraer</span><span class="nm">Tomás</span></span></a>
+          <a class="rtab sofia" href="sofia.html"><span class="rav"></span><span class="rlab"><span class="role">Vender</span><span class="nm">Sofía</span></span></a>
+          <a class="rtab bruno" href="#"><span class="rav"></span><span class="rlab"><span class="role">Operar</span><span class="nm">Bruno</span></span></a>
+          <a class="rtab lucia" href="#"><span class="rav"></span><span class="rlab"><span class="role">Retener</span><span class="nm">Lucía</span></span></a>
+          <a class="rtab plat"  href="#"><span class="rav">⚙️</span><span class="rlab"><span class="role">Plataforma</span><span class="nm">Config</span></span></a>
+        </nav>
+
+        <!-- SubTabsBar Nina -->
+        <div class="subtabs">
+          <button class="stab nina">🏷️ Marca</button>
+          <button class="stab nina active">📦 Ofertas</button>
+          <button class="stab nina">🎓 Cohorts</button>
+        </div>
+
+        <!-- SubSubTabsBar (N3) -->
+        <nav class="subsub">
+          <a href="#">Catálogo</a>
+          <a href="#" class="active">Escalera de valor</a>
+        </nav>
+
+        <!-- Content -->
+        <div class="appcontent">
+          <div class="wrap">
+
+            <div class="page-h">
+              <div class="crumb">📦 NINA · ESTRATEGA · ofertas › escalera</div>
+              <h1>Tu escalera de valor</h1>
+              <div class="sub">Nina ordenó lo que vendés por su rol en el viaje de tu audiencia: del primer contacto gratis a la membresía que te deja MRR.</div>
+            </div>
+
+            <!-- banner completitud + lectura de Nina -->
+            <div class="nina-banner">
+              <div class="nb-prog">
+                <div class="nb-bar"><i style="width:80%"></i></div>
+                <span class="nb-score">4 / 5</span>
+              </div>
+              <div class="nb-msg">
+                <span class="who">Nina:</span> Tu escalera está casi completa. Te falta el
+                <b>peldaño premium</b> — entre tu curso ($149) y la membresía hay gente
+                lista para pagar más. Llenarlo te sube el LTV sin conseguir un solo cliente nuevo.
+              </div>
+              <span class="chip" style="background:var(--nina-soft);color:var(--nina);font-weight:700">💜 1 hueco detectado</span>
+            </div>
+
+            <!-- ESCALERA -->
+            <div class="ladder">
+
+              <!-- PELDAÑO 1 · full-width -->
+              <div class="rung wide" style="--accent:#2D7FF9">
+                <div class="rung-head">
+                  <div class="num">PELDAÑO 1</div>
+                  <div class="rung-badge">🎁 Lead Magnet</div>
+                  <div class="rung-explain">Captás. Algo gratis que abre la conversación (todavía no vende).</div>
+                </div>
+                <div class="rung-offers">
+                  <div class="offer">
+                    <div class="oi">
+                      <div class="on">Masterclass “3 errores que te mantienen en cero”</div>
+                      <div class="od">Gancho principal · 1.240 descargas este mes</div>
+                    </div>
+                    <div class="right"><span class="op free">Gratis</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- PELDAÑOS 2-3-4 · banda -->
+              <div class="rung-band">
+
+                <!-- 2 -->
+                <div class="rung" style="--accent:#A855F7">
+                  <div class="rung-head">
+                    <div class="num">PELDAÑO 2</div>
+                    <div class="rung-badge">🪤 Tripwire</div>
+                    <div class="rung-explain">El primer “sí” de bajo riesgo y precio accesible.</div>
+                  </div>
+                  <div class="rung-offers">
+                    <div class="offer">
+                      <div class="oi">
+                        <div class="on">Ordená tus finanzas en 7 días</div>
+                        <div class="od">Mini-curso · convierte al 31%</div>
+                      </div>
+                      <div class="right"><span class="op">$27</span></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 3 -->
+                <div class="rung" style="--accent:#6A3CFF">
+                  <div class="rung-head">
+                    <div class="num">PELDAÑO 3</div>
+                    <div class="rung-badge">📘 Curso Core</div>
+                    <div class="rung-explain">El grueso de tu ingreso. La transformación central.</div>
+                  </div>
+                  <div class="rung-offers">
+                    <div class="offer">
+                      <div class="oi">
+                        <div class="on">Finanzas para Freelancers</div>
+                        <div class="od">Tu mejor conversión: 8.2%</div>
+                      </div>
+                      <div class="right"><span class="opp" title="Sugerencia de Nina">💜 subir a $179</span><span class="op">$149</span></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 4 · VACÍO (hueco detectado) -->
+                <div class="rung empty" style="--accent:#F59E0B">
+                  <div class="rung-head">
+                    <div class="num">PELDAÑO 4</div>
+                    <div class="rung-badge">👑 VIP / Premium</div>
+                    <div class="rung-explain">Sube el ticket. Tu opción de mayor valor, más cercana.</div>
+                  </div>
+                  <div class="rung-empty-hint">
+                    Todavía no tenés tu peldaño premium. Para tu tipo de negocio, Nina sugiere:<br>
+                    • <b>Cohorte VIP trimestral</b> con mentoría grupal<br>
+                    • <b>Mentoría 1:1</b> de acompañamiento<br>
+                    • <b>Mastermind</b> de alumnos avanzados
+                  </div>
+                  <div class="rung-create">＋ Crear mi peldaño premium</div>
+                </div>
+
+              </div>
+
+              <!-- PELDAÑO 5 · full-width -->
+              <div class="rung wide" style="--accent:#16C784">
+                <div class="rung-head">
+                  <div class="num">PELDAÑO 5</div>
+                  <div class="rung-badge">🔄 Membresía · Continuity</div>
+                  <div class="rung-explain">Recurrente. Mantiene a tu audiencia y te da MRR mes a mes.</div>
+                </div>
+                <div class="rung-offers">
+                  <div class="offer">
+                    <div class="oi">
+                      <div class="on">Club Finanzas</div>
+                      <div class="od">78 miembros activos · $2.310 de MRR</div>
+                    </div>
+                    <div class="right"><span class="op">$19/mes</span></div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="ladder-hint">
+              💡 No tenés que llenar todos los peldaños. Pero una escalera completa hace que
+              <b style="color:var(--sofia-text)">Sofía</b> tenga siempre algo para ofrecer en cada momento de la conversación —
+              y que nadie se te quede sin el próximo paso.
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-flag">Mockup de visión · Comunify · organism shell real</div>
+</body>
+</html>

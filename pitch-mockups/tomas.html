@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comunify · Tomás · Referentes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="pitch.css" />
+</head>
+<body>
+  <div class="shell">
+
+    <!-- ================= TopBar ================= -->
+    <header class="topbar">
+      <a class="logo" href="index.html">
+        <img class="mark" src="brand/Logo.png" alt="Comunify" />
+        <span class="word">Comunify</span>
+      </a>
+      <div class="right">
+        <button class="icon-btn" title="Tema">🌙</button>
+        <div class="tenant-switch">
+          <div class="av sm" style="background:var(--gradient);color:#fff">C</div>
+          <div style="display:flex;flex-direction:column;line-height:1.1">
+            <span class="nm">Carla Méndez</span>
+            <span class="ca">Finanzas para Freelancers</span>
+          </div>
+          <span style="color:var(--muted)">▾</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ================= Body split ================= -->
+    <div class="body">
+
+      <!-- ===== Luana · supervisor chat panel ===== -->
+      <aside class="supervisor">
+        <div class="sup-head">
+          <div class="av md av-luana">L</div>
+          <div class="meta">
+            <div class="nm">Luana <span class="status-dot" title="en línea"></span></div>
+            <div class="role">Tu jefa de gabinete · coordina al equipo</div>
+          </div>
+          <div class="tools">
+            <button class="icon-btn" title="Historial">🕘</button>
+            <button class="icon-btn" title="Nueva conversación">＋</button>
+          </div>
+        </div>
+
+        <div class="chat">
+          <div class="msg">
+            <div class="av sm av-luana">L</div>
+            <div>
+              <div class="bubble brand">
+                Te traje a <b>Tomás</b>. Esta semana encontró <b>3 temas</b> que están
+                rindiendo fuerte en tus referentes, y ya armó <b>tu versión</b> del mejor —
+                escrito como hablás vos, no copiado.
+              </div>
+              <div class="time">hoy 8:05</div>
+            </div>
+          </div>
+
+          <div class="msg">
+            <div class="av sm av-tomas" style="background-image:url(agents/adrian.png)">T</div>
+            <div>
+              <div class="bubble">
+                El tema de los <b>“3 errores al ahorrar siendo freelancer”</b> es el más
+                fuerte: lo recomiendo en <b>Reel</b> porque tus reels rinden 2× más alcance que
+                tus carruseles. A la derecha te dejé el guion completo listo para grabar.
+              </div>
+              <div class="time">hoy 8:05</div>
+            </div>
+          </div>
+
+          <div class="quick">
+            <button class="qp">Aprobá y programalo 🎬</button>
+            <button class="qp">¿Por qué Reel y no carrusel?</button>
+            <button class="qp">Mostrame más temas del nicho</button>
+          </div>
+        </div>
+
+        <div class="composer">
+          <button class="cicon" title="Adjuntar archivo (PDF, imagen, CSV…)">📎</button>
+          <input placeholder="Escribile a Luana…  (ej: “buscá ideas sobre impuestos para monotributistas”)" />
+          <button class="cicon" title="Enviar audio a Luana">🎤</button>
+          <button class="send">➤</button>
+        </div>
+      </aside>
+
+      <div class="seam"></div>
+
+      <!-- ===== App panel ===== -->
+      <div class="app">
+
+        <!-- Ribbon: Tomás activo -->
+        <nav class="ribbon">
+          <a class="rtab inicio" href="index.html"><span class="rav">🏠</span><span class="rlab"><span class="role">Inicio</span><span class="nm">Mi Día</span></span></a>
+          <a class="rtab nina"  href="nina.html"><span class="rav"></span><span class="rlab"><span class="role">Estratega</span><span class="nm">Nina</span></span></a>
+          <a class="rtab tomas active" href="tomas.html"><span class="rav"></span><span class="rlab"><span class="role">Atraer</span><span class="nm">Tomás</span></span></a>
+          <a class="rtab sofia" href="sofia.html"><span class="rav"></span><span class="rlab"><span class="role">Vender</span><span class="nm">Sofía</span></span></a>
+          <a class="rtab bruno" href="#"><span class="rav"></span><span class="rlab"><span class="role">Operar</span><span class="nm">Bruno</span></span></a>
+          <a class="rtab lucia" href="#"><span class="rav"></span><span class="rlab"><span class="role">Retener</span><span class="nm">Lucía</span></span></a>
+          <a class="rtab plat"  href="#"><span class="rav">⚙️</span><span class="rlab"><span class="role">Plataforma</span><span class="nm">Config</span></span></a>
+        </nav>
+
+        <!-- SubTabsBar Tomás -->
+        <div class="subtabs">
+          <button class="stab tomas active">🎯 Referentes</button>
+          <button class="stab">✍️ Contenido</button>
+          <button class="stab">👥 Audiencia</button>
+          <button class="stab">📢 Pauta</button>
+        </div>
+
+        <!-- Content -->
+        <div class="appcontent">
+          <div class="wrap">
+
+            <div class="page-h">
+              <div class="crumb">🎯 TOMÁS · ATRAER · referentes</div>
+              <h1>Lo que funciona esta semana en tu nicho</h1>
+              <div class="sub">Tomás vigila a tus referentes y las tendencias de finanzas personales · y te arma tu versión de lo que más rinde</div>
+            </div>
+
+            <!-- ===== DISCOVERY BAR: filtro referentes + temas ===== -->
+            <div class="discovery">
+              <div class="disc-group">
+                <span class="glab">Ver</span>
+                <button class="disc-all on"><span class="dot"></span>Todos</button>
+                <div class="disc-refs">
+                  <div class="disc-ref" style="background:#2D7FF9" title="@finanzas.simples">FS<span class="pd" title="publicó algo que rinde"></span></div>
+                  <div class="disc-ref" style="background:#16C784" title="@ahorroconlu">AL<span class="pd"></span></div>
+                  <div class="disc-ref" style="background:#F59E0B" title="@plataclara">PC</div>
+                  <div class="disc-ref" style="background:#7B2FF7" title="@dineroymate">DM<span class="pd"></span></div>
+                  <div class="disc-ref" style="background:#1246D6" title="@freelance.rico">EF</div>
+                  <div class="disc-add" title="Agregar referente">＋</div>
+                </div>
+              </div>
+              <div class="disc-divider"></div>
+              <div class="disc-group" style="flex:1;min-width:200px">
+                <span class="glab">Tema</span>
+                <div class="disc-trends">
+                  <span class="disc-trend on">Ahorro freelance</span>
+                  <span class="disc-trend">Impuestos simples</span>
+                  <span class="disc-trend">Primer fondo</span>
+                  <span class="disc-trend">Cobrar en USD</span>
+                  <span class="disc-trend">Precios a clientes</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="tomas-grid">
+
+              <!-- ===== IZQ: feed ===== -->
+              <div class="feed">
+
+                <!-- tarjeta estrella -->
+                <div class="card feed-card star">
+                  <div class="fc-thumb">
+                    <div class="play">▶</div>
+                    <span class="views">240k views</span>
+                  </div>
+                  <div class="fc-mid">
+                    <div class="fc-src">
+                      <div class="ref-av" style="background:#2D7FF9">FS</div>
+                      <div><div class="nm">Finanzas Simples</div><div class="meta">@finanzas.simples · Reel</div></div>
+                      <span class="badge-star">⭐ El más fuerte</span>
+                    </div>
+                    <div class="fc-why">
+                      <div class="lab">Por qué funciona</div>
+                      <div class="txt">Hook de error + lista de 3 (“estás haciendo esto mal”). Cierra invitando a comentar “PLATA” para un recurso gratis — captura leads desde el reel.</div>
+                      <span class="perf">📈 +340% vs. su promedio</span>
+                    </div>
+                  </div>
+                  <div class="fc-act">
+                    <div class="fit">
+                      <div class="fit-donut" style="--p:91"><span>91%</span></div>
+                      <div class="ft"><b>Fit con tu audiencia</b><br><span class="s">Ya preguntan esto en tus comentarios</span></div>
+                    </div>
+                    <button class="btn primary" style="background:var(--tomas);border-color:var(--tomas)">Replicar para mí ›</button>
+                  </div>
+                </div>
+
+                <!-- tarjeta 2 -->
+                <div class="card feed-card">
+                  <div class="fc-thumb" style="background:linear-gradient(135deg,#16C784,#0E804B)">
+                    <div class="play">❑</div>
+                    <span class="views">8 slides · 51k</span>
+                  </div>
+                  <div class="fc-mid">
+                    <div class="fc-src">
+                      <div class="ref-av" style="background:#16C784">AL</div>
+                      <div><div class="nm">Ahorrá con Lu</div><div class="meta">@ahorroconlu · Carrusel</div></div>
+                    </div>
+                    <div class="fc-why">
+                      <div class="lab">Por qué funciona</div>
+                      <div class="txt">Carrusel “cuánto deberías tener ahorrado según tu edad”. Comparativa visual + se guarda mucho (los guardados empujan el alcance).</div>
+                      <span class="perf">📈 +120% en guardados</span>
+                    </div>
+                  </div>
+                  <div class="fc-act">
+                    <div class="fit">
+                      <div class="fit-donut" style="--p:74"><span>74%</span></div>
+                      <div class="ft"><b>Fit con tu audiencia</b><br><span class="s">Tu público es freelance, no asalariado por edad</span></div>
+                    </div>
+                    <button class="btn" style="color:var(--tomas)">Replicar para mí ›</button>
+                  </div>
+                </div>
+
+                <!-- tarjeta 3 -->
+                <div class="card feed-card">
+                  <div class="fc-thumb" style="background:linear-gradient(135deg,#7B2FF7,#1E5EFF)">
+                    <div class="play">▶</div>
+                    <span class="views">133k views</span>
+                  </div>
+                  <div class="fc-mid">
+                    <div class="fc-src">
+                      <div class="ref-av" style="background:#7B2FF7">DM</div>
+                      <div><div class="nm">Dinero &amp; Mate</div><div class="meta">@dineroymate · Reel</div></div>
+                    </div>
+                    <div class="fc-why">
+                      <div class="lab">Por qué funciona</div>
+                      <div class="txt">“Cómo facturé sin volverme loca con los impuestos”. Storytelling en primera persona + un solo consejo accionable al final.</div>
+                      <span class="perf">📈 +210% en alcance</span>
+                    </div>
+                  </div>
+                  <div class="fc-act">
+                    <div class="fit">
+                      <div class="fit-donut" style="--p:88"><span>88%</span></div>
+                      <div class="ft"><b>Fit con tu audiencia</b><br><span class="s">Impuestos es la duda #1 de tus freelancers</span></div>
+                    </div>
+                    <button class="btn" style="color:var(--tomas)">Replicar para mí ›</button>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- ===== DERECHA: panel transformación (pre-cargado) ===== -->
+              <div class="card transform">
+                <div class="tp-head">
+                  <div class="k">✨ Tu versión · lista para aprobar</div>
+                  <h3>3 errores al ahorrar siendo freelancer</h3>
+                  <div class="sub">Adaptado del reel de @finanzas.simples · a la voz de tu marca</div>
+                </div>
+
+                <div class="tp-body">
+
+                  <!-- 1 · voz de marca -->
+                  <div class="tp-sec">
+                    <div class="lab">🗣️ En la voz de tu marca</div>
+                    <div class="tp-voice">
+                      “Si sos freelance y a fin de mes no te queda nada, no es que ganás poco —
+                      es que estás cometiendo 3 errores que casi todos cometemos. Te los muestro
+                      en 30 segundos 👇”
+                      <div class="vt">✓ Cercano, directo, “de freelance a freelance” · sin tecnicismos · como escribís siempre</div>
+                    </div>
+                  </div>
+
+                  <!-- 2 · formato recomendado -->
+                  <div class="tp-sec">
+                    <div class="lab">🎬 Mejor formato para vos</div>
+                    <div class="fmt-box">
+                      <div class="top">
+                        <div class="ico">🎬</div>
+                        <div class="nm">Reel · 30s</div>
+                      </div>
+                      <div class="why">Tus carruseles rinden bien, pero este tema engancha más en video — y <b>tus reels tienen 2× el alcance</b> de tus carruseles este mes.</div>
+                      <div class="fmt-toggle">
+                        <button class="o on">Reel</button>
+                        <button class="o">Carrusel</button>
+                        <button class="o">Historia</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 3 · guion -->
+                  <div class="tp-sec">
+                    <div class="lab">📝 Guion, beat por beat</div>
+                    <div class="guion">
+                      <div class="beat hook">
+                        <div><div class="tk">0-3s</div><div class="role">HOOK</div></div>
+                        <div class="line">A cámara: “Si sos freelance y no te queda nada a fin de mes, mirá esto.”</div>
+                      </div>
+                      <div class="beat">
+                        <div><div class="tk">3-12s</div><div class="role">ERROR 1</div></div>
+                        <div class="line">“No separás lo del cliente de lo tuyo.” → mostrar 2 cuentas en el celu.</div>
+                      </div>
+                      <div class="beat">
+                        <div><div class="tk">12-20s</div><div class="role">ERROR 2</div></div>
+                        <div class="line">“Gastás antes de apartar impuestos.” → regla del 30% en pantalla.</div>
+                      </div>
+                      <div class="beat">
+                        <div><div class="tk">20-27s</div><div class="role">ERROR 3</div></div>
+                        <div class="line">“No tenés colchón para los meses flojos.” → meta: 1 mes de gastos.</div>
+                      </div>
+                      <div class="beat">
+                        <div><div class="tk">27-30s</div><div class="role">CTA</div></div>
+                        <div class="line">“Comentá PLATA y te mando mi planilla gratis para ordenarte.”</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 4 · shot list + audio -->
+                  <div class="tp-sec">
+                    <div class="lab">🎥 Shot list</div>
+                    <div class="shot">
+                      <div class="si"><span class="n">1</span> Plano frontal hablando a cámara (hook + cierre).</div>
+                      <div class="si"><span class="n">2</span> Captura de pantalla del celular: 2 cuentas separadas.</div>
+                      <div class="si"><span class="n">3</span> Texto en pantalla con la regla del 30%.</div>
+                    </div>
+                    <div class="tp-audio" style="margin-top:10px">🎵 Audio sugerido: trending “lo-fi calm” · alto en finanzas esta semana</div>
+                  </div>
+
+                </div>
+
+                <!-- acciones -->
+                <div class="tp-actions">
+                  <div class="row1">
+                    <button class="btn primary" style="background:var(--tomas);border-color:var(--tomas)">✓ Aprobar y programar</button>
+                    <button class="btn ghost">Ajustar voz</button>
+                  </div>
+                  <div class="tp-cross">o <a href="sofia.html">pasarlo a Sofía como gancho de venta ›</a></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-flag">Mockup de visión · Comunify · organism shell real</div>
+</body>
+</html>

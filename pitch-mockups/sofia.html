@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comunify · Sofía · Conversaciones</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="pitch.css" />
+</head>
+<body>
+  <div class="shell">
+
+    <!-- ================= TopBar ================= -->
+    <header class="topbar">
+      <a class="logo" href="index.html">
+        <img class="mark" src="brand/Logo.png" alt="Comunify" />
+        <span class="word">Comunify</span>
+      </a>
+      <div class="right">
+        <button class="icon-btn" title="Tema">🌙</button>
+        <div class="tenant-switch">
+          <div class="av sm" style="background:var(--gradient);color:#fff">C</div>
+          <div style="display:flex;flex-direction:column;line-height:1.1">
+            <span class="nm">Carla Méndez</span>
+            <span class="ca">Finanzas para Freelancers</span>
+          </div>
+          <span style="color:var(--muted)">▾</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ================= Body split ================= -->
+    <div class="body">
+
+      <!-- ===== Luana · supervisor chat panel ===== -->
+      <aside class="supervisor">
+        <div class="sup-head">
+          <div class="av md av-luana">L</div>
+          <div class="meta">
+            <div class="nm">Luana <span class="status-dot" title="en línea"></span></div>
+            <div class="role">Tu jefa de gabinete · coordina al equipo</div>
+          </div>
+          <div class="tools">
+            <button class="icon-btn" title="Historial">🕘</button>
+            <button class="icon-btn" title="Nueva conversación">＋</button>
+          </div>
+        </div>
+
+        <div class="chat">
+          <div class="msg">
+            <div class="av sm av-luana">L</div>
+            <div>
+              <div class="bubble brand">
+                <b>Sofía</b> está atendiendo <b>6 conversaciones</b> ahora mismo. Lo más
+                caliente: <b>María</b> ya pidió el link de pago del curso — Sofía lo dejó
+                listo y <b>necesita tu OK</b>.
+              </div>
+              <div class="time">hoy 8:10</div>
+            </div>
+          </div>
+
+          <div class="msg">
+            <div class="av sm av-sofia" style="background-image:url(agents/camila.png)">S</div>
+            <div>
+              <div class="bubble">
+                Respondo sola las dudas de siempre (precio, garantía, “¿me sirve?”). Cuando
+                hay que <b>cobrar, dar un descuento</b> o el tema se pone personal, te lo
+                paso o entrás vos cuando quieras con <b>“Tomar el control”</b>.
+              </div>
+              <div class="time">hoy 8:10</div>
+            </div>
+          </div>
+
+          <div class="quick">
+            <button class="qp">Aprobá el link de María 💳</button>
+            <button class="qp">¿Quiénes están por cerrar?</button>
+            <button class="qp">Pasá los fríos a Lucía</button>
+          </div>
+        </div>
+
+        <div class="composer">
+          <button class="cicon" title="Adjuntar archivo (PDF, imagen, CSV…)">📎</button>
+          <input placeholder="Escribile a Luana…  (ej: “respondé vos a quien pregunte por reembolsos”)" />
+          <button class="cicon" title="Enviar audio a Luana">🎤</button>
+          <button class="send">➤</button>
+        </div>
+      </aside>
+
+      <div class="seam"></div>
+
+      <!-- ===== App panel ===== -->
+      <div class="app">
+
+        <!-- Ribbon: Sofía activa -->
+        <nav class="ribbon">
+          <a class="rtab inicio" href="index.html"><span class="rav">🏠</span><span class="rlab"><span class="role">Inicio</span><span class="nm">Mi Día</span></span></a>
+          <a class="rtab nina"  href="nina.html"><span class="rav"></span><span class="rlab"><span class="role">Estratega</span><span class="nm">Nina</span></span></a>
+          <a class="rtab tomas" href="tomas.html"><span class="rav"></span><span class="rlab"><span class="role">Atraer</span><span class="nm">Tomás</span></span></a>
+          <a class="rtab sofia active" href="sofia.html"><span class="rav"></span><span class="rlab"><span class="role">Vender</span><span class="nm">Sofía</span></span></a>
+          <a class="rtab bruno" href="#"><span class="rav"></span><span class="rlab"><span class="role">Operar</span><span class="nm">Bruno</span></span></a>
+          <a class="rtab lucia" href="#"><span class="rav"></span><span class="rlab"><span class="role">Retener</span><span class="nm">Lucía</span></span></a>
+          <a class="rtab plat"  href="#"><span class="rav">⚙️</span><span class="rlab"><span class="role">Plataforma</span><span class="nm">Config</span></span></a>
+        </nav>
+
+        <!-- SubTabsBar Sofía -->
+        <div class="subtabs">
+          <button class="stab sofia active">💬 Conversaciones</button>
+          <button class="stab sofia">📊 Pipeline</button>
+          <button class="stab sofia">🔄 Recuperación</button>
+        </div>
+
+        <!-- Content = Inbox -->
+        <div class="appcontent inbox-host">
+
+          <div class="inbox-head">
+            <div>
+              <h2>Conversaciones</h2>
+              <div class="sub">Sofía responde por defecto · entrá a cualquiera y tomá el control cuando quieras</div>
+            </div>
+            <div class="mode-toggle" id="modeToggle">
+              <button class="opt active">🤖 Sofía decide</button>
+              <button class="opt">👀 Te consulta</button>
+              <button class="opt">✋ Manual</button>
+            </div>
+          </div>
+
+          <div class="inbox" id="inbox">
+            <aside class="conv-list">
+              <div class="conv-search">
+                <div class="box">🔍 Buscar conversación</div>
+                <button class="th-x" title="Filtros">⚙</button>
+              </div>
+              <div id="convList"></div>
+            </aside>
+
+            <section class="thread" id="thread"><!-- render JS --></section>
+
+            <aside class="contact" id="contact"><!-- render JS --></aside>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-flag">Mockup de visión · Comunify · organism shell real</div>
+
+<script>
+// ════ canales (logos reales simple-icons · viewBox 0 0 24 24) ════
+const WA_PATH = "M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.885-9.885 9.885M20.52 3.449C18.24 1.245 15.24 0 12.045 0 5.463 0 .104 5.359.101 11.892c0 2.096.549 4.142 1.595 5.945L0 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.585 0 11.946-5.36 11.948-11.893a11.821 11.821 0 00-3.491-8.458";
+const IG_PATH = "M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z";
+const TT_PATH = "M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z";
+const CH = {
+  wa:{ab:'WA',cls:'wa',full:'WhatsApp',color:'#25D366',logo:WA_PATH},
+  ig:{ab:'IG',cls:'ig',full:'Instagram',color:'#E1306C',logo:IG_PATH},
+  tt:{ab:'TT',cls:'tt',full:'TikTok',color:'#0A7E86',logo:TT_PATH},
+};
+
+// wallpaper tileado del logo de la red (como WhatsApp · vitalia adrian/inbox)
+function chatWallpaper(ch){
+  const m = CH[ch];
+  return `<svg class="th-wall" aria-hidden="true" style="color:${m.color};opacity:.06">
+    <defs><pattern id="wp-${ch}" width="116" height="116" patternUnits="userSpaceOnUse" patternTransform="rotate(-12)">
+      <g fill="currentColor">
+        <path d="${m.logo}" transform="translate(12 14) scale(1.5)"/>
+        <path d="${m.logo}" transform="translate(70 74) scale(0.95)"/>
+      </g>
+    </pattern></defs>
+    <rect width="100%" height="100%" fill="url(#wp-${ch})"/>
+  </svg>`;
+}
+
+// ════ dataset conversaciones (nicho: finanzas para freelancers) ════
+const CONVS = [
+  {
+    id:'maria', name:'María González', ini:'MG', temp:'hot', ch:'wa', stage:'Propuesta',
+    camp:'Reel · 3 errores', prev:'buenísimo. ¿cómo pago?', time:'hace 2 min', handler:'bot',
+    phone:'+54 9 ** **** 4321', email:'m***@gmail.com', origen:'WhatsApp · Reel de Tomás',
+    valor:'Curso Core · $149', interes:'Finanzas para Freelancers', score:82, scoreTemp:'caliente',
+    tags:['preguntó precio','abrió 3×'],
+    breakdown:[{l:'preguntó por precio 2×',v:'+25'},{l:'abrió el último mensaje 3×',v:'+20'},{l:'vino de tu reel',v:'+12'},{l:'sin cerrar (2 días)',v:'−5',neg:true}],
+    msgs:[
+      {t:'day',x:'Hoy'},
+      {t:'in',x:'Hola! Vi tu reel de los 3 errores 🙌 ¿el curso de $149 es el completo?',h:'18:02'},
+      {t:'out',x:'¡Hola María! Sí 💜 “Finanzas para Freelancers” es el curso completo: 6 módulos + plantillas + la comunidad. ¿Te cuento cómo se organiza?',h:'18:03'},
+      {t:'in',x:'Sí porfa. ¿y si no me sirve?',h:'18:05'},
+      {t:'out',x:'Tenés 7 días de garantía: si no es para vos, te devuelvo todo. La mayoría arranca justo como vos, sin saber por dónde empezar.',h:'18:06'},
+      {t:'in',x:'buenísimo. ¿cómo pago?',h:'18:31'},
+      {t:'sys',x:'🤖 Sofía preparó el link de pago + 10% si paga hoy ($134) — necesita tu OK para enviarlo'},
+    ],
+  },
+  {
+    id:'romina', name:'Romina Paz', ini:'RP', temp:'hot', ch:'ig', stage:'Cerrando',
+    camp:'Cohorte VIP', prev:'listo, ¿cómo entro?', time:'hace 12 min', handler:'bot',
+    phone:'—', email:'r***@gmail.com', origen:'Instagram · DM',
+    valor:'VIP · $497', interes:'Cohorte VIP trimestral', score:88, scoreTemp:'caliente',
+    tags:['quiere VIP','lista para pagar'],
+    breakdown:[{l:'pidió entrar al VIP',v:'+30'},{l:'ya hizo el curso core',v:'+22'},{l:'responde al toque',v:'+15'}],
+    msgs:[
+      {t:'day',x:'Hoy'},
+      {t:'in',x:'Vi que abrís la cohorte VIP. Quiero entrar 🔥',h:'17:40'},
+      {t:'out',x:'¡Genial Romina! La cohorte arranca el 1°: 12 semanas con mentoría grupal en vivo + mi acompañamiento. Quedan 3 lugares.',h:'17:41'},
+      {t:'in',x:'listo, ¿cómo entro?',h:'17:48'},
+      {t:'out',x:'Te mando el link del VIP ($497) 💜 También podés en 3 cuotas si preferís. ¿Cuál te queda mejor?',h:'17:49'},
+    ],
+  },
+  {
+    id:'diego', name:'Diego Flores', ini:'DF', temp:'warm', ch:'ig', stage:'Negociando',
+    camp:'Cohorte VIP', prev:'lo de las cuotas suena bien', time:'hace 1 h', handler:'bot',
+    phone:'—', email:'d***@hotmail.com', origen:'Instagram · Reel de Tomás',
+    valor:'VIP · $497', interes:'Cohorte VIP (objeción precio)', score:58, scoreTemp:'tibio',
+    tags:['sensible al precio'],
+    breakdown:[{l:'preguntó por el VIP',v:'+18'},{l:'interactúa hace 2 semanas',v:'+12'},{l:'objeción de precio',v:'−8',neg:true}],
+    msgs:[
+      {t:'day',x:'Hoy'},
+      {t:'in',x:'Me interesa el VIP pero $497 es mucho para mí ahora 😕',h:'16:10'},
+      {t:'out',x:'Te entiendo, Diego. Dos opciones: lo hacés en 3 cuotas de $179, o arrancás con el curso de $149 y te sumás al VIP en la próxima cohorte. ¿Cuál te suena?',h:'16:11'},
+      {t:'in',x:'lo de las cuotas suena bien',h:'16:25'},
+      {t:'out',x:'Buenísimo 🙌 Te preparo el link en 3 cuotas. ¿A esta tarjeta o por transferencia?',h:'16:26'},
+    ],
+  },
+  {
+    id:'valentina', name:'Valentina Ruiz', ini:'VR', temp:'warm', ch:'tt', stage:'Calificando',
+    camp:'TikTok orgánico', prev:'Hola Vale! Soy Carla 💜', time:'hace 25 min', handler:'human',
+    phone:'—', email:'—', origen:'TikTok · video orgánico',
+    valor:'Curso Core · $149', interes:'Duda: “¿me sirve si recién empiezo?”', score:64, scoreTemp:'tibio',
+    tags:['principiante','dudosa'],
+    breakdown:[{l:'mandó DM con una duda real',v:'+20'},{l:'mira tu contenido hace tiempo',v:'+18'},{l:'todavía no preguntó precio',v:'+0'}],
+    msgs:[
+      {t:'day',x:'Hoy'},
+      {t:'in',x:'hola! vi tu tiktok. me da cosa preguntar pero… ¿esto sirve si soy un desastre con la plata? 😅',h:'15:30'},
+      {t:'out',x:'¡Para nada es tonto preguntarlo! 💜 El curso justo arranca de cero, sin tecnicismos.',h:'15:31'},
+      {t:'sys',x:'🙋 Tomaste el control — Sofía pausada en esta conversación'},
+      {t:'you',x:'Hola Vale! Soy Carla 💜 Yo arranqué siendo un desastre también, te juro 😂 Si querés te cuento cómo armé el curso pensando justo en gente que recién empieza.',h:'15:34'},
+    ],
+  },
+  {
+    id:'joaquin', name:'Joaquín Díaz', ini:'JD', temp:'cold', ch:'wa', stage:'Seguimiento',
+    camp:'Tripwire 7 días', prev:'dale, gracias!', time:'hace 3 h', handler:'bot',
+    phone:'+54 9 ** **** 8890', email:'j***@gmail.com', origen:'WhatsApp · compró el tripwire',
+    valor:'Tripwire $27 → Curso Core', interes:'Upsell al curso completo', score:34, scoreTemp:'frío',
+    tags:['compró tripwire','se enfría'],
+    breakdown:[{l:'compró el reto de 7 días',v:'+20'},{l:'completó el reto',v:'+10'},{l:'sin responder hace 3 h',v:'−12',neg:true}],
+    msgs:[
+      {t:'day',x:'Hoy'},
+      {t:'in',x:'ya hice el reto de 7 días, estuvo bueno 🙌',h:'12:05'},
+      {t:'out',x:'¡Me alegra Joaquín! Si te sirvió el reto, el curso completo te ordena TODO: presupuesto, impuestos y tu primer colchón. ¿Te cuento?',h:'12:06'},
+      {t:'in',x:'dale, gracias!',h:'12:20'},
+      {t:'out',x:'Te dejo la info por acá cuando quieras 👋 sin apuro.',h:'12:21'},
+      {t:'sys',x:'🤖 Sofía programó un seguimiento para mañana (sin respuesta hace 3 h)'},
+    ],
+  },
+  {
+    id:'tomasv', name:'Tomás Vega', ini:'TV', temp:'cold', ch:'wa', stage:'Interesado',
+    camp:'Lead magnet', prev:'descargué la masterclass, gracias', time:'ayer', handler:'bot',
+    phone:'+54 9 ** **** 1027', email:'t***@gmail.com', origen:'WhatsApp · Masterclass gratis',
+    valor:'Lead nuevo', interes:'Acaba de bajar el lead magnet', score:22, scoreTemp:'frío',
+    tags:['lead nuevo'],
+    breakdown:[{l:'descargó la masterclass',v:'+12'},{l:'dejó su WhatsApp',v:'+10'},{l:'sin interacción aún',v:'+0'}],
+    msgs:[
+      {t:'day',x:'Ayer'},
+      {t:'in',x:'descargué la masterclass gratis, gracias',h:'19:40'},
+      {t:'out',x:'¡Genial Tomás! ¿La pudiste ver? Si te quedó alguna duda con tus finanzas, contame y te oriento 💜',h:'19:41'},
+    ],
+  },
+];
+
+let currentId = 'maria';
+const cur = () => CONVS.find(c => c.id === currentId);
+
+// ════ conv list ════
+function renderList(){
+  document.getElementById('convList').innerHTML = CONVS.map(c => {
+    const ch = CH[c.ch];
+    const isSel = c.id === currentId;
+    const sel = isSel ? 'sel' : '';
+    const human = c.handler === 'human' ? 'human' : '';
+    const selStyle = isSel ? `style="background:color-mix(in srgb, ${ch.color} 10%, var(--card));border-left-color:${ch.color}"` : '';
+    const lastChip = c.handler === 'human'
+      ? `<span class="you-chip">✋ Tú</span>`
+      : `<span class="camp-tag" title="Origen: ${c.camp}">📣 ${c.camp}</span>`;
+    return `<div class="conv-item ${sel} ${human}" ${selStyle} onclick="openConv('${c.id}')">
+      <div class="conv-av">${c.ini}</div>
+      <div class="conv-main">
+        <div class="conv-top">
+          <div class="conv-name"><span class="tdot ${c.temp}"></span><span class="nm">${c.name}</span></div>
+          <span class="conv-time">${c.time}</span>
+        </div>
+        <div class="conv-prev">${c.prev}</div>
+        <div class="conv-tags">
+          <span class="cabbr ${ch.cls}">${ch.ab}</span>
+          <span class="stage-badge">${c.stage}</span>
+          ${lastChip}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ════ thread ════
+function renderThread(){
+  const c = cur(); const ch = CH[c.ch];
+  const isHuman = c.handler === 'human';
+  const msgs = c.msgs.map(m => {
+    if(m.t === 'day') return `<div class="day-sep">${m.x}</div>`;
+    if(m.t === 'sys') return `<div class="day-sep"><span style="background:var(--muted-bg);border:1px solid var(--line);padding:4px 11px;border-radius:999px;color:var(--ink-2);font-style:normal">${m.x}</span></div>`;
+    if(m.t === 'in') return `<div class="tmsg in"><div class="tbubble">${m.x}<div class="ti">${m.h}</div></div></div>`;
+    const who = m.t === 'you' ? 'Tú' : 'Sofía';
+    const obg = `background:color-mix(in srgb, ${ch.color} 13%, #fff);border-color:color-mix(in srgb, ${ch.color} 28%, var(--line))`;
+    return `<div class="tmsg out"><div class="tbubble" style="${obg}">${m.x}<div class="ti">${m.h} · ${who}</div></div></div>`;
+  }).join('');
+
+  const headRight = isHuman
+    ? `<span class="handler-pill human">✋ Tú respondés</span>
+       <button class="btn-take warn" onclick="setHandler('bot')">🤖 Devolver a Sofía</button>`
+    : `<span class="handler-pill bot">🤖 Sofía respondiendo</span>
+       <button class="btn-take" onclick="setHandler('human')">✋ Tomar el control</button>`;
+
+  document.getElementById('thread').className = 'thread' + (isHuman ? ' human' : '');
+  document.getElementById('thread').innerHTML = `
+    <div class="th-head">
+      <div class="th-id">
+        <div class="av-i">${c.ini}</div>
+        <div>
+          <div class="nm">${c.name}</div>
+          <div class="meta"><span class="cabbr ${ch.cls}">${ch.ab}</span><span>·</span><span>${ch.full}</span></div>
+        </div>
+      </div>
+      <div class="th-actions">
+        ${headRight}
+        <button class="th-x" title="Cerrar panel" onclick="document.getElementById('inbox').classList.toggle('sidebar-closed')">×</button>
+      </div>
+    </div>
+
+    <div class="takeover">
+      <span style="font-size:18px">⚡</span>
+      <div class="tt">
+        <div class="t1">Tenés el control · Sofía pausada en esta conversación</div>
+        <div class="t2">El modo global “🤖 Sofía decide” no cambia · solo acá · devolvés el control cuando quieras</div>
+      </div>
+    </div>
+
+    <div class="th-msgs" style="background:color-mix(in srgb, ${ch.color} 5%, var(--bg))">
+      ${chatWallpaper(c.ch)}
+      <div class="th-stream">
+        ${msgs}
+        ${isHuman
+          ? `<div class="th-hint human"><em>⚡ Estás respondiendo como vos · Sofía vuelve a manejar cuando devuelvas el control</em></div>`
+          : `<div class="th-hint"><em>Sofía decide la próxima respuesta automáticamente · tocá <b>✋ Tomar el control</b> para responder vos</em></div>`}
+      </div>
+    </div>
+
+    <div class="th-input">
+      <button class="cicon" ${isHuman?'':'disabled'} title="Adjuntar">📎</button>
+      <textarea ${isHuman?'':'disabled'} placeholder="${isHuman ? 'Escribir como vos a '+c.name.split(' ')[0]+'…' : '🤖 Sofía responde automáticamente · tomá el control para escribir vos'}"></textarea>
+      <button class="send" ${isHuman?'':'disabled'}>➤</button>
+    </div>`;
+}
+
+// ════ contact sidebar ════
+function renderContact(){
+  const c = cur();
+  const tempBadge = { caliente:'background:#FCE9EA;color:#E5484D', tibio:'background:var(--bruno-soft);color:var(--bruno-text)', frío:'background:var(--tomas-soft);color:var(--tomas)' }[c.scoreTemp] || '';
+  const br = c.breakdown.map(b => `<div class="row"><span class="muted">${b.l}</span><span class="${b.neg?'neg':'pos'}">${b.v}</span></div>`).join('');
+  document.getElementById('contact').innerHTML = `
+    <div class="ct-head"><span class="t">Detalles del contacto</span><button class="th-x">⋯</button></div>
+    <div class="ct-body">
+      <div class="ct-field"><div class="k">Nombre</div><div class="v">${c.name}</div></div>
+      <div class="ct-field"><div class="k">Busca</div><div class="v">${c.valor}</div><div class="v sub">${c.interes}</div></div>
+      <div class="ct-field"><div class="k">Origen</div><div class="v sub">${c.origen}</div></div>
+      <div class="ct-field"><div class="k">Contacto</div><div class="v sub">${c.phone} · ${c.email}</div></div>
+
+      <div>
+        <div class="ct-field" style="margin-bottom:7px"><div class="k">Score de intención</div></div>
+        <div class="ct-score">
+          <div class="ct-donut" style="--p:${c.score}"><span>${c.score}</span></div>
+          <div class="br">
+            ${br}
+            <div class="glass">Señales + recencia · sin caja negra</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ct-field">
+        <div class="k">Etiquetas</div>
+        <div class="ct-tags">${c.tags.map(t=>`<span class="ct-tag">${t}</span>`).join('')}<span class="ct-tag" style="${tempBadge}">${c.scoreTemp}</span></div>
+      </div>
+
+      <div class="ct-actions">
+        <button>💳 Enviar link de pago</button>
+        <button>📅 Agendar una llamada</button>
+        <button>→ Ver en el pipeline</button>
+      </div>
+    </div>`;
+}
+
+// ════ acciones ════
+function openConv(id){ currentId = id; renderList(); renderThread(); renderContact(); }
+function setHandler(mode){ cur().handler = mode; renderList(); renderThread(); }
+
+// global mode toggle (visual)
+document.querySelectorAll('#modeToggle .opt').forEach(o => o.addEventListener('click', () => {
+  document.querySelectorAll('#modeToggle .opt').forEach(x => x.classList.remove('active'));
+  o.classList.add('active');
+}));
+
+renderList(); renderThread(); renderContact();
+</script>
+</body>
+</html>
