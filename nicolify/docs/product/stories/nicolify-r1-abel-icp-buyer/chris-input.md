@@ -214,3 +214,6 @@ Kit-alignment fix-loop ejecutado. builder-frontend hizo el grueso pero su proces
 
 ### 2026-06-24 · 🤖 claude · `/dev-team` · 💡 PROPONE
 Detalle a ratificar: ¿querés abel **100% div-clean** antes de cerrar (que el auditor termine los 14 divs restantes), o aceptás el estado actual (native/arbitrary limpio, divs parcial) y los 14 divs van a la adoption story? Lo sustancial del "kit-only" ya está; los 14 divs son higiene de page-primitive (canon §2.7), no uso de HTML nativo. Mi recomendación: que el auditor los termine en el re-pass (es mecánico + abel queda referencia áurea completa).
+
+### 2026-06-24 · 🤖 claude · `/pm-nicolify` · ✓ APLICADO
+Chris ratificó: **el auditor termina los 14 divs ahora (Carril R)** → abel queda 100% canon-clean (referencia áurea completa) antes de cerrar. Encadeno a `/auditor` con mandato: (1) re-pass de los 5 archivos cambiados + a11y del Radix Select live, (2) migrar los 14 layout-divs abel restantes → page-primitives, (3) bajar no-div-layout baseline 32→18, (4) gates GREEN. Luego demo gate #37 (lo ejercés vos) → merge → done.

@@ -22,7 +22,7 @@ kit_alignment_2026_06_24:
   decision: "Opción A — alinear abel (fix-loop FE acotado a los 4 componentes) → re-auditor → demo gate #37 → merge. Migración drift compartido (UniversalIntake/DraftFirstStarter) = adoption story (fuera de scope)."
   outcome: "DONE (parcial) — builder-frontend murió mid-run; orchestrator verificó partial + terminó. Native-element + arbitrary-value drift 100% alineado a kit (select/textarea/button→kit · 2 arbitraries→token · Badge→kit). Layout-div 7/21 migrados (39→32 baseline). native-select baseline 1→0. Gates: tsc 0 abel-err · eslint 0 err · vitest 344/344. Result: T-KIT-ALIGN-result.md"
   deferred_to_adoption: "14 layout-divs abel restantes · wholesale @/components/ui→kit (8 atoms R0 barrel) · pre-existing engine tsc err core/@luana/hooks (→ /pm-luana)"
-  next: "/auditor re-pass acotado (decide: terminar 14 divs vía Carril R o confirmar + rutear a adoption story) → demo gate #37 → merge"
+  next: "Chris ratificó (2026-06-24): /auditor TERMINA los 14 divs abel ahora (Carril R) → abel 100% canon-clean (referencia áurea completa). Auditor: (1) re-pass de los 5 archivos cambiados + a11y del Radix Select live, (2) migrar 14 layout-divs abel restantes (IcpIntakeOverlay 3·IcpCard 1·BuyerLeafForm 4·IcpDatosForm 6) → page-primitives, (3) bajar no-div-layout baseline 32→18 (shrink-only), (4) gates GREEN + abel vitest verde. Luego → demo gate #37 → merge."
 adr_001_compliance: full
 ready_package: [03-arch.md, "03-arch-{be,fe,agentic}.md", 04-validators.yaml, 05-guidelines.md, 06-tickets.yaml, dispatch-plan.md]
 ticket_count: 8                       # 2 BE + 1 AGENTIC (Opus R23) + 4 FE + 1 E2E · DAG en dispatch-plan.md
