@@ -155,7 +155,7 @@ PRECOMMIT_CHECKS=(
   10-infra-matrix 11-worktree 12-story-closure 13-scope-branch
   14-brand-docs-schema 15-cap-ledger 15.5-system-map 16-chris-input
   17-checkpoint-dupkeys 18-machinery 19-docs-orphan
-  20-story-yaml-valid
+  20-story-yaml-valid 21-pathspec-transitive
 )
 for _chk in "${PRECOMMIT_CHECKS[@]}"; do
   _chk_file="${CHECKS_DIR}/${_chk}.sh"
