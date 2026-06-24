@@ -164,7 +164,15 @@ function EntityPickerInner<T extends EntityPickerItem>(
       try {
         const res = await searchFn({ q, cursor, limit });
         if (seq !== requestSeq.current) return; // a newer request superseded this one
-        setItems((prev) => (reset ? res.items : [...prev, ...res.items]));
+        // Dedup by id al appendear páginas: la paginación por cursor puede solapar
+        // filas (boundary) y el infinite-scroll puede disparar el mismo cursor 2×
+        // antes de que `loading` actualice → keys React duplicadas. Dedup garantiza
+        // ids únicos sin importar el solape del backend.
+        setItems((prev) => {
+          if (reset) return res.items;
+          const seen = new Set(prev.map((p) => p.id));
+          return [...prev, ...res.items.filter((it) => !seen.has(it.id))];
+        });
         setNextCursor(res.nextCursor ?? null);
         setTotal(res.total);
         if (reset) setActiveIndex(0);
