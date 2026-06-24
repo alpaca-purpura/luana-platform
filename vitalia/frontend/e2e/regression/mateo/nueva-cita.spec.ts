@@ -26,7 +26,7 @@
  */
 
 import AxeBuilder from "@axe-core/playwright";
-import { test as base, expect, assertShellMounted } from "../../../fixtures/base";
+import { test as base, expect, assertShellMounted } from "../../fixtures/base";
 import { setupClerkTestingToken } from "@clerk/testing/playwright";
 
 const TENANT_ID = process.env["E2E_TENANT_ID"] ?? "vitalia-test-tenant";
@@ -80,8 +80,6 @@ const FREE_DOCTORS_AVAILABLE = {
     { doctor_id: SEED.doctorId2, doctor_label: SEED.doctorLabel2 },
   ],
 };
-
-const FREE_DOCTORS_EMPTY = { doctors: [] };
 
 const AVAILABILITY_OK = {
   status: "available",
@@ -147,19 +145,19 @@ function nuevaCitaUrl(params?: Record<string, string>): string {
 
 /** Setup standard mocks (services + free-doctors available + availability OK + day-strip). */
 async function setupHappyMocks(page: import("@playwright/test").Page) {
-  await page.route("**/api/v1/scheduling/services**", (route) =>
+  await page.route("**/api/v1/offer/servicios**", (route) =>
     route.fulfill({ status: 200, json: SERVICES_MOCK }),
   );
-  await page.route("**/api/v1/scheduling/free-doctors**", (route) =>
+  await page.route("**/api/v1/scheduling/availability/free-doctors**", (route) =>
     route.fulfill({ status: 200, json: FREE_DOCTORS_AVAILABLE }),
   );
-  await page.route("**/api/v1/scheduling/availability**", (route) =>
+  await page.route("**/api/v1/scheduling/availability/check**", (route) =>
     route.fulfill({ status: 200, json: AVAILABILITY_OK }),
   );
-  await page.route("**/api/v1/scheduling/day-strip**", (route) =>
+  await page.route("**/api/v1/scheduling/availability/day-strip**", (route) =>
     route.fulfill({ status: 200, json: DAY_STRIP_MOCK }),
   );
-  await page.route("**/api/v1/crm/patients/search**", (route) =>
+  await page.route("**/api/v1/crm/patients**", (route) =>
     route.fulfill({ status: 200, json: PATIENT_SEARCH_MOCK }),
   );
   await page.route("**/api/v1/scheduling/appointments", (route) => {
@@ -233,27 +231,28 @@ test.describe("SC-crear-paciente: inline patient creation", () => {
     // Patient picker section visible
     await expect(page.locator('[data-testid="nc-section-paciente"]')).toBeVisible();
 
-    // EntityPicker is rendered (patient-picker testId)
-    const pickerInput = page.locator('[data-testid="patient-picker"]');
+    // EntityPicker is rendered — el kit aplica testId como `${tid}-trigger`
+    // (no el bare `patient-picker`).
+    const pickerInput = page.locator('[data-testid="patient-picker-trigger"]');
     await expect(pickerInput).toBeVisible();
   });
 });
 
 test.describe("SC-solape: overlap conflict blocks submit", () => {
   test("busy availability shows warning chip and disables submit", async ({ authedPage: page }) => {
-    await page.route("**/api/v1/scheduling/services**", (route) =>
+    await page.route("**/api/v1/offer/servicios**", (route) =>
       route.fulfill({ status: 200, json: SERVICES_MOCK }),
     );
-    await page.route("**/api/v1/scheduling/free-doctors**", (route) =>
+    await page.route("**/api/v1/scheduling/availability/free-doctors**", (route) =>
       route.fulfill({ status: 200, json: FREE_DOCTORS_AVAILABLE }),
     );
-    await page.route("**/api/v1/scheduling/availability**", (route) =>
+    await page.route("**/api/v1/scheduling/availability/check**", (route) =>
       route.fulfill({ status: 200, json: AVAILABILITY_BUSY }),
     );
-    await page.route("**/api/v1/scheduling/day-strip**", (route) =>
+    await page.route("**/api/v1/scheduling/availability/day-strip**", (route) =>
       route.fulfill({ status: 200, json: DAY_STRIP_MOCK }),
     );
-    await page.route("**/api/v1/crm/patients/search**", (route) =>
+    await page.route("**/api/v1/crm/patients**", (route) =>
       route.fulfill({ status: 200, json: PATIENT_SEARCH_MOCK }),
     );
 
@@ -287,7 +286,13 @@ test.describe("SC-mini-vista: DayAvailabilityStrip renders on date selection", (
 
     await expect(page.locator('[data-testid="nueva-cita-form"]')).toBeVisible({ timeout: 15_000 });
 
-    // Day strip container is rendered (DayAvailabilityStrip shows when startTime is set)
+    // AC-8: la mini-vista es POR-MÉDICO (DayAvailabilityStrip retorna null sin
+    // doctorId). Con fecha+hora el picker se habilita; seleccionamos un médico
+    // para que la franja del día renderice (DAY_STRIP_MOCK).
+    await page.locator('[data-testid="doctor-picker-trigger"]').click();
+    await page.getByRole("option").first().click();
+
+    // Day strip container visible con médico+fecha+hora.
     await expect(page.locator('[data-testid="nc-day-strip-container"]')).toBeVisible();
   });
 });
@@ -349,22 +354,19 @@ test.describe("SC-i18n-tz: timezone display", () => {
 
 test.describe("SC-race: rapid changes don't leave stale availability", () => {
   test("form remains stable after rapid service changes", async ({ authedPage: page }) => {
-    let availabilityCallCount = 0;
-
-    await page.route("**/api/v1/scheduling/services**", (route) =>
+    await page.route("**/api/v1/offer/servicios**", (route) =>
       route.fulfill({ status: 200, json: SERVICES_MOCK }),
     );
-    await page.route("**/api/v1/scheduling/free-doctors**", (route) =>
+    await page.route("**/api/v1/scheduling/availability/free-doctors**", (route) =>
       route.fulfill({ status: 200, json: FREE_DOCTORS_AVAILABLE }),
     );
-    await page.route("**/api/v1/scheduling/availability**", (route) => {
-      availabilityCallCount++;
-      return route.fulfill({ status: 200, json: AVAILABILITY_OK });
-    });
-    await page.route("**/api/v1/scheduling/day-strip**", (route) =>
+    await page.route("**/api/v1/scheduling/availability/check**", (route) =>
+      route.fulfill({ status: 200, json: AVAILABILITY_OK }),
+    );
+    await page.route("**/api/v1/scheduling/availability/day-strip**", (route) =>
       route.fulfill({ status: 200, json: DAY_STRIP_MOCK }),
     );
-    await page.route("**/api/v1/crm/patients/search**", (route) =>
+    await page.route("**/api/v1/crm/patients**", (route) =>
       route.fulfill({ status: 200, json: PATIENT_SEARCH_MOCK }),
     );
 

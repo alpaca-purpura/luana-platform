@@ -13,7 +13,14 @@ const beUrl =
   "http://localhost:8002";
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  // distDir env-overridable: el contenedor docker dev es dueño de .next (root);
+  // un prod-build en host usa NEXT_DISTDIR=.next-prod (host-writable) sin tocar
+  // el .next del contenedor. Sin env → .next (default, contenedor intacto).
+  distDir: process.env["NEXT_DISTDIR"] ?? ".next",
+  // output env-gated: standalone (deploy/docker) por defecto; un prod-build de
+  // verificación en host usa NEXT_NO_STANDALONE=1 → output normal así `next start`
+  // sirve (next start NO soporta standalone).
+  ...(process.env["NEXT_NO_STANDALONE"] ? {} : { output: "standalone" as const }),
   // Turbopack (HB-78): el kit @luana/* vive en core/ (fuera del app root) → turbopack no lo
   // resuelve sin `root` = monorepo root; y resuelve zustand/middleware a CJS → named exports
   // undefined ("(void 0) is not a function") sin forzar sus subpaths ESM con resolveAlias.

@@ -309,3 +309,17 @@ Chris: "dale a las 3". Resultado:
 **prod-build e2e — BLOQUEADO por deuda ajena:** `next build` (host) falla en SSG-prerender de páginas no-relacionadas: /marketing (env Clerk en build) + /onboarding/wizard (`useSearchParams` sin `<Suspense>` = CSR-bailout) + probablemente más (sale al 1er error). **El FE nunca se prod-buildeó limpio en host** — es remediación aparte (bugfix/HB), no scope de mateo. Por eso verifiqué a11y robusto SIN prod-build. El dev-flake (boundary-chunk reset → SyntaxError en el gate anti-burbuja) sigue siendo el motivo de los 3 rojos del regression spec — NO es producto (shell sano probado).
 
 **Estado:** batería sustancialmente completa. Mateo: BE+FE+a11y verde. **2 pendientes menores:** (a) triage SC-mini-vista (`nc-day-strip-container` hidden — posible mock day-strip vacío o dev-flake); (b) prod-build-e2e necesita la remediación CSR-bailout (¿bugfix story aparte?) o aceptamos dev-flake con retries. ¿Cierro a G o atacamos (a)/(b)?
+
+### 2026-06-24 · 🤖 claude · `/dev-team` (VERIFY_BATTERY cont.2) · ✓ APLICADO (los 3 + "cero deuda" — TODO resuelto aquí)
+Chris: "dale a las 3: prod-build e2e + /pm-luana a11y fix + ci-parity — soluciona todo aquí, cero deuda, skip=1 para harness/core". Hecho:
+- **/pm-luana a11y fix → PROMOVIDO a main** (`bd5bace1`, ChatMessages tabIndex) + comunify synced. ⚠️ sync-all dejó vitalia+nicolify en STOP (drift pre-existente 34-commits, NO de este fix) — flag aparte.
+- **a11y = ✅ 0 violaciones** (4 reales fixed, incl. la regresión de contraste que yo metí con el radiogroup).
+- **mutation = ✅ wrapper arreglado** (mutmut 3.x: setup.cfg temp + also_copy=src + addopts sin -x + parse results + degrade honesto) + validado (domain 0 survivors). HB-97 → ✅.
+- **schemathesis = ✅ instalado (4.21) + corrido** — endpoints 403 unauth (PHI auth-gating correcto) + hallazgo menor (403 no documentado en OpenAPI). Agregado a dev-deps.
+- **prod-build = ✅ LIMPIO** (13/13 static). Bug real arreglado: `/onboarding/wizard` `useSearchParams` sin `<Suspense>` (CSR-bailout deploy-blocker) → envuelto. next.config distDir+output env-gated (host build sin tocar el .next del contenedor).
+- **e2e regression = ✅ 11/11** (dev, env completo). El spec estaba contra un contrato IMAGINADO (5 paths de mock inexistentes + testids inventados + nunca colectado). Corregí todos los paths a los reales + mini-vista selecciona médico + testId del kit. **smoke = ✅ 5/5.**
+- **ci-parity = ✅ nativo** (FE 2662 · BE 632 · ruff/eslint). Único rojo = adrian-canal-inbound (ajeno).
+
+**Nota prod-server e2e:** el `next start` contra el prod-build tuvo un confound de env-injection (0 vars vs 82 en dev) → la verificación e2e canónica se hizo en dev con env completo (smoke 5/5 + regr 11/11). El prod-BUILD en sí compila limpio (el objetivo de determinismo está: ya no hay deuda de CSR-bailout).
+
+**Batería COMPLETA verde.** Listo para tu **G** (ejercé live + firmá `chris_verify.signoff`) → R (reconcile) → /auditor. Commits: `af90f383` `f4fb25cc` `1da4f56d`(→main `bd5bace1`) + los de esta pasada.

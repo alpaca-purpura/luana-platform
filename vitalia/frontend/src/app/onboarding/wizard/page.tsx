@@ -14,6 +14,7 @@
  * downstream-regression-na: brand-local FE page; no cross-brand consumers
  */
 
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { WizardOnboardingLayout } from "@/features/onboarding";
 
@@ -29,5 +30,12 @@ export const metadata: Metadata = {
  * No page padding applied (wizard is fullscreen by design).
  */
 export default function WizardOnboardingPage() {
-  return <WizardOnboardingLayout />;
+  // Suspense boundary: WizardOnboardingLayout (cliente) usa useSearchParams; sin
+  // el boundary, `next build` falla el prerender estático (CSR-bailout). Con él,
+  // el shell estático renderiza y la isla cliente hidrata.
+  return (
+    <Suspense>
+      <WizardOnboardingLayout />
+    </Suspense>
+  );
 }
