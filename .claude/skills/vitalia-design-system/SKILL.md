@@ -114,7 +114,7 @@ UI que muestra PHI → `PiiMaskedSpan` + `RequireRole` (roles `doctor`/`nurse`/`
 5. Agent-color: usá `--agent-{slug}` del agente dueño de la tab (§5).
 6. PHI: `PiiMaskedSpan` + `RequireRole` (§7).
 7. Spanish neutro (sin voseo, salvo sales_agent). Estados empty/loading/error/success como el mockup.
-8. Tests: Vitest + Playwright visual golden vs mockup (ADR-003) + axe.
+8. Tests: Vitest + Playwright visual scoped (composición vs la story de Storybook · canon §5 — el golden-vs-mockup de ADR-003 quedó SUPERSEDED) + axe.
 
 ## Referencias (SSoT — leer on-demand)
 

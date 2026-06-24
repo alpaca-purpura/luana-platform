@@ -103,16 +103,17 @@ Happy path
 
 > ★ W0.5-bis (REQ-TAKING-DETAIL §4 · spec-mapa-funcional.md § Dos rondas · `design-system-canon.md` binding HARD).
 > Recién acá — con lo funcional ya cerrado (FIRMA 1) — nace el mockup creativo: **shell completo + la hoja
-> correspondiente + TODOS los campos conversados + TODOS los átomos**, **compuesto del `design-system-canon.md`**
-> vía el **`mockup-kit`** (átomos + layout-primitives + archetypes reales de `core/@luana/{design-tokens,ui-kit}`,
-> tokens de la fuente única — spacing/radius/tipografía/color **NUNCA arbitrary**). **Revisá la galería `/showcase`
-> para reusar lo que ya existe ANTES de crear**; un átomo/primitiva faltante se crea + se **banca en `@luana/ui-kit`**
-> (queda en `/showcase` para reuso). NO se maqueta a mano con `<div>` + clases sueltas ni se reinventa una primitiva
-> existente. El refiner es creativo y **puede MEJORAR lo escrito** (actualiza el § Mapa funcional si la forma cambió
-> algo). Lo que se ve aquí = lo que se programa. Iterá hasta que Chris lo apruebe. **✍ FIRMA 2 = la firma FINAL única**
+> correspondiente + TODOS los campos conversados + TODOS los átomos**, **compuesto partiendo de Storybook**
+> (`core/@luana/ui-kit` = SSoT visual · `design-system-canon.md §5` · átomos + layout-primitives + archetypes REALES,
+> tokens de la fuente única — spacing/radius/tipografía/color **NUNCA arbitrary**). **Partí de las stories de Storybook
+> (`build-storybook` / `:6007` / `/showcase`) para reusar lo que ya existe ANTES de crear**; un átomo/primitiva faltante
+> se **PROPONE + PROMUEVE a `@luana/ui-kit` + su story** (vía `/pm-luana`, queda reusable). NO se maqueta a mano con
+> `<div>` + clases sueltas, NO se copia `_shared.css`, NO se reinventa una primitiva existente. El refiner es creativo y
+> **puede MEJORAR lo escrito** (actualiza el § Mapa funcional si la forma cambió algo). Lo que se ve en Storybook = lo
+> que se programa. Iterá hasta que Chris lo apruebe. **✍ FIRMA 2 = la firma FINAL única**
 > (`mockup_final_signed: true`) → dispara la GENERACIÓN de la RONDA 2.
 
-- **Mockup:** [link `mockups/{screen}.html` — shell + hoja + átomos reales nombrados del `mockup-kit` / `@luana/ui-kit` (revisá `/showcase`)]
+- **Mockup:** [compuesto de Storybook — shell (stories `Shell/*`) + hoja + átomos reales nombrados de `@luana/ui-kit` (revisá Storybook `build-storybook`/`:6007` o `/showcase`); link opcional al render]
 - **Estados:** default / hover / loading / empty / error / success
 - **Microcopy:** [Spanish neutro · ver `.claude/rules/spanish-text.md`]
 

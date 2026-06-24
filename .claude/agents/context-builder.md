@@ -71,7 +71,7 @@ Write `CONTEXT-BRIEF.md` SKELETON FIRST (placeholders for each section), THEN fi
 
 **CRITICAL — Parallel reads:**
 Use SINGLE message with MULTIPLE Read tool calls when reading independent files. Reduces turns 5-10x.
-Example: read PR.md + CONTRACT.md + UI-SPEC.md in one message via 3 parallel Read calls (1 turn instead of 3).
+Example: read `01-spec.md` + `03-arch.md` + relevant rule in one message via 3 parallel Read calls (1 turn instead of 3).
 
 <step name="step_0_init_audit_log_AND_skeleton">
 **MANDATORY first action — two writes in same message:**
@@ -166,7 +166,7 @@ Append every subsequent action (greps run, files read, web fetches, decisions) t
 <step name="step_1_read_pr_folder">
 **Single message, parallel Read calls** for every existing file in `<pr_folder>`:
 - `01-spec.md` (always — story-folders)
-- `02-design-agentic.md` (if exists — agentic stories only; `02-design-ui.md` is RETIRED, UI design lives inline in `01-spec.md § Wireframes` + `mockups/`)
+- `02-design-agentic.md` (if exists — agentic stories only; `02-design-ui.md` is RETIRED, UI design lives inline in `01-spec.md § Wireframes` · mockup compuesto de Storybook · `mockups/*.html` SUPERSEDED por Storybook, canon §5)
 - `03-arch.md` (consolidado) + `03-arch-be.md` / `03-arch-fe.md` / `03-arch-agentic.md` (if exists)
 - `04-validators.yaml` (story-folders, ready package)
 - `05-guidelines.md` (story-folders, ready package)
@@ -371,7 +371,7 @@ After → Edit § 8.
 <step name="step_10_canonical_upstream_docs_fetch">
 **MANDATORY when scope mentions known frameworks.** (H4)
 
-Detect frameworks from: `<frameworks>` input + PR.md scope text + CONTRACT.md "External libraries" + import grep on diff files.
+Detect frameworks from: `<frameworks>` input + `01-spec.md`/`06-tickets.yaml` scope text + `03-arch.md` "External libraries"/dependencies + import grep on diff files.
 
 Known framework → canonical docs URL mapping:
 

@@ -235,6 +235,6 @@ If neither MCP nor WebSearch confirms the metric:
 - **`ux-disruptivo`**: Complementary. ux-disruptivo for interaction screens (forms, wizards), data-storyteller for data-driven screens. Mixed screens: ux-disruptivo leads, data-storyteller consulted for data section only.
 - **`nicolify-feature`**: Can be invoked during UX phase for data-heavy features.
 - **`frontend-expert`**: Consumes VIZ-SPEC.md for implementation. The VIZ-SPEC is a superset of what frontend-expert needs.
-- **`nicolify-ux-designer` agent**: For mechanical data screens (simple tables), the agent is faster. data-storyteller is for visualization with story.
+- **`builder-frontend` agent**: For mechanical data screens (simple tables), the standard FE builder is faster. data-storyteller is for visualization with story.
 - **Copilot inline**: Output is direct HTML, not VIZ-SPEC.
 - **Bowtie context**: Knows the 8 stages as reference but NEVER forces visualization into a single stage if the need is transversal.

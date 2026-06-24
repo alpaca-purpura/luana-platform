@@ -124,7 +124,7 @@ Reemplaza el `<select>` nativo del browser (feo, no-tokenizado). Componente cust
 
 | Actor | Obligación (HARD) |
 |---|---|
-| **`/po-ux`** | Los mockups se **componen del canon** (átomos + layout-primitives + archetypes reales, tokens de la fuente única) — NO se inventan primitivas ni layout a mano. El mockup ratificado = lo que se construye. Cita este canon + el `mockup-kit` (parte de `core-ds-foundation`). |
+| **`/po-ux`** | Los mockups se **componen partiendo de Storybook** (`@luana/ui-kit` = SSoT visual · §5 · átomos + layout-primitives + archetypes REALES, tokens de la fuente única) — NO se inventan primitivas ni layout a mano. El mockup ratificado = lo que se construye. Cita este canon §5; pieza net-new → PROPONE + PROMUEVE al kit. (El `mockup-kit`/`_shared.css` quedó **SUPERSEDED** — ver §5.) |
 | **`/architect`** | El `03-arch.md` + `04-validators.yaml` referencian el canon: toda superficie list/detail usa `EntityWorkspaceLayout`; toda página se arma de page-primitives; selects = `Select` canónico; etc. Declara los gates mecánicos (lint no-arbitrary + arch-test no-div-layout) en validators. |
 | **`/dev-team`** | Construye **desde** `@luana/ui-kit` (único lego). Prohibido maquetar a mano una primitiva existente o usar `<select>` nativo / arbitrary-values. |
 | **`/auditor`** | Verifica **composición** (que se usó el canon), no estilo a mano. `frontend-visual-fidelity` D1 = mecánico (lint/arch-test), no criterio. |
