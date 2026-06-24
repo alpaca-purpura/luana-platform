@@ -146,20 +146,21 @@ vi.mock("../../../hooks/use-availability", () => ({
 
 // Mock @luana/ui-kit — minimal test doubles
 vi.mock("@luana/ui-kit", () => ({
-  FormPageScaffold: ({ header, children }: { header: React.ReactNode; children: React.ReactNode }) =>
-    React.createElement("div", { "data-testid": "form-page-scaffold" }, header, children),
-  PageHeader: ({
-    title,
-    backLabel,
-    onBack,
+  // obs#1: EntitySubNavBar replaces PageHeader (workspace-mode N3 header)
+  EntitySubNavBar: ({
+    rootHref,
+    rootLabel,
+    entity,
   }: {
-    title: React.ReactNode;
-    backLabel?: string;
-    onBack?: () => void;
+    rootHref: string;
+    rootLabel: string;
+    entity: { id: string; name: string };
+    leaves: unknown[];
+    activeLeaf: null;
   }) =>
-    React.createElement("div", null,
-      backLabel ? React.createElement("button", { onClick: onBack, "data-testid": "page-header-back" }, "‹ " + backLabel) : null,
-      React.createElement("h1", null, title),
+    React.createElement("nav", { "data-testid": "entity-sub-nav-bar" },
+      React.createElement("a", { href: rootHref, "data-testid": "entity-sub-nav-root" }, "‹ " + rootLabel),
+      React.createElement("span", { "data-testid": "entity-sub-nav-entity" }, entity.name),
     ),
   FormActionBar: ({
     submitLabel,
@@ -228,7 +229,7 @@ describe("NuevaCitaView", () => {
     vi.clearAllMocks();
   });
 
-  it("renders back-pill pointing to agenda (AC-9: no modal)", () => {
+  it("renders EntitySubNavBar pointing to agenda (obs#1: N3 workspace header, AC-9: no modal)", () => {
     render(
       React.createElement(NuevaCitaView, {
         tenantId: "tenant-1",
@@ -236,11 +237,16 @@ describe("NuevaCitaView", () => {
         prefillTime: undefined,
       }),
     );
-    expect(screen.getByTestId("page-header-back")).toBeInTheDocument();
-    expect(screen.getByTestId("form-page-scaffold")).toBeInTheDocument();
+    // obs#1: EntitySubNavBar replaces PageHeader — N3 sticky full-bleed
+    expect(screen.getByTestId("entity-sub-nav-bar")).toBeInTheDocument();
+    const rootLink = screen.getByTestId("entity-sub-nav-root");
+    expect(rootLink).toHaveAttribute("href", "/tenant-1/mateo/agenda");
+    expect(screen.getByTestId("entity-sub-nav-entity").textContent).toBe("Nueva cita");
+    // form still renders (not a modal)
+    expect(screen.getByTestId("nueva-cita-form")).toBeInTheDocument();
   });
 
-  it("back-pill click calls router.back", () => {
+  it("cancel button calls router.push to agenda (obs#1: deterministic nav — no router.back)", () => {
     render(
       React.createElement(NuevaCitaView, {
         tenantId: "tenant-1",
@@ -248,8 +254,10 @@ describe("NuevaCitaView", () => {
         prefillTime: undefined,
       }),
     );
-    screen.getByTestId("page-header-back").click();
-    expect(mockBack).toHaveBeenCalled();
+    // NuevaCitaActions cancel → handleCancel → router.push (not router.back)
+    screen.getByTestId("nueva-cita-actions-cancel").click();
+    expect(mockPush).toHaveBeenCalledWith("/tenant-1/mateo/agenda");
+    expect(mockBack).not.toHaveBeenCalled();
   });
 
   it("renders service selector (ServicePicker) with services from hook", () => {

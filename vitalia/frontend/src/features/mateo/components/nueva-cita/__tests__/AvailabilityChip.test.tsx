@@ -1,7 +1,8 @@
 // cap: scheduling.mateo-agenda
 /**
- * AvailabilityChip.test.tsx — RED-first tests for T-FE-3.
+ * AvailabilityChip.test.tsx — TDD for T-FE-3 + UX-FIXLOOP-2 obs#3.
  * Covers: SC-sin-horario, SC-fuera-horario, SC-solape, SC-disponibilidad-falla.
+ * obs#3: each status maps to a DISTINCT badge variant + contextual guidance Alert.
  */
 import * as React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -68,7 +69,9 @@ describe("AvailabilityChip", () => {
     expect(refetch).toHaveBeenCalledOnce();
   });
 
-  it("available: success badge + aria-live polite", () => {
+  // ── obs#3: 4 DISTINCT badge variants ────────────────────────────────────
+
+  it("available: success badge with checkmark text + aria-live polite", () => {
     mockUseAvailabilityCheck.mockReturnValue({
       data: { status: "available", conflictLabel: null, conflictStart: null },
       isPending: false,
@@ -78,36 +81,71 @@ describe("AvailabilityChip", () => {
     const chip = screen.getByTestId("availability-chip");
     expect(chip.getAttribute("aria-live")).toBe("polite");
     expect(chip.textContent).toMatch(/disponible/i);
+    // success variant → data-variant attribute
+    expect(chip.querySelector("[data-variant='success']")).toBeTruthy();
   });
 
-  it("busy: warning badge + conflict label", () => {
+  it("busy: destructive badge (NOT warning) + conflict time in label", () => {
     mockUseAvailabilityCheck.mockReturnValue({
       data: { status: "busy", conflictLabel: "se solapa con 10:15", conflictStart: null },
       isPending: false,
       isError: false,
     });
     render(<AvailabilityChip {...BASE_PROPS} />);
-    expect(screen.getByTestId("availability-chip").textContent).toMatch(/10:15/);
+    const chip = screen.getByTestId("availability-chip");
+    expect(chip.textContent).toMatch(/10:15/);
+    // destructive variant (distinct from out_of_hours warning)
+    expect(chip.querySelector("[data-variant='destructive']")).toBeTruthy();
   });
 
-  it("SC-fuera-horario: warning badge", () => {
+  it("out_of_hours: warning badge (distinct from busy) + contextual Alert", () => {
     mockUseAvailabilityCheck.mockReturnValue({
       data: { status: "out_of_hours", conflictLabel: null, conflictStart: null },
       isPending: false,
       isError: false,
     });
     render(<AvailabilityChip {...BASE_PROPS} />);
-    expect(screen.getByTestId("availability-chip").textContent).toMatch(/horario/i);
+    const chip = screen.getByTestId("availability-chip");
+    expect(chip.textContent).toMatch(/horario/i);
+    expect(chip.querySelector("[data-variant='warning']")).toBeTruthy();
+    // contextual guidance alert
+    const alert = screen.getByTestId("availability-chip-alert");
+    expect(alert.textContent).toMatch(/horario de atención/i);
   });
 
-  it("SC-sin-horario: warning badge", () => {
+  it("no_schedule: secondary badge (distinct from all others) + contextual Alert", () => {
     mockUseAvailabilityCheck.mockReturnValue({
       data: { status: "no_schedule", conflictLabel: null, conflictStart: null },
       isPending: false,
       isError: false,
     });
     render(<AvailabilityChip {...BASE_PROPS} />);
-    expect(screen.getByTestId("availability-chip").textContent).toMatch(/horario/i);
+    const chip = screen.getByTestId("availability-chip");
+    expect(chip.textContent).toMatch(/horario registrado/i);
+    expect(chip.querySelector("[data-variant='secondary']")).toBeTruthy();
+    // contextual guidance alert
+    const alert = screen.getByTestId("availability-chip-alert");
+    expect(alert.textContent).toMatch(/Mi Clínica/i);
+  });
+
+  it("busy: no contextual Alert shown (FreeDoctorsList handles guidance)", () => {
+    mockUseAvailabilityCheck.mockReturnValue({
+      data: { status: "busy", conflictLabel: "se solapa con 11:00", conflictStart: null },
+      isPending: false,
+      isError: false,
+    });
+    render(<AvailabilityChip {...BASE_PROPS} />);
+    expect(screen.queryByTestId("availability-chip-alert")).toBeNull();
+  });
+
+  it("available: no contextual Alert shown", () => {
+    mockUseAvailabilityCheck.mockReturnValue({
+      data: { status: "available", conflictLabel: null, conflictStart: null },
+      isPending: false,
+      isError: false,
+    });
+    render(<AvailabilityChip {...BASE_PROPS} />);
+    expect(screen.queryByTestId("availability-chip-alert")).toBeNull();
   });
 
   it("syncs status to store on each data change", () => {

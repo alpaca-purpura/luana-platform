@@ -40,8 +40,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useTenantLocale } from "@/hooks/useTenantLocale";
 import {
-  FormPageScaffold,
-  PageHeader,
+  EntitySubNavBar,
   SmartDateTimePicker,
 } from "@luana/ui-kit";
 import { Label } from "@/components/ui/label";
@@ -251,10 +250,12 @@ export function NuevaCitaView({
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
-  const handleBack = React.useCallback(() => {
+  // obs#1: EntitySubNavBar.rootHref handles back nav deterministically.
+  // Cancel still needs to reset store + navigate.
+  const handleCancel = React.useCallback(() => {
     reset();
-    router.back();
-  }, [reset, router]);
+    router.push(`/${tenantId}/mateo/agenda`);
+  }, [reset, router, tenantId]);
 
   const onSubmit = React.useCallback(
     (data: CreateAppointmentRequestDTO) => {
@@ -310,33 +311,53 @@ export function NuevaCitaView({
   const dateLocal = startTime ? startTime.slice(0, 10) : "";
 
   // ── Loading gate ──────────────────────────────────────────────────────────
+  // ponytail: kept for skeleton; FormPageScaffold removed (obs#1 restructure)
   const isLoading = servicesLoading && !servicesData;
 
   // ── Computed fin display ──────────────────────────────────────────────────
   const endTimeDisplay = endTime ? isoToHHMM(endTime, timezone) : null;
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      noValidate
-      data-testid="nueva-cita-form"
-    >
-      <FormPageScaffold
-        isLoading={isLoading}
-        header={
-          <PageHeader
-            title="Nueva cita"
-            backLabel="Agenda"
-            onBack={handleBack}
-          />
-        }
-      >
-        {/* ── 2-col grid: Left = form fields · Right = availability ──────── */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px]">
+    <div className="flex flex-col min-h-0" data-testid="nueva-cita-root">
+      {/* obs#1: EntitySubNavBar workspace-mode — full-bleed sticky N3 header */}
+      <EntitySubNavBar
+        rootHref={`/${tenantId}/mateo/agenda`}
+        rootLabel="Agenda"
+        entity={{ id: "nueva-cita", name: "Nueva cita" }}
+        leaves={[]}
+        activeLeaf={null}
+      />
 
-          {/* ── LEFT COLUMN: Datos de la cita ──────────────────────────────── */}
-          <div className="flex flex-col gap-5" data-testid="nc-col-form">
-            <h2 className="text-base font-semibold text-foreground">Datos de la cita</h2>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        noValidate
+        data-testid="nueva-cita-form"
+        className="flex-1 overflow-auto"
+      >
+        {/* Loading skeleton */}
+        {isLoading ? (
+          <div className="p-6">
+            <div className="h-4 w-32 animate-pulse rounded bg-muted" />
+          </div>
+        ) : null}
+        <div className="p-6">
+          {/* ── 2-col grid: Left = form fields · Right = availability ──────── */}
+          {/* obs#2c: fluid responsive — no hardcoded 380px */}
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">
+
+            {/* ── LEFT COLUMN: Datos de la cita ──────────────────────────────── */}
+            {/* obs#2a: wrapped in canonical card */}
+            <div
+              className="flex flex-col gap-5 rounded-lg border border-border bg-card p-6"
+              data-testid="nc-col-form"
+            >
+              {/* obs#2b: canonical column header — uppercase + muted + tracking + rule */}
+              <div>
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Datos de la cita
+                </h2>
+                <hr className="mt-2 border-border" />
+              </div>
 
             {/* ── Sección: Canal ────────────────────────────────────────────── */}
             <section aria-labelledby="nc-canal-label" data-testid="nc-section-canal">
@@ -652,11 +673,21 @@ export function NuevaCitaView({
                 )}
               />
             </section>
-          </div>
+            </div>{/* end left card */}
 
-          {/* ── RIGHT COLUMN: Disponibilidad del médico ────────────────────── */}
-          <div className="flex flex-col gap-4" data-testid="nc-col-avail">
-            <h2 className="text-base font-semibold text-foreground">Disponibilidad del médico</h2>
+            {/* ── RIGHT COLUMN: Disponibilidad del médico ────────────────────── */}
+            {/* obs#2a: wrapped in canonical card */}
+            <div
+              className="flex flex-col gap-4 rounded-lg border border-border bg-card p-6"
+              data-testid="nc-col-avail"
+            >
+              {/* obs#2b: canonical column header — uppercase + muted + tracking + rule */}
+              <div>
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Disponibilidad del médico
+                </h2>
+                <hr className="mt-2 border-border" />
+              </div>
 
             {/* M1: intro block — shown when no startTime yet */}
             {!startTime ? (
@@ -710,34 +741,35 @@ export function NuevaCitaView({
                 isPending={doctorsLoading}
               />
             </div>
-          </div>
-        </div>
-      </FormPageScaffold>
+            </div>{/* end right card */}
+          </div>{/* end 2-col grid */}
+        </div>{/* end p-6 */}
 
-      {/* ── NuevaCitaActions — sticky bottom (T-FE-4) ─────────────────────── */}
-      {/* H2: show blocking reason as role="status" when submit is disabled */}
-      {submitDisabled && blockingReason ? (
-        <p
-          role="status"
-          aria-live="polite"
-          data-testid="nc-blocking-reason"
-          className="px-4 pb-1 text-center text-xs text-muted-foreground"
-        >
-          {blockingReason}
-        </p>
-      ) : null}
-      <NuevaCitaActions
-        onCancel={handleBack}
-        onSubmit={handleSubmit(onSubmit)}
-        submitting={createMutation.isPending}
-        submitDisabled={submitDisabled}
-        hint={
-          // M4: hidden on mobile (≤sm) to avoid clash with Valeria FAB
-          <span className="hidden sm:inline">
-            Sin guardar todavía · los datos no se pierden si navegas dentro de la hoja.
-          </span>
-        }
-      />
-    </form>
+        {/* ── NuevaCitaActions — sticky bottom (T-FE-4) ─────────────────────── */}
+        {/* H2: show blocking reason as role="status" when submit is disabled */}
+        {submitDisabled && blockingReason ? (
+          <p
+            role="status"
+            aria-live="polite"
+            data-testid="nc-blocking-reason"
+            className="px-4 pb-1 text-center text-xs text-muted-foreground"
+          >
+            {blockingReason}
+          </p>
+        ) : null}
+        <NuevaCitaActions
+          onCancel={handleCancel}
+          onSubmit={handleSubmit(onSubmit)}
+          submitting={createMutation.isPending}
+          submitDisabled={submitDisabled}
+          hint={
+            // M4: hidden on mobile (≤sm) to avoid clash with Valeria FAB
+            <span className="hidden sm:inline">
+              Sin guardar todavía · los datos no se pierden si navegas dentro de la hoja.
+            </span>
+          }
+        />
+      </form>
+    </div>
   );
 }

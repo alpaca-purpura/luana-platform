@@ -2,12 +2,13 @@
 /**
  * AvailabilityChip.tsx — 4-state availability badge for nueva-cita form.
  * T-FE-3 vitalia-fase2-mateo-nueva-cita
+ * UX-FIXLOOP-2 obs#3: each status maps to a DISTINCT badge variant.
  *
  * Displays:
- *   available    → Badge success "Médico disponible"
- *   busy         → Badge warning "No disponible — se solapa con HH:MM"
- *   out_of_hours → Badge warning "Fuera del horario"
- *   no_schedule  → Badge warning "Sin horario registrado"
+ *   available    → Badge success   "✓ Médico disponible"
+ *   busy         → Badge destructive "✕ Ocupado — se solapa con HH:MM"
+ *   out_of_hours → Badge warning   "✕ Fuera del horario" + contextual Alert
+ *   no_schedule  → Badge secondary "○ Sin horario registrado" + contextual Alert
  *   loading      → skeleton span
  *   error        → inline error + retry button (SC-disponibilidad-falla)
  *
@@ -24,7 +25,7 @@
 "use client";
 
 import * as React from "react";
-import { Badge } from "@luana/ui-kit";
+import { Alert, AlertDescription, Badge } from "@luana/ui-kit";
 import { useAvailabilityCheck } from "../../hooks/use-availability";
 import { useNuevaCitaStore } from "../../store/nueva-cita-store";
 
@@ -38,17 +39,47 @@ export interface AvailabilityChipProps {
   durationMinutes: number;
 }
 
-// ── Labels ─────────────────────────────────────────────────────────────────
+// ── Status config ──────────────────────────────────────────────────────────
 
-function statusLabel(status: string, conflictLabel: string | null): string {
-  if (status === "available") return "Médico disponible";
-  if (status === "busy")
-    return conflictLabel
-      ? `No disponible — ${conflictLabel}`
-      : "No disponible";
-  if (status === "out_of_hours") return "Fuera del horario";
-  // no_schedule
-  return "Sin horario registrado";
+type BadgeVariant = "success" | "destructive" | "warning" | "secondary";
+
+interface StatusConfig {
+  label: string;
+  variant: BadgeVariant;
+  /** Contextual guidance shown below the chip; null = no Alert */
+  guide: string | null;
+}
+
+function getStatusConfig(
+  status: string,
+  conflictLabel: string | null,
+): StatusConfig {
+  switch (status) {
+    case "available":
+      return { label: "✓ Médico disponible", variant: "success", guide: null };
+    case "busy":
+      return {
+        label: conflictLabel
+          ? `✕ Ocupado — ${conflictLabel}`
+          : "✕ Ocupado",
+        variant: "destructive",
+        guide: null, // FreeDoctorsList handles guidance for busy
+      };
+    case "out_of_hours":
+      return {
+        label: "✕ Fuera del horario",
+        variant: "warning",
+        guide:
+          "Elige una hora dentro del horario de atención, o reasigna a otro médico que atienda más temprano.",
+      };
+    case "no_schedule":
+    default:
+      return {
+        label: "○ Sin horario registrado",
+        variant: "secondary",
+        guide: "Carga el horario de este médico primero en Mi Clínica › Horarios.",
+      };
+  }
 }
 
 // ── Component ──────────────────────────────────────────────────────────────
@@ -120,19 +151,30 @@ export function AvailabilityChip({
     );
   }
 
-  const isAvailable = data.status === "available";
-  const label = statusLabel(data.status, data.conflictLabel);
+  const { label, variant, guide } = getStatusConfig(
+    data.status,
+    data.conflictLabel,
+  );
 
   return (
     <span
       data-testid="availability-chip"
       aria-live="polite"
       aria-atomic="true"
-      className="inline-flex"
+      className="inline-flex flex-col gap-1.5"
     >
-      <Badge variant={isAvailable ? "success" : "warning"}>
+      {/* data-variant used by tests to assert distinct variants */}
+      <Badge variant={variant} data-variant={variant}>
         {label}
       </Badge>
+      {guide !== null && (
+        <Alert
+          data-testid="availability-chip-alert"
+          className="py-2 text-xs"
+        >
+          <AlertDescription>{guide}</AlertDescription>
+        </Alert>
+      )}
     </span>
   );
 }
