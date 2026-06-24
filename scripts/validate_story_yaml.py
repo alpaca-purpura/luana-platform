@@ -16,6 +16,7 @@ Exit: 0 todos válidos · 1 ≥1 inválido (imprime file:line + el error de PyYA
 Archivos sin frontmatter (checkpoint.md sin `---`) se reportan como inválidos
 — un checkpoint sin frontmatter tampoco lo lee el cockpit.
 """
+
 from __future__ import annotations
 
 import sys
@@ -59,12 +60,26 @@ def validate(path: str) -> bool:
         if block is None:
             print(f"  ✗ {path} — checkpoint.md sin frontmatter `---...---` válido")
             return False
-        target = block
-    else:
-        target = text
+        try:
+            fm = yaml.safe_load(block)
+        except yaml.YAMLError as exc:
+            _err(path, exc)
+            return False
+        # HB-91: una story que se mueve a docs/archive/ DEBE estar `state: done`.
+        # Fase F (story-closure) archiva con `git mv`; si no flipeó el state, el
+        # cockpit (filesystem-as-DB) pinta developed/reviewing sobre algo ya merged.
+        if "/docs/archive/" in path.replace("\\", "/") and "/stories/" in path.replace("\\", "/"):
+            state = (fm or {}).get("state") if isinstance(fm, dict) else None
+            if state != "done":
+                print(
+                    f"  ✗ {path} — checkpoint archivado con `state: {state!r}` (≠ done). "
+                    "Fase F debe flipear `state: done` en el MISMO commit del git mv (HB-91)."
+                )
+                return False
+        return True
 
     try:
-        yaml.safe_load(target)
+        yaml.safe_load(text)
         return True
     except yaml.YAMLError as exc:
         _err(path, exc)
