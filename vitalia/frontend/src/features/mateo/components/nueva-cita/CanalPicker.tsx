@@ -72,10 +72,13 @@ export function CanalPicker({
             data-state={selected ? "active" : "inactive"}
             onClick={() => onChange(opt.value)}
             className={cn(
+              // a11y: el inactivo va sobre bg-muted; text-muted-foreground sobre
+              // bg-muted no pasa contraste AA (axe color-contrast). text-foreground
+              // sí; la jerarquía la da el activo (bg-background + shadow).
               "flex-1 rounded-full px-4 text-sm transition-colors disabled:pointer-events-none disabled:opacity-50",
               selected
                 ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground",
+                : "text-foreground/80 hover:text-foreground",
             )}
           >
             {opt.label}
