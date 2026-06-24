@@ -206,6 +206,8 @@ Cuando uso Chrome DevTools MCP para **cerrar la verificación live de una story*
 
 Dev-app por marca: `make dev-app-{brand}` (o `localhost:300X` fallback). Tabla SSoT + usuario de prueba: `definition-of-done-live-verify.md § Infra por brand`.
 
+★ **Lane sin sesión Clerk (HB-89):** antes de ejercer writes autenticados en una lane que NO es el Chrome personal de Chris, correr `make lane-auth-<brand>` una vez por lane (re-correr si >4h). Sin esto el perfil MCP de la lane (`~/.cache/chrome-devtools-mcp/luana-<brand>-$LUANA_LANE`) no tiene sesión Clerk → los writes redirigen a `/sign-in` y la live-verify falla en falso. El target siembra el perfil con la MISMA sesión @clerk/testing que usa el harness e2e (cerrá la MCP Chrome de esa lane antes de sembrar — el perfil no puede estar lockeado).
+
 ## Coexistencia con playwright-expert
 
 - **Chrome MCP** = debugging interactivo + verificación ad-hoc + performance live
