@@ -2,13 +2,16 @@
 # SOURCED by scripts/git-hooks/pre-commit — inherits its env (REPO_ROOT, GATE_LEVEL,
 # CURRENT_BRANCH, STAGED_*, set -euo pipefail). DO NOT add a shebang or 'set -e'; 'exit 1' aborta el commit.
 # ─────────────────────────────────────────────────────────────────────────────
-# Section 20 — Story-folder YAML structural validity (HB-93 + HB-102)
+# Section 20 — Story-folder YAML structural validity + archive-state (HB-93 + HB-102 + HB-91)
 # ─────────────────────────────────────────────────────────────────────────────
 # Un checkpoint.md con frontmatter YAML inválido (HB-93) o un 04-validators.yaml /
 # 06-tickets.yaml mal-formado (HB-102) llegó a `developed` sin que ningún gate lo
 # cazara → el cockpit (alpaca, Go-yaml) no parsea la story y NO renderiza sus
 # artefactos (demo-script incluido). El gate 17 cubre SOLO keys duplicadas; este
 # cubre la validez ESTRUCTURAL completa (indentación, flow-mapping, etc.).
+# Además (HB-91): un checkpoint.md que se mueve a docs/archive/ DEBE estar
+# `state: done` — Fase F debe flipearlo en el MISMO commit del git mv, si no el
+# cockpit pinta developed/reviewing sobre algo ya merged.
 #
 # Override emergencia: STORY_YAML_SKIP=1 git commit ...
 # SSoT: docs/process/harness-backlog.md HB-93/HB-102.
@@ -33,16 +36,17 @@ if [ "${STORY_YAML_SKIP:-0}" != "1" ]; then
         cat <<EOF
 
 ─────────────────────────────────────────────────────────────
-STORY-FOLDER YAML INVÁLIDO (HB-93 / HB-102)
+STORY-FOLDER INTEGRITY (HB-93 / HB-102 / HB-91)
 
 $STORY_YAML_OUT
 
-Un checkpoint.md / 04-validators.yaml / 06-tickets.yaml con YAML
-estructuralmente inválido rompe el parse del cockpit → la story no
-renderiza (ni su demo-script). Arreglá el YAML antes de commitear.
+YAML inválido (checkpoint frontmatter / 04-validators / 06-tickets) rompe
+el parse del cockpit → la story no renderiza (ni su demo-script). Un
+checkpoint movido a docs/archive/ debe estar state: done (Fase F lo flipea
+en el git mv). Arreglá lo de arriba antes de commitear.
 
 Override emergencia: STORY_YAML_SKIP=1 git commit ...
-SSoT: docs/process/harness-backlog.md HB-93/HB-102
+SSoT: docs/process/harness-backlog.md HB-93/HB-102/HB-91
 ─────────────────────────────────────────────────────────────
 EOF
         printf "\033[0m"

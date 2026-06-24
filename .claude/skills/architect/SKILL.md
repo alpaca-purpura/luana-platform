@@ -220,7 +220,10 @@ Template estructura mínima:
 ### Consumers: quién llama cada surface nuevo (UI hook / agente / servicio). Cero consumers → NO construir.
 ### Registration points: include_router / nav tree / DI / tool registry (deliverables verificables)
 ### Home: cap_target + cap_change_type (dev_preview se actualiza al merge)
+### Read-side verificado: por cada claim "el engine/supervisor YA honra/inyecta/lee [X]" → citá el read-site EXACTO (archivo:función que LEE la key/campo), grep-verificado. Sin read-site citado = contrato IMAGINADO.
 ```
+
+★ **Read-side gate (HB-92 · 5ª recurrencia familia HB-44/74/82 — imagined contract):** el architect NUNCA afirma "el engine ya honra/inyecta/lee [X]" sin **abrir el código del read-side y citarlo** (`archivo:función` que efectivamente LEE la key/campo, verificado por grep). El patrón que se repite: un ticket write-side persiste a una key (`metadata_info["operator_instructions"]`, `checkpoint.X`, un campo nuevo) y el spec/arch asume que el engine ya la consume — pero el engine lee OTRA key (o no lee nada) → la instrucción nunca llega al runtime y los gates de build pasan verdes (cada lado correcto en aislamiento). **Regla:** todo claim de comportamiento de engine ya-existente se ancla a su read-site citado; si el read-site no existe o lee otra cosa, la integración (bridge/wiring) es un **deliverable del ready package**, no un supuesto. Esto es la cara read-side de la **C**(onsumed) de CONN.
 
 ## Verificación: clasificar por naturaleza + declarar gates (Critical Rule #37)
 
@@ -836,6 +839,7 @@ Antes de cerrar story como ready:
 
 **★ v4.3 cement 2026-05-28 (anti-isla + fidelidad visual):**
 - [ ] `03-arch.md § Integration design (CONN)` presente: reachability path concreto + consumers (≥1 por surface, o justificación infra) + registration points (router/nav/DI/tool registry como deliverables) + home (cap_target). Sin esto → NO ready (`anti-orphan-integration.md`)
+- [ ] **Read-side gate (HB-92):** cada claim "el engine/supervisor YA honra/inyecta/lee [X]" cita su read-site EXACTO (`archivo:función` que LEE la key/campo, grep-verificado). Sin read-site → contrato imaginado → la integración (bridge/wiring) es deliverable, no supuesto. Sin esto → NO ready
 - [ ] Cada surface nuevo en 06-tickets tiene su deliverable de **registro** (no solo crear el archivo): BE `include_router`, FE ruta+nav, agentic tool registry
 - [ ] **★ HB-71 (contrato-imaginado · REFUSE ready):** toda superficie **editable con autosave / write** declarada en `03-arch.md` (StructuredProfileEditor, form-autosave, mutation hook) DEBE tener su **write endpoint (method + path exacto)** en la TABLA DE ENDPOINTS del mismo arch. Editor declarado sin su write endpoint en la tabla → el builder FE lo INVENTA (404 live · 10 instancias en una story). Sin el endpoint declarado → NO ready. El builder FE además cementa el contrato con un test que assertea method+URL contra el router BE real (no contra sí mismo) — ver `test_http_contract_parity.py`
 - [ ] UI stories: `02-design-ui.md` lista elementos visuales clave + `04-validators § playwright_visual_scope` separa `story_scope_*` de `out_of_mockup_scope` (no exceder mockup). `frontend-visual-fidelity.md`
