@@ -2,7 +2,7 @@
 story_id: nicolify-r0-design-system-adoption
 brand: nicolify
 type: ui-story                       # adopción visual cross-cutting — todas las hojas re-expresadas vía primitivas compartidas (esencia homologada · valores de marca propios)
-state: reviewing                     # idea → refining → refined → ready → developing → developed → reviewing → done · /auditor pickup 2026-06-24 (reconciled:true + chris_verify.signoff SATISFIED)
+state: done                          # idea → … → reviewing → DONE · /pm-nicolify merge 2026-06-24 (07-merge.md · cap design-system/nicolify-ui-homologation live · archive R2). /auditor APPROVED + chris_verify.signoff SATISFIED.
 release: R0                          # Fundación — homologar ANTES de crecer (ADR-014 HARD: "empezar homologado")
 map_zone: infraestructura            # paradigma 3 zonas — atributo de calidad (consistencia UI cross-hoja) · derivada de SYSTEM-MAP::zones (a confirmar /architect)
 map_box: plataforma-tecnica

@@ -355,3 +355,10 @@ Patrón cross-brand (vitalia+nicolify) → candidate lift `/pm-luana`. Próximo:
   4. **Boundary** — tsc `core/@luana/hooks` (zustand `persist`, **pre-existente** patch HB-78, NO esta story, solo type-check) → **NO self-fix** (engine), flag **/pm-luana HB-109**. nicolify src tsc **limpio**. NO bloquea esta story FE.
 - **Surface nicolify 100% verde:** tsc src 0 · eslint 0 errores · vitest **549/549** · live-verify #37 satisfecha (write PATCH 200 + persist + dark toggle real ×3 + pill, Chrome MCP).
 - **💡 PRÓXIMO:** AUTO-HANDOFF `/pm-nicolify MERGE` → 07-merge.md + cap change_log type=new + archive (R2) + `reviewing→done`. Follow-ups (NO bloquean): goldens visuales A/C1/C2/D + e2e a11y-subnav con stack estable; HB-109 (engine tsc) + HB-110 (eslint dep-drift) a /pm-luana.
+
+**2026-06-24 · ✓ APLICADO (/pm-nicolify — Fase F MERGE → `done`):**
+- `07-merge.md` escrito (5 secciones: gherkin 6/6 · e2e/live-verify · cap · modules · how-to-verify).
+- Cap `design-system/nicolify-ui-homologation.yaml` → `status: live` (change_log[0] type=new, 3 scenarios verified_real + 3 business_rules con enforcement+code_ref · user_visible:false infra).
+- `state: reviewing → done`. Story archivada (R2, `git mv` mismo commit) → `nicolify/docs/archive/2026/stories/`.
+- **Cerrada.** Lock `code:design-system` libre → `storybook-inventory` puede arrancar build.
+- **NO ejecutado (tu decisión):** squash-to-main + `make promote-to-main`/`sync-all` (outward/staging; el branch bundlea abel-icp-buyer en reviewing + storybook-inventory uncommitted). HB-109/110 esperan a /pm-luana.

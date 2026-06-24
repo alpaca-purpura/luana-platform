@@ -3,7 +3,8 @@ capability_id: nicolify.design-system.nicolify-ui-homologation
 module: design-system
 tech_module: design-system
 slug: nicolify-ui-homologation
-status: planned                       # planned | beta | live | deprecated | sunset (subí a live SOLO con ≥1 scenario + e2e GREEN)
+status: live                          # planned | beta | live | deprecated | sunset — live: lock arch-test GREEN + live-verify #37 OK
+
 license: brand-local
 
 # Dimensiones v3 (4 campos · ADR-vitalia-005)
@@ -14,15 +15,20 @@ nature: feature                       # feature | scaffold | extension-point
 
 user_facing_name: "Homologación del design system Nicolify (adopción @luana/ui-kit + design-tokens + lock no-arbitrary)"
 user_facing_description: >
-  # TODO: 2-5 líneas Spanish neutro · qué hace desde la óptica del usuario · sin jerga.
+  Atributo de calidad interno (no user-facing): todas las hojas de Nicolify se re-expresan
+  vía las primitivas/moléculas/archetypes compartidas de @luana/ui-kit y la escala de
+  @luana/design-tokens, con la identidad de marca (#635BFF + colores por agente + fuentes)
+  preservada. Un lock mecánico (eslint @luana/ds/no-arbitrary-value + arch-tests no-kit-mirror /
+  no-div-layout / no-native-select / single-token-source) impide arbitrary-values y mirrors
+  locales nuevos. El usuario percibe consistencia visual cross-hoja; no hay pantalla propia.
 
-# DEV_PREVIEW (paths null hasta que exista el código · NO inventar → G4 limpio)
+# DEV_PREVIEW (cross-cutting — ruta representativa donde se ejerce/verifica)
 dev_preview:
-  route: null                         # TODO "/TODO-agent/nicolify-ui-homologation" cuando exista
-  how_to_navigate: null               # TODO pasos verbatim para llegar en dev
-  main_component: null                # TODO path real cuando se construya
-  api_endpoints: []                   # TODO
-  e2e_test: null                      # TODO path spec
+  route: "/{tenantId}/abel/icp"                # hoja representativa compuesta 100% de primitivas del kit
+  how_to_navigate: "login (owner.demo@nicolify.com) → /{tenantId}/abel/icp (master) → abrir un ICP (detalle EntityWorkspaceLayout)"
+  main_component: "nicolify/frontend/src/app/globals.css (tokens+@custom-variant dark+@source) + consumo @luana/ui-kit"
+  api_endpoints: []                              # cross-cutting FE; sin contrato BE nuevo
+  e2e_test: "nicolify/frontend/src/__tests__/architecture/test-ds-single-token-source.test.ts"   # enforcement del lock (GREEN 47/47); visual abel-icp-fidelity.spec.ts (goldens deferred)
   fixtures_required: []
   storybook_url: null
   loom_demo: null
@@ -30,37 +36,101 @@ dev_preview:
 # Ledger
 created_in_story: nicolify-r0-design-system-adoption
 created_date: 2026-06-15
-last_modified: 2026-06-15
+last_modified: 2026-06-24
 parent_cap: null
 derives_capabilities: []
 superseded_by: null
 
 change_log:
   - story_id: nicolify-r0-design-system-adoption
-    date: 2026-06-15
+    date: 2026-06-24
     type: new
-    summary: "# TODO: implementación inicial · qué hace en 1-2 líneas"
-    scenarios_added: []               # TODO: ≥1 al merge si user_visible:true
-    merge_sha: null
-    status: in-progress
+    summary: >
+      Adopción comprehensiva del design system homologado (ADR-014): 4 mirrors locales borrados →
+      @luana/ui-kit; globals.css alineado a la escala de @luana/design-tokens + dark single-axis
+      (data-theme) + @source kit-completo; lock no-arbitrary encendido (eslint + arch-tests). Dark
+      mode + controles pill + login redirect verificados live (Chrome MCP). cero hoja maquetada a mano.
+    scenarios_added: [SC-1, SC-4, SC-6]
+    merge_sha: null                    # ver 07-merge.md (commits bc2416e7 audit + commit de archive)
+    status: shipped
 
-# v3.2 (llenar al merge · REQUIRED si user_visible:true)
+# v3.2
 access:
-  entry_points: []                    # TODO
+  entry_points: ["/{tenantId}/abel/icp"]
   forbidden_roles: []
   authentication: required
 
-scenarios: []                         # TODO: ≥1 scenario (id/name/actor/given/when/then) al merge
+scenarios:
+  - id: SC-1
+    name: "abel/icp render compuesto de primitivas, fiel a lo ratificado"
+    actor: "dueño de agencia (tenant)"
+    given: "el tenant abre /{tenantId}/abel/icp en el shell homologado"
+    when: "renderiza el master + abre un ICP (detalle) + edita un campo (autosave)"
+    then: "todo se compone de @luana/ui-kit (EntityWorkspaceLayout/EntitySubNavBar/Group/EmptyState), dark/light conmuta limpio, controles pill, write persiste (PATCH 200)"
+    verified_real: true                # live-verify #37 2026-06-24 (Chrome MCP): PATCH 200 + persist + dark toggle real
+    e2e_test: "nicolify/frontend/src/__tests__/architecture/test-ds-single-token-source.test.ts"
+  - id: SC-4
+    name: "cero mirror local de componente del kit (adversarial)"
+    actor: "sistema (arch-test)"
+    given: "el árbol nicolify/frontend/src"
+    when: "corre el arch-test no-kit-mirror / no-local-kit-primitive"
+    then: "0 mirrors locales de primitivas del kit (4 mirrors previos borrados)"
+    verified_real: true
+    e2e_test: "nicolify/frontend/src/__tests__/architecture/test-no-local-kit-primitive.test.ts"
+  - id: SC-6
+    name: "Spanish neutro + tokens de marca intactos tras la adopción"
+    actor: "sistema (arch-test)"
+    given: "microcopy + globals.css"
+    when: "corre test_spanish_neutro + single-token-source"
+    then: "sin voseo en UI + identidad de marca (#635BFF/agentes/fonts) preservada"
+    verified_real: true
+    e2e_test: "nicolify/frontend/src/__tests__/architecture/test-ds-single-token-source.test.ts"
 
-business_rules: []                    # TODO
+business_rules:
+  - id: RN-3
+    rule: "cero mirror — un componente del kit no se replica local"
+    enforcement: "arch-test no-kit-mirror / no-local-kit-primitive (ratchet shrink-only)"
+    code_ref: "nicolify/frontend/src/__tests__/architecture/test-no-local-kit-primitive.test.ts"
+  - id: RN-4
+    rule: "cero arbitrary nuevo — spacing/radius/font-size/color de tokens, no valores sueltos"
+    enforcement: "eslint @luana/ds/no-arbitrary-value (lock ON @ zero baseline)"
+    code_ref: "nicolify/frontend/eslint.config.mjs + @luana/eslint-config"
+  - id: RN-1
+    rule: "identidad de marca preservada (--primary #635BFF + colores por agente + fuentes)"
+    enforcement: "arch-test single-token-source (globals.css)"
+    code_ref: "nicolify/frontend/src/__tests__/architecture/test-ds-single-token-source.test.ts"
 
 related_capabilities:
-  depends_on: []
+  depends_on: [nicolify.shell-organism.shell-nicolify]
   enables: []
-  similar: []
+  similar: [vitalia design-system adoption]
   obsoletes: []
 ---
 
 # Homologación del design system Nicolify (adopción @luana/ui-kit + design-tokens + lock no-arbitrary)
 
-# TODO: resumen markdown · arquitectura interna · decisiones cardinales · referencias.
+Adopción comprehensiva (ADR-014 "homologar antes de crecer") del design system compartido en Nicolify.
+
+## Qué shippeó (story nicolify-r0-design-system-adoption)
+
+- **4 mirrors locales borrados** → consumo directo de `@luana/ui-kit` (EntityWorkspaceLayout, EntitySubNavBar, EmptyState, AutosaveBadge).
+- **globals.css** alineado a la escala de `@luana/design-tokens` + `@custom-variant dark` (single-axis `data-theme`, vitalia-aligned) + `@source` escanea el kit completo.
+- **Lock no-arbitrary encendido**: eslint `@luana/ds/no-arbitrary-value` + arch-tests (`no-kit-mirror`, `no-div-layout`, `no-native-select`, `single-token-source`).
+
+## Decisiones cardinales
+
+- **Dark single-axis** (`data-theme`): el script anti-FOUC custom se eliminó (era dual-write con `.dark` → tema trabado). next-themes maneja el anti-FOUC (= vitalia). Commits b09bc9dc → 7411c862 → b5acab8e → 42f759c8.
+- **Pill controls** vía `--radius-control` en `@theme` (kit-lift @luana/ui-kit 0.6.0).
+- **Edge-redirect** del root `/` (proxy.ts 307) para evitar el "Rendered more hooks" de Next 16 en soft-nav.
+
+## Followups (NO bloquean)
+
+- Goldens visuales A/C1/C2/D + e2e a11y-subnav: capturar/correr con stack dev estable (deferred por inestabilidad, cubierto por live-verify #37).
+- **HB-109** (/pm-luana): tsc engine `core/@luana/hooks` (zustand persist StateCreator).
+- **HB-110** (/pm-luana): eslint flat-config dep-drift (lock vapor) — candidato cross-brand.
+
+## Referencias
+
+- `docs/architecture/luana-platform/ADR-014-design-system-homologation.md`
+- `docs/architecture/luana-platform/design-system-canon.md`
+- Story archivada: `nicolify/docs/archive/2026/stories/nicolify-r0-design-system-adoption/`
