@@ -217,3 +217,16 @@ Detalle a ratificar: ¿querés abel **100% div-clean** antes de cerrar (que el a
 
 ### 2026-06-24 · 🤖 claude · `/pm-nicolify` · ✓ APLICADO
 Chris ratificó: **el auditor termina los 14 divs ahora (Carril R)** → abel queda 100% canon-clean (referencia áurea completa) antes de cerrar. Encadeno a `/auditor` con mandato: (1) re-pass de los 5 archivos cambiados + a11y del Radix Select live, (2) migrar los 14 layout-divs abel restantes → page-primitives, (3) bajar no-div-layout baseline 32→18, (4) gates GREEN. Luego demo gate #37 (lo ejercés vos) → merge → done.
+
+### 2026-06-24 · 🤖 claude · `/auditor` · ⚠️ DUDA
+Re-pass del kit-alignment: **kit-atom alignment APPROVED** (native→kit correcto, RHF preservado, Radix Select a11y superior al nativo, gates GREEN 344/344). Pero al ir a terminar los 14 divs (lo que ratificaste) **descubrí que NO se cierran limpio** — info nueva que no teníamos al decidir:
+
+- **8 son micro-layout interno** (stack del label de un card · empty-state centrado de un dialog · label+control de FieldRow · skeleton). `PageContentStack` está documentada como "espaciado entre bloques **de una hoja**" (page-level). Meterla dentro de un card = misuse semántico. abel es la **referencia** que copian las otras 5 hojas → si abel hace cargo-cult de PageContentStack, las 5 lo copian. Eso es lo contrario de "empezar bien".
+- **4 son grillas de campos** (`grid-cols-2/3`): el kit NO tiene primitiva. `FormLayout paired` cambia gap (3→6) + mete responsive → regresión visual en una hoja ya live-verificada. `grid-cols-3` no tiene nada.
+
+**Root cause = gap del kit + scanner:** el kit no tiene primitiva de micro-layout (`Stack`/`Flex`) ni `Grid` genérico, y el scanner HB-106 marca CUALQUIER `flex-col gap`/`grid-cols` sin distinguir page-level de micro-layout. Lo registré: **HB-111** + review en `T-KIT-ALIGN-review.md`. Es trabajo de la `design-system-adoption` story (dueña del kit + el scanner).
+
+**No forcé la migración** (habría sido cargo-cult + riesgo de regresión). Te traigo la decisión real.
+
+### 2026-06-24 · 🤖 claude · `/auditor` · 💡 PROPONE
+Recomiendo: **APPROVE el kit-atom alignment** (que es lo sustancial — abel ya usa Select/Textarea/Button/Badge del kit) + **rutear los 14 micro-layout divs a `nicolify-r0-design-system-adoption`** (que agrega la primitiva de micro-layout/Grid al kit + hace el scanner altitude-aware + migra sistemáticamente). Baseline queda 32 (los 7 genuinos ya migrados). → demo gate #37 (lo ejercés vos live) → merge → done. abel queda como buena referencia (átomos correctos) sin enseñar un patrón equivocado.
