@@ -425,7 +425,7 @@ describe("NuevaCitaView", () => {
     expect(screen.getByTestId("nc-blocking-reason").textContent).toContain("paciente");
   });
 
-  it("L1: CanalPicker shows 'Sin cita' label (not emoji Walk-in)", () => {
+  it("L1: CanalPicker shows mockup labels (🚶 Walk-in / 📞 Teléfono)", () => {
     render(
       React.createElement(NuevaCitaView, {
         tenantId: "tenant-1",
@@ -434,8 +434,9 @@ describe("NuevaCitaView", () => {
       }),
     );
     const walkInBtn = screen.getByTestId("canal-picker-walk-in");
-    expect(walkInBtn.textContent).toBe("Sin cita");
-    expect(walkInBtn.textContent).not.toContain("Walk-in");
+    expect(walkInBtn.textContent).toBe("🚶 Walk-in");
+    const telefonoBtn = screen.getByTestId("canal-picker-telefono");
+    expect(telefonoBtn.textContent).toBe("📞 Teléfono");
   });
 
   it("L6: notes textarea renders character counter", () => {
