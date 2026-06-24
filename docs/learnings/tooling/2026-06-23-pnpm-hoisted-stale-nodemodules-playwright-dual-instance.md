@@ -74,6 +74,19 @@ importan sin declararlo; nicolify/comunify ya lo declaran).
 - Un diagnóstico de harness-backlog es hipótesis, no verdad: **reproducí y refutá**
   cada hipótesis antes de actuar (acá 3 de 3 hipótesis previas eran falsas).
 
+## Seguimiento — bump a 1.61.1 (2026-06-23)
+
+Tras resolver HB-98 (en 1.60.0), se bumpeó Playwright **1.60.0 → 1.61.1** en las 3
+marcas (copia hoisted única, no se puede por-marca). Motivo principal: el changelog
+de **1.61.1 lista "ESM loader resolution issues with pnpm workspaces"** + **"Sync
+loader error on Node 22.15"** — endurece justo el loader pnpm-workspace de esta clase
+de bug → reduce recurrencia. 1 minor, cero breaking, peers OK (`@axe-core/playwright`
+`>=1.0.0`, `@clerk/testing` `^1`), Node 20 OK. `pnpm dedupe` necesario para purgar el
+físico 1.60.0 residual (un consumer lo retenía → si no, dual-version reintroducida).
+Browsers nuevos (Chromium 149/FF 151/WebKit 26.5) descargados; el warning `libavif16` del
+`playwright install` es **no-fatal** (Chromium 149 lanza OK). Verificado: 3 marcas
+colectan, chromium launch OK, tsc 0.
+
 ## Referencias
 
 - `docs/process/harness-backlog.md` § HB-98 (applied)
