@@ -13,8 +13,8 @@ Data sources:
     Excludes CANCELLED (RN-6 — cancelled slots must not block availability).
     Excludes deleted rows (deleted_at IS NULL).
 
-  list_active_doctors → raw SQL over vitalia_appointment_clinic_map distinct doctor_id
-    Uses DoctorService.list_active (read-only, no PHI in result).
+  list_active_doctors → vitalia_availability_slots DISTINCT doctor_id
+    JOIN vitalia_doctors for real first_name/last_name (dual filter, no PHI beyond name).
 
 HIPAA-lite: every query dual-filters tenant_id + clinic_id (hipaa-lite.md).
 PHI: NO patient PHI in any query or result here. Availability = scheduling metadata only.
@@ -28,7 +28,7 @@ from datetime import date
 from uuid import UUID
 
 import structlog
-from sqlalchemy import select, text
+from sqlalchemy import bindparam, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.modules.vitalia.clinics.infrastructure.models.availability_slot_model import (
@@ -178,32 +178,45 @@ class AvailabilityQueryRepository:
     ) -> list[tuple[UUID, str]]:
         """Return (doctor_id, label) for doctors with slots in this clinic.
 
-        Queries distinct doctor_ids from vitalia_availability_slots as a proxy
-        for "active doctors with a configured schedule". Returns doctor_id + a
-        placeholder label — the caller (free_doctors endpoint) decorates with
-        actual staff names via DoctorService if needed.
+        Queries distinct doctor_ids from vitalia_availability_slots and JOINs
+        vitalia_doctors to resolve the real full name.  Dual filter applied on
+        BOTH tables (tenant_id + clinic_id — HIPAA-lite).
 
-        Note: label is synthesised as "Dr. {doctor_id[:8]}" here since staff
-        names live in the clinics module (cross-module boundary). The router
-        layer can enrich this via a separate DoctorService call. For the
-        AvailabilityCheckService the label is only used for FreeDoctorItem
-        display — full name enrichment is a FE concern.
+        Label format: COALESCE(NULLIF(TRIM(CONCAT(first_name, ' ', last_name)), ''),
+        'Sin asignar') — matching the pattern used in AgendaGridRepositoryImpl
+        (_GRID_PROJECTION L83-84).
 
         Args:
             tenant_id: Tenant scope (dual filter L1).
             clinic_id: Clinic scope (dual filter L2 — HIPAA-lite).
 
         Returns:
-            List of (UUID, label_str) tuples.
+            List of (UUID, label_str) tuples with the doctor's real display name.
         """
-        stmt = (
-            select(VitaliaAvailabilitySlotModel.doctor_id)
-            .where(
-                VitaliaAvailabilitySlotModel.tenant_id == tenant_id,
-                VitaliaAvailabilitySlotModel.clinic_id == clinic_id,
-                VitaliaAvailabilitySlotModel.deleted_at.is_(None),
-            )
-            .distinct()
+        stmt = text(
+            """
+            SELECT
+                slot.doctor_id,
+                COALESCE(
+                    NULLIF(TRIM(CONCAT(doc.first_name, ' ', doc.last_name)), ''),
+                    'Sin asignar'
+                ) AS doctor_label
+            FROM (
+                SELECT DISTINCT doctor_id
+                FROM vitalia_availability_slots
+                WHERE tenant_id = :tenant_id
+                  AND clinic_id = :clinic_id
+                  AND deleted_at IS NULL
+            ) slot
+            LEFT JOIN vitalia_doctors doc
+                ON doc.id = slot.doctor_id
+               AND doc.tenant_id = :tenant_id
+               AND doc.deleted_at IS NULL
+            ORDER BY doctor_label
+            """
+        ).bindparams(
+            bindparam("tenant_id", value=tenant_id),
+            bindparam("clinic_id", value=clinic_id),
         )
 
         rows = (await self._session.execute(stmt)).all()
@@ -215,5 +228,4 @@ class AvailabilityQueryRepository:
             count=len(rows),
         )
 
-        # ponytail: label is a placeholder — router enriches via staff name lookup
-        return [(row.doctor_id, f"Dr. {str(row.doctor_id)[:8]}") for row in rows]
+        return [(row.doctor_id, row.doctor_label) for row in rows]
