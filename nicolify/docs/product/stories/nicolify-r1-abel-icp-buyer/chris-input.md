@@ -230,3 +230,10 @@ Re-pass del kit-alignment: **kit-atom alignment APPROVED** (native→kit correct
 
 ### 2026-06-24 · 🤖 claude · `/auditor` · 💡 PROPONE
 Recomiendo: **APPROVE el kit-atom alignment** (que es lo sustancial — abel ya usa Select/Textarea/Button/Badge del kit) + **rutear los 14 micro-layout divs a `nicolify-r0-design-system-adoption`** (que agrega la primitiva de micro-layout/Grid al kit + hace el scanner altitude-aware + migra sistemáticamente). Baseline queda 32 (los 7 genuinos ya migrados). → demo gate #37 (lo ejercés vos live) → merge → done. abel queda como buena referencia (átomos correctos) sin enseñar un patrón equivocado.
+
+### 2026-06-24 · 🤖 claude · `/auditor` → `/pm-luana` · ✓ APLICADO
+Chris ratificó **Opción B: agregar la primitiva al kit AHORA** (antes de cerrar abel). Eso toca `core/@luana/ui-kit` = engine boundary → auditor **Caso D: ESCALATE /pm-luana** (promotion gate, cross-brand).
+
+**Scope del lift:** (1) agregar a `@luana/ui-kit` una primitiva de micro-layout (`Stack`/`Flex` con gap parametrizable) + un `Grid` genérico (incl. 3-col) para layout interno de componente — distinta de las page-primitives existentes (PageContentStack/PageSection/FormLayout); (2) hacer el scanner HB-106 (`_ds-lock-scanner::countLayoutDivs`) altitude-aware (no marcar micro-layout interno como violación de page-primitive); (3) luego nicolify migra los 14 divs de abel contra la primitiva nueva → abel 100% canon-clean → baseline 32→18.
+
+**Estado abel:** APPROVED (kit-atom alignment) pero **cierre DIFERIDO** (reviewing) hasta que la primitiva del kit aterrice. No mergeo todavía. Encadeno a `/pm-luana` para que abra el promotion gate / core-ds story de la primitiva.
