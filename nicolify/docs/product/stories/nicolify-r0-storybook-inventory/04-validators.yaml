@@ -1,0 +1,260 @@
+# 04-validators.yaml — nicolify-r0-storybook-inventory
+# Naturaleza: TÉCNICA (design-system inventory). NO funcional.
+# → gates: tsc/eslint(no-arbitrary)/build-storybook/arch-fitness/completitud/clasificación.
+# → SIN: gate anti-burbuja, e2e de flujo de usuario, playwright_visual_scope de rutas (no hay rutas),
+#        dev_app_verified de writes, mutation gate (no aplica a stories).
+# Owner: /architect. /dev-team itera hasta GREEN. /auditor verifica cada uno corrido + GREEN.
+
+story_id: nicolify-r0-storybook-inventory
+brand: nicolify
+schema_version: v4.1
+
+# ═══════════════════════════════════════════════════════════════
+# VERIFICATION (Critical Rule #37) — TÉCNICA
+# ═══════════════════════════════════════════════════════════════
+verification:
+  nature: técnica                  # técnica = sin UI de usuario / sin flujo de negocio. Verificación por efecto (render + leer el storybook).
+  technical_gates:
+    baseline: [tsc_strict, eslint_max_warnings_0, arch_fitness]   # SIEMPRE, bloqueante. (NO mypy/ruff — no hay BE.)
+    # DS gates (Storybook-first · canon §5):
+    #   · eslint @luana/ds/no-arbitrary-value → corre dentro de eslint_max_warnings_0 (LIVE en nicolify, eslint.config.mjs:522).
+    #   · arch-test no-div-layout + no-native-select (HB-106) + no-local-kit-primitive (HB-107) → corre dentro de arch_fitness.
+    #     LIVE en nicolify (seeded 2026-06-24, ratchets shrink-only). NO subir baseline.
+    #   · build-storybook exit 0 → render-sanity (gate dedicado, ver storybook_build).
+    opt_in:
+      schemathesis: false          # no hay endpoint
+      hypothesis: false            # no hay domain logic
+    mutation:
+      enabled: false               # N/A — las stories no tienen lógica mutable
+      mode: advisory
+      surfaces: []
+  runtime_error_gate: not_applicable   # NO hay base.ts anti-burbuja — no es flujo de usuario. La render-sanity la da build-storybook.
+  business_rules:                  # naturaleza técnica → las "reglas" son las RN del design-system (no Gherkin de negocio)
+    - rule: "RN-1 — átomo/molécula/shell compartido se consume del kit, NO se re-storia (balde 1)"
+      tag: "@rule-consume-not-restory"
+      scenario_id: "clasificacion"
+    - rule: "RN-2 — port local de kit (balde 2) se lista marcado, NO se le escribe story"
+      tag: "@rule-port-no-story"
+      scenario_id: "clasificacion"
+    - rule: "RN-3 — componente único de nicolify (balde 3) DEBE tener .stories.tsx + fila en contrato"
+      tag: "@rule-unique-has-story"
+      scenario_id: "stories-balde3"
+    - rule: "RN-4 — divergencia visual = token (no fork); contrato registra token-overrides nicolify"
+      tag: "@rule-divergence-token"
+      scenario_id: "contrato"
+    - rule: "RN-5 — cero arbitrary-value / hex / px nuevo en las stories"
+      tag: "@rule-no-arbitrary"
+      scenario_id: "stories-balde3"
+    - rule: "RN-6 — pieza net-new compartible → PROMOTE al kit + story, NO local sin promover"
+      tag: "@rule-promote-net-new"
+      scenario_id: "clasificacion"
+    - rule: "RN-7 — mapa 1:1 completo; ningún componente brand-local sin fila + balde"
+      tag: "@rule-contract-complete"
+      scenario_id: "contrato"
+    - rule: "RN-8 — roster de agentes (6) con status; pendiente sin story falsa; story-doc Agentes/Roster"
+      tag: "@rule-roster-honest"
+      scenario_id: "roster"
+  demo_required: true              # demo = storybook navegable + contrato 1:1 legible (NO write live)
+  demo_skip_reason: null
+  regression_guard:                # tests EXISTENTES que NO deben romperse (las stories no tocan runtime)
+    - "nicolify/frontend/src/__tests__/architecture/*.test.ts (ratchets — baselines NO suben)"
+    - "Componentes de producto (features/abel, components/shared, components/ui) — NO se modifican; sus tests siguen verdes"
+  coverage_update: []              # no se cambia comportamiento existente
+  new_coverage:                    # lo nuevo = las stories + el contrato + los helpers de storybook
+    - "Las .stories.tsx balde-3 (render-sanity las cubre vía build-storybook)"
+    - "completeness_check (componentes brand-local vs filas del contrato)"
+
+  # ── Live-verify gate (Critical Rule #37) ─────────────────────────
+  # TÉCNICA + demo_required:true PERO la demo NO es un write — es storybook navegable + contrato legible.
+  # NO hay write POST/PATCH/DELETE que ejercer (no hay BE). dev_app_verified.required: false con razón.
+  dev_app_verified:
+    required: false
+    dod_live_verified_skip_reason: >
+      Naturaleza técnica design-system: no hay endpoint ni write de usuario que ejercer contra el
+      stack dev. La "verificación REAL" (DoD) = levantar el storybook de nicolify (pnpm storybook :6006
+      o build-storybook → storybook-static/), NAVEGAR las stories nuevas y CONFIRMAR que renderizan
+      fiel (no "Cargando" colgado, no throw, a11y verde/excepción documentada) + abrir el
+      SHELL-DESIGN-CONTRACT.md y comprobar que el mapa 1:1 está completo. Eso es el efecto observable.
+      Evidence en checkpoint.md::dod_evidence (qué stories se navegaron + render fiel + a11y).
+
+  # ── Playwright visual scope ──────────────────────────────────────
+  # N/A — NO hay rutas de la app (la story no construye pantallas). El "scope" es .storybook/ + las .stories.tsx co-locadas.
+  playwright_visual_scope:
+    not_applicable: true
+    reason: >
+      Design-system inventory: no hay rutas de la app que modificar visualmente. El builder solo escribe
+      .stories.tsx co-locadas + helpers en .storybook/. Cero toHaveScreenshot de rutas. (La render-sanity
+      la da build-storybook; la fidelidad la verifica el ojo en el storybook navegable durante la demo.)
+    in_scope_paths:
+      - "nicolify/frontend/src/**/*.stories.tsx"
+      - "nicolify/frontend/.storybook/**"
+      - "nicolify/docs/architecture/SHELL-DESIGN-CONTRACT.md"
+    forbidden_paths:
+      - "core/@luana/ui-kit/src/**   (engine — /pm-luana lift)"
+      - "vitalia/** comunify/** lupulo/**   (cross-brand — solo LEER vitalia como modelo)"
+      - "nicolify/frontend/src/components/**/*.tsx   (runtime, no-story — NO reescribir componentes)"
+      - "nicolify/frontend/src/features/abel/**/*.tsx   (runtime — solo storiar, NO modificar)"
+
+validators:
+  # ═══════════════════════════════════════════════════════════════
+  # NON-FUNCTIONAL — code quality (las stories son production_code FE)
+  # ═══════════════════════════════════════════════════════════════
+
+  - id: fe_typecheck
+    category: non_functional
+    type: shell
+    cmd: "cd nicolify/frontend && npx tsc --noEmit"
+    must_pass: true
+    timeout_sec: 120
+    description: "TypeScript strict 0 errors (incluye las .stories.tsx + decorators/mocks)."
+
+  - id: fe_lint_stories
+    category: non_functional
+    type: shell
+    cmd: "cd nicolify/frontend && npx eslint 'src/**/*.stories.tsx' '.storybook/**/*.{ts,tsx}' --max-warnings 0"
+    must_pass: true
+    timeout_sec: 90
+    description: "ESLint 0 errors sobre las stories + helpers. INCLUYE @luana/ds/no-arbitrary-value (RN-5) + eslint-plugin-storybook."
+
+  - id: fe_arch_fitness
+    category: non_functional
+    type: shell
+    cmd: "cd nicolify/frontend && npx vitest run src/__tests__/architecture/ --reporter=default"
+    must_pass: true
+    timeout_sec: 120
+    description: >
+      FE arch ratchets — NO subir baseline. Cubre HB-106 (no-div-layout baseline 39, no-native-select baseline 1),
+      HB-107 (no-local-kit-primitive baseline 0), no-kit-mirror (allowlist vacía), no-cross-brand-import, test_spanish_neutro.
+      Las stories NO deben introducir layout-div crudo, <select> nativo, ni componente de producto con nombre de primitiva.
+
+  # ═══════════════════════════════════════════════════════════════
+  # TÉCNICA — render-sanity (build) + completitud + clasificación
+  # ═══════════════════════════════════════════════════════════════
+
+  - id: storybook_build
+    category: architectural_validation
+    type: shell
+    cmd: "cd nicolify/frontend && npx storybook build --quiet"
+    must_pass: true
+    timeout_sec: 300
+    scenario_id: stories-balde3
+    description: >
+      RENDER-SANITY (AC-1 + AC-4): build-storybook exit 0 = TODAS las stories (balde 3 + roster doc-story)
+      compilan y renderizan estáticamente sin throw. Es el gate de "monta sin throw" (no hay @storybook/test-runner
+      instalado → el build ES la render-sanity). Si una story rompe (decorator mal seedeado, import roto) → falla acá.
+
+  - id: completeness_check
+    category: architectural_validation
+    type: shell
+    # RN-7 / AC-3: ningún componente brand-local sin fila + balde en el contrato.
+    # Lista los componentes brand-local (no-test/no-story) y verifica que cada basename aparezca en el contrato.
+    cmd: >
+      cd nicolify && missing=0;
+      for f in $(find frontend/src \( -path '*/components/*' -o -path '*/features/abel/components/*' \) -name '*.tsx' ! -name '*.test.tsx' ! -name '*.stories.tsx' -printf '%f\n' | sed 's/\.tsx$//' | sort -u);
+      do grep -q "$f" docs/architecture/SHELL-DESIGN-CONTRACT.md || { echo "SIN CLASIFICAR EN CONTRATO: $f"; missing=1; }; done;
+      exit $missing
+    must_pass: true
+    timeout_sec: 30
+    scenario_id: contrato
+    description: >
+      Completitud del contrato (RN-7 · AC-3): cada componente brand-local de nicolify (components/* + features/abel/components/*,
+      no-test/no-story) DEBE aparecer en SHELL-DESIGN-CONTRACT.md. 0 sin clasificar. Cubre baldes 1/2/3 + wire/dispatcher.
+
+  - id: classification_correct
+    category: architectural_validation
+    type: manual_auditor_review
+    must_pass: true
+    scenario_id: clasificacion
+    description: >
+      AC-5 (revisión auditor-frontend): clasificación correcta — CERO port balde-2 con .stories.tsx propia
+      (re-storiar un kit-twin duplicaría) · CERO componente balde-3 sin .stories.tsx. Algoritmo: para cada port
+      del § Inventario (balde 2), grep que NO exista `<Port>.stories.tsx`; para cada único (balde 3), grep que SÍ exista.
+      RN-1 (consumir, no re-storiar) + RN-3 (único debe tener story).
+
+  - id: roster_honest
+    category: architectural_validation
+    type: manual_auditor_review
+    must_pass: true
+    scenario_id: roster
+    description: >
+      AC-6 (RN-8): la story-doc Agentes/Roster renderiza los 6 (Luana+Abel+Brenda+Christian+Sara+Norvil) con
+      avatar + color --agent-{slug} + pill de status (Construido/Pendiente). CERO story de componente para un
+      agente pendiente (Brenda/Christian/Sara/Norvil). El § Roster del contrato lista los 6 con status + superficies
+      anticipadas. El mapa no miente.
+
+  - id: promote_net_new
+    category: architectural_validation
+    type: manual_auditor_review
+    must_pass: true
+    scenario_id: clasificacion
+    description: >
+      RN-6 (ADVISORY mecánico, HARD por prosa): si durante el inventario apareciera una pieza net-new genuinamente
+      compartible → debe PROMOVERSE al kit + story vía /pm-luana, NUNCA quedar local sin promover.
+      ⚠️ NO hay gate mecánico de promoción (el promote-gate de HB-107 verifica que no haya primitiva-local pelada,
+      pero NO que un net-new shared se haya promovido). El auditor-frontend lo verifica por prosa (Cat 16).
+      En un inventario es IMPROBABLE que aparezca net-new (se inventaría lo existente) → default: cero promote, advisory.
+
+  # ═══════════════════════════════════════════════════════════════
+  # a11y — ADVISORY (no hay @storybook/test-runner instalado)
+  # ═══════════════════════════════════════════════════════════════
+
+  - id: a11y_addon_manual
+    category: visual
+    type: manual_live_verify
+    must_pass: false                 # ADVISORY (no gateable en CI sin test-runner)
+    scenario_id: stories-balde3
+    description: >
+      AC-2 (a11y): @storybook/addon-a11y corre en el dev-server (panel interactivo). Verificación MANUAL durante la
+      demo: levantar storybook, abrir el panel a11y de cada story nueva → verde o excepción documentada en el contrato.
+      ⚠️ NO gateable en CI: nicolify NO tiene @storybook/addon-a11y test-runner. Decisión architect (OQ-1): advisory +
+      anotar HB para instalar @storybook/test-runner si se quiere a11y HARD cross-brand (mejora de harness, no de esta story).
+
+# ═══════════════════════════════════════════════════════════════
+# Scenario coverage matrix (técnica — los "scenarios" son los gates de verificación, NO Gherkin de usuario)
+# ═══════════════════════════════════════════════════════════════
+scenario_coverage:
+  - scenario_id: clasificacion       # RN-1/2/6 — el ticket T-1
+    validators: [classification_correct, promote_net_new, fe_arch_fitness]
+  - scenario_id: stories-balde3      # RN-3/5 — las stories nuevas
+    validators: [storybook_build, fe_typecheck, fe_lint_stories, a11y_addon_manual]
+  - scenario_id: roster              # RN-8 — la story-doc
+    validators: [roster_honest, storybook_build]
+  - scenario_id: contrato            # RN-4/7 — el SHELL-DESIGN-CONTRACT 1:1
+    validators: [completeness_check, classification_correct]
+
+# ═══════════════════════════════════════════════════════════════
+# Test Construction Plan (adaptado a técnica · creation_order = orden de tickets)
+# ═══════════════════════════════════════════════════════════════
+test_construction_plan:
+  playwright_required: false         # NO hay rutas — no playwright de flujo
+  base_path: "nicolify/frontend/src/ (stories co-locadas) + .storybook/"
+
+  creation_order:
+    - { step: 1, file: "T-1 clasificación grep-cross-kit → tabla de baldes al contrato", content: "Cierra balde-2 vs balde-3 EXACTO. Bloquea todo lo demás.", depends_on: [] }
+    - { step: 2, file: ".storybook/preview.ts (appDirectory) + decorators/withQueryClient.tsx + mocks/clerk.ts + fixtures/abel-icp.ts", content: "Infra de stories (decorators para containers).", depends_on: [1] }
+    - { step: 3, file: "Stories Grupo A — Abel ICP (7 .stories.tsx)", content: "Presentacionales primero (IcpCard/IcpDatosForm/BuyerLeafForm), luego containers (Master/Workspace/EntityLayout/IntakeOverlay) con decorators.", depends_on: [2] }
+    - { step: 4, file: "Stories Grupo B — moléculas/shell nicolify-only (8 .stories.tsx)", content: "AgentAvatar/UniversalIntake/ProposalBanner/WhatForChip/DraftFirstStarter/AddAgencyPlaceholderModal/LogoMark/TenantSwitcher(+badge/option).", depends_on: [2] }
+    - { step: 5, file: "Story-doc Grupo C — Agentes/Roster", content: "Los 6 con status. CERO story falsa.", depends_on: [4] }
+    - { step: 6, file: "SHELL-DESIGN-CONTRACT.md → inventario 1:1 + § Roster + § token-overrides + § divergencia", content: "Poblar a 1:1 con la clasificación de T-1 + links a las stories.", depends_on: [3, 4, 5] }
+    - { step: 7, file: "Verificación (gates)", content: "build-storybook + completeness_check + tsc + eslint + arch-fitness + demo navegable + a11y manual.", depends_on: [6] }
+
+  # ── Seam coverage (HB-95 · cobertura = colaborador real, no mock) ──
+  # ÚNICA costura: componente ↔ storybook (¿renderiza en el storybook real?). NO hay costura code-db/fe-be/auth.
+  seam_coverage:
+    - { sc: "stories-balde3", seam: component-shell, test_type: e2e-live, target: "build-storybook + storybook navegable (render-sanity en el storybook real, no mock)" }
+    - { sc: "roster",         seam: component-shell, test_type: e2e-live, target: "Agentes/Roster renderiza en storybook real (build + demo)" }
+
+  poms_required: []                  # no hay rutas → no POMs
+  fixtures_required:
+    - { name: "abel-icp.ts",         content: "ICPs/buyers sintéticos LatAm B2B (agencias/software) — reusados por stories de container. Spanish neutro." }
+    - { name: "withSeededQuery",     content: "decorator QueryClientProvider con cache seedeada (query keys verbatim de use-icps/use-buyers)." }
+    - { name: "clerk.ts mock",       content: "module-mock @clerk/nextjs (useAuth stub) + use-tenant-id (UUID demo). Espeja los .test.tsx." }
+
+# ═══════════════════════════════════════════════════════════════
+# Iteration policy
+# ═══════════════════════════════════════════════════════════════
+iteration:
+  max_iterations: 8
+  on_fail: "fix targeted (story que no compila / fila faltante en contrato), re-run failing validator only"
+  on_all_pass: "set state=developing→developed + dod_evidence (stories navegadas + render fiel + a11y) en checkpoint.md"
+  on_cap_reached: "set state=developing→blocked, escalate a Chris con el último error de build-storybook"

@@ -2,25 +2,40 @@
 story_id: nicolify-r0-storybook-inventory
 brand: nicolify
 type: ui-story                        # cross-cutting design-system (como ds-adoption) — UI components 1:1 en Storybook
-state: idea                          # nace de la conversación de diseño 2026-06-24 (status+plan storybook inventory)
+state: ready                         # refined→ready 2026-06-24 (/architect cerró ready package: 03-arch + 04-validators + 05-guidelines + 06-tickets + dispatch-plan)
 release: R0                          # Fundación — inventario completo ANTES de crecer hoja por hoja
 map_zone: infraestructura            # atributo de calidad (inventario navegable de la UI) · derivada SYSTEM-MAP::zones
 map_box: plataforma-tecnica
 map_area: design-system
 module: design-system                # bucket code:design-system
-architecture_pattern: ADR-nicolify-001   # toca shell components (Storybook-first G1 post-HB-103)
-cap_target: design-system/nicolify-storybook-inventory   # tentativo — /architect confirma cap + change_type al ready
-# cap_change_type: NO se declara en idea (el cap YAML se crea en Fase F.3 al merge) — /architect lo fija (extiende nicolify-ui-homologation)
+architecture_pattern: ADR-014-design-system-homologation   # design-system (NO ADR-nicolify-001 — no construye sub-tab). Espeja a ds-adoption. Corregido al cerrar refined 2026-06-24.
+cap_target: design-system/nicolify-ui-homologation   # extiende la homologación (Chris OQ-2 2026-06-24) — /architect confirma al ready
+cap_change_type: extend              # Chris ratificó OQ-2 — extend de nicolify-ui-homologation
 route: null                          # cross-cutting — no es una hoja con ruta
 demo_required: true                  # storybook navegable + componentes render fiel
+verification_nature: técnica         # render-sanity + a11y + completitud contrato + clasificación. Sin demo funcional de usuario.
+last_artifact: 06-tickets.yaml       # ready package completo (/architect 2026-06-24): 03-arch{,-fe,-docs} + 04-validators + 05-guidelines + 06-tickets + dispatch-plan
+ready_package:                       # /architect 2026-06-24
+  - 03-arch.md                       # consolidado FE+DOCS · § Prior art · § Existing systems audit (NO-NEW-LAYER) · § FE clasificación 3 baldes + 15 stories balde-3 · § Patrón decorators · § Esquema contrato 1:1 · § Integration design (CONN)
+  - 03-arch-fe.md                    # surface FE (builder-frontend, auditor-frontend, workhorse)
+  - 03-arch-docs.md                  # surface DOCS contrato (builder-frontend, production_code:false)
+  - 04-validators.yaml               # técnica: tsc/eslint(no-arbitrary)/build-storybook/arch-fitness(ratchets)/completitud/clasificación/roster. a11y advisory (no test-runner). SIN anti-burbuja, SIN e2e rutas, SIN dev_app_verified writes, SIN mutation
+  - 05-guidelines.md                 # must_load_skills + patterns required/forbidden + files in scope + NEVER touches
+  - 06-tickets.yaml                  # 6 tickets FE+DOCS · DAG T-1(clasificación)→T-2(infra)→T-3/T-4(stories)→T-5(roster)→T-6(contrato) · workhorse · assignment block per ticket
+  - dispatch-plan.md                 # autonomous_mode:false default · caps · matriz costo · DAG · sin playwright visual scope (no rutas)
+arch_decisions:                      # /architect cerró estas (default architect, Chris ratifica al BUILD/demo)
+  - "OQ-1 a11y: ADVISORY (no @storybook/test-runner instalado) + verificación manual en demo + anotar HB para test-runner si se quiere HARD cross-brand"
+  - "OQ-2 HB-106/107 NO son vapor (corrección al spec): no-div-layout/no-native-select (HB-106) + no-local-kit-primitive (HB-107) CORREN en nicolify (seeded 2026-06-24, ratchets) + @luana/ds/no-arbitrary-value eslint error. Vapor = SOLO el promote-gate mecánico (auditor por prosa)"
+  - "OQ-3 SubTabContent/ShellLayoutWire/_agent-tw-classes/types = wire/dispatcher/helper no-storiable (listados en contrato como infra de routing, no balde 1/2/3)"
+  - "Clasificación cerrada: balde-1 = @luana/ui-kit (citar) · balde-2 = components/ui/* (8) + ConfigTab/SubSubTabsBar/SubSubTab ports · balde-3 = Abel ICP (7) + moléculas nicolify-only (8) = 15 stories + 1 roster doc-story"
+ratified_by_chris: true              # Chris ratificó 01-spec.md 2026-06-24 (técnica: 1 sola firma, sin mockup creativo)
 depends_on:
-  - "Fase 0 · HB-103 (doctrina Storybook-first de nicolify) — EN CURSO sesión aparte 2026-06-24. Prerequisito DURO: refinar esta story DESPUÉS de que Fase 0 commitee."
+  - "Fase 0 · HB-103+paridad (doctrina Storybook-first cross-brand) — ✅ COMMITEADA 891306d8 (2026-06-24). Prereq DURO satisfecho."
 related_stories:
-  - "nicolify-r0-design-system-adoption (homologación — la base que esto inventaría · en G AWAIT_CHRIS_VERIFY)"
-blocked_on:
-  - "Fase 0 sin commitear (sesión paralela edita la doctrina del DS en el hub)"
+  - "nicolify-r0-design-system-adoption (homologación — la base que esto inventaría · MISMO bucket code:design-system · en G AWAIT_CHRIS_VERIFY, exenta WIP-cap; idealmente cerrar su demo+signoff antes del BUILD de esta para inventariar piezas estables)"
+blocked_on: []                       # Fase 0 commiteada 891306d8 → desbloqueado para refine
 last_modified: 2026-06-24
-next_action: "EN idea (handoff). Prerequisito: Fase 0 (HB-103) commiteada + las 2 stories abiertas (ds-adoption G, abel reviewing) destrabadas o no compitiendo el bucket. Luego refinar vía intake-handshake /pm-nicolify → /po-ux. El handoff completo (findings + plan 4 fases + decisiones) vive en 00-research.md."
+next_action: "READY 2026-06-24 (/architect cerró ready package). → /dev-team nicolify nicolify-r0-storybook-inventory (autonomous_mode:false default — Chris opt-in). DAG: T-1 clasificación grep-cross-kit BLOQUEA TODO → T-2 infra storybook (decorators/mocks/fixtures) → T-3 Abel ICP (7) + T-4 moléculas shared (8) → T-5 roster doc-story → T-6 contrato 1:1. Tier workhorse (builder-frontend, NO flagship). NOTA build-time: lock code:design-system lo ocupa ds-adoption (en G) — idealmente cerrar su demo+signoff antes del BUILD de esta. DoD técnica = storybook navegable + contrato 1:1 (NO write live → dev_app_verified.required:false)."
 intake_handshake: "La conversación de diseño (zona/caja + extiende-o-nuevo + prior-art) ocurrió en sesión 2026-06-24 — ver 00-research.md § Intake + chris-input.md. La story NACE de esa conversación."
 ---
 

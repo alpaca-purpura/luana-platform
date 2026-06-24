@@ -1,0 +1,209 @@
+# 06-tickets.yaml — nicolify-r0-storybook-inventory
+# Naturaleza TÉCNICA (design-system inventory). Surfaces: FE storybook + DOCS contrato. NO BE, NO AGENTIC.
+# DAG: T-1 (clasificación) bloquea TODO → T-2 (infra) → T-3/T-4/T-5 (stories, paralelos tras T-2) → T-6 (contrato 1:1).
+# Tier: workhorse (FE no-agentic). NUNCA flagship (R23 no aplica). Tickets: 6 (≤10).
+
+story_id: nicolify-r0-storybook-inventory
+brand: nicolify
+schema_version: v4.1
+architecture_pattern: ADR-014-design-system-homologation
+
+tickets:
+
+  # ───────────────────────────────────────────────────────────────
+  - id: T-1
+    title: "Clasificación grep-cross-kit → tabla de baldes (1/2/3) al contrato"
+    surface: DOCS-contract
+    production_code: false           # docs (la tabla de baldes)
+    blocks: [T-2, T-3, T-4, T-5, T-6]   # ★ bloquea TODO — cierra la lista exacta balde-2 vs balde-3
+    depends_on: []
+    description: >
+      Clasificar CADA componente brand-local de nicolify en balde (1) compartido-ya-en-kit /
+      (2) port-local-de-kit / (3) único-de-nicolify, comparando contra las 82 stories del kit
+      (grep cross-kit). Escribir la tabla de baldes (preliminar del § Inventario) al
+      SHELL-DESIGN-CONTRACT.md. Esto CIERRA la lista exacta de stories a escribir (balde 3) y
+      la deuda a listar (balde 2). La clasificación de 03-arch.md § FE es el punto de partida
+      (Abel ICP + moléculas nicolify-only = balde 3 seguro; components/ui/* + ConfigTab/SubSubTabsBar/SubSubTab
+      = balde 2; SubTabContent/ShellLayoutWire/_agent-tw-classes/types = wire/no-storiable).
+      Re-correr el grep para confirmar cualquier ambigüedad antes de cerrar.
+    deliverables:
+      - "§ Inventario exhaustivo por balde (tabla preliminar) en SHELL-DESIGN-CONTRACT.md, con cada componente brand-local en su balde + path + capa"
+      - "Categoría 'wire/dispatcher no-storiable' para SubTabContent/ShellLayoutWire/_agent-tw-classes/types"
+    gherkin_coverage: ["@rule-consume-not-restory (RN-1)", "@rule-port-no-story (RN-2)", "@rule-contract-complete (RN-7)"]
+    acceptance:
+      validator_ids: [completeness_check, classification_correct]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: workhorse
+      must_load_skills: [nicolify-design-system, frontend-expert]
+      must_load_artifacts: ["03-arch.md § FE + § Existing systems audit", "01-spec.md § Alcance los 3 baldes", "core/@luana/ui-kit/stories/ (los 82 ids)"]
+      forbidden_to_touch: ["core/@luana/ui-kit/src", "vitalia/** comunify/** lupulo/**", "cualquier .tsx de runtime"]
+      rationale: "Clasificación = grep + escritura de tabla en doc. FE no-agentic, workhorse. Es el ticket raíz del DAG."
+
+  # ───────────────────────────────────────────────────────────────
+  - id: T-2
+    title: "Infra de Storybook para containers (appDirectory + decorators + mocks + fixtures)"
+    surface: FE-storybook
+    production_code: true
+    blocks: [T-3, T-4, T-5]
+    depends_on: [T-1]
+    description: >
+      Montar la infra de stories que los containers Abel ICP necesitan. (a) Agregar
+      parameters.nextjs.appDirectory:true a .storybook/preview.ts (auto-mock de next/navigation —
+      el kit ya lo tiene, nicolify no). (b) Crear .storybook/decorators/withQueryClient.tsx
+      (QueryClientProvider con cache seedeable). (c) Crear .storybook/mocks/clerk.ts (module-mock
+      @clerk/nextjs useAuth stub + use-tenant-id UUID demo — espeja los .test.tsx). (d) Crear
+      .storybook/fixtures/abel-icp.ts (ICPs/buyers sintéticos LatAm B2B, spanish neutro).
+      Ver 03-arch.md § FE — Patrón de decorators.
+    deliverables:
+      - "nicolify/frontend/.storybook/preview.ts (appDirectory:true agregado)"
+      - "nicolify/frontend/.storybook/decorators/withQueryClient.tsx"
+      - "nicolify/frontend/.storybook/mocks/clerk.ts (+ use-tenant-id mock)"
+      - "nicolify/frontend/.storybook/fixtures/abel-icp.ts"
+    gherkin_coverage: ["@rule-unique-has-story (RN-3 — habilita storiar containers)"]
+    acceptance:
+      validator_ids: [fe_typecheck, fe_lint_stories]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: workhorse
+      must_load_skills: [frontend-expert, nicolify-design-system]
+      must_load_artifacts: ["03-arch.md § FE — Patrón de decorators", "nicolify/.../IcpMasterListView.test.tsx (patrón mock a traducir)", "core/@luana/ui-kit/.storybook/preview.ts (appDirectory referencia)"]
+      forbidden_to_touch: ["core/@luana/ui-kit/src", "nicolify/frontend/src/features/abel/**/*.tsx (runtime)", "vitalia/** comunify/** lupulo/**"]
+      rationale: "Infra de decorators/mocks SOLO-storybook. Habilita las stories de containers sin reescribir componentes de producto. Workhorse FE."
+
+  # ───────────────────────────────────────────────────────────────
+  - id: T-3
+    title: "Stories balde-3 · Grupo A — Abel ICP (7 .stories.tsx)"
+    surface: FE-storybook
+    production_code: true
+    blocks: [T-6]
+    depends_on: [T-2]
+    description: >
+      Escribir las .stories.tsx co-locadas de los 7 componentes Abel ICP (balde 3 seguro).
+      Presentacionales primero (IcpCard, IcpDatosForm, BuyerLeafForm — props/useAutosave, sin fetch),
+      luego containers (IcpMasterListView, IcpWorkspaceView, IcpEntityLayoutClient, IcpIntakeOverlay —
+      con los decorators de T-2). Una story por estado discreto (ver columna Estados en 03-arch § FE Grupo A).
+      CSF3, title 'Abel/ICP/*', fixtures sintéticas, spanish neutro, cero arbitrary.
+    deliverables:
+      - "features/abel/components/icp/IcpCard.stories.tsx (Default/Selected/Ready/Draft/Grid)"
+      - "features/abel/components/icp/IcpDatosForm.stories.tsx (Empty/Filled/WithBuyers/MissingFields)"
+      - "features/abel/components/icp/BuyerLeafForm.stories.tsx (Empty/Filled/Primary)"
+      - "features/abel/components/icp/IcpMasterListView.stories.tsx (Empty/Loading/Error/List/LargeList)"
+      - "features/abel/components/icp/IcpWorkspaceView.stories.tsx (DatosLeaf/BuyerLeaf/Loading)"
+      - "features/abel/components/icp/IcpEntityLayoutClient.stories.tsx (Loaded/Loading/NotFound)"
+      - "features/abel/components/icp/IcpIntakeOverlay.stories.tsx (Idle/Extracting/Result/Error)"
+    gherkin_coverage: ["@rule-unique-has-story (RN-3)", "@rule-no-arbitrary (RN-5)"]
+    acceptance:
+      validator_ids: [storybook_build, fe_typecheck, fe_lint_stories, fe_arch_fitness, a11y_addon_manual]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: workhorse
+      must_load_skills: [frontend-expert, nicolify-design-system]
+      must_load_artifacts: ["03-arch.md § FE Grupo A + § Patrón de decorators", "03-arch-fe.md", "vitalia/.../AgentAvatar.stories.tsx (CSF3 modelo)", ".storybook/decorators+mocks+fixtures de T-2"]
+      forbidden_to_touch: ["core/@luana/ui-kit/src", "nicolify/frontend/src/features/abel/**/*.tsx (runtime — NO reescribir, solo storiar)", "vitalia/** comunify/** lupulo/**"]
+      rationale: "Stories del feature único de nicolify (Abel ICP = el gap real). Containers usan decorators de T-2. FE no-agentic workhorse."
+
+  # ───────────────────────────────────────────────────────────────
+  - id: T-4
+    title: "Stories balde-3 · Grupo B — moléculas/shell nicolify-only (8 .stories.tsx)"
+    surface: FE-storybook
+    production_code: true
+    blocks: [T-6]
+    depends_on: [T-2]
+    description: >
+      Escribir las .stories.tsx de las moléculas/átomos nicolify-only (balde 3): AgentAvatar (mirror
+      re-skin de vitalia — espejar AgentAvatar.stories.tsx), UniversalIntake, ProposalBanner, WhatForChip,
+      DraftFirstStarter, AddAgencyPlaceholderModal, LogoMark, TenantSwitcher (+ TenantBadge/TenantOption
+      como sub-stories en el mismo archivo). ThemeToggle como story light/dark (opcional, agrupado).
+      CSF3, title 'Shared/*', spanish neutro, cero arbitrary. La mayoría son presentacionales (props) →
+      decorator mínimo o ninguno.
+    deliverables:
+      - "components/shared/agents/AgentAvatar.stories.tsx (Abel/Brenda/Christian/Sara/Norvil/Luana/AllAgents/SizeVariants)"
+      - "components/shared/intake/UniversalIntake.stories.tsx"
+      - "components/shared/ProposalBanner.stories.tsx"
+      - "components/shared/WhatForChip.stories.tsx"
+      - "components/shared/DraftFirstStarter.stories.tsx"
+      - "components/shared/shell-organism/AddAgencyPlaceholderModal.stories.tsx"
+      - "components/shared/shell-organism/LogoMark.stories.tsx"
+      - "components/shared/shell-organism/TenantSwitcher.stories.tsx (+ TenantBadge/TenantOption sub-stories; ThemeToggle opcional)"
+    gherkin_coverage: ["@rule-unique-has-story (RN-3)", "@rule-no-arbitrary (RN-5)", "@rule-divergence-token (RN-4 — AgentAvatar usa --agent-{slug})"]
+    acceptance:
+      validator_ids: [storybook_build, fe_typecheck, fe_lint_stories, fe_arch_fitness, a11y_addon_manual]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: workhorse
+      must_load_skills: [frontend-expert, nicolify-design-system]
+      must_load_artifacts: ["03-arch.md § FE Grupo B", "03-arch-fe.md", "vitalia/.../AgentAvatar.stories.tsx", "nicolify SHELL-DESIGN-CONTRACT § 6 (catálogo agentes + colores)"]
+      forbidden_to_touch: ["core/@luana/ui-kit/src", "nicolify/frontend/src/components/**/*.tsx (runtime — solo storiar)", "vitalia/** comunify/** lupulo/**"]
+      rationale: "Stories de las moléculas/átomos nicolify-only. Paralelo a T-3 tras T-2. Workhorse FE."
+
+  # ───────────────────────────────────────────────────────────────
+  - id: T-5
+    title: "Story-doc · Grupo C — Agentes/Roster (los 6 con status, RN-8 / AC-6)"
+    surface: FE-storybook
+    production_code: true
+    blocks: [T-6]
+    depends_on: [T-4]                # usa AgentAvatar (storiado en T-4)
+    description: >
+      Escribir UNA story-doc 'Agentes/Roster' (estilo foundations.AgentColors del kit) que renderiza los 6
+      agentes (Luana+Abel+Brenda+Christian+Sara+Norvil) con AgentAvatar + color --agent-{slug} + PILL DE STATUS
+      (Construido/Pendiente). Construidos (Luana shell, Abel) linkean a sus stories; pendientes
+      (Brenda/Christian/Sara/Norvil) muestran status + superficies anticipadas. CERO story de componente para un
+      agente pendiente (RN-8 — el mapa no miente, muestra todo etiquetando qué está construido). El pill de status
+      va inline en la story o como mini-helper en .storybook/ (NO en features/ — HB-107).
+    deliverables:
+      - "components/shared/agents/AgentRoster.stories.tsx (story-doc, NO componente de producto nuevo)"
+    gherkin_coverage: ["@rule-roster-honest (RN-8)"]
+    acceptance:
+      validator_ids: [roster_honest, storybook_build, fe_typecheck, fe_lint_stories]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: workhorse
+      must_load_skills: [frontend-expert, nicolify-design-system]
+      must_load_artifacts: ["03-arch.md § FE Grupo C", "01-spec.md § Roster de agentes (la tabla de los 6)", "core/@luana/ui-kit/stories/foundations.AgentColors.stories.tsx (modelo doc-story)"]
+      forbidden_to_touch: ["core/@luana/ui-kit/src", "nicolify/frontend/src/features/** (el helper de status va en .storybook/, NO en features/)", "vitalia/** comunify/** lupulo/**"]
+      rationale: "Story-doc honesta del roster (los 6 con status). Compone AgentAvatar de T-4. No fabrica componentes inexistentes. Workhorse FE."
+
+  # ───────────────────────────────────────────────────────────────
+  - id: T-6
+    title: "SHELL-DESIGN-CONTRACT.md → inventario 1:1 + § Roster + § token-overrides + § divergencia"
+    surface: DOCS-contract
+    production_code: false           # docs
+    blocks: []
+    depends_on: [T-3, T-4, T-5]      # el contrato 1:1 depende de las stories (linkea cada balde-3 a su story)
+    description: >
+      Poblar el SHELL-DESIGN-CONTRACT.md a inventario descriptivo 1:1 (espejar vitalia § 1-8). Conservar las §
+      normativas; AGREGAR: § Inventario exhaustivo por balde (la tabla T-1 ahora COMPLETA con cada balde-3 linkeado
+      a su story por title), § Roster de agentes (los 6 con status, linkea a Agentes/Roster), § Token-overrides
+      nicolify (átomo compartido → token → valor, RN-4), § Modelo de divergencia (token>variante>fork). Verificar
+      completitud: ningún componente brand-local sin fila + balde (RN-7).
+    deliverables:
+      - "nicolify/docs/architecture/SHELL-DESIGN-CONTRACT.md (inventario 1:1 completo + § Roster + § token-overrides + § divergencia)"
+    gherkin_coverage: ["@rule-contract-complete (RN-7)", "@rule-divergence-token (RN-4)", "@rule-roster-honest (RN-8)"]
+    acceptance:
+      validator_ids: [completeness_check, classification_correct, roster_honest]
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: workhorse
+      must_load_skills: [nicolify-design-system, frontend-expert]
+      must_load_artifacts: ["03-arch.md § Esquema del SHELL-DESIGN-CONTRACT", "03-arch-docs.md", "vitalia/docs/architecture/SHELL-DESIGN-CONTRACT.md (estructura § 1-8)", "las .stories.tsx de T-3/T-4/T-5 (sus titles)"]
+      forbidden_to_touch: ["core/@luana/ui-kit/src", "vitalia/** comunify/** lupulo/** (solo LEER vitalia)", "cualquier .tsx de runtime"]
+      rationale: "El contrato 1:1 = entregable final. Depende de las stories (linkea cada balde-3 a su title). Docs, mismo lane FE. Workhorse."
+
+# ═══════════════════════════════════════════════════════════════
+# DAG resumen
+# ═══════════════════════════════════════════════════════════════
+dag:
+  - "T-1 (clasificación) → bloquea TODO"
+  - "T-2 (infra storybook) ← T-1"
+  - "T-3 (Abel ICP) ← T-2"
+  - "T-4 (moléculas shared) ← T-2   [paralelo a T-3]"
+  - "T-5 (roster doc-story) ← T-4"
+  - "T-6 (contrato 1:1) ← T-3 + T-4 + T-5"
+
+# Notas
+notes:
+  - "Tier: workhorse en TODOS los tickets (FE no-agentic). NUNCA flagship — R23 (agentic→flagship) NO aplica."
+  - "Cero ticket BE, cero ticket AGENTIC. La story no toca backend ni copilot/sales_agent."
+  - "T-3 y T-4 son paralelizables tras T-2 (buckets distintos de stories, mismo code:design-system → serializar si misma sesión)."
+  - "promote_net_new (RN-6): improbable en un inventario. Si aparece pieza net-new compartible → PROMOTE vía /pm-luana (deliverable extra), NO local. Auditor lo verifica por prosa (advisory mecánico — HB-107 no cubre el promote-gate)."
