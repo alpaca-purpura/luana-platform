@@ -188,3 +188,29 @@ Chris reportó bug live post-convergencia del shell-kit: (1) http no redirige a 
 **Flag cross-brand (riesgo latente vitalia):** vitalia tiene el MISMO `@source` mal (3 `../`, debería ser 4) pero FUNCIONA por casualidad — su propio source usa `lg:grid` pelado (`lisa/marca/voz-y-tono`, `FidelizacionKPIsHero`) → Tailwind lo genera igual. Si vitalia alguna vez quita esos usos, su sidebar rompe igual que nicolify. Candidato a corregir + learning vía `/pm-luana` (no toqué vitalia, fuera de scope).
 
 **Menor (no bloqueante):** 500 en `/agents/config/avatar.svg` — el pseudo-agente "Configurar" (engranaje) no tiene dir de avatar; el fallback a inicial "C" funciona. Cosmético, pre-existente.
+
+### 2026-06-24 · 🤖 claude · `/pm-nicolify` · 💡 PROPONE
+Chris: "tengo inventario atomic-design para mi UI → revisar alineamiento de abel para empezar bien; si está alineado, probar y cerrar". Corrí el scan de alineamiento de la FE de abel vs el inventario kit-only (`@luana/ui-kit`, pivot 2026-06-22).
+
+**Veredicto: NO completamente alineado.** Estructura sí (3/7: IcpEntityLayoutClient/IcpMasterListView/IcpWorkspaceView consumen EntityWorkspaceLayout/PageContainer/skeletons del kit). Internals de formulario no (4/7 DRIFT, 7 señales): **BuyerLeafForm** (`<textarea>`+`<button>`×2+`<select>` nativo) · **IcpDatosForm** (`<textarea>`+`<button>`+`min-h-[28px]`) · **IcpCard** (Badge de `@/components/ui` no del kit) · **IcpIntakeOverlay** (`sm:max-w-[560px]`+Dialog/Button local). 21 de 39 layout-divs del baseline son de abel.
+
+**Trampa:** las ratchets HB-106/107 dan GREEN pero su baseline se sembró HOY → grandfathea el drift. GREEN ≠ alineado.
+
+**Ortogonal:** abel YA es cerrable por mérito funcional (code APPROVED + `dod_live_verified: true`; solo falta tu `demo_signoff`). El alineamiento es una decisión aparte.
+
+### 2026-06-24 · 🤖 claude · `/pm-nicolify` · ✓ APLICADO
+Chris ratificó **Opción A: alinear abel primero, luego cerrar** (abel = 1ª hoja de agente → referencia áurea para Brenda/Christian/Sara/Norvil; drift acá se propaga). Abrí fix-loop de adopción DS acotado dentro de `reviewing` (audit verdict + DoD live intactos): scope verbatim en `KIT-ALIGNMENT-SCOPE.md` (los 4 componentes + 7 señales + 21 divs + bajar baseline shrink-only + mantener vitest GREEN). Drift compartido (UniversalIntake/DraftFirstStarter) queda fuera → adoption story. Handoff a `/dev-team` para ejecutar la migración (builder-frontend + gates) → re-auditor acotado → demo gate #37 → merge.
+
+### 2026-06-24 · 🤖 claude · `/dev-team` · ✓ APLICADO
+Kit-alignment fix-loop ejecutado. builder-frontend hizo el grueso pero su proceso murió mid-run (sin commit/result); verifiqué el partial vía gates + terminé los 2 items faltantes (assertion del test para kit Select + bajar baselines).
+
+**Alineado 100% (lo sustancial):** native `<select>`→kit Select · `<textarea>`→Textarea · `<button>`×2+1→Button · 2 arbitrary-values (`min-h-[28px]`, `sm:max-w-[560px]`)→tokens · Badge local→`@luana/ui-kit`. Esas eran las violaciones HARD del canon (HTML nativo/arbitrary).
+
+**Parcial:** layout-divs 7/21 migrados a page-primitives (39→32 baseline, shrink-only honesto). Quedan 14 divs abel (IcpIntakeOverlay/IcpCard + cola) → flag para la adoption story.
+
+**Gates:** tsc 0 errores-abel (1 error pre-existente en engine `core/@luana/hooks` — zustand persist typing, NO introducido acá → flag /pm-luana) · eslint 0 errores · vitest 344/344 (abel suite + 4 ratchets DS).
+
+**Próximo:** `/auditor` re-pass acotado a los archivos cambiados — decide si termina los 14 divs restantes (Carril R) o los confirma + rutea a adoption story. Luego demo gate #37 (lo ejercés vos) → merge → done.
+
+### 2026-06-24 · 🤖 claude · `/dev-team` · 💡 PROPONE
+Detalle a ratificar: ¿querés abel **100% div-clean** antes de cerrar (que el auditor termine los 14 divs restantes), o aceptás el estado actual (native/arbitrary limpio, divs parcial) y los 14 divs van a la adoption story? Lo sustancial del "kit-only" ya está; los 14 divs son higiene de page-primitive (canon §2.7), no uso de HTML nativo. Mi recomendación: que el auditor los termine en el re-pass (es mecánico + abel queda referencia áurea completa).

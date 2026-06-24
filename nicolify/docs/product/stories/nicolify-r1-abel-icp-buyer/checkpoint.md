@@ -12,9 +12,17 @@ architecture_pattern: ADR-nicolify-001   # HARD — sub-tab del shell (shell-fea
 cap_target: abel/icp-buyer
 cap_change_type: new
 route: /{tenantId}/abel/icp
-last_modified: 2026-06-03
-phase: AUDIT_APPROVED_AWAITING_DEMO_GATE_37
-last_artifact: 06-tickets.yaml
+last_modified: 2026-06-24
+phase: KIT_ALIGNMENT_FIX_LOOP        # ★ 2026-06-24 Chris ratificó: alinear abel al inventario atomic-design (kit-only) ANTES del demo gate #37. Fix-loop de adopción DS dentro de reviewing (audit verdict + DoD live SIGUEN válidos · solo cambia de qué átomo sale cada control). Scope verbatim: KIT-ALIGNMENT-SCOPE.md
+last_artifact: T-KIT-ALIGN-result.md
+kit_alignment_2026_06_24:
+  trigger: "Chris (post inventario atomic-design kit-only · pivot 2026-06-22) — abel = 1ª hoja de agente, patrón que copian Brenda/Christian/Sara/Norvil → alinear primero para que sea referencia áurea"
+  scan: "3/7 componentes ALINEADOS (IcpEntityLayoutClient/IcpMasterListView/IcpWorkspaceView) · 4/7 DRIFT (7 señales): BuyerLeafForm(textarea+button×2+<select> nativo) · IcpDatosForm(textarea+button+min-h-[28px]) · IcpCard(Badge local) · IcpIntakeOverlay(sm:max-w-[560px]+Dialog/Button local). 21/39 layout-divs del baseline son de abel."
+  ratchet_trap: "HB-106/107 GREEN PERO baseline sembrado HOY (39 divs/11 files) grandfathea el drift pre-existente → GREEN ≠ alineado. El pass baja el baseline por la cuota migrada (shrink-only honesto)."
+  decision: "Opción A — alinear abel (fix-loop FE acotado a los 4 componentes) → re-auditor → demo gate #37 → merge. Migración drift compartido (UniversalIntake/DraftFirstStarter) = adoption story (fuera de scope)."
+  outcome: "DONE (parcial) — builder-frontend murió mid-run; orchestrator verificó partial + terminó. Native-element + arbitrary-value drift 100% alineado a kit (select/textarea/button→kit · 2 arbitraries→token · Badge→kit). Layout-div 7/21 migrados (39→32 baseline). native-select baseline 1→0. Gates: tsc 0 abel-err · eslint 0 err · vitest 344/344. Result: T-KIT-ALIGN-result.md"
+  deferred_to_adoption: "14 layout-divs abel restantes · wholesale @/components/ui→kit (8 atoms R0 barrel) · pre-existing engine tsc err core/@luana/hooks (→ /pm-luana)"
+  next: "/auditor re-pass acotado (decide: terminar 14 divs vía Carril R o confirmar + rutear a adoption story) → demo gate #37 → merge"
 adr_001_compliance: full
 ready_package: [03-arch.md, "03-arch-{be,fe,agentic}.md", 04-validators.yaml, 05-guidelines.md, 06-tickets.yaml, dispatch-plan.md]
 ticket_count: 8                       # 2 BE + 1 AGENTIC (Opus R23) + 4 FE + 1 E2E · DAG en dispatch-plan.md

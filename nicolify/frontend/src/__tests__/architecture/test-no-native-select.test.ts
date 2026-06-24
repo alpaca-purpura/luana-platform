@@ -30,8 +30,10 @@ const SRC = join(ROOT, "src");
 const NATIVE_SELECT_RE = /<select(\s|>)/g;
 
 // ── Shrink-only baseline (MEASURED 2026-06-24 — HB-106) ───────
-const BASELINE_TOTAL = 1;
-const BASELINE_FILES = 1;
+// 2026-06-24 kit-alignment (nicolify-r1-abel-icp-buyer): BuyerLeafForm native
+// <select> → kit Select. Zero native <select> remain → baseline lowered to 0.
+const BASELINE_TOTAL = 0;
+const BASELINE_FILES = 0;
 
 function scan(): { total: number; files: string[] } {
   let total = 0;

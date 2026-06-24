@@ -27,11 +27,17 @@
  */
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  FloatingAutosaveIndicator,
+  Group,
+  GroupHeader,
+  PageSection,
+  Textarea,
+} from "@luana/ui-kit";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { FloatingAutosaveIndicator, Group, GroupHeader } from "@luana/ui-kit";
 import { WhatForChip } from "@/components/shared/WhatForChip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,28 +71,6 @@ function isMarkReadyError(body: unknown): body is MarkReadyError {
     body !== null &&
     "missing" in body &&
     Array.isArray((body as Record<string, unknown>).missing)
-  );
-}
-
-// ── Textarea helper ────────────────────────────────────────────────────────────
-
-function Textarea({
-  className,
-  rows = 3,
-  ...props
-}: React.TextareaHTMLAttributes<HTMLTextAreaElement> & { rows?: number }) {
-  return (
-    <textarea
-      rows={rows}
-      className={cn(
-        "flex w-full rounded-md border border-input bg-background px-3 py-2",
-        "text-sm ring-offset-background placeholder:text-muted-foreground",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-        "disabled:cursor-not-allowed disabled:opacity-50 resize-none",
-        className,
-      )}
-      {...props}
-    />
   );
 }
 
@@ -328,7 +312,7 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
           consumers={["abel", "christian"]}
           missingInGroup={missingForIdentidad}
         />
-        <div className="flex flex-col gap-3">
+        <PageSection>
           <FieldRow label="Nombre del ICP *" htmlFor="icp-label" error={errors.label?.message}>
             <Input
               id="icp-label"
@@ -348,6 +332,7 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
               {...register("description")}
               placeholder="Describe quién es este cliente ideal y por qué encaja contigo."
               data-testid="icp-field-description"
+              className="resize-none text-sm"
             />
           </FieldRow>
           <div className="grid grid-cols-2 gap-3">
@@ -402,7 +387,7 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
               />
             </FieldRow>
           </div>
-        </div>
+        </PageSection>
       </Group>
 
       {/* ── Grupo 2: Firmográficos ───────────────────────────────────────────── */}
@@ -412,7 +397,7 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
           consumers={["brenda", "norvil"]}
           missingInGroup={missingForFirmograficos}
         />
-        <div className="flex flex-col gap-3">
+        <PageSection>
           {/* avgTicket + avgTicketCurrency — RN-11: preserve currency, no 'USD' hardcode */}
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2">
@@ -463,7 +448,7 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
               className="text-sm"
             />
           </FieldRow>
-        </div>
+        </PageSection>
       </Group>
 
       {/* ── Grupo 3: Dolor & ángulo ───────────────────────────────────────────── */}
@@ -473,7 +458,7 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
           consumers={["christian", "abel"]}
           missingInGroup={missingForDolor}
         />
-        <div className="flex flex-col gap-3">
+        <PageSection>
           <FieldRow
             label="Dolor principal"
             htmlFor="icp-main-pain"
@@ -485,6 +470,7 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
               placeholder="¿Qué problema crítico sufre este cliente y que tu servicio resuelve?"
               data-testid="icp-field-main-pain"
               rows={2}
+              className="resize-none text-sm"
             />
           </FieldRow>
           <FieldRow
@@ -498,9 +484,10 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
               placeholder="¿Cómo conectas el dolor con tu propuesta de valor única?"
               data-testid="icp-field-sales-angle"
               rows={2}
+              className="resize-none text-sm"
             />
           </FieldRow>
-        </div>
+        </PageSection>
       </Group>
 
       {/* ── Grupo 4: Señales ─────────────────────────────────────────────────── */}
@@ -511,7 +498,7 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
           missingInGroup={missingForSenales}
         />
         <div className="flex flex-col gap-2">
-          <div className="flex flex-wrap gap-1.5 min-h-[28px]" data-testid="icp-signals-container">
+          <div className="flex flex-wrap gap-1.5 min-h-7" data-testid="icp-signals-container">
             {currentSignals.map((signal) => (
               <span
                 key={signal}
@@ -519,15 +506,17 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
                 data-testid={`signal-pill-${signal}`}
               >
                 {signal}
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon"
                   onClick={() => removeSignal(signal)}
                   aria-label={`Eliminar señal: ${signal}`}
-                  className="text-muted-foreground hover:text-destructive transition-colors ml-0.5"
+                  className="h-4 w-4 text-muted-foreground hover:text-destructive hover:bg-transparent p-0 ml-0.5"
                   data-testid={`signal-remove-${signal}`}
                 >
                   ×
-                </button>
+                </Button>
               </span>
             ))}
           </div>
@@ -578,6 +567,7 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
             placeholder="¿Qué tipo de cliente NO quieres atender? Describe el perfil que debes evitar."
             data-testid="icp-field-anti-pattern"
             rows={2}
+            className="resize-none text-sm"
           />
         </FieldRow>
       </Group>

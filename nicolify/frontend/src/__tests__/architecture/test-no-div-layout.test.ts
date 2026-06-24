@@ -28,7 +28,11 @@ const ROOT = resolve(__dirname, "../../..");
 const SRC = join(ROOT, "src");
 
 // ── Shrink-only baseline (MEASURED 2026-06-24 — HB-106) ───────
-const BASELINE_TOTAL = 39;
+// 2026-06-24 kit-alignment (nicolify-r1-abel-icp-buyer): 7 abel layout <div>
+// migrated to page-primitives (BuyerLeafForm + IcpDatosForm) → 39 → 32.
+// Remaining abel divs (IcpIntakeOverlay/IcpCard + tail) tracked for the
+// design-system-adoption story.
+const BASELINE_TOTAL = 32;
 const BASELINE_FILES = 11;
 
 function scan(): { total: number; files: string[] } {

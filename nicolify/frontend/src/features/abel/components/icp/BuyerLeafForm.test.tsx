@@ -191,12 +191,16 @@ describe("BuyerLeafForm", () => {
   });
 
   describe("Decision power dropdown", () => {
-    it("renders decision power options", () => {
+    it("offers the decision power options", async () => {
+      const user = userEvent.setup();
       renderForm();
-      const select = screen.getByTestId("buyer-field-decision-power");
-      expect(select).toBeDefined();
-      // Should show the current value
-      expect((select as HTMLSelectElement).value).toBe("high");
+      // SelectTrigger carries the data-testid. The kit Select (Radix) keeps its
+      // options in SelectContent, mounted on open — so open the dropdown and
+      // assert the option is offered (native <option> textContent no longer applies).
+      const trigger = screen.getByTestId("buyer-field-decision-power");
+      expect(trigger).toBeDefined();
+      await user.click(trigger);
+      expect(await screen.findByRole("option", { name: /Alto — decisor final/ })).toBeDefined();
     });
   });
 });

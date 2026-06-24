@@ -24,17 +24,27 @@
  */
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  FloatingAutosaveIndicator,
+  Group,
+  GroupHeader,
+  PageSection,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Textarea,
+} from "@luana/ui-kit";
 import { useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { FloatingAutosaveIndicator, Group, GroupHeader } from "@luana/ui-kit";
 import { WhatForChip } from "@/components/shared/WhatForChip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAutosave } from "@/hooks/use-autosave";
-import { cn } from "@/lib/utils";
 
 import { usePatchBuyer, useSetPrimaryBuyer } from "../../hooks/use-buyer-mutations";
 import { useBuyer } from "../../hooks/use-buyers";
@@ -47,28 +57,6 @@ import type { BuyerPatchPayload } from "../../api/buyer-api";
 interface BuyerLeafFormProps {
   buyerId: string;
   icpId: string;
-}
-
-// ── Textarea helper ────────────────────────────────────────────────────────────
-
-function Textarea({
-  className,
-  rows = 2,
-  ...props
-}: React.TextareaHTMLAttributes<HTMLTextAreaElement> & { rows?: number }) {
-  return (
-    <textarea
-      rows={rows}
-      className={cn(
-        "flex w-full rounded-md border border-input bg-background px-3 py-2",
-        "text-sm ring-offset-background placeholder:text-muted-foreground",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-        "disabled:cursor-not-allowed disabled:opacity-50 resize-none",
-        className,
-      )}
-      {...props}
-    />
-  );
 }
 
 // ── BuyerGroupHeader — wraps kit GroupHeader with local WhatForChip in trailing ──
@@ -162,25 +150,29 @@ function ListDictField({
               className="text-sm flex-1"
               aria-label={`${label} ${idx + 1}`}
             />
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               onClick={() => removeItem(idx)}
               aria-label={`Eliminar ${label} ${idx + 1}`}
-              className="text-muted-foreground hover:text-destructive transition-colors text-sm"
+              className="h-8 w-8 text-muted-foreground hover:text-destructive"
             >
               ×
-            </button>
+            </Button>
           </div>
         );
       })}
-      <button
+      <Button
         type="button"
+        variant="ghost"
+        size="sm"
         onClick={addItem}
-        className="text-xs text-agent-abel font-medium mt-1 self-start hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded-sm"
+        className="text-xs text-agent-abel font-medium mt-1 self-start px-0 h-auto hover:bg-transparent hover:underline"
         data-testid={`${testId ?? label.toLowerCase()}-add`}
       >
         + Agregar
-      </button>
+      </Button>
     </div>
   );
 }
@@ -396,7 +388,7 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
           )}
         </div>
 
-        <div className="flex flex-col gap-3">
+        <PageSection>
           <FieldRow label="Nombre *" htmlFor="buyer-name">
             <Input
               id="buyer-name"
@@ -417,32 +409,38 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
               />
             </FieldRow>
             <FieldRow label="Poder de decisión" htmlFor="buyer-decision-power">
-              <select
-                id="buyer-decision-power"
-                {...register("decisionPower")}
-                data-testid="buyer-field-decision-power"
-                className={cn(
-                  "flex h-9 w-full rounded-md border border-input bg-background px-3 py-2",
-                  "text-sm ring-offset-background",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                )}
+              <Select
+                value={watch("decisionPower") ?? ""}
+                onValueChange={(val) =>
+                  setValue("decisionPower", val as BuyerFormValues["decisionPower"], {
+                    shouldDirty: true,
+                  })
+                }
               >
-                <option value="">Selecciona…</option>
-                {DECISION_POWER_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger
+                  id="buyer-decision-power"
+                  data-testid="buyer-field-decision-power"
+                  className="h-9 text-sm"
+                >
+                  <SelectValue placeholder="Selecciona…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {DECISION_POWER_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </FieldRow>
           </div>
-        </div>
+        </PageSection>
       </Group>
 
       {/* ── Grupo 2: Datos demográficos ─────────────────────────────────────── */}
       <Group className="mb-3">
         <BuyerGroupHeader title="Datos demográficos" consumers={["christian"]} />
-        <div className="flex flex-col gap-3">
+        <PageSection>
           {(
             [
               {
@@ -482,13 +480,13 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
               />
             </FieldRow>
           ))}
-        </div>
+        </PageSection>
       </Group>
 
       {/* ── Grupo 3: Psicografía ────────────────────────────────────────────── */}
       <Group className="mb-3">
         <BuyerGroupHeader title="Psicografía" consumers={["abel", "christian"]} />
-        <div className="flex flex-col gap-3">
+        <PageSection>
           {(
             [
               {
@@ -519,10 +517,11 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
                 placeholder={placeholder}
                 data-testid={id}
                 rows={2}
+                className="resize-none text-sm"
               />
             </FieldRow>
           ))}
-        </div>
+        </PageSection>
       </Group>
 
       {/* ── Grupo 4: Dolores ─────────────────────────────────────────────────── */}
@@ -580,7 +579,7 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
       {/* ── Grupo 8: Viaje del comprador ─────────────────────────────────────── */}
       <Group className="mb-3">
         <BuyerGroupHeader title="Viaje del comprador" consumers={["christian", "abel"]} />
-        <div className="flex flex-col gap-3">
+        <PageSection>
           {(
             [
               {
@@ -611,10 +610,11 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
                 placeholder={placeholder}
                 data-testid={id}
                 rows={2}
+                className="resize-none text-sm"
               />
             </FieldRow>
           ))}
-        </div>
+        </PageSection>
       </Group>
 
       {/* ── Autosave indicator — canon §2.6: UNA por página, sticky bottom-center ── */}

@@ -25,8 +25,8 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
+import { Badge } from "@luana/ui-kit";
 import { agentBgClass } from "@/components/shared/shell-organism/_agent-tw-classes";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 import type { IcpListItem, IcpStatus } from "../../types/icp";

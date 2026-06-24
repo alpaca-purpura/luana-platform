@@ -160,7 +160,7 @@ export function IcpIntakeOverlay() {
   return (
     <Dialog open={intakeOverlayOpen} onOpenChange={handleOpenChange}>
       <DialogContent
-        className="sm:max-w-[560px]"
+        className="sm:max-w-xl"
         data-testid="icp-intake-overlay"
         onEscapeKeyDown={handleEscapeKeyDown}
         onInteractOutside={handleInteractOutside}
