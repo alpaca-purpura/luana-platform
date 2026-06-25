@@ -249,3 +249,11 @@ Prior-art del lift (Modo Core): **ya existe `core-ds-foundation`** (platform sto
 3. Cuando aterrice + promueva a main + sync → nicolify migra los 14 divs de abel contra la primitiva nueva → baseline 32→18 → demo gate #37 → merge.
 
 No fuerzo la creación del story platform desde acá (worktree equivocado + scope gate). Lo natural: arrancás una sesión en `~/Proyectos/luana-platform` para el delta core-ds, y volvemos a nicolify para cerrar abel.
+
+### 2026-06-24 · 🤖 claude · `/pm-luana` → `/dev-team`×2 → `/auditor` · ✓ APLICADO
+Chris: "hazlo todo en esta sesión con skip, subagentes opus, contexto completo". EJECUTADO end-to-end:
+1. **builder-frontend opus** agregó `Stack`+`Grid` a `core/@luana/ui-kit` (micro-layout genérico, distinto de las page-primitives · JIT-safe · tokenized · additive). tsc 0 · vitest 38/38 · storybook 277. **Commit `4c67928f`** (SCOPE_GATE_SKIP, core cross-brand ratificado).
+2. **builder-frontend opus** migró los 14 divs de abel → Stack/Grid (visual preservado class-for-class, baseline 32→18, **abel=0 flagged divs**, vitest 344/344). **Commit `2aad9726`**.
+3. **auditor-frontend opus APPROVED** — zero-behavior refactor verificado (gates re-corridos, ratchet honesto, visual preservado, RHF intacto, sin test-weakening). 1 WARN: kit Textarea trae `min-h-[80px]` (nudge imperceptible del atom-swap, aceptable/arguably mejor). Live-verify PARCIAL (stack up + ruta 307 + bundle limpio; MCP-write bloqueado por perfil-vitalia-lane → el demo #37 tuyo cubre el live final). Review: `T-KIT-ALIGN-CHECKPOINTS.md`.
+
+**abel ahora: 100% canon-clean** (0 nativos · 0 arbitrary · 0 flagged divs · todo del kit) + APPROVED. HB-111 parte-1 resuelto (kit tiene la primitiva). Único gate restante = el que SIEMPRE estuvo pendiente desde 2026-06-04: **demo #37** (lo ejercés vos en dev-app.nicolify.com → `chris_verify.signoff`) → `/pm-nicolify` merge → done.
