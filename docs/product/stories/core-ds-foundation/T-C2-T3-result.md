@@ -5,7 +5,7 @@
 **Tipo:** platform-engineering · verification_nature: funcional/ambas · production_code: true
 **Fecha:** 2026-06-25
 **Estado:** DONE (tests passing) — tsc 0 · vitest 41/41 arch-test GREEN · validadores 3/3 PASS
-**Commit:** TBD — pendiente commit con exact pathspec (ver § Entrega)
+**Commit:** `403badce` — `origin wip/vitalia`
 
 ---
 
