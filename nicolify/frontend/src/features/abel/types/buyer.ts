@@ -10,7 +10,16 @@
  * Named exports only (NO default exports) per FSD-Lite enforce.
  */
 
-export type DecisionPower = "high" | "medium" | "low" | "influencer";
+// Mirrors BE domain enum `DecisionPower` (StrEnum, abel/domain/buyer.py) — B2B
+// MEDDIC/SPIN stakeholder roles. MUST match the BE values exactly (the PATCH
+// validates against this enum → a divergent value is a 422).
+export type DecisionPower =
+  | "decisor_economico"
+  | "champion"
+  | "influencer_tecnico"
+  | "aprobador"
+  | "usuario"
+  | "bloqueador";
 
 export interface Buyer {
   id: string;

@@ -77,7 +77,7 @@ const baseBuyers = [
     id: "b1",
     name: "Juan Pérez",
     role: "Director",
-    decisionPower: "high" as const,
+    decisionPower: "decisor_economico" as const,
     isPrimary: true,
   },
 ];

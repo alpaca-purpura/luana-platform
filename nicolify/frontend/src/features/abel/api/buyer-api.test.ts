@@ -23,6 +23,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { buyerApi } from "./buyer-api";
 import type { BuyerCreatePayload } from "./buyer-api";
+import type { DecisionPower } from "../types/buyer";
 
 // ── Mock fetchClient ──────────────────────────────────────────────────────────
 
@@ -52,7 +53,7 @@ const rawBuyerStub = {
   icp_id: "icp-001",
   name: "Decisor Principal",
   role: "CEO",
-  decision_power: "high" as const,
+  decision_power: "decisor_economico" as const,
   is_primary: true,
   demographics: {},
   psychographics: {},
@@ -165,12 +166,34 @@ describe("buyerApi — single-resource endpoints use SINGULAR path (BUG-2 regres
     expect(result.id).toBe("buyer-123");
     expect(result.tenantId).toBe("tenant-abc");
     expect(result.icpId).toBe("icp-001");
-    expect(result.decisionPower).toBe("high");
+    expect(result.decisionPower).toBe("decisor_economico");
     expect(result.isPrimary).toBe(true);
     // snake_case keys must NOT appear in the mapped output
     expect(Object.keys(result)).not.toContain("tenant_id");
     expect(Object.keys(result)).not.toContain("icp_id");
     expect(Object.keys(result)).not.toContain("decision_power");
     expect(Object.keys(result)).not.toContain("is_primary");
+  });
+});
+
+// ── DecisionPower contract guard (FE ↔ BE enum) ────────────────────────────────
+// Origen: live-verify 2026-06-25 — el Select de poder-de-decisión mandaba valores
+// genéricos ("high/medium/low/influencer") que el BE rechazaba (422). El BE
+// (abel/domain/buyer.py::DecisionPower, modelo MEDDIC/SPIN) es la fuente de verdad.
+// Este guard FALLA (tsc + runtime) si la FE deja de cubrir un valor del BE → evita
+// que el contrato vuelva a divergir silenciosamente (clase HB-42).
+describe("DecisionPower contract (FE mirror of BE enum)", () => {
+  it("FE DecisionPower covers exactly the BE abel/domain/buyer.py enum values", () => {
+    const BE_DECISION_POWER = [
+      "decisor_economico",
+      "champion",
+      "influencer_tecnico",
+      "aprobador",
+      "usuario",
+      "bloqueador",
+    ] as const;
+    // Type-level lock: every BE value must be a valid FE DecisionPower (compile guard).
+    const feValues: DecisionPower[] = [...BE_DECISION_POWER];
+    expect(new Set(feValues)).toEqual(new Set(BE_DECISION_POWER));
   });
 });

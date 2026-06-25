@@ -53,6 +53,7 @@ import { useBuyer } from "../../hooks/use-buyers";
 import { buyerFormSchema, type BuyerFormValues } from "../../types/icp-schema";
 
 import type { BuyerPatchPayload } from "../../api/buyer-api";
+import type { DecisionPower } from "../../types/buyer";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -181,11 +182,15 @@ function ListDictField({
 
 // ── Decision power options ─────────────────────────────────────────────────────
 
-const DECISION_POWER_OPTIONS: { value: string; label: string }[] = [
-  { value: "high", label: "Alto — decisor final" },
-  { value: "medium", label: "Medio — influenciador fuerte" },
-  { value: "low", label: "Bajo — influenciador" },
-  { value: "influencer", label: "Influenciador — sin poder formal" },
+// Values MUST match the BE DecisionPower enum (abel/domain/buyer.py) — the PATCH
+// validates against it. Labels = Spanish neutro derived from the BE role docs.
+const DECISION_POWER_OPTIONS: { value: DecisionPower; label: string }[] = [
+  { value: "decisor_economico", label: "Decisor económico — firma el contrato" },
+  { value: "champion", label: "Champion — defensor interno" },
+  { value: "influencer_tecnico", label: "Influencer técnico — evalúa la solución" },
+  { value: "aprobador", label: "Aprobador — aprueba sin elegir proveedor" },
+  { value: "usuario", label: "Usuario — usa el servicio día a día" },
+  { value: "bloqueador", label: "Bloqueador — puede vetar la decisión" },
 ];
 
 // ── BuyerFormValues → BuyerPatchPayload mapper ─────────────────────────────────

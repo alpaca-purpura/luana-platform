@@ -58,7 +58,7 @@ const mockBuyer = {
   icpId: "icp-1",
   name: "Juan Pérez",
   role: "Director de Marketing",
-  decisionPower: "high" as const,
+  decisionPower: "decisor_economico" as const,
   isPrimary: false,
   demographics: {},
   psychographics: {},
@@ -200,7 +200,9 @@ describe("BuyerLeafForm", () => {
       const trigger = screen.getByTestId("buyer-field-decision-power");
       expect(trigger).toBeDefined();
       await user.click(trigger);
-      expect(await screen.findByRole("option", { name: /Alto — decisor final/ })).toBeDefined();
+      expect(
+        await screen.findByRole("option", { name: /Decisor económico — firma el contrato/ }),
+      ).toBeDefined();
     });
   });
 });

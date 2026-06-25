@@ -50,7 +50,16 @@ export type IcpFormValues = z.infer<typeof icpFormSchema>;
 
 // ── Buyer Form Schema ────────────────────────────────────────────────────────
 
-const decisionPowerEnum = z.enum(["high", "medium", "low", "influencer"]);
+// MUST match the BE DecisionPower enum (abel/domain/buyer.py) — the PATCH
+// validates against it (a divergent value → 422). See types/buyer.ts::DecisionPower.
+const decisionPowerEnum = z.enum([
+  "decisor_economico",
+  "champion",
+  "influencer_tecnico",
+  "aprobador",
+  "usuario",
+  "bloqueador",
+]);
 
 /**
  * buyerFormSchema — buyer profile editing schema.
