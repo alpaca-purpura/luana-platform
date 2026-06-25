@@ -419,3 +419,44 @@ emite `catalog.json` (GITIGNORED, 54 módulos) + `catalog.md` (humano, 7 capas c
 (5) `make ui-catalog` — Makefile target. `.gitignore` + `.gitignore` entries para catalog.json + catalog.md.
 **4 validators PASS · 319/319 vitest GREEN · tsc 0 errores.**
 Resultado: `docs/product/stories/core-ds-foundation/T-C2-T1-result.md`.
+
+### 2026-06-25 · C2-T2 — SSoT de valores (shadow+color/typo/radius) @theme guardado (DONE)
+
+**/dev-team (builder-frontend) · ✓ APLICADO (C2-T2)** — `@luana/design-tokens` 0.2.0 pasa de names-only a VALUES
+en los 4 ejes pendientes:
+(1) `shadow.ts` NEW — `SHADOW` elevation scale (none/sm/md/lg/xl) como valores CSS box-shadow cross-brand.
+(2) `typography.ts` — ADD `TYPOGRAPHY_SCALE` (size/lineHeight/weight por tier display/heading/body/caption).
+(3) `radius.ts` — ADD `RADIUS_SCALE` (sm/md/lg calc-based + control=md−2px per RN-7).
+(4) `color-values.ts` NEW — `SEMANTIC_COLOR_DEFAULTS` (HSL channels success/warning/danger/info + foregrounds)
+    + `AGENT_ACCENT_CONTRAST` (familias de contraste yellow-warm/dark-neutral per canon §2.8).
+(5) `index.ts` + `package.json` — barrel exports shadow + color-values (exports map actualizado).
+(6) `nicolify/frontend/src/app/globals.css` — @theme +shadow scale + semantic status color vars + :root HSL channels.
+(7) Arch-test nicolify (`test-ds-single-token-source.test.ts`) — C2-T2 SHADOW equality (no-drift) +
+    TYPOGRAPHY_SCALE/RADIUS_SCALE completeness + semantic colors (69/69 PASS, must_pass: true).
+(8) Arch-test vitalia (`test-ds-tokens-lock.test.ts`) — C2-T2 SC-5 TS export structure checks (22/22 PASS;
+    globals.css projection es T-3, no T-2).
+(9) Guard scripts: `scripts/_assert_no_css_in_tokens_pkg.mjs` (canon §6.8 NO-CSS) +
+    `scripts/_assert_token_value_renders.mjs` (renderable value check per token path).
+
+Cardinal: NO CSS shippeado desde el package (canon §6.8); RN-5 preservado (hex agente per-brand, solo semántica shared).
+**5 validators PASS · 31/31 scale tests + 69/69 nicolify + 22/22 vitalia GREEN · tsc 0 errores.**
+Commit: `9ebbe8a7`. Resultado: `docs/product/stories/core-ds-foundation/T-C2-T2-result.md`.
+
+### 2026-06-25 · C2-T4 — superficies de extensión 4 tier-2 + consumer stories (DONE)
+
+**/dev-team (builder-frontend) · ✓ APLICADO (C2-T4)** — superficies de extensión NOMBRADAS y ADITIVAS para los 4 tier-2 (ADR-016 §3 toolkit composición>fork):
+
+- `EntityInfoCard`: slot `footer?: React.ReactNode` — debajo del status chip; testid `entity-info-card-footer-{testId}`
+- `ChartContainer`: slot `footer?: React.ReactNode` — debajo de `<ResponsiveContainer>`, atributo `data-chart-footer`; `useChart` ya estaba exportado (sin cambio)
+- `RichSelect`: render-prop `renderItem?: (option: RichSelectOption) => React.ReactNode` — override del layout label+descripción por item; **+ fix**: eliminado `<FormControl>` interno que crasheaba fuera de un Form (patrón Shadcn correcto: el consumer wrappea; workaround ya documentado en ResumenView.tsx `ponytail:` comment)
+- `SmartDateTimePicker`: slot `trigger?: React.ReactNode` — `PopoverTrigger asChild` + `React.isValidElement` check; cuando se omite, el `<Button>` default aparece
+
+4 consumer stories ejerciendo cada slot (nuevos named exports en los `.stories.tsx` existentes):
+  `ConSlotFooter` · `ConFooterCustom` · `ConRenderItem` · `ConTriggerCustom`
+
+TDD: 6 tests RED→GREEN (`tier2-slots.test.tsx`). Gates:
+- `tsc --noEmit`: **0 errores**
+- `vitest run`: **313/313 PASS** (sin regresiones)
+- `render-smoke` (build-storybook → serve → _smoke_storybook.mjs): **274/274 stories render clean**
+
+Commit: `158c14d8`. Resultado: `docs/product/stories/core-ds-foundation/T-C2-T4-result.md`.
