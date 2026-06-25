@@ -30,10 +30,13 @@ const SRC = join(ROOT, "src");
 // ── Shrink-only baseline (MEASURED 2026-06-24 — HB-106) ───────
 // 2026-06-24 kit-alignment (nicolify-r1-abel-icp-buyer): 7 abel layout <div>
 // migrated to page-primitives (BuyerLeafForm + IcpDatosForm) → 39 → 32.
-// Remaining abel divs (IcpIntakeOverlay/IcpCard + tail) tracked for the
-// design-system-adoption story.
-const BASELINE_TOTAL = 32;
-const BASELINE_FILES = 11;
+// 2026-06-24 kit-primitive migration (nicolify-r1-abel-icp-buyer, T-KIT-ALIGN2):
+// the 14 remaining abel ICP component-internal layout <div> migrated to the new
+// `@luana/ui-kit` Stack/Grid micro-layout primitives (HB-111) across IcpCard,
+// IcpIntakeOverlay, IcpDatosForm, BuyerLeafForm → abel now = 0 flagged layout divs.
+// 32 → 18 (4 abel files dropped to 0 layout divs → 11 → 7 files).
+const BASELINE_TOTAL = 18;
+const BASELINE_FILES = 7;
 
 function scan(): { total: number; files: string[] } {
   let total = 0;

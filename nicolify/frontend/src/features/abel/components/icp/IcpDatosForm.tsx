@@ -29,9 +29,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   FloatingAutosaveIndicator,
+  Grid,
   Group,
   GroupHeader,
   PageSection,
+  Stack,
   Textarea,
 } from "@luana/ui-kit";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -88,7 +90,7 @@ function FieldRow({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-1">
+    <Stack gap={1}>
       <label htmlFor={htmlFor} className="text-xs font-medium text-muted-foreground">
         {label}
       </label>
@@ -98,7 +100,7 @@ function FieldRow({
           {error}
         </p>
       )}
-    </div>
+    </Stack>
   );
 }
 
@@ -335,7 +337,7 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
               className="resize-none text-sm"
             />
           </FieldRow>
-          <div className="grid grid-cols-2 gap-3">
+          <Grid cols={2} gap={3}>
             <FieldRow
               label="Vertical / industria"
               htmlFor="icp-vertical"
@@ -362,8 +364,8 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
                 className="text-sm"
               />
             </FieldRow>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
+          </Grid>
+          <Grid cols={2} gap={3}>
             <FieldRow label="Geografía" htmlFor="icp-geo" error={errors.geo?.message}>
               <Input
                 id="icp-geo"
@@ -386,7 +388,7 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
                 className="text-sm"
               />
             </FieldRow>
-          </div>
+          </Grid>
         </PageSection>
       </Group>
 
@@ -399,7 +401,7 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
         />
         <PageSection>
           {/* avgTicket + avgTicketCurrency — RN-11: preserve currency, no 'USD' hardcode */}
-          <div className="grid grid-cols-3 gap-3">
+          <Grid cols={3} gap={3}>
             <div className="col-span-2">
               <FieldRow
                 label="Ticket promedio"
@@ -434,7 +436,7 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
                 Código ISO 4217 (ej. MXN, COP, USD, PEN)
               </p>
             </FieldRow>
-          </div>
+          </Grid>
           <FieldRow
             label="Ciclo de venta"
             htmlFor="icp-sales-cycle"
@@ -497,7 +499,7 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
           consumers={["brenda", "christian"]}
           missingInGroup={missingForSenales}
         />
-        <div className="flex flex-col gap-2">
+        <Stack gap={2}>
           <div className="flex flex-wrap gap-1.5 min-h-7" data-testid="icp-signals-container">
             {currentSignals.map((signal) => (
               <span
@@ -546,7 +548,7 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
               Agregar
             </Button>
           </div>
-        </div>
+        </Stack>
       </Group>
 
       {/* ── Grupo 5: Anti-patrón ─────────────────────────────────────────────── */}
@@ -573,7 +575,7 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
       </Group>
 
       {/* ── Mark-ready ───────────────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-2 mt-2 pt-4 border-t border-border/40">
+      <Stack gap={2} className="mt-2 pt-4 border-t border-border/40">
         {buyersMissing.length > 0 && (
           <p
             role="alert"
@@ -616,7 +618,7 @@ export function IcpDatosForm({ icpId, icp, buyers }: IcpDatosFormProps) {
                 : "Marcar listo"}
           </Button>
         </div>
-      </div>
+      </Stack>
 
       {/* ── Autosave indicator — canon §2.6: UNA por página, sticky bottom-center ── */}
       <FloatingAutosaveIndicator status={autosaveStatus} />

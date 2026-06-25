@@ -25,7 +25,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
-import { Badge } from "@luana/ui-kit";
+import { Badge, Stack } from "@luana/ui-kit";
 import { agentBgClass } from "@/components/shared/shell-organism/_agent-tw-classes";
 import { cn } from "@/lib/utils";
 
@@ -129,7 +129,7 @@ export function IcpCard({ icp, className }: IcpCardProps) {
       </div>
 
       {/* Label */}
-      <div className="flex flex-col gap-1 min-w-0">
+      <Stack gap={1} className="min-w-0">
         <h3
           className="text-sm font-semibold text-foreground truncate group-hover:text-agent-abel transition-colors"
           title={icp.label}
@@ -143,7 +143,7 @@ export function IcpCard({ icp, className }: IcpCardProps) {
             {icp.vertical}
           </p>
         )}
-      </div>
+      </Stack>
 
       {/* Footer: buyer count */}
       <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-auto">

@@ -26,6 +26,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   FloatingAutosaveIndicator,
+  Grid,
   Group,
   GroupHeader,
   PageSection,
@@ -34,6 +35,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Stack,
   Textarea,
 } from "@luana/ui-kit";
 import { useCallback, useEffect } from "react";
@@ -88,12 +90,12 @@ function FieldRow({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-1">
+    <Stack gap={1}>
       <label htmlFor={htmlFor} className="text-xs font-medium text-muted-foreground">
         {label}
       </label>
       {children}
-    </div>
+    </Stack>
   );
 }
 
@@ -137,7 +139,7 @@ function ListDictField({
   );
 
   return (
-    <div className="flex flex-col gap-2" data-testid={testId}>
+    <Stack gap={2} data-testid={testId}>
       <span className="text-xs font-medium text-muted-foreground sr-only">{label}</span>
       {value.map((item, idx) => {
         const text = typeof item[singleFieldKey] === "string" ? item[singleFieldKey] : "";
@@ -173,7 +175,7 @@ function ListDictField({
       >
         + Agregar
       </Button>
-    </div>
+    </Stack>
   );
 }
 
@@ -302,11 +304,11 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
   // Loading / error states
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-3 p-6" aria-busy="true" aria-label="Cargando buyer">
+      <Stack gap={3} className="p-6" aria-busy="true" aria-label="Cargando buyer">
         <Skeleton className="h-4 w-40" />
         <Skeleton className="h-8 w-full" />
         <Skeleton className="h-8 w-3/4" />
-      </div>
+      </Stack>
     );
   }
 
@@ -398,7 +400,7 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
               className="text-sm"
             />
           </FieldRow>
-          <div className="grid grid-cols-2 gap-3">
+          <Grid cols={2} gap={3}>
             <FieldRow label="Rol en la empresa" htmlFor="buyer-role">
               <Input
                 id="buyer-role"
@@ -433,7 +435,7 @@ export function BuyerLeafForm({ buyerId, icpId }: BuyerLeafFormProps) {
                 </SelectContent>
               </Select>
             </FieldRow>
-          </div>
+          </Grid>
         </PageSection>
       </Group>
 

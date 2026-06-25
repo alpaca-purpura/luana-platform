@@ -34,6 +34,7 @@
  * validators_gate: RN-2 (draft-first) + NF-res-extract + SC-network
  */
 
+import { Stack } from "@luana/ui-kit";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect } from "react";
 
@@ -211,8 +212,10 @@ export function IcpIntakeOverlay() {
 /** Shown while Abel is processing the seed (isStarting || isAnalyzing). */
 function AnalyzingState() {
   return (
-    <div
-      className="flex flex-col items-center gap-4 py-8 text-center"
+    <Stack
+      gap={4}
+      align="center"
+      className="py-8 text-center"
       role="status"
       aria-live="polite"
       aria-busy="true"
@@ -228,7 +231,7 @@ function AnalyzingState() {
       <p className="text-xs text-muted-foreground max-w-xs">
         Esto puede tardar unos segundos. No cierres esta ventana.
       </p>
-    </div>
+    </Stack>
   );
 }
 
@@ -241,19 +244,14 @@ interface ErrorStateProps {
 /** Shown when extraction fails. Provides retry + manual fallback. */
 function ErrorState({ message, onManualFallback, onRetry }: ErrorStateProps) {
   return (
-    <div
-      className="flex flex-col gap-4"
-      role="alert"
-      aria-live="polite"
-      data-testid="intake-error-state"
-    >
-      <div className="flex flex-col items-center gap-3 py-4 text-center">
+    <Stack gap={4} role="alert" aria-live="polite" data-testid="intake-error-state">
+      <Stack gap={3} align="center" className="py-4 text-center">
         <span className="text-3xl" aria-hidden="true">
           ⚠️
         </span>
         <p className="text-sm font-medium text-foreground">Abel no pudo leer la fuente</p>
         <p className="text-xs text-muted-foreground max-w-xs">{message}</p>
-      </div>
+      </Stack>
       <div className="flex justify-end gap-3 pt-2 border-t border-border">
         <Button variant="ghost" size="sm" onClick={onManualFallback}>
           Completar manualmente
@@ -264,6 +262,6 @@ function ErrorState({ message, onManualFallback, onRetry }: ErrorStateProps) {
           </Button>
         )}
       </div>
-    </div>
+    </Stack>
   );
 }
