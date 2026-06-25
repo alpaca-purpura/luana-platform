@@ -1,9 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Clock } from "lucide-react";
 import { cn } from "@luana/format/utils";
-import { Input } from "./input";
+import { TimePicker } from "./TimePicker";
 
 export interface TimeRange {
   /** "HH:mm" 24h, or "" when unset. */
@@ -12,18 +11,33 @@ export interface TimeRange {
   end: string;
 }
 
+export interface TimeRangePreset {
+  label: string;
+  start: string;
+  end: string;
+}
+
+/** Generic defaults — override via `presets` (pass `[]` to hide). */
+export const DEFAULT_TIME_RANGE_PRESETS: TimeRangePreset[] = [
+  { label: "Mañana", start: "09:00", end: "13:00" },
+  { label: "Tarde", start: "14:00", end: "18:00" },
+  { label: "Todo el día", start: "00:00", end: "23:59" },
+];
+
 interface TimeRangePickerProps {
   /** Controlled value. Partial allowed (one bound set, the other empty). */
   value?: Partial<TimeRange>;
   onChange: (value: TimeRange) => void;
   className?: string;
-  /** Granularity of the native time input, in minutes (default 5). */
+  /** Minute granularity for the ↑↓ arrows (default 5). */
   stepMinutes?: number;
-  /** Accessible labels for each bound (no visible label by design — compose under a Field). */
+  /** Accessible labels for each bound. */
   startLabel?: string;
   endLabel?: string;
-  /** Visible separator between the two inputs. */
+  /** Visible separator between the two pickers. */
   separator?: React.ReactNode;
+  /** Quick-pick chips. Defaults to {@link DEFAULT_TIME_RANGE_PRESETS}; pass `[]` to hide. */
+  presets?: TimeRangePreset[];
   disabled?: boolean;
   /** Override the default "inicio debe ser anterior a fin" message. */
   errorMessage?: string;
@@ -32,9 +46,9 @@ interface TimeRangePickerProps {
 /**
  * TimeRangePicker — selección de un rango horario (inicio–fin) en un solo día.
  *
- * Compone dos `Input type="time"` (mismo átomo que `SmartDateTimePicker`) — NO reinventa
- * un dropdown de slots. Valida inicio < fin (comparación lexicográfica de "HH:mm", que es
- * cronológica por el zero-padding) y marca `aria-invalid` + mensaje `role="alert"`.
+ * Compone dos {@link TimePicker} segmentados (NO `<input type=time>` nativo) + presets
+ * de acceso rápido + validación inicio<fin (`aria-invalid` + mensaje `role=alert`).
+ * Comparación lexicográfica de "HH:mm" = cronológica por el zero-padding.
  *
  * Casos: horario de atención, ventanas de disponibilidad, franjas de campaña. NO para
  * elegir UN instante (→ `SmartDateTimePicker`) ni un rango de FECHAS (→ `Calendar mode="range"`).
@@ -47,6 +61,7 @@ export function TimeRangePicker({
   startLabel = "Hora de inicio",
   endLabel = "Hora de fin",
   separator = "a",
+  presets = DEFAULT_TIME_RANGE_PRESETS,
   disabled,
   errorMessage = "La hora de inicio debe ser anterior a la de fin.",
 }: TimeRangePickerProps) {
@@ -55,31 +70,51 @@ export function TimeRangePicker({
   const invalid = start !== "" && end !== "" && start >= end;
 
   return (
-    <div className={cn("flex flex-col gap-1.5", className)}>
+    <div className={cn("flex flex-col gap-2", className)}>
       <div className="flex items-center gap-2">
-        <Clock className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-        <Input
-          type="time"
-          aria-label={startLabel}
-          aria-invalid={invalid || undefined}
+        <TimePicker
           value={start}
-          step={stepMinutes * 60}
+          onChange={(start) => onChange({ start, end })}
+          stepMinutes={stepMinutes}
           disabled={disabled}
-          onChange={(e) => onChange({ start: e.target.value, end })}
-          className="font-mono"
+          aria-label={startLabel}
+          aria-invalid={invalid}
         />
         <span className="shrink-0 text-sm text-muted-foreground">{separator}</span>
-        <Input
-          type="time"
-          aria-label={endLabel}
-          aria-invalid={invalid || undefined}
+        <TimePicker
           value={end}
-          step={stepMinutes * 60}
+          onChange={(end) => onChange({ start, end })}
+          stepMinutes={stepMinutes}
           disabled={disabled}
-          onChange={(e) => onChange({ start, end: e.target.value })}
-          className="font-mono"
+          aria-label={endLabel}
+          aria-invalid={invalid}
         />
       </div>
+      {presets.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {presets.map((p) => {
+            const active = p.start === start && p.end === end;
+            return (
+              <button
+                key={p.label}
+                type="button"
+                disabled={disabled}
+                onClick={() => onChange({ start: p.start, end: p.end })}
+                aria-pressed={active}
+                className={cn(
+                  "rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors",
+                  active
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-input text-muted-foreground hover:bg-muted",
+                  disabled && "cursor-not-allowed opacity-50",
+                )}
+              >
+                {p.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
       {invalid && (
         <p role="alert" className="text-xs text-destructive">
           {errorMessage}

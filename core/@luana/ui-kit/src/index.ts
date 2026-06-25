@@ -58,6 +58,7 @@ export * from "./switch";
 export * from "./table";
 export * from "./tabs";
 export * from "./textarea";
+export * from "./TimePicker";
 export * from "./TimeRangePicker";
 export * from "./timezone-select";
 export * from "./tooltip";

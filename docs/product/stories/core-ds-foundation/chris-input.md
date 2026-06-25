@@ -487,3 +487,57 @@ footgun · dark wiring · shadow no-drift × 5 · typography tiers × 4) + alias
 `demo-script.md`). NO marcado `dod_live_verified: true` por builder.
 
 Resultado: `docs/product/stories/core-ds-foundation/T-C2-T3-result.md` · `demo-script.md`.
+
+### 2026-06-25 · Review Storybook · comentario #1 — gap selección de hora/rango horario
+
+**Chris (review #1) · ✓ APLICADO** — "tengo calendar pero ningún componente para selección de hora y/o
+rango horario". Verifiqué el inventario: **hora sola YA existía** (`SmartDateTimePicker` + `Input type=time`),
+**rango de fechas YA existía** (`Calendar mode=range`), **slots/disponibilidad YA existía brand-local** en
+vitalia (`DayAvailabilityStrip`/`AvailabilityChip`, D11 · `ADAPT`/vitalia-shared, owner /pm-vitalia, sin 2º
+consumer refined/ready → no se promueve aún). El gap REAL = **rango horario inicio–fin**, no existía.
+
+**Chris (decisión) · ✓ APLICADO** — eligió **TimeRangePicker (inicio–fin)** como `CREATE` genérico de kit
+(vs TimePicker dedicado / promover slots / solo-visibilidad).
+
+**/pm-luana (build directo · loop de review) · ✓ APLICADO** — `core/@luana/ui-kit/src/TimeRangePicker.tsx`:
+compone **dos `Input type=time`** (mismo átomo que SmartDateTimePicker, NO reinventa dropdown de slots) +
+separador "a" + validación inicio<fin (`aria-invalid` + mensaje `role=alert` en `text-destructive`). Props
+`{value, onChange, stepMinutes, startLabel, endLabel, separator, disabled, errorMessage}`. Story
+`Molecules/TimeRangePicker` (4 estados: default/con-valores/inválido/deshabilitado) + "Cuándo usarlo/NO".
+**Gates:** tsc 0 · render-smoke 4/4 clean · **Chrome verify** (con-valores `09:00→18:00` ✓ · inválido con
+error rojo ✓). Compone primitivas per ADR-016 §3 (composición>fork). Commit `303ed411` (3 files, platform-only
+→ promote-candidate al cierre) · push wip/vitalia.
+
+**/pm-luana · 💡 PROPONE** — gap cerrado. `:6007 → Molecules/TimeRangePicker`. Tirame el próximo comentario.
+(Pendientes del cierre sin tocar: promote-to-main de los commits platform-only · tu firma G de C2-T3.)
+
+### 2026-06-25 · Review #1 (cont.) — "no me gustó del todo, buscá en shadcn / cómo lo hacen mejor"
+
+**Chris · ⚠️ DUDA (el nativo no convence)** — pidió buscar en shadcn si hay un componente mejor (que sirva
+para una hora Y rango, o si sí o sí dos componentes), sin reemplazar a lo loco si no hay algo mejor, y revisar
+cómo lo hacen más intuitivo/usable otros en internet.
+
+**/pm-luana · ✓ APLICADO (investigación)** — WebSearch/WebFetch: **shadcn core NO tiene time picker oficial**
+(los docs usan `<input type=time>` nativo = exactamente lo que teníamos → no hay "mejor" listo para adoptar
+tal cual). El punto débil del nuestro = el **chrome del browser** del nativo (inconsistente). Lo mejor del
+ecosistema = **input segmentado** (OpenStatus TimePicker MIT · huybuidac DateTimeInput): campo `HH:MM`
+tokenizado, ↑↓ por segmento, cero widget del browser. UX (Eleken): rango = híbrido (2 campos + validación +
+**presets** + defaults). **Una o dos componentes:** dos, por composición (lego ADR-016) — átomo single + range
+compone dos. Fuentes: time.openstatus.dev · github huybuidac/shadcn-datetime-picker · eleken.co/blog-posts/time-picker-ux.
+
+**Chris (decisión) · ✓ APLICADO** — eligió **"subir lo nuestro a segmentado + presets"** (vs adoptar lib
+externa / dejar el nativo).
+
+**/pm-luana · ✓ APLICADO (build)** — **átomo `TimePicker`** segmentado tokenizado (HH:mm 24h, ↑↓/←→/auto-avance/
+blur-pad, buffer de display por segmento) + **`TimeRangePicker` reescrito** componiendo dos `TimePicker` +
+**presets** (Mañana 09–13 / Tarde 14–18 / Todo el día, overridables vía `presets`, `[]` los oculta) + validación.
+**★ 3 bugs reales cazados por la verificación LIVE en Chrome (no por el render-smoke ni tsc — verification-real≠render):**
+(1) buffer parcial: emitir "" en estado a-medio-escribir wipeaba la hora en el parent controlado → estado interno
+de segmentos + sync solo de valores completos; (2) padding-en-vivo bloqueaba el 2º dígito (`"3"→"03"`, maxLength
+trababa el "0") → mostrar crudo mientras se escribe, padear on-blur; (3) el auto-avance dispara blur síncrono con
+closure stale (`"0"` pre-`"9"`) → padeaba `"00"` pisando `"09"` → blur lee `e.target.value` del DOM, no el closure.
+3 tests de regresión + verificación live de cada uno (typing `0930`→`09:30` · ↑ step 5 · preset puebla + chip activo).
+**Gates:** tsc 0 · vitest 5/5 (TimePicker) + 6/6 (catalog-parity, catálogo regen 54→56) · render-smoke 8/8 · Chrome.
+Commit pathspec platform-only → promote-candidate. Stories `Molecules/TimePicker` (3) + `Molecules/TimeRangePicker` (5).
+
+**/pm-luana · 💡 PROPONE** — `:6007 → Molecules/TimePicker` + `Molecules/TimeRangePicker`. Próximo comentario.

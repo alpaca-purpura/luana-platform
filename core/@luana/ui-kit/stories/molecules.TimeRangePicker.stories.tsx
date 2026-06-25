@@ -14,7 +14,7 @@ const meta = {
         component: [
           "## Cuándo usarlo",
           "",
-          "`TimeRangePicker` selecciona un **rango horario (inicio–fin)** dentro de un día: horario de atención, ventanas de disponibilidad, franjas de campaña. Compone dos `Input type=\"time\"` y valida que el inicio sea anterior al fin (marca `aria-invalid` + mensaje `role=\"alert\"`).",
+          "`TimeRangePicker` selecciona un **rango horario (inicio–fin)** dentro de un día: horario de atención, ventanas de disponibilidad, franjas de campaña. Compone dos `TimePicker` segmentados (tokenizados, `↑↓` por segmento — NO `<input type=time>` nativo) + **presets** de acceso rápido (Mañana/Tarde/Todo el día, overridables vía `presets`) + valida que el inicio sea anterior al fin (`aria-invalid` + mensaje `role=\"alert\"`).",
           "",
           "## Cuándo NO / alternativa",
           "",
@@ -55,6 +55,18 @@ export const ConValores: Story = {
 export const Invalido: Story = {
   name: "Inválido (inicio ≥ fin)",
   render: () => <Controlled initial={{ start: "18:00", end: "09:00" }} />,
+};
+
+export const SinPresets: Story = {
+  name: "Sin presets",
+  render: () => {
+    const [range, setRange] = React.useState<Partial<TimeRange>>({ start: "10:00", end: "12:00" });
+    return (
+      <div className="w-80">
+        <TimeRangePicker value={range} onChange={setRange} presets={[]} />
+      </div>
+    );
+  },
 };
 
 export const Deshabilitado: Story = {
