@@ -410,3 +410,43 @@ Chris: "despacha el batch y luego continúo con mis comentarios". Escribí el fi
 **Live-verify:** Chrome DevTools MCP no disponible en esta sesión (MCP no instrumentado como tool). **Requiere verificación manual de Chris** en `http://localhost:3002/{tenant}/mateo/agenda/nueva-cita`: (1) franja N3 sticky "‹ Agenda · Nueva cita"; (2) 2 columnas en card con títulos uppercase+muted+hr; (3) ≥1 chip distinto de bloqueo + Alert de guía. Console: 0 errores rojos. Happy path intacto.
 
 Story sigue en **developed · AWAIT_CHRIS_VERIFY** (G). Sin transición.
+
+### 2026-06-24 · 🤖 claude · `/dev-team` (fix-loop batch-2 CERRADO · gates GREEN) · ✓ APLICADO (3 obs · pendiente tu G live)
+builder-frontend cerró las 3 observaciones — commit `24270f1d` (4 files, SOLO `nueva-cita/**`: AvailabilityChip + NuevaCitaView + 2 tests). Verificación independiente del orchestrator: **eslint 0 · vitest 73/73 (nueva-cita)**. Scope limpio (cero kit/BE/otros módulos). Resultado: `T-FE-uxfix2-result.md`.
+- **obs#1** header → `EntitySubNavBar` workspace-mode (‹Agenda · Nueva cita, sticky full-bleed) espejando NewLeadPage. Átomo "PageHeader back-pill" NO creado (redundante, ratificado).
+- **obs#2** 2 columnas en card + col-titles uppercase-muted + ancho fluido (no 380px) + disponibilidad con color.
+- **obs#3** 4 chips distintos (success/destructive/warning/secondary + íconos) + Alert de guía por bloqueo (out_of_hours/no_schedule) + busy mantiene FreeDoctorsList.
+- **⚠️ Live-verify NO ejercido** (el builder no tuvo Chrome MCP en su sesión). Los 3 son cambios de PRESENTACIÓN → tu **G** (ya estás en :3002) es el live-verify natural. Checklist en T-FE-uxfix2-result.md § Live verify status. NO marqué dod_evidence como live-verified (sería falso-verde). Story sigue en **G** (`developed · AWAIT_CHRIS_VERIFY`). Lock `code:scheduling` liberado.
+
+### 2026-06-24 · 🤖 claude · `/pm-vitalia` (live-verify batch-2 · Chrome MCP lane C) · ✓ APLICADO (estructura+responsive ✓ · colores/chips PENDIENTE driving)
+Chris preguntó: ¿verificaste con Chrome DevTools en los tamaños del chat de Valeria, incl. colapsado? + ¿lane C? **Honesto: NO lo había hecho** (lo había deferido a tu G). Lo hice ahora — lane **C** confirmado (env LUANA_LANE=C + lock). Chrome MCP, perfil lane-C autenticado, :3002, tenant e69a691d.
+**Verificado LIVE (3 estados de Valeria + console):**
+- **Valeria abierta (~50/50):** hoja en el panel derecho, 2 columnas se mantienen (apretadas pero OK). Screenshot `nc2-verify-1440-default.png`.
+- **Valeria colapsada (rail):** hoja a ancho completo, 2 cards (Datos | Disponibilidad) cómodas. obs#1 franja N3 "Agenda · Nueva cita" full-bleed ✓ · obs#2 cards + col-titles UPPERCASE ("DATOS DE LA CITA"/"DISPONIBILIDAD DEL MÉDICO") ✓. `nc2-verify-1440-collapsed.png`.
+- **Narrow 820px:** 2-col → **1-col stack** correcto (breakpoint lg), card full-width. `nc2-verify-820-narrow.png`.
+- **Console: 0 errores** (solo 1 warn pre-existente: logo aspect-ratio, ajeno al diff).
+**NO driveado (lo digo claro, no es falso-verde):** obs#2-D2d (day-strip con bandas de color) + obs#3 (4 chips distintos success/destructive/warning/secondary + Alert de guía) → requieren seleccionar servicio+fecha/hora+médico para que la disponibilidad se consulte; el estado vacío ("¿Qué verás aquí?") NO los muestra. Eso falta ejercerlo con data real.
+**Minor cosmético (820px):** la barra sticky "…guardar todavía" se solapa un toque con el FAB-N de Valeria colapsada (el fix M4 ocultaba el hint solo en mobile <lg; a 820 tablet se ve). No bloqueante.
+**Pendiente:** ¿drive yo el flujo (servicio→slot→médico) para verificar colores+chips live, o lo ejercés vos en tu G con un paciente/servicio real?
+
+### 2026-06-24 · 🤖 claude · `/pm-vitalia` (live-verify driveado · colores+chips) · 💡 PROPONE (1 bug REAL cazado live → obs#4)
+Driveé el flujo completo (Botox → 29/06 09:00 → médico Ana Garcia Mendoza) en Chrome MCP lane C. Resultados:
+- **Hora-fin autocalc 09:30** ✓ (H1 tz-fix confirmado: 09:00+30, no UTC). `nc2-verify-available.png`.
+- **Médico real "Ana Garcia Mendoza"** ✓ (L3-fix: nombre real, no "Dr.{hex}").
+- **obs#2-D2d day-strip CON COLOR** ✓ — "Vista del día · 2026-06-29 · 07:00–21:00", banda verde Atención + marcador amarillo-mateo "Cita nueva" @09:00 + leyenda (Atención/Ocupado/Cita nueva) + Ana en pill ámbar. Funciona live.
+- **★ obs#4 [BUG·live] El chip "✓ Médico disponible" renderiza como TEXTO PLANO, no como Badge verde.** Zoom (`nc2-chip-available-zoom.png`) confirma: sin pill, sin fill. **Root cause:** `vitalia/frontend/src/app/globals.css` **NO define `--success` ni `--warning`** (solo `--vitalia-success`/`--vitalia-warning` namespeados); `tailwind.config` mapea `vitalia-success`/`vitalia-warning`, NO `success`/`warning`. El Badge del kit usa `bg-success`/`bg-warning` → resuelven a NADA en vitalia → badge sin color. `destructive`/`secondary` SÍ existen (busy/no_schedule renderizarían). **Impacto obs#3:** de los 4 chips, **available(success) + out_of_hours(warning) salen sin color** (texto plano); busy(destructive/rojo) + no_schedule(secondary/gris) sí. → 2 de 4 mudos.
+  - **Por qué los unit no lo cazaron:** el test asserta `variant="success"` aplicado (cierto) pero NUNCA que el token pinte un color visible. Token-vs-render = ortogonal. Lo cazó la live-verify (tu punto exacto).
+  - **Fix (lazy, brand-local):** agregar `--success`/`--success-foreground` + `--warning`/`--warning-foreground` a `globals.css` (`:root` + `.dark`, mapeando al verde/ámbar vitalia que ya existe) + entradas `success`/`warning` en `tailwind.config`. NO toca el kit (el kit ya define la variante; falta el token en la marca — la promoción del átomo "Badge success|warning" quedó incompleta: llegó la variante, no el token). Afecta TODO Badge success/warning de vitalia, no solo nueva-cita.
+- **NO driveado:** busy/out_of_hours/no_schedule individuales (necesitan slot en colisión / fuera-de-horario). Tokens presentes para destructive/secondary; success/warning mudos hasta el fix obs#4.
+**Ruteo:** obs#4 = fix-loop (globals.css + tailwind.config). ¿Lo despacho (con la verificación live de los 4 chips post-fix), o lo sumás a tu lista?
+
+### 2026-06-24 · 🤖 claude · `builder-frontend` (obs#4 fix-loop · tokens success/warning) · ✓ APLICADO (gates GREEN · pendiente tu live de los 4 chips)
+Apliqué obs#4 — commit `d9b57128` (3 files, SOLO tokens). **Qué cambió:**
+- `globals.css` `:root` + `.dark`: agregué `--success`/`--success-foreground` + `--warning`/`--warning-foreground`. Valores = el verde/ámbar de marca que YA existía (`--vitalia-success` #16A34A · `--vitalia-warning` #D97706); en `.dark` bajé la luminosidad siguiendo el mismo criterio que `destructive` (foreground casi-blanco).
+- `tailwind.config.ts`: keys `success`/`warning` (DEFAULT + foreground), espejo exacto de `destructive`.
+- **arch-test nuevo** `test-semantic-badge-tokens.test.ts` (6 tests, GREEN): asserta que tailwind.config define ambas keys (DEFAULT+foreground ligados a las vars) + globals.css declara las 4 vars. Cierra el hueco token-vs-render que el unit no cubre → `bg-success`/`bg-warning` del kit no pueden volver a quedar muertos en vitalia.
+- **Por qué tokens y no kit:** el kit ya define la variante correctamente; faltaba el token en la marca (la promoción del átomo Badge success|warning llegó incompleta). NO toqué AvailabilityChip ni NuevaCitaView (ya estaban bien). NO toqué el kit ni otras marcas.
+**Gates:** tsc 0 · eslint 0 · vitest mateo+arch: mi gate nuevo GREEN (6/6) + AvailabilityChip 12/12 + FreeDoctorsList 6/6. Las 2 fallas arch (test-no-div-layout ratchet 123>121 · kit-shell-fixture-mirror) son **pre-existentes** — confirmado con `git stash`: fallan sin mi cambio, ajenas a obs#4.
+- **⚠️ Live-verify NO ejercido** (sin Chrome MCP en mi sesión). La verificación de los **4 chips con color** (available→pill verde · busy→pill rojo · out_of_hours→pill ámbar · no_schedule→pill gris) la hace el orchestrator con el flujo ya driveado (Botox→29/06 09:00→médico). NO marqué dod_evidence live (sería falso-verde). Resultado: `T-FE-obs4-tokens-result.md`.
+- **Cross-brand (NO arreglado · ruteo /pm-luana):** el mismo gap probablemente existe en **nicolify** y **comunify** (cada marca tiene su propio globals.css + tailwind.config; el Badge success/warning del kit estaría mudo ahí también). Per scope NO toqué esas marcas → orchestrator rutea a /pm-luana para verificar + replicar (y eventualmente un arch-test lift para que toda marca consumidora del kit asserte los tokens semánticos).
+Story sigue en **developed · AWAIT_CHRIS_VERIFY** (G). Sin transición. Lock `code:scheduling` lo libera el orchestrator.
