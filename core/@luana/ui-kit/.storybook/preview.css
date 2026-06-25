@@ -54,9 +54,11 @@
   --color-ring: hsl(var(--ring));
   --radius: 0.625rem;
 
-  /* Agent color utilities — the REAL vitalia 6-agent palette (mirrored from
-   * vitalia globals.css so the catalog renders the exact production colors).
-   * Valeria = supervisor (sidebar) · Lisa/Mateo/Adrián/Lucas/Camila = ribbon. */
+  /* Agent color utilities — BOTH brand rosters map here (the JIT scans the literal
+   * bg-agent-* switches of both _shell-fixtures resolvers). The actual color VALUE
+   * per token is brand-switched below: vitalia in :root, nicolify in [data-brand].
+   * vitalia: Valeria supervisor · Lisa/Mateo/Adrián/Lucas/Camila ribbon.
+   * nicolify: Luana supervisor · Abel/Brenda/Christian/Sara/Norvil ribbon (+config). */
   --color-agent-valeria: hsl(var(--agent-valeria));
   --color-agent-valeria-soft: hsl(var(--agent-valeria-soft));
   --color-agent-lisa: hsl(var(--agent-lisa));
@@ -69,6 +71,20 @@
   --color-agent-lucas-soft: hsl(var(--agent-lucas-soft));
   --color-agent-camila: hsl(var(--agent-camila));
   --color-agent-camila-soft: hsl(var(--agent-camila-soft));
+  --color-agent-luana: hsl(var(--agent-luana));
+  --color-agent-luana-soft: hsl(var(--agent-luana-soft));
+  --color-agent-abel: hsl(var(--agent-abel));
+  --color-agent-abel-soft: hsl(var(--agent-abel-soft));
+  --color-agent-brenda: hsl(var(--agent-brenda));
+  --color-agent-brenda-soft: hsl(var(--agent-brenda-soft));
+  --color-agent-christian: hsl(var(--agent-christian));
+  --color-agent-christian-soft: hsl(var(--agent-christian-soft));
+  --color-agent-sara: hsl(var(--agent-sara));
+  --color-agent-sara-soft: hsl(var(--agent-sara-soft));
+  --color-agent-norvil: hsl(var(--agent-norvil));
+  --color-agent-norvil-soft: hsl(var(--agent-norvil-soft));
+  --color-agent-config: hsl(var(--agent-config));
+  --color-agent-config-soft: hsl(var(--agent-config-soft));
 }
 
 /* ── Radius scale — PLAIN @theme (NOT inline) ────────────────────────────────
@@ -192,8 +208,9 @@
  *    Each brand below = a SNAPSHOT of its globals.css surface + shape tokens
  *    (colores + formas). Same components, brand tokens → brand look:
  *    vitalia = cian #01B2F8 + control 8px · nicolify = indigo #635BFF + control PILL.
- *    NOTE: the agent palette (bg-agent-*) follows the loaded demo catalog (vitalia);
- *    a full per-brand shell catalog (nicolify agents abel/brenda/…) is future work. ── */
+ *    The agent palette ALSO switches per brand: nicolify overrides every --agent-*
+ *    with its real values (globals.css), so bg-agent-abel/… render nicolify colors
+ *    when the demo catalog flips to nicolify (Luana + Abel/Brenda/Christian/Sara/Norvil). ── */
 [data-brand="nicolify"] {
   --background: 0 0% 100%;
   --foreground: 222 47% 11%;
@@ -218,6 +235,23 @@
   --radius-pill: 9999px;
   --radius-control: var(--radius-pill); /* nicolify controls = pill */
   --radius-lg: 0.75rem;
+
+  /* Agent palette — REAL nicolify values (globals.css :root). Luana = supervisor
+   * (sidebar) · Abel/Brenda/Christian/Sara/Norvil = ribbon · config = neutral tab. */
+  --agent-luana: 243 100% 68%; /* #635BFF indigo */
+  --agent-luana-soft: 243 80% 93%;
+  --agent-abel: 271 81% 65%; /* #A855F7 púrpura */
+  --agent-abel-soft: 271 70% 93%;
+  --agent-brenda: 142 71% 45%; /* #22C55E verde */
+  --agent-brenda-soft: 142 60% 90%;
+  --agent-christian: 217 91% 60%; /* #3B82F6 azul */
+  --agent-christian-soft: 217 80% 92%;
+  --agent-sara: 38 92% 50%; /* #F59E0B ámbar */
+  --agent-sara-soft: 38 80% 90%;
+  --agent-norvil: 330 81% 60%; /* #EC4899 rosa */
+  --agent-norvil-soft: 330 70% 92%;
+  --agent-config: 215 16% 47%; /* slate neutral (config no es agente) */
+  --agent-config-soft: 215 20% 94%;
 }
 .dark[data-brand="nicolify"],
 [data-theme="dark"][data-brand="nicolify"] {
@@ -240,6 +274,17 @@
   --border: 240 10% 22%;
   --input: 240 10% 22%;
   --ring: 243 100% 72%;
+
+  /* Agent soft variants — REAL nicolify dark values (globals.css .dark). */
+  --agent-luana-soft: 243 50% 22%;
+  --agent-abel-soft: 271 45% 22%;
+  --agent-brenda-soft: 142 40% 18%;
+  --agent-christian-soft: 217 50% 20%;
+  --agent-sara-soft: 38 55% 18%;
+  --agent-norvil-soft: 330 45% 20%;
+  --agent-config-soft: 215 12% 22%;
+  /* Dark contrast fix (globals.css): sara amber lightened to read on dark soft. */
+  --agent-sara: 38 92% 70%;
 }
 
 /* Radix poppers render Content as position:static inside a position:fixed wrapper — a

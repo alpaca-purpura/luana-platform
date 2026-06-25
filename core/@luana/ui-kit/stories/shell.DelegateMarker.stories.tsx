@@ -1,16 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
 
 import { DelegateMarker } from "../src";
-import { DEMO_AGENTS, getDemoAgentClasses } from "./_shell-fixtures";
+import { getBrandFixtures } from "./_shell-fixtures";
 
 /**
  * Story consumes the REAL DelegateMarker from src/. Brand injects the agent
- * descriptors + getAgentClasses (literal-switch, see _shell-fixtures).
+ * descriptors + getAgentClasses (literal-switch, see _shell-fixtures). Supervisor
+ * + the receiving specialist (name, color, avatar) follow the toolbar `Marca` global.
  */
 const meta = {
   title: "Shell/Chat/DelegateMarker",
   component: DelegateMarker,
-  args: { getAgentClasses: getDemoAgentClasses },
   tags: ["autodocs"],
   parameters: {
     layout: "padded",
@@ -38,41 +38,56 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Mantener: Story = {
-  name: "Delega en Lisa (Mantener)",
-  args: {
-    fromAgent: DEMO_AGENTS.valeria,
-    toAgent: DEMO_AGENTS.lisa,
-    mode: "Mantener",
+  name: "Delega en el primer especialista (Mantener)",
+  render: (_args, { globals }) => {
+    const f = getBrandFixtures(globals.brand as string | undefined);
+    return (
+      <DelegateMarker
+        fromAgent={f.supervisor}
+        toAgent={f.agentsRibbon[0]}
+        mode="Mantener"
+        getAgentClasses={f.getAgentClasses}
+      />
+    );
   },
 };
 
 export const Multiplicar: Story = {
-  name: "Delega en Camila (Multiplicar)",
-  args: {
-    fromAgent: DEMO_AGENTS.valeria,
-    toAgent: DEMO_AGENTS.camila,
-    mode: "Multiplicar",
+  name: "Delega en el último especialista (Multiplicar)",
+  render: (_args, { globals }) => {
+    const f = getBrandFixtures(globals.brand as string | undefined);
+    return (
+      <DelegateMarker
+        fromAgent={f.supervisor}
+        toAgent={f.agentsRibbon[f.agentsRibbon.length - 1]}
+        mode="Multiplicar"
+        getAgentClasses={f.getAgentClasses}
+      />
+    );
   },
 };
 
 export const EnHilo: Story = {
   name: "En el hilo (entre burbujas)",
-  render: () => (
-    <div className="flex flex-col gap-2.5 max-w-md">
-      <DelegateMarker
-        fromAgent={DEMO_AGENTS.valeria}
-        toAgent={DEMO_AGENTS.lisa}
-        mode="Mantener"
-        getAgentClasses={getDemoAgentClasses}
-      />
-      <DelegateMarker
-        fromAgent={DEMO_AGENTS.valeria}
-        toAgent={DEMO_AGENTS.adrian}
-        mode="Reactivar"
-        getAgentClasses={getDemoAgentClasses}
-      />
-    </div>
-  ),
+  render: (_args, { globals }) => {
+    const f = getBrandFixtures(globals.brand as string | undefined);
+    return (
+      <div className="flex flex-col gap-2.5 max-w-md">
+        <DelegateMarker
+          fromAgent={f.supervisor}
+          toAgent={f.agentsRibbon[0]}
+          mode="Mantener"
+          getAgentClasses={f.getAgentClasses}
+        />
+        <DelegateMarker
+          fromAgent={f.supervisor}
+          toAgent={f.agentsRibbon[2]}
+          mode="Reactivar"
+          getAgentClasses={f.getAgentClasses}
+        />
+      </div>
+    );
+  },
   parameters: {
     docs: {
       description: {

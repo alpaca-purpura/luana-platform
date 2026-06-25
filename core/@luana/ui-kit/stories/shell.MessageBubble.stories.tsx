@@ -1,12 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
 
 import { MessageBubble } from "../src";
-import { DEMO_AGENTS } from "./_shell-fixtures";
+import { getBrandFixtures } from "./_shell-fixtures";
 
 /**
  * Story consumes the REAL MessageBubble from src/. Pure-props atom — no store or
  * routing. The user bubble background is brand-injected via `userBubbleBgClass`
- * (the supervisor's accent); bot bubbles are neutral (bg-card + border).
+ * (the supervisor's accent); bot bubbles are neutral (bg-card + border). The
+ * supervisor (Valeria/Luana) + their accent follow the toolbar `Marca` global.
  */
 const meta = {
   title: "Shell/Chat/MessageBubble",
@@ -42,60 +43,71 @@ type Story = StoryObj<typeof meta>;
 
 export const Bot: Story = {
   name: "Del agente (bot)",
-  args: {
-    role: "bot",
-    content: "Hola, soy Valeria. Tienes 3 turnos sin confirmar para esta semana. ¿Quieres que te los recuerde uno por uno?",
-    time: "09:14",
-    agent: DEMO_AGENTS.valeria,
+  render: (_args, { globals }) => {
+    const f = getBrandFixtures(globals.brand as string | undefined);
+    return (
+      <MessageBubble
+        role="bot"
+        agent={f.supervisor}
+        time="09:14"
+        content={`Hola, soy ${f.supervisor.name}. Tienes 3 pendientes sin atender para esta semana. ¿Quieres que te los recuerde uno por uno?`}
+      />
+    );
   },
 };
 
 export const User: Story = {
   name: "De la persona (user)",
-  args: {
-    role: "user",
-    content: "Sí, perfecto. Empieza por los de mañana.",
-    time: "09:15",
-    userBubbleBgClass: "bg-agent-valeria",
+  render: (_args, { globals }) => {
+    const f = getBrandFixtures(globals.brand as string | undefined);
+    return (
+      <MessageBubble
+        role="user"
+        content="Sí, perfecto. Empieza por los de mañana."
+        time="09:15"
+        userBubbleBgClass={f.getAgentClasses(f.supervisor.slug).accentBg}
+      />
+    );
   },
 };
 
 export const Conversacion: Story = {
   name: "Conversación (apiladas)",
-  render: () => (
-    <div className="flex flex-col gap-2.5 max-w-md">
-      <MessageBubble
-        role="bot"
-        agent={DEMO_AGENTS.valeria}
-        time="09:14"
-        content="Buen día. La paciente Laura Castillo pidió reprogramar su control de nutrición."
-      />
-      <MessageBubble
-        role="user"
-        time="09:15"
-        userBubbleBgClass="bg-agent-valeria"
-        content="¿Qué disponibilidad tiene Mateo en la agenda?"
-      />
-      <MessageBubble
-        role="bot"
-        agent={DEMO_AGENTS.valeria}
-        time="09:15"
-        footerLabel="Mateo (vía Valeria)"
-        content="Mateo tiene el jueves 25 a las 10:30 o el viernes 26 a las 16:00. ¿Cuál le ofrezco?"
-      />
-      <MessageBubble
-        role="user"
-        time="09:16"
-        userBubbleBgClass="bg-agent-valeria"
-        content="El jueves 10:30."
-      />
-    </div>
-  ),
+  render: (_args, { globals }) => {
+    const f = getBrandFixtures(globals.brand as string | undefined);
+    const sup = f.supervisor;
+    const specialist = f.agentsRibbon[3] ?? f.agentsRibbon[0];
+    const userBg = f.getAgentClasses(sup.slug).accentBg;
+    return (
+      <div className="flex flex-col gap-2.5 max-w-md">
+        <MessageBubble
+          role="bot"
+          agent={sup}
+          time="09:14"
+          content="Buen día. Un cliente pidió reprogramar la próxima reunión de seguimiento."
+        />
+        <MessageBubble
+          role="user"
+          time="09:15"
+          userBubbleBgClass={userBg}
+          content={`¿Qué disponibilidad tiene ${specialist.name} en la agenda?`}
+        />
+        <MessageBubble
+          role="bot"
+          agent={sup}
+          time="09:15"
+          footerLabel={`${specialist.name} (vía ${sup.name})`}
+          content="Hay hueco el jueves 25 a las 10:30 o el viernes 26 a las 16:00. ¿Cuál ofrezco?"
+        />
+        <MessageBubble role="user" time="09:16" userBubbleBgClass={userBg} content="El jueves 10:30." />
+      </div>
+    );
+  },
   parameters: {
     docs: {
       description: {
         story:
-          "Una conversación corta. Nota `footerLabel` para marcar un mensaje delegado (\"Mateo (vía Valeria)\") sin cambiar el color del supervisor.",
+          "Una conversación corta. Nota `footerLabel` para marcar un mensaje delegado (\"{especialista} (vía {supervisor})\") sin cambiar el color del supervisor.",
       },
     },
   },

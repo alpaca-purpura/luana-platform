@@ -2,27 +2,23 @@ import type { Meta, StoryObj } from "@storybook/nextjs";
 
 import { ChatPanel } from "../src";
 import {
-  DEMO_AGENTS,
-  getDemoAgentClasses,
+  getBrandFixtures,
+  getBrandChatStore,
   useDemoShellStore,
-  useDemoChatStore,
   useDemoChatStoreEmpty,
 } from "./_shell-fixtures";
 
 /**
  * Story consumes the REAL ChatPanel from src/ — the composite chat organism
  * (ChatHeader + ChatMessages + ChatComposer in a 3-row grid). The wrapper gives
- * it the supervisor-panel height; ChatPanel fills it (h-full).
+ * it the supervisor-panel height; ChatPanel fills it (h-full). Supervisor identity
+ * + accent follow the toolbar `Marca` global (Valeria/Luana).
  */
 const meta = {
   title: "Shell/Chat/ChatPanel",
   component: ChatPanel,
   args: {
-    supervisor: DEMO_AGENTS.valeria,
-    agentCatalog: DEMO_AGENTS,
     useShellStore: useDemoShellStore,
-    getAgentClasses: getDemoAgentClasses,
-    userBubbleBgClass: "bg-agent-valeria",
     statusDotClass: "bg-emerald-500",
   },
   decorators: [
@@ -59,10 +55,36 @@ type Story = StoryObj<typeof meta>;
 
 export const ConConversacion: Story = {
   name: "Con conversación",
-  args: { useChatStore: useDemoChatStore },
+  render: (_args, { globals }) => {
+    const f = getBrandFixtures(globals.brand as string | undefined);
+    return (
+      <ChatPanel
+        supervisor={f.supervisor}
+        agentCatalog={f.agentsBySlug}
+        useShellStore={useDemoShellStore}
+        useChatStore={getBrandChatStore(globals.brand as string | undefined)}
+        getAgentClasses={f.getAgentClasses}
+        userBubbleBgClass={f.getAgentClasses(f.supervisor.slug).accentBg}
+        statusDotClass="bg-emerald-500"
+      />
+    );
+  },
 };
 
 export const Vacio: Story = {
   name: "Conversación nueva (vacío)",
-  args: { useChatStore: useDemoChatStoreEmpty },
+  render: (_args, { globals }) => {
+    const f = getBrandFixtures(globals.brand as string | undefined);
+    return (
+      <ChatPanel
+        supervisor={f.supervisor}
+        agentCatalog={f.agentsBySlug}
+        useShellStore={useDemoShellStore}
+        useChatStore={useDemoChatStoreEmpty}
+        getAgentClasses={f.getAgentClasses}
+        userBubbleBgClass={f.getAgentClasses(f.supervisor.slug).accentBg}
+        statusDotClass="bg-emerald-500"
+      />
+    );
+  },
 };

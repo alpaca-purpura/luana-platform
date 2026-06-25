@@ -1,16 +1,8 @@
+import type { ReactNode } from "react";
 import type { Meta, StoryObj } from "@storybook/nextjs";
 
 import { AppPanelSlot, PlaceholderCard } from "../src";
-import {
-  DEMO_AGENTS_ALL,
-  DEMO_RIBBON_ORDER,
-  DEMO_SUBSUBTABS_BY_KEY,
-  buildCleanSubtabs,
-  getDemoAgentClasses,
-} from "./_shell-fixtures";
-
-// Local (non-exported) clean record — see buildCleanSubtabs docgen note.
-const SUBTABS = buildCleanSubtabs();
+import { buildCleanSubtabs, getBrandFixtures } from "./_shell-fixtures";
 
 /**
  * Story consumes the REAL AppPanelSlot from src/ — the application-side host that
@@ -18,24 +10,16 @@ const SUBTABS = buildCleanSubtabs();
  *
  * AppPanelSlot reads usePathname()/useRouter() (next/navigation) internally → the
  * active agent/sub-tab/sub-sub-tab are URL-derived. @storybook/nextjs mocks them
- * via parameters.nextjs.navigation, so each story just sets a different pathname.
+ * via parameters.nextjs.navigation (STATIC → can't read the `brand` global), so the
+ * ACTIVE highlight is pinned per story. The Ribbon roster + colors + sub-tabs DO flip
+ * with the toolbar `Marca` global (the catalog/order/subtabs come via render); each
+ * brand has its own pinned stories so the active highlight stays coherent.
  *
  * The wrapper gives it the panel height (h-full); AppPanelSlot fills it.
  */
 const meta = {
   title: "Shell/AppPanelSlot",
   component: AppPanelSlot,
-  args: {
-    agentCatalog: DEMO_AGENTS_ALL,
-    ribbonOrder: DEMO_RIBBON_ORDER,
-    // ★ CLEAN record (docgen-pollution-safe) — SubTabsBar does Object.entries.
-    subTabsByAgent: SUBTABS,
-    subSubTabsByKey: DEMO_SUBSUBTABS_BY_KEY,
-    getAgentClasses: getDemoAgentClasses,
-    configTabSlug: "config",
-    configTabLabel: "Plataforma",
-    onNavigate: () => {},
-  },
   decorators: [
     (Story) => (
       <div className="h-[560px] w-full overflow-hidden rounded-lg border border-border">
@@ -53,7 +37,7 @@ const meta = {
           "",
           "`AppPanelSlot` es el **lado de aplicación del shell**: apila la navegación (Ribbon N1 + SubTabsBar N2 + SubSubTabsBar N3) arriba y deja la hoja debajo en un marco scrolleable. Es el panel derecho del `ShellLayout` — lo que el usuario ve al lado del supervisor. Deriva todo de la URL; las barras N2/N3 se ocultan solas cuando el agente/sub-tab no las tiene.",
           "",
-          "Casi nunca lo montas suelto: vive dentro de `ShellLayout`. Esta story existe para revisar el apilado de navegación + el marco de contenido en aislamiento. El padre debe darle altura.",
+          "El roster + colores del Ribbon cambian con el selector **Marca** de la toolbar (Vitalia ↔ Nicolify). Casi nunca lo montas suelto: vive dentro de `ShellLayout`.",
           "",
           "## Cuándo NO / alternativa",
           "",
@@ -79,9 +63,32 @@ const DemoContent = () => (
   </div>
 );
 
+/** Build a brand-aware AppPanelSlot render (catalog/order/subtabs from globals). */
+function renderPanel(children?: ReactNode): Story["render"] {
+  return function PanelRender(_args, { globals }) {
+    const f = getBrandFixtures(globals.brand as string | undefined);
+    return (
+      <AppPanelSlot
+        agentCatalog={f.agentsAll}
+        ribbonOrder={f.ribbonOrder}
+        subTabsByAgent={buildCleanSubtabs(f)}
+        subSubTabsByKey={f.subSubTabsByKey}
+        getAgentClasses={f.getAgentClasses}
+        configTabSlug="config"
+        configTabLabel={f.configTabLabel}
+        onNavigate={() => {}}
+      >
+        {children}
+      </AppPanelSlot>
+    );
+  };
+}
+
+/* ── Vitalia-pinned (default Marca = vitalia) ── */
+
 export const Mateo: Story = {
   name: "Mateo · Agenda (sin N3)",
-  args: { children: <DemoContent /> },
+  render: renderPanel(<DemoContent />),
   parameters: {
     nextjs: {
       navigation: {
@@ -94,7 +101,7 @@ export const Mateo: Story = {
 
 export const Lisa: Story = {
   name: "Lisa · Marca (con N3 Identidad/Voz y tono/Presencia)",
-  args: { children: <DemoContent /> },
+  render: renderPanel(<DemoContent />),
   parameters: {
     nextjs: {
       navigation: {
@@ -107,11 +114,40 @@ export const Lisa: Story = {
 
 export const SinContenido: Story = {
   name: "Sin contenido (skeleton por defecto)",
+  render: renderPanel(),
   parameters: {
     nextjs: {
       navigation: {
         pathname: "/clinica/adrian/inbox",
         segments: [["tenantId", "clinica"], "adrian", "inbox"],
+      },
+    },
+  },
+};
+
+/* ── Nicolify-pinned (switch the Marca global to nicolify) ── */
+
+export const AbelNicolify: Story = {
+  name: "Abel · Oferta (nicolify · con N3)",
+  render: renderPanel(<DemoContent />),
+  parameters: {
+    nextjs: {
+      navigation: {
+        pathname: "/agencia/abel/oferta/catalogo-escalera",
+        segments: [["tenantId", "agencia"], "abel", "oferta", "catalogo-escalera"],
+      },
+    },
+  },
+};
+
+export const ChristianNicolify: Story = {
+  name: "Christian · Pipeline (nicolify · sin N3)",
+  render: renderPanel(<DemoContent />),
+  parameters: {
+    nextjs: {
+      navigation: {
+        pathname: "/agencia/christian/pipeline",
+        segments: [["tenantId", "agencia"], "christian", "pipeline"],
       },
     },
   },

@@ -1,23 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
 
 import { SupervisorCollapsedStrip } from "../src";
+import { getBrandFixtures } from "./_shell-fixtures";
 
 /**
  * Story consumes the REAL SupervisorCollapsedStrip from src/. Pure-props — the
  * ~44px vertical tira-avatar shown at the left edge when the supervisor is
- * collapsed (state A). Click reopens to chat.
+ * collapsed (state A). Click reopens to chat. The supervisor identity + soft color
+ * follow the toolbar `Marca` global (Valeria · Vitalia / Luana · Nicolify).
  */
 const meta = {
   title: "Shell/SupervisorCollapsedStrip",
   component: SupervisorCollapsedStrip,
-  args: {
-    onOpenSupervisor: () => {},
-    supervisorName: "Valeria",
-    supervisorInitial: "V",
-    supervisorSoftBg: "bg-agent-valeria-soft",
-    statusDotClass: "bg-emerald-500",
-    openLabel: "Abrir a Valeria",
-  },
   decorators: [
     (Story) => (
       <div className="flex h-[420px] items-stretch overflow-hidden rounded-lg border border-border bg-background">
@@ -52,5 +46,18 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Colapsado: Story = {
-  name: "Colapsado (Valeria)",
+  name: "Colapsado",
+  render: (_args, { globals }) => {
+    const f = getBrandFixtures(globals.brand as string | undefined);
+    return (
+      <SupervisorCollapsedStrip
+        onOpenSupervisor={() => {}}
+        supervisorName={f.supervisor.name}
+        supervisorInitial={f.supervisor.initial}
+        supervisorSoftBg={f.getAgentClasses(f.supervisor.slug).softBg}
+        statusDotClass="bg-emerald-500"
+        openLabel={`Abrir a ${f.supervisor.name}`}
+      />
+    );
+  },
 };

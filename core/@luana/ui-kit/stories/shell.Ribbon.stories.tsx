@@ -1,28 +1,19 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
 
 import { Ribbon } from "../src";
-import {
-  DEMO_AGENTS_ARRAY,
-  DEMO_RIBBON_ORDER,
-  getDemoAgentClasses,
-} from "./_shell-fixtures";
+import { getBrandFixtures } from "./_shell-fixtures";
 
 /**
- * Story consumes the REAL Ribbon from src/. The active tab is URL-derived from
- * the injected `pathname` prop (Ribbon never imports next/navigation), so each
- * story just passes a different pathname.
+ * Story consumes the REAL Ribbon from src/. The catalog + order + getAgentClasses +
+ * config label all come from the brand picked by the toolbar `Marca` global, so a
+ * brand switch flips the agent NAMES, COLORS and avatars — not just the surface CSS.
+ * The active tab is URL-derived from the injected `pathname`; each story names the
+ * active agent by its index in the (brand-specific) ribbon order, so it stays
+ * coherent under either brand.
  */
 const meta = {
   title: "Shell/Ribbon",
   component: Ribbon,
-  args: {
-    agentCatalog: DEMO_AGENTS_ARRAY,
-    ribbonOrder: DEMO_RIBBON_ORDER,
-    getAgentClasses: getDemoAgentClasses,
-    configTabSlug: "config",
-    configTabLabel: "Plataforma",
-    onNavigate: () => {},
-  },
   decorators: [
     (Story) => (
       <div className="w-[760px] max-w-full overflow-hidden rounded-lg border border-border">
@@ -40,7 +31,7 @@ const meta = {
           "",
           "El `Ribbon` es la **navegación N1 del shell**: la fila de agentes (tab por trabajador) + la pestaña Plataforma al final. Es el sesgo de ruteo del producto — el usuario elige con quién trabaja (PARADIGM: trabajadores sobre un sistema). Cada tab toma el color del agente; el activo se deriva de la URL (no hay estado de selección a mano). Tablist accesible (flechas/Home/End/Enter).",
           "",
-          "Se monta una sola vez, arriba del shell, debajo del `TopBarShell`. La marca inyecta su catálogo + orden + `getAgentClasses`.",
+          "Se monta una sola vez, arriba del shell, debajo del `TopBarShell`. La marca inyecta su catálogo + orden + `getAgentClasses`. El selector **Marca** de la toolbar cambia el roster: Vitalia (Lisa/Lucas/Adrián/Mateo/Camila) ↔ Nicolify (Abel/Brenda/Christian/Sara/Norvil).",
           "",
           "## Cuándo NO / alternativa",
           "",
@@ -56,32 +47,54 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const MateoActivo: Story = {
-  name: "Mateo activo (Atender)",
-  args: { pathname: "/clinica/mateo/agenda" },
+/** Render the Ribbon with the active agent = the ribbon agent at `activeIndex`. */
+function renderRibbon(activeIndex: number | "config"): Story["render"] {
+  return function RibbonRender(_args, { globals }) {
+    const f = getBrandFixtures(globals.brand as string | undefined);
+    const pathname =
+      activeIndex === "config"
+        ? "/app/config"
+        : `/app/${f.ribbonOrder[activeIndex]}/${f.agentsBySlug[f.ribbonOrder[activeIndex]].defaultSubtab || "x"}`;
+    return (
+      <Ribbon
+        agentCatalog={f.agentsRibbon}
+        ribbonOrder={f.ribbonOrder}
+        getAgentClasses={f.getAgentClasses}
+        configTabSlug="config"
+        configTabLabel={f.configTabLabel}
+        onNavigate={() => {}}
+        pathname={pathname}
+      />
+    );
+  };
+}
+
+export const PrimerAgente: Story = {
+  name: "Primer agente activo",
+  render: renderRibbon(0),
 };
 
-export const LisaActiva: Story = {
-  name: "Lisa activa (Mi Clínica)",
-  args: { pathname: "/clinica/lisa/marca" },
+export const SegundoAgente: Story = {
+  name: "Segundo agente activo",
+  render: renderRibbon(1),
 };
 
-export const AdrianActivo: Story = {
-  name: "Adrián activo (Vender)",
-  args: { pathname: "/clinica/adrian/inbox" },
+export const TercerAgente: Story = {
+  name: "Tercer agente activo",
+  render: renderRibbon(2),
 };
 
-export const LucasActivo: Story = {
-  name: "Lucas activo (Atraer)",
-  args: { pathname: "/clinica/lucas/lanzar" },
+export const CuartoAgente: Story = {
+  name: "Cuarto agente activo",
+  render: renderRibbon(3),
 };
 
-export const CamilaActiva: Story = {
-  name: "Camila activa (Mantener)",
-  args: { pathname: "/clinica/camila/voz" },
+export const QuintoAgente: Story = {
+  name: "Quinto agente activo",
+  render: renderRibbon(4),
 };
 
 export const PlataformaActiva: Story = {
   name: "Plataforma activa",
-  args: { pathname: "/clinica/config" },
+  render: renderRibbon("config"),
 };

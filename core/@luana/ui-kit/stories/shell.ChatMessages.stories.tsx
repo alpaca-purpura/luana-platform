@@ -2,9 +2,8 @@ import type { Meta, StoryObj } from "@storybook/nextjs";
 
 import { ChatMessages } from "../src";
 import {
-  DEMO_AGENTS,
-  getDemoAgentClasses,
-  useDemoChatStore,
+  getBrandFixtures,
+  getBrandChatStore,
   useDemoChatStoreEmpty,
 } from "./_shell-fixtures";
 
@@ -12,17 +11,11 @@ import {
  * Story consumes the REAL ChatMessages from src/. It reads `messages` from the
  * injected chat store and renders each by role: MessageBubble (bot/user),
  * DelegateMarker, TypingIndicator. The wrapper gives it the panel height it needs
- * (flex-1 + overflow-y-auto).
+ * (flex-1 + overflow-y-auto). Supervisor identity + accent follow the `Marca` global.
  */
 const meta = {
   title: "Shell/Chat/ChatMessages",
   component: ChatMessages,
-  args: {
-    supervisor: DEMO_AGENTS.valeria,
-    agentCatalog: DEMO_AGENTS,
-    getAgentClasses: getDemoAgentClasses,
-    userBubbleBgClass: "bg-agent-valeria",
-  },
   decorators: [
     (Story) => (
       <div className="flex h-[460px] w-[400px] flex-col overflow-hidden rounded-lg border border-border bg-background">
@@ -57,11 +50,22 @@ type Story = StoryObj<typeof meta>;
 
 export const ConMensajes: Story = {
   name: "Con conversación (todos los roles)",
-  args: { useChatStore: useDemoChatStore },
+  render: (_args, { globals }) => {
+    const f = getBrandFixtures(globals.brand as string | undefined);
+    return (
+      <ChatMessages
+        supervisor={f.supervisor}
+        agentCatalog={f.agentsBySlug}
+        getAgentClasses={f.getAgentClasses}
+        userBubbleBgClass={f.getAgentClasses(f.supervisor.slug).accentBg}
+        useChatStore={getBrandChatStore(globals.brand as string | undefined)}
+      />
+    );
+  },
   parameters: {
     docs: {
       description: {
-        story: "Bot + user + delegación (Valeria→Mateo) + indicador de escritura, los 4 roles que el componente resuelve.",
+        story: "Bot + user + delegación + indicador de escritura, los 4 roles que el componente resuelve.",
       },
     },
   },
@@ -69,5 +73,16 @@ export const ConMensajes: Story = {
 
 export const Vacio: Story = {
   name: "Estado vacío",
-  args: { useChatStore: useDemoChatStoreEmpty },
+  render: (_args, { globals }) => {
+    const f = getBrandFixtures(globals.brand as string | undefined);
+    return (
+      <ChatMessages
+        supervisor={f.supervisor}
+        agentCatalog={f.agentsBySlug}
+        getAgentClasses={f.getAgentClasses}
+        userBubbleBgClass={f.getAgentClasses(f.supervisor.slug).accentBg}
+        useChatStore={useDemoChatStoreEmpty}
+      />
+    );
+  },
 };

@@ -1,12 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
 
 import { SubSubTabsBar } from "../src";
-import { DEMO_AGENTS, DEMO_SUBSUBTABS_BY_KEY } from "./_shell-fixtures";
+import { ALL_SUBSUBTABS_BY_KEY, ALL_VALID_SLUGS } from "./_shell-fixtures";
 
 /**
  * Story consumes the REAL SubSubTabsBar from src/. It reads the URL via
  * next/navigation (mocked by @storybook/nextjs) and renders the N3-static strip
- * for the active "agent.subtab" key (here lisa.marca → Identidad/Voz y tono/Presencia).
+ * for the active "agent.subtab" key. The active key is pinned by a STATIC navigation
+ * mock (can't read the `brand` global), so the union of both brands' N3 combos is
+ * passed — vitalia combos (lisa.marca…) and nicolify combos (abel.oferta…) both resolve.
  *
  * ★ Props passed LITERALLY via `render` (not args): Controls deep-clones the
  *   Record's nested arrays into index-objects → `.map is not a function`.
@@ -44,13 +46,10 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// validSlugs incluye "config" (la caja Plataforma también tiene N3: config.cuenta).
-const VALID_SLUGS = [...Object.keys(DEMO_AGENTS), "config"];
-
 const Demo = () => (
   <SubSubTabsBar
-    subSubTabsByKey={DEMO_SUBSUBTABS_BY_KEY}
-    validSlugs={VALID_SLUGS}
+    subSubTabsByKey={ALL_SUBSUBTABS_BY_KEY}
+    validSlugs={ALL_VALID_SLUGS}
     onNavigate={() => {}}
   />
 );
@@ -91,6 +90,34 @@ export const ConfigCuenta: Story = {
       navigation: {
         pathname: "/clinica/config/cuenta/datos",
         segments: [["tenantId", "clinica"], "config", "cuenta", "datos"],
+      },
+    },
+  },
+};
+
+/* ── Nicolify-pinned (switch the Marca global to nicolify to see brand colors) ── */
+
+export const AbelOfertaNicolify: Story = {
+  name: "Abel · Oferta (nicolify · Catálogo/Dossier)",
+  render: () => <Demo />,
+  parameters: {
+    nextjs: {
+      navigation: {
+        pathname: "/agencia/abel/oferta/catalogo-escalera",
+        segments: [["tenantId", "agencia"], "abel", "oferta", "catalogo-escalera"],
+      },
+    },
+  },
+};
+
+export const NorvilFidelizacionNicolify: Story = {
+  name: "Norvil · Fidelización (nicolify · Momentos…)",
+  render: () => <Demo />,
+  parameters: {
+    nextjs: {
+      navigation: {
+        pathname: "/agencia/norvil/fidelizacion/momentos",
+        segments: [["tenantId", "agencia"], "norvil", "fidelizacion", "momentos"],
       },
     },
   },

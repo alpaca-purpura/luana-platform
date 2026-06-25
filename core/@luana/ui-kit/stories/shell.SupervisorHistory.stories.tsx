@@ -1,12 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
 
 import { SupervisorHistory } from "../src";
-import { useDemoChatStore, useDemoChatStoreNoConvos } from "./_shell-fixtures";
+import {
+  getBrandFixtures,
+  getBrandChatStore,
+  useDemoChatStoreNoConvos,
+} from "./_shell-fixtures";
 
 /**
  * Story consumes the REAL SupervisorHistory from src/. It reads `conversations`
  * from the injected chat store and groups them (Hoy / Ayer / Esta semana) with
- * search. Composes HistoryGroup + HistoryItem + EmptyStateInline.
+ * search. Composes HistoryGroup + HistoryItem + EmptyStateInline. The active-row
+ * highlight uses the supervisor's soft color, which follows the `Marca` global.
  */
 const meta = {
   title: "Shell/SupervisorHistory",
@@ -14,7 +19,6 @@ const meta = {
   args: {
     onNewConversation: () => {},
     onCollapseToRail: () => {},
-    activeClass: "bg-agent-valeria-soft",
   },
   decorators: [
     (Story) => (
@@ -48,10 +52,30 @@ type Story = StoryObj<typeof meta>;
 
 export const ConConversaciones: Story = {
   name: "Con conversaciones",
-  args: { useChatStore: useDemoChatStore },
+  render: (_args, { globals }) => {
+    const f = getBrandFixtures(globals.brand as string | undefined);
+    return (
+      <SupervisorHistory
+        onNewConversation={() => {}}
+        onCollapseToRail={() => {}}
+        activeClass={f.getAgentClasses(f.supervisor.slug).softBg}
+        useChatStore={getBrandChatStore(globals.brand as string | undefined)}
+      />
+    );
+  },
 };
 
 export const Vacio: Story = {
   name: "Sin conversaciones (vacío)",
-  args: { useChatStore: useDemoChatStoreNoConvos },
+  render: (_args, { globals }) => {
+    const f = getBrandFixtures(globals.brand as string | undefined);
+    return (
+      <SupervisorHistory
+        onNewConversation={() => {}}
+        onCollapseToRail={() => {}}
+        activeClass={f.getAgentClasses(f.supervisor.slug).softBg}
+        useChatStore={useDemoChatStoreNoConvos}
+      />
+    );
+  },
 };

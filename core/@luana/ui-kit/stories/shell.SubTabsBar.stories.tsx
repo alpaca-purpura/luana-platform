@@ -2,23 +2,26 @@ import type { Meta, StoryObj } from "@storybook/nextjs";
 
 import { SubTabsBar, type ShellSubTabMeta } from "../src";
 import {
-  DEMO_AGENTS,
-  DEMO_RIBBON_ORDER,
-  DEMO_SUBTABS_BY_AGENT,
-  getDemoAgentClasses,
+  ALL_AGENTS_BY_SLUG,
+  ALL_SUBTABS_BY_AGENT,
+  getAnyBrandAgentClasses,
 } from "./_shell-fixtures";
 
 /**
  * ★ react-docgen-typescript (autodocs) stamps `displayName` + `__docgenInfo` as
- * ENUMERABLE props onto every exported object — so Object.entries(DEMO_SUBTABS_BY_AGENT)
- * yields phantom `["displayName", <string>]` / `["__docgenInfo", <obj>]` entries.
- * SubTabsBar does `Object.entries(subTabsByAgent).map(([k, tabs]) => tabs.map(...))`
- * → `tabs.map is not a function` on the string. Rebuild a clean Record keyed only by
- * real slugs (DEMO_RIBBON_ORDER is an array → iterating it never sees the stamped props).
+ * ENUMERABLE props onto every exported object — so Object.entries(...) yields phantom
+ * `["displayName", <string>]` / `["__docgenInfo", <obj>]` entries. SubTabsBar does
+ * `Object.entries(subTabsByAgent).map(([k, tabs]) => tabs.map(...))` → `tabs.map is not
+ * a function` on the string. Rebuild a clean Record keyed only by real slugs.
+ *
+ * ★ Brand switch: SubTabsBar derives its active agent from usePathname() (a STATIC
+ *   navigation mock that can't read the `brand` global), so the active SUB-TAB set
+ *   stays pinned per story. The union catalog/subtabs covers both brands' slugs and
+ *   getAnyBrandAgentClasses returns a valid bundle; the agent COLOR still follows the
+ *   brand because the bg-agent-* token VALUE is brand-keyed in preview.css [data-brand].
+ *   (To see nicolify sub-tabs, use the nicolify-pinned stories below.)
  */
-const SUBTABS_BY_AGENT: Record<string, ShellSubTabMeta[]> = Object.fromEntries(
-  DEMO_RIBBON_ORDER.map((slug) => [slug, DEMO_SUBTABS_BY_AGENT[slug]]),
-);
+const SUBTABS_BY_AGENT: Record<string, ShellSubTabMeta[]> = { ...ALL_SUBTABS_BY_AGENT };
 
 /**
  * Story consumes the REAL SubTabsBar from src/. It reads usePathname/useParams
@@ -65,9 +68,9 @@ type Story = StoryObj<typeof meta>;
 
 const Demo = () => (
   <SubTabsBar
-    agentCatalog={DEMO_AGENTS}
+    agentCatalog={ALL_AGENTS_BY_SLUG}
     subTabsByAgent={SUBTABS_BY_AGENT}
-    getAgentClasses={getDemoAgentClasses}
+    getAgentClasses={getAnyBrandAgentClasses}
     onNavigate={() => {}}
   />
 );
@@ -132,6 +135,34 @@ export const Camila: Story = {
       navigation: {
         pathname: "/clinica/camila/voz",
         segments: [["tenantId", "clinica"], "camila", "voz"],
+      },
+    },
+  },
+};
+
+/* ── Nicolify-pinned (switch the Marca global to nicolify to see brand colors) ── */
+
+export const ChristianNicolify: Story = {
+  name: "Christian · Pipeline (nicolify · 6 sub-tabs)",
+  render: () => <Demo />,
+  parameters: {
+    nextjs: {
+      navigation: {
+        pathname: "/agencia/christian/pipeline",
+        segments: [["tenantId", "agencia"], "christian", "pipeline"],
+      },
+    },
+  },
+};
+
+export const AbelNicolify: Story = {
+  name: "Abel · ICP (nicolify · 3 sub-tabs)",
+  render: () => <Demo />,
+  parameters: {
+    nextjs: {
+      navigation: {
+        pathname: "/agencia/abel/icp",
+        segments: [["tenantId", "agencia"], "abel", "icp"],
       },
     },
   },

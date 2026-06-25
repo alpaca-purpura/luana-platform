@@ -1,12 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
 
 import { type ShellAgentDescriptor } from "../src";
-import { DEMO_AGENTS_ALL, getDemoAgentClasses } from "./_shell-fixtures";
+import { getBrandFixtures, type BrandFixtureSet } from "./_shell-fixtures";
 
 /**
- * Foundations doc — NOT a component. Renders the REAL vitalia agent palette so the
- * catalog explains the color-per-agent system (the spine of the shell/chat) and how
- * a brand wires it. Mirror of vitalia's _agent-tw-classes.ts contract.
+ * Foundations doc — NOT a component. Renders the agent palette of the brand picked
+ * by the toolbar `Marca` global (vitalia OR nicolify) so the catalog explains the
+ * color-per-agent system (the spine of the shell/chat) and how a brand wires it.
+ * Mirror of each brand's _agent-tw-classes.ts contract.
  */
 const meta = {
   title: "Foundations/Colores de agente",
@@ -36,23 +37,21 @@ const meta = {
           "| `accentText` | `text-agent-{slug}` | **Texto/ícono** con el color del agente sobre fondo claro o soft: nombre del agente, sub-tab activa, ícono. |",
           "| `accentBorder` | `border-agent-{slug}` | **Borde** de acento: card activa, indicador de pestaña, anillo de avatar. |",
           "",
-          "## ⚠️ Excepción de contraste (Mateo y Lucas)",
+          "## ⚠️ Excepción de contraste",
           "",
-          "El amarillo de **Mateo** (`#FEE209`) y el casi-negro de **Lucas** (`#111111`) **fallan WCAG AA** como `text-agent-*` sobre su propio fondo soft. Para ellos `accentText` cae a **`text-foreground`** (mirror de las excepciones D18/D20 de vitalia). El `accentBg`/`softBg`/`accentBorder` se usan igual. Toda marca debe aplicar la misma regla a cualquier agente con color muy claro u oscuro.",
+          "Cuando el color de un agente es muy claro u oscuro, **falla WCAG AA** como `text-agent-*` sobre su propio fondo soft. En **Vitalia** esto pasa con el amarillo de **Mateo** (`#FEE209`) y el casi-negro de **Lucas** (`#111111`): su `accentText` cae a **`text-foreground`** (excepciones D18/D20). El `accentBg`/`softBg`/`accentBorder` se usan igual. En **Nicolify** el roster del Ribbon no necesita excepción (todos los colores pasan AA como texto). Toda marca aplica la misma regla a sus agentes de color extremo.",
           "",
           "## ★ Contrato del JIT — clases LITERALES, nunca template",
           "",
           "`getAgentClasses` **debe** devolver strings literales con un `switch` (`case \"lisa\": return { accentBg: \"bg-agent-lisa\", … }`). **NUNCA** `` `bg-agent-${slug}` ``: el JIT de Tailwind v4 solo emite las clases que ve verbatim en el source; un string construido se purga a nada → render gris/negro. Es el mismo trap que el bug del chart negro. Por eso vitalia usa un `switch` literal en `_agent-tw-classes.ts`.",
           "",
-          "## Valeria ≠ los del Ribbon",
+          "## Supervisor ≠ los del Ribbon",
           "",
-          "**Valeria** es la **supervisora** (vive en el sidebar, color púrpura) — no es una pestaña del Ribbon. Los **5 del Ribbon** son la cadena de valor: Lisa · Lucas · Adrián · Mateo · Camila. La paleta de abajo muestra los 6 (supervisora primero).",
+          "El **supervisor** vive en el sidebar (no es una pestaña del Ribbon): **Valeria** (púrpura) en Vitalia, **Luana** (indigo) en Nicolify. Los **5 del Ribbon** son la cadena de valor — Vitalia: Lisa · Lucas · Adrián · Mateo · Camila · Nicolify: Abel · Brenda · Christian · Sara · Norvil. La paleta de abajo muestra los 6 (supervisor primero).",
           "",
           "## 🎨 Cambiar de marca (toolbar)",
           "",
-          "El selector **Marca** de la toolbar (arriba) intercambia los **tokens de superficie + forma** de toda la app: mismo componente, look de cada marca. Ej.: el `Button` rinde **8px + cian** en Vitalia y **pill + indigo** en Nicolify — sin duplicar el componente, solo cambian los `var(--…)`. Cubre todos los Atoms/Molecules/Organisms/Templates.",
-          "",
-          "**Ojo (alcance):** la **paleta de agente** de abajo sigue el catálogo demo cargado (Vitalia: lisa/mateo/…). El switcher NO recolorea los agentes por marca todavía — Nicolify tiene otros agentes (abel/brenda/christian/sara/norvil) y eso necesita su propio catálogo de shell (trabajo futuro). El switcher hoy = colores de superficie + formas.",
+          "El selector **Marca** de la toolbar (arriba) intercambia TODO por marca: los **tokens de superficie + forma** (ej. el `Button` rinde **8px + cian** en Vitalia y **pill + indigo** en Nicolify) **y la paleta de agente** — los nombres, roles, colores y avatares de abajo cambian según la marca. Mismo componente, datos de cada marca; el kit no conoce ningún nombre de marca (la marca inyecta su catálogo + `getAgentClasses`).",
         ].join("\n"),
       },
     },
@@ -63,10 +62,17 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /** One swatch row: solid · soft+text · border, labelled with the token name. */
-function AgentSwatch({ agent }: { agent: ShellAgentDescriptor }) {
-  const c = getDemoAgentClasses(agent.slug);
-  const isSupervisor = agent.slug === "valeria";
-  const contrastException = agent.slug === "mateo" || agent.slug === "lucas";
+function AgentSwatch({
+  agent,
+  fixtures,
+}: {
+  agent: ShellAgentDescriptor;
+  fixtures: BrandFixtureSet;
+}) {
+  const c = fixtures.getAgentClasses(agent.slug);
+  const isSupervisor = agent.slug === fixtures.supervisor.slug;
+  // The contrast exception is whatever brand maps accentText off the agent color.
+  const contrastException = c.accentText === "text-foreground";
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <div className="mb-3 flex items-center gap-3">
@@ -109,7 +115,7 @@ function AgentSwatch({ agent }: { agent: ShellAgentDescriptor }) {
 
       {contrastException && (
         <p className="mt-2 text-[11px] text-muted-foreground">
-          ⚠️ contraste: <code>accentText</code> → <code>text-foreground</code> (amarillo/negro fallan AA).
+          ⚠️ contraste: <code>accentText</code> → <code>text-foreground</code> (color extremo falla AA).
         </p>
       )}
     </div>
@@ -118,11 +124,14 @@ function AgentSwatch({ agent }: { agent: ShellAgentDescriptor }) {
 
 export const Paleta: Story = {
   name: "Paleta (los 6 agentes)",
-  render: () => (
-    <div className="grid grid-cols-1 gap-3 p-6 sm:grid-cols-2 lg:grid-cols-3">
-      {DEMO_AGENTS_ALL.map((agent) => (
-        <AgentSwatch key={agent.slug} agent={agent} />
-      ))}
-    </div>
-  ),
+  render: (_args, { globals }) => {
+    const fixtures = getBrandFixtures(globals.brand as string | undefined);
+    return (
+      <div className="grid grid-cols-1 gap-3 p-6 sm:grid-cols-2 lg:grid-cols-3">
+        {fixtures.agentsAll.map((agent) => (
+          <AgentSwatch key={agent.slug} agent={agent} fixtures={fixtures} />
+        ))}
+      </div>
+    );
+  },
 };

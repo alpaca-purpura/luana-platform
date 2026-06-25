@@ -9,9 +9,9 @@ import {
   type ShellTestIds,
 } from "../src";
 import {
-  DEMO_AGENTS,
-  getDemoAgentClasses,
-  useDemoChatStore,
+  getBrandFixtures,
+  getBrandChatStore,
+  type BrandFixtureSet,
 } from "./_shell-fixtures";
 
 /**
@@ -43,15 +43,19 @@ const useShellMobile = createShellStore({ storageKey: "sb-sidebar-mobile", versi
 useShellMobile.setState({ supervisorOpen: "chat", historyOpen: false, mobileDrawerOpen: true });
 
 // ── Shared brand-injected props ────────────────────────────────────────────────
-const LABELS: SupervisorSidebarLabels = {
-  panel: "Valeria",
-  drawerClose: "Cerrar Valeria",
-  liveHistory: "Historial abierto",
-  liveClosed: "Valeria cerrado",
-  liveOpen: "Valeria abierto",
-  openStrip: "Abrir a Valeria",
-  history: {},
-};
+/** Build supervisor sidebar labels for the active brand's supervisor name. */
+function labelsFor(f: BrandFixtureSet): SupervisorSidebarLabels {
+  const n = f.supervisor.name;
+  return {
+    panel: n,
+    drawerClose: `Cerrar ${n}`,
+    liveHistory: "Historial abierto",
+    liveClosed: `${n} cerrado`,
+    liveOpen: `${n} abierto`,
+    openStrip: `Abrir a ${n}`,
+    history: {},
+  };
+}
 
 const TEST_IDS: ShellTestIds = {
   supervisorSidebar: "supervisor-sidebar",
@@ -60,34 +64,45 @@ const TEST_IDS: ShellTestIds = {
 };
 
 /** Brand-configured chat panel (states B + C) bound to a given shell store. */
-function makeChatSlot(useShellStore: ShellStore) {
+function makeChatSlot(useShellStore: ShellStore, f: BrandFixtureSet) {
   return (
     <ChatPanel
-      supervisor={DEMO_AGENTS.valeria}
-      agentCatalog={DEMO_AGENTS}
+      supervisor={f.supervisor}
+      agentCatalog={f.agentsBySlug}
       useShellStore={useShellStore}
-      useChatStore={useDemoChatStore}
-      getAgentClasses={getDemoAgentClasses}
-      userBubbleBgClass="bg-agent-valeria"
+      useChatStore={getBrandChatStore(f.brand)}
+      getAgentClasses={f.getAgentClasses}
+      userBubbleBgClass={f.getAgentClasses(f.supervisor.slug).accentBg}
       statusDotClass="bg-emerald-500"
       testIds={TEST_IDS}
     />
   );
 }
 
+/** Render a SupervisorSidebar state bound to a seeded shell store, brand-aware. */
+function renderSidebar(useShellStore: ShellStore): Story["render"] {
+  return function SidebarRender(_args, { globals }) {
+    const f = getBrandFixtures(globals.brand as string | undefined);
+    return (
+      <SupervisorSidebar
+        supervisorSlug={f.supervisor.slug}
+        supervisorName={f.supervisor.name}
+        supervisorInitial={f.supervisor.initial}
+        getAgentClasses={f.getAgentClasses}
+        useChatStore={getBrandChatStore(f.brand)}
+        labels={labelsFor(f)}
+        testIds={TEST_IDS}
+        statusDotClass="bg-emerald-500"
+        useShellStore={useShellStore}
+        chatSlot={makeChatSlot(useShellStore, f)}
+      />
+    );
+  };
+}
+
 const meta = {
   title: "Shell/SupervisorSidebar",
   component: SupervisorSidebar,
-  args: {
-    supervisorSlug: "valeria",
-    supervisorName: "Valeria",
-    supervisorInitial: "V",
-    getAgentClasses: getDemoAgentClasses,
-    useChatStore: useDemoChatStore,
-    labels: LABELS,
-    testIds: TEST_IDS,
-    statusDotClass: "bg-emerald-500",
-  },
   decorators: [
     (Story) => (
       <div className="h-[620px] w-full overflow-hidden border border-border bg-background">
@@ -122,34 +137,22 @@ type Story = StoryObj<typeof meta>;
 
 export const Cerrado: Story = {
   name: "A — Cerrado (tira-avatar)",
-  args: {
-    useShellStore: useShellClosed,
-    chatSlot: makeChatSlot(useShellClosed),
-  },
+  render: renderSidebar(useShellClosed),
 };
 
 export const Chat: Story = {
   name: "B — Chat",
-  args: {
-    useShellStore: useShellChat,
-    chatSlot: makeChatSlot(useShellChat),
-  },
+  render: renderSidebar(useShellChat),
 };
 
 export const Historial: Story = {
   name: "C — Historial + chat",
-  args: {
-    useShellStore: useShellHistory,
-    chatSlot: makeChatSlot(useShellHistory),
-  },
+  render: renderSidebar(useShellHistory),
 };
 
 export const DrawerMovil: Story = {
   name: "Drawer móvil (viewport <1024)",
-  args: {
-    useShellStore: useShellMobile,
-    chatSlot: makeChatSlot(useShellMobile),
-  },
+  render: renderSidebar(useShellMobile),
   // El drawer solo monta con isMobile (matchMedia max-width:1023) + mobileDrawerOpen.
   // El viewport global achica el iframe → isMobile true. En el smoke (1280) renderiza
   // el aside desktop sin crashear; en el viewport tool / resize se ve el drawer (portal).

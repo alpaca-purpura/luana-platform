@@ -1,20 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
 
 import { ChatComposer } from "../src";
-import { useDemoChatStore } from "./_shell-fixtures";
+import { getBrandFixtures, getBrandChatStore } from "./_shell-fixtures";
 
 /**
  * Story consumes the REAL ChatComposer from src/. It's interactive: type and
  * press Enter (or Enviar) → sendMessage on the injected chat store. Shift+Enter
- * inserts a newline; the textarea auto-resizes.
+ * inserts a newline; the textarea auto-resizes. Store + supervisor follow the
+ * toolbar `Marca` global (Valeria · Vitalia / Luana · Nicolify).
  */
 const meta = {
   title: "Shell/Chat/ChatComposer",
   component: ChatComposer,
-  args: {
-    useChatStore: useDemoChatStore,
-    supervisorName: "Valeria",
-  },
   decorators: [
     (Story) => (
       <div className="w-[400px] rounded-lg border border-border bg-background">
@@ -49,4 +46,13 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   name: "Composer (interactivo)",
+  render: (_args, { globals }) => {
+    const f = getBrandFixtures(globals.brand as string | undefined);
+    return (
+      <ChatComposer
+        useChatStore={getBrandChatStore(globals.brand as string | undefined)}
+        supervisorName={f.supervisor.name}
+      />
+    );
+  },
 };

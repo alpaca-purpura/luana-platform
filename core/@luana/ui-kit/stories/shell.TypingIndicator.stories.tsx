@@ -1,17 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
 
 import { TypingIndicator } from "../src";
-import { DEMO_AGENTS, getDemoAgentClasses } from "./_shell-fixtures";
+import { getBrandFixtures } from "./_shell-fixtures";
 
 /**
  * Story consumes the REAL TypingIndicator from src/. The animated dots use the
  * `.typing-dot` keyframe defined in .storybook/preview.css (a brand ships it in
- * globals.css). Agent soft-bg + accent come from getAgentClasses.
+ * globals.css). Agent soft-bg + accent come from getAgentClasses — both follow the
+ * brand picked by the toolbar `Marca` global (supervisor + ribbon agents flip).
  */
 const meta = {
   title: "Shell/Chat/TypingIndicator",
   component: TypingIndicator,
-  args: { getAgentClasses: getDemoAgentClasses },
   tags: ["autodocs"],
   parameters: {
     layout: "padded",
@@ -39,33 +39,44 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Escribiendo: Story = {
-  name: "Valeria escribiendo",
-  args: {
-    agent: DEMO_AGENTS.valeria,
+  name: "Supervisor escribiendo",
+  render: (_args, { globals }) => {
+    const f = getBrandFixtures(globals.brand as string | undefined);
+    return <TypingIndicator agent={f.supervisor} getAgentClasses={f.getAgentClasses} />;
   },
 };
 
 export const AccionConcreta: Story = {
-  name: "Acción concreta (Lisa)",
-  args: {
-    agent: DEMO_AGENTS.lisa,
-    text: "Lisa está abriendo la ficha de marca del paciente…",
+  name: "Acción concreta (primer especialista)",
+  render: (_args, { globals }) => {
+    const f = getBrandFixtures(globals.brand as string | undefined);
+    const agent = f.agentsRibbon[0];
+    return (
+      <TypingIndicator
+        agent={agent}
+        getAgentClasses={f.getAgentClasses}
+        text={`${agent.name} está preparando tu tablero…`}
+      />
+    );
   },
 };
 
 export const VariosAgentes: Story = {
   name: "Color por agente",
-  render: () => (
-    <div className="flex flex-col gap-2.5 max-w-md">
-      <TypingIndicator agent={DEMO_AGENTS.valeria} getAgentClasses={getDemoAgentClasses} />
-      <TypingIndicator agent={DEMO_AGENTS.lisa} getAgentClasses={getDemoAgentClasses} />
-      <TypingIndicator
-        agent={DEMO_AGENTS.adrian}
-        getAgentClasses={getDemoAgentClasses}
-        text="Adrián está revisando los leads nuevos de Instagram…"
-      />
-    </div>
-  ),
+  render: (_args, { globals }) => {
+    const f = getBrandFixtures(globals.brand as string | undefined);
+    return (
+      <div className="flex flex-col gap-2.5 max-w-md">
+        <TypingIndicator agent={f.supervisor} getAgentClasses={f.getAgentClasses} />
+        <TypingIndicator agent={f.agentsRibbon[0]} getAgentClasses={f.getAgentClasses} />
+        <TypingIndicator
+          agent={f.agentsRibbon[2]}
+          getAgentClasses={f.getAgentClasses}
+          text={`${f.agentsRibbon[2].name} está revisando los leads nuevos…`}
+        />
+      </div>
+    );
+  },
   parameters: {
     docs: {
       description: {
