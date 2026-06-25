@@ -10,7 +10,9 @@
     "./spacing": "./src/spacing.ts",
     "./radius": "./src/radius.ts",
     "./typography": "./src/typography.ts",
-    "./color-names": "./src/color-names.ts"
+    "./color-names": "./src/color-names.ts",
+    "./shadow": "./src/shadow.ts",
+    "./color-values": "./src/color-values.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

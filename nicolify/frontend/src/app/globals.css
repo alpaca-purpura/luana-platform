@@ -116,6 +116,29 @@
 
   /* Radius (Shadcn base) */
   --radius: 0.625rem;
+
+  /* ── Shared scale: SHADOW (@luana/design-tokens SHADOW) ────────────────────
+   * Values mirror @luana/design-tokens — arch-test V2 asserts no-drift.
+   * Tailwind v4 reads --shadow-{key} to generate box-shadow utilities.
+   */
+  --shadow-none: none;
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  /* ── Semantic status colors (@luana/design-tokens SEMANTIC_COLOR_DEFAULTS) ──
+   * hsl() resolved from :root vars (declared below in @layer base).
+   * Generates bg-success, text-warning-foreground, etc.
+   */
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-danger: hsl(var(--danger));
+  --color-danger-foreground: hsl(var(--danger-foreground));
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
 }
 
 /* ─── CSS custom properties (canal HSL — consumed by @theme + hsl()) ───────
@@ -199,6 +222,16 @@
     /* Config — slate neutral #64748b */
     --agent-config: 215 16% 47%;
     --agent-config-soft: 215 20% 94%;
+
+    /* ── Semantic status HSL channels (@luana/design-tokens SEMANTIC_COLOR_DEFAULTS) */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 98%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 20 14% 4%;
+    --danger: 0 84% 60%;
+    --danger-foreground: 0 0% 98%;
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 98%;
   }
 
   /* ── Dark mode: deep-indigo nicolify ──────────────────────────────────── */
@@ -247,6 +280,16 @@
     --agent-sara-soft: 38 55% 18%;
     --agent-norvil-soft: 330 45% 20%;
     --agent-config-soft: 215 12% 22%;
+
+    /* ── Semantic status HSL channels — dark mode */
+    --success: 142 55% 55%;
+    --success-foreground: 0 0% 6%;
+    --warning: 38 85% 60%;
+    --warning-foreground: 20 14% 4%;
+    --danger: 0 65% 50%;
+    --danger-foreground: 0 0% 98%;
+    --info: 217 75% 65%;
+    --info-foreground: 0 0% 6%;
   }
 }
 
