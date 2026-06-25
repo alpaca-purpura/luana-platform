@@ -126,6 +126,11 @@ export interface EntityInfoCardProps {
   /** Stable testid suffix; renders `entity-info-card-{testId}`. */
   testId?: string;
   className?: string;
+  /**
+   * C2-T4 · extension surface: optional footer slot for custom content (badge, CTA, etc.).
+   * Rendered below the status chip. Composición sobre fork (ADR-016 §3).
+   */
+  footer?: React.ReactNode;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────────
@@ -153,6 +158,7 @@ export function EntityInfoCard({
   ariaLabel,
   testId,
   className,
+  footer,
 }: EntityInfoCardProps) {
   const interactive = typeof onClick === "function";
   const hasMetrics = Array.isArray(metrics) && metrics.length > 0;
@@ -287,6 +293,16 @@ export function EntityInfoCard({
           >
             {status.label}
           </Badge>
+        </div>
+      )}
+
+      {/* C2-T4 extension surface: footer slot — custom badge/CTA/content (composición, no fork) */}
+      {footer != null && (
+        <div
+          data-testid={`entity-info-card-footer-${idSuffix}`}
+          className="mt-auto"
+        >
+          {footer}
         </div>
       )}
     </div>

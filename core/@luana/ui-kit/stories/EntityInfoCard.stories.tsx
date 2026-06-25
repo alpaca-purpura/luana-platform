@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
+import * as React from "react";
 import { Stethoscope } from "lucide-react";
 
 import {
@@ -113,5 +114,35 @@ export const Empty: Story = {
   ),
   parameters: {
     docs: { description: { story: "Estado vacío (`EntityInfoCardEmpty`)." } },
+  },
+};
+
+/** C2-T4 · consumer story — slot `footer` ejercido con badge de urgencia custom.
+ *  Demuestra composición: la marca agrega contenido custom sin tocar el card interno. */
+export const ConSlotFooter: Story = {
+  name: "Con slot footer (C2-T4)",
+  args: {
+    title: "Dra. Carolina Méndez",
+    subtitle: "Traumatología",
+    initials: "CM",
+    accentClass: "border-t-agent-mateo",
+    metrics: [
+      { label: "Consultas hoy", value: "9" },
+      { label: "Lista de espera", value: "14" },
+    ],
+    status: { label: "Activa", variant: "default" },
+    footer: (
+      <span className="inline-flex items-center gap-1 rounded-md bg-warning/15 px-2 py-0.5 text-xs font-medium text-warning-foreground">
+        ⚠ Lista de espera crítica
+      </span>
+    ),
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Slot `footer` (C2-T4): contenido custom inyectado debajo del chip de estado sin tocar el componente interno. La marca puede añadir badges, CTAs o métricas adicionales. Sin `footer` → no renderiza nada extra (back-compat total).",
+      },
+    },
   },
 };

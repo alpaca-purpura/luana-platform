@@ -142,3 +142,63 @@ export const Deshabilitado: Story = {
     );
   },
 };
+
+/** C2-T4 · consumer story — render-prop `renderItem` ejercido con punto de color por opción. */
+const estadosConColor: (RichSelectOption & { color: string })[] = [
+  { value: "activo", label: "Activo", description: "El profesional atiende normalmente.", color: "#22c55e" },
+  { value: "licencia", label: "En licencia", description: "Fuera temporalmente, vuelve en fecha pactada.", color: "#f59e0b" },
+  { value: "inactivo", label: "Inactivo", description: "No disponible para nuevas citas.", color: "#ef4444" },
+];
+
+export const ConRenderItem: Story = {
+  name: "Con renderItem custom (C2-T4)",
+  render: () => {
+    const form = useForm<{ estado: string }>({ defaultValues: { estado: "activo" } });
+    return (
+      <Form {...form}>
+        <form className="w-80">
+          <FormField
+            control={form.control}
+            name="estado"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Estado del profesional</FormLabel>
+                <RichSelect
+                  options={estadosConColor}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  renderItem={(opt) => {
+                    const withColor = estadosConColor.find((e) => e.value === opt.value);
+                    return (
+                      <div className="flex items-center gap-2 text-left">
+                        <span
+                          className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
+                          style={{ backgroundColor: withColor?.color }}
+                          aria-hidden="true"
+                        />
+                        <div className="flex flex-col gap-0.5">
+                          <span className="font-medium">{opt.label}</span>
+                          {opt.description && (
+                            <span className="text-xs text-muted-foreground">{opt.description}</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  }}
+                />
+              </FormItem>
+            )}
+          />
+        </form>
+      </Form>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Render-prop `renderItem` (C2-T4): cada opción incluye un punto de color semántico (verde/amarillo/rojo). Sin `renderItem` → layout predeterminado label+descripción. La marca controla el render sin tocar el componente interno.",
+      },
+    },
+  },
+};

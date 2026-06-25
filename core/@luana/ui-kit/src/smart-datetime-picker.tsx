@@ -17,6 +17,13 @@ interface SmartDateTimePickerProps {
   timezone: string; // "America/Lima"
   className?: string;
   placeholder?: string;
+  /**
+   * C2-T4 · extension surface: custom trigger element (slot).
+   * Must be a focusable React element — Radix `asChild` clones it and wires open/close.
+   * When omitted, the default Button with CalendarIcon renders.
+   * Composición sobre fork (ADR-016 §3).
+   */
+  trigger?: React.ReactNode;
 }
 
 export function SmartDateTimePicker({
@@ -25,6 +32,7 @@ export function SmartDateTimePicker({
   timezone,
   className,
   placeholder = "Seleccionar fecha",
+  trigger,
 }: SmartDateTimePickerProps) {
   // Compute "Fake Local Date" for display
   // This date object's internal time corresponds to the Wall Time in the target timezone
@@ -90,17 +98,21 @@ export function SmartDateTimePicker({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button
-          variant={"outline"}
-          className={cn(
-            "w-full justify-start text-left font-normal",
-            !date && "text-muted-foreground",
-            className,
-          )}
-        >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {date ? format(date, "dd/MM/yyyy HH:mm", { locale: es }) : <span>{placeholder}</span>}
-        </Button>
+        {trigger != null && React.isValidElement(trigger) ? (
+          trigger
+        ) : (
+          <Button
+            variant={"outline"}
+            className={cn(
+              "w-full justify-start text-left font-normal",
+              !date && "text-muted-foreground",
+              className,
+            )}
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {date ? format(date, "dd/MM/yyyy HH:mm", { locale: es }) : <span>{placeholder}</span>}
+          </Button>
+        )}
       </PopoverTrigger>
       <PopoverContent className="w-auto min-w-[280px] p-0" align="start">
         <div className="p-4 border-b border-border flex gap-2 items-center bg-muted/20">

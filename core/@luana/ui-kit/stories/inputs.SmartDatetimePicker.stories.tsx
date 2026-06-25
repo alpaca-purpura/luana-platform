@@ -87,3 +87,39 @@ export const SinFecha: Story = {
     );
   },
 };
+
+/** C2-T4 · consumer story — slot `trigger` ejercido con un trigger compact personalizado. */
+export const ConTriggerCustom: Story = {
+  name: "Con trigger custom (C2-T4)",
+  render: () => {
+    const [value, setValue] = React.useState<string | undefined>("2026-06-22T14:30:00.000Z");
+    return (
+      <div className="flex flex-col gap-3">
+        <SmartDateTimePicker
+          value={value}
+          onChange={setValue}
+          timezone="America/Lima"
+          trigger={
+            <button
+              type="button"
+              className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-xs font-medium shadow-sm hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              📅 {value ? new Date(value).toLocaleDateString("es-PE") : "Seleccionar"}
+            </button>
+          }
+        />
+        {value && (
+          <p className="text-xs text-muted-foreground">ISO UTC: {value}</p>
+        )}
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Slot `trigger` (C2-T4): reemplaza el botón calendario predeterminado con un elemento custom compacto. Radix `PopoverTrigger asChild` clona el elemento y le agrega el handler de apertura. Sin `trigger` → aparece el Button default con `CalendarIcon`.",
+      },
+    },
+  },
+};

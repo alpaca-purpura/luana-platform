@@ -6,7 +6,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./select";
-import { FormControl } from "./form";
 
 export interface RichSelectOption {
   value: string;
@@ -20,6 +19,12 @@ interface RichSelectProps {
   value?: string;
   onValueChange: (value: string) => void;
   disabled?: boolean;
+  /**
+   * C2-T4 · extension surface: custom item renderer (render-prop).
+   * When provided, replaces the default label+description layout inside each SelectItem.
+   * Composición sobre fork (ADR-016 §3).
+   */
+  renderItem?: (option: RichSelectOption) => React.ReactNode;
 }
 
 export function RichSelect({
@@ -28,6 +33,7 @@ export function RichSelect({
   value,
   onValueChange,
   disabled,
+  renderItem,
 }: RichSelectProps) {
   // Ensure options have unique values and valid keys
   const validOptions = React.useMemo(() => {
@@ -42,22 +48,25 @@ export function RichSelect({
 
   return (
     <Select onValueChange={onValueChange} defaultValue={value} value={value} disabled={disabled}>
-      <FormControl>
-        <SelectTrigger className="h-auto py-3 text-left">
-          <SelectValue placeholder={placeholder} />
-        </SelectTrigger>
-      </FormControl>
+      {/* ponytail: FormControl removed — consumer wraps in FormField>FormItem>FormControl per Shadcn pattern (was crashing standalone) */}
+      <SelectTrigger className="h-auto py-3 text-left">
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
       <SelectContent>
         {validOptions.map((option) => (
           <SelectItem key={option.value} value={option.value} className="py-3">
-            <div className="flex flex-col items-start gap-1 text-left">
-              <span className="font-medium">{option.label}</span>
-              {option.description && (
-                <span className="text-xs text-muted-foreground whitespace-normal leading-tight">
-                  {option.description}
-                </span>
-              )}
-            </div>
+            {renderItem ? (
+              renderItem(option)
+            ) : (
+              <div className="flex flex-col items-start gap-1 text-left">
+                <span className="font-medium">{option.label}</span>
+                {option.description && (
+                  <span className="text-xs text-muted-foreground whitespace-normal leading-tight">
+                    {option.description}
+                  </span>
+                )}
+              </div>
+            )}
           </SelectItem>
         ))}
       </SelectContent>

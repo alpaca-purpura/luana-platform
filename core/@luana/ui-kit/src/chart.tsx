@@ -39,8 +39,14 @@ const ChartContainer = React.forwardRef<
   React.ComponentProps<"div"> & {
     config: ChartConfig;
     children: React.ComponentProps<typeof RechartsPrimitive.ResponsiveContainer>["children"];
+    /**
+     * C2-T4 · extension surface: optional footer slot rendered below the chart area.
+     * Use for summary text, legend supplements, or custom annotations.
+     * Composición sobre fork (ADR-016 §3).
+     */
+    footer?: React.ReactNode;
   }
->(({ id, className, children, config, ...props }, ref) => {
+>(({ id, className, children, config, footer, ...props }, ref) => {
   const uniqueId = React.useId();
   const chartId = `chart-${id || uniqueId.replace(/:/g, "")}`;
 
@@ -57,6 +63,11 @@ const ChartContainer = React.forwardRef<
       >
         <ChartStyle id={chartId} config={config} />
         <RechartsPrimitive.ResponsiveContainer>{children}</RechartsPrimitive.ResponsiveContainer>
+        {footer != null && (
+          <div data-chart-footer={chartId} className="mt-2 w-full text-center text-xs text-muted-foreground">
+            {footer}
+          </div>
+        )}
       </div>
     </ChartContext.Provider>
   );

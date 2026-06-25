@@ -110,3 +110,35 @@ export const LineaTendencia: Story = {
     </ChartContainer>
   ),
 };
+
+/** C2-T4 · consumer story — slot `footer` ejercido debajo del área del gráfico. */
+export const ConFooterCustom: Story = {
+  name: "Con footer custom (C2-T4)",
+  render: () => (
+    <ChartContainer
+      config={barConfig}
+      className="h-64 w-full"
+      footer={
+        <span>
+          Fuente: sistema de gestión Vitalia · Período: Ene–Jun 2026 · Actualizado hoy
+        </span>
+      }
+    >
+      <BarChart data={dataMensual}>
+        <CartesianGrid vertical={false} />
+        <XAxis dataKey="mes" tickLine={false} axisLine={false} />
+        <YAxis tickLine={false} axisLine={false} />
+        <ChartTooltip content={<ChartTooltipContent />} />
+        <Bar dataKey="consultas" fill="var(--color-consultas)" radius={4} />
+      </BarChart>
+    </ChartContainer>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Slot `footer` (C2-T4): texto/nodo custom renderizado debajo del gráfico dentro del mismo `ChartContainer`. Útil para fuente del dato, período, o nota aclaratoria. Sin `footer` → no renderiza nada extra.",
+      },
+    },
+  },
+};
