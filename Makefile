@@ -222,6 +222,12 @@ docs-graph:  ## Grafo de consumo root docs/ + manifest vivos (DOCS-SWEEP 2026-06
 extraction-contract:  ## Regenera core/luana-core-analytics-engine/docs/extraction-contract.md (ETL SSoT · target restaurado 2026-06-09, lo citan AGENTS.md + etl rule + metrics-expert)
 	$(PYTHON) core/luana-core-analytics-engine/scripts/generate_extraction_contract_doc.py
 
+# ADR-016 · C2-T1: catálogo @luana/ui-kit (GITIGNORED — auto-gen R3)
+# Cruza src/index.ts + storybook-static/index.json → catalog.json + catalog.md
+.PHONY: ui-catalog
+ui-catalog:  ## Regenera core/@luana/ui-kit/catalog.json + catalog.md (inventario SSoT · ADR-016 C2-T1)
+	node scripts/generate_ui_catalog.mjs
+
 # machinery hardening anti-drift (auditoría 2026-05-28) — doctrina↔templates↔agentes consistentes
 machinery-check:
 	python3 scripts/validate_machinery_consistency.py

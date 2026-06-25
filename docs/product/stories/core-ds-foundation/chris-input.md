@@ -406,3 +406,16 @@ verde. checkpoint actualizado (`c2_open_questions_confirmed`).
 **/pm-luana · 💡 PROPONE** — **AWAIT Chris (checkpoint architect→dev):** C2 package listo + validado. Próximo:
 arrancar `/dev-team` build (T1 catálogo + T4 tier-2 en paralelo · T2 design-tokens → T3 unwind vitalia secuencial ·
 autonomous_mode:false → T-3 pausa en G para tu demo). O review del set Storybook primero. O pausa + batch commit.
+
+### 2026-06-25 · C2-T1 — catálogo generado + gate paridad 1:1 (DONE)
+
+**/dev-team (builder-frontend) · ✓ APLICADO (C2-T1)** — catálogo generado del source real en 4 piezas:
+(1) `scripts/generate_ui_catalog.mjs` — cruza index.ts + storybook-static/index.json + react-docgen-typescript ref;
+emite `catalog.json` (GITIGNORED, 54 módulos) + `catalog.md` (humano, 7 capas con links Storybook). RETIRING_NO_STORY
+= `["AutosaveBadge"]` (exento per canon §2.6).
+(2) `scripts/_check_catalog_parity.mjs` — gate de paridad CLI (`--mode=coverage` + default parity); exit 0/1.
+(3) `scripts/_assert_parity_gate.mjs` — probe TDD (`--plant=export-without-story` + `--plant=retiring-no-story`).
+(4) `core/@luana/ui-kit/tests/catalog-parity.test.ts` — vitest arch-test (RED→GREEN, 6 tests).
+(5) `make ui-catalog` — Makefile target. `.gitignore` + `.gitignore` entries para catalog.json + catalog.md.
+**4 validators PASS · 319/319 vitest GREEN · tsc 0 errores.**
+Resultado: `docs/product/stories/core-ds-foundation/T-C2-T1-result.md`.

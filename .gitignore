@@ -223,3 +223,7 @@ vitalia/frontend/e2e/regression/live-reconciliation/.sweep-findings.json
 # DOCS-SWEEP graph outputs (auto-gen R3 — regen: scripts/scan_docs_graph.py)
 docs/process/DOCS-GRAPH.md
 docs/process/_docs-graph.json
+
+# @luana/ui-kit catalog (auto-gen R3 · ADR-016 C2-T1 — regen: make ui-catalog)
+core/@luana/ui-kit/catalog.json
+core/@luana/ui-kit/catalog.md
