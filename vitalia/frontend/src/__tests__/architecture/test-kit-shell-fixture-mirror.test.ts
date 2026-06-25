@@ -47,13 +47,15 @@ const globalsCss = readFileSync(
 const FIX = "core/@luana/ui-kit/stories/_shell-fixtures.tsx";
 
 describe("arch: kit shell DEMO fixture mirrors vitalia catalog (drift guard)", () => {
-  it("DEMO_RIBBON_ORDER deep-equals vitalia AGENT_RIBBON_ORDER", () => {
-    const m = fixture.match(/DEMO_RIBBON_ORDER[^=]*=\s*\[([^\]]+)\]/);
-    expect(m, `${FIX}: DEMO_RIBBON_ORDER not found`).not.toBeNull();
+  it("vitalia ribbon order in kit fixture deep-equals vitalia AGENT_RIBBON_ORDER", () => {
+    // The kit fixture is brand-keyed (BRAND_FIXTURES): vitalia's ribbon order lives in
+    // the VITALIA_RIBBON_ORDER literal (DEMO_RIBBON_ORDER aliases it for back-compat).
+    const m = fixture.match(/VITALIA_RIBBON_ORDER[^=]*=\s*\[([^\]]+)\]/);
+    expect(m, `${FIX}: VITALIA_RIBBON_ORDER not found`).not.toBeNull();
     const kitOrder = (m![1].match(/"([^"]+)"/g) ?? []).map((s) => s.replace(/"/g, ""));
     expect(
       kitOrder,
-      `Ribbon order drift — update DEMO_RIBBON_ORDER in ${FIX} to match vitalia`,
+      `Ribbon order drift — update VITALIA_RIBBON_ORDER in ${FIX} to match vitalia`,
     ).toEqual([...AGENT_RIBBON_ORDER]);
   });
 
