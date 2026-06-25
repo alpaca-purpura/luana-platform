@@ -8,6 +8,8 @@
 
 > Hermana de [ADR-012](ADR-012-autosave-primitive-platform.md) (autosave primitive). Mismo principio: un patrón de UI duplicado/divergente feature-por-feature se eleva a primitiva compartida con **contrato + enforcement**, no a guía opcional.
 
+> **Complemento (2026-06-25): [ADR-016](ADR-016-design-system-inventory-governance.md)** gobierna el *inventario* (reuse/extend/create + vocabulario `DESTINO`/`ACCIÓN` + paridad 1:1 + contrato de fidelidad **mockup===resultado**). **Esta ADR (014) = enforcement de homologación (las 5 capas); ADR-016 = gobernanza de qué se cataloga/comparte/extiende — concerns ortogonales.** Los *contratos concretos* de cada componente viven en `design-system-canon.md` (esta ADR **no los re-tabla**; las filas de "capa 3" de abajo son la descripción de la capa, no el contrato — el contrato es canon §2).
+
 ## Contexto
 
 Chris reportó (2026-06-07): *"el dev-team crea siempre a su forma la interfaz y eso hace que cambie de hoja y se sienta una aplicación diferente"*. Quiere **homologar la UI por completo** — padding, curva de borde, espacios, fuentes, posiciones — en todos lados, de una vez.

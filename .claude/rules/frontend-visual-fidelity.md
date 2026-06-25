@@ -20,7 +20,7 @@ El FE construido debe cumplir tres disciplinas (una verificación vía Playwrigh
 
 ## ★ Design System Canon (binding HARD — cement 2026-06-08, ratificado Chris)
 
-> **SSoT:** `docs/architecture/luana-platform/design-system-canon.md` (contratos + ejemplos de código). Doctrina: `ADR-014`. **Toda hoja user-reachable, en TODAS las marcas, se ARMA del canon — no se maqueta a mano ni se reinventa una primitiva.**
+> **SSoT (mapa de homes):** contratos = `design-system-canon.md` (+ ejemplos de código) · doctrina estructural = `ADR-014` · **gobernanza (reuse/extend/create + vocabulario `DESTINO`/`ACCIÓN` + el contrato de fidelidad por actor que esta rule enforça) = `ADR-016`**. **Toda hoja user-reachable, en TODAS las marcas, se ARMA del canon — no se maqueta a mano ni se reinventa una primitiva.**
 
 ### ★★ Storybook = SSoT visual (cement 2026-06-22, ratificado Chris · canon §5)
 
@@ -74,7 +74,8 @@ Detalle + el bucle por actor: `design-system-canon.md § 5`.
 ## Referencias
 
 - `docs/architecture/luana-platform/design-system-canon.md` — ★ **CANON binding** (contratos + ejemplos de código · lo que po-ux compone y dev-team construye)
-- `docs/architecture/luana-platform/ADR-014-design-system-homologation.md` — doctrina (5 capas + enforcement mecánico)
+- `docs/architecture/luana-platform/ADR-014-design-system-homologation.md` — doctrina estructural (5 capas + enforcement mecánico)
+- `docs/architecture/luana-platform/ADR-016-design-system-inventory-governance.md` — **gobernanza de inventario** (reuse/extend/create · vocabulario `DESTINO`/`ACCIÓN` · toolkit de extensión · §5 = el contrato de fidelidad por actor que esta rule enforça · garantía mockup===resultado)
 - `.claude/skills/frontend-expert/references/visual-fidelity.md` — **cuerpo operativo completo** (D1/D2/D3 detallados, gate bash, patrón Playwright, auditor checklist, enforcement layers)
 - `.claude/rules/frontend-fsd.md` — boundaries FSD-Lite + design system layers
 - `.claude/rules/frontend-quality.md` — gates (tsc/eslint/vitest/jscpd)

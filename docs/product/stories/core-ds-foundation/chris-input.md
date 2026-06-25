@@ -267,3 +267,142 @@ Chrome de cada estado (Valeria supervisora correcta · color por agente real · 
 
 **/dev-team · 💡 PROPONE** — Storybook dev de nuevo arriba en **:6007** con los avatares + nombres reales. Recorrelo y
 tirame los comentarios. (Mismas decisiones pendientes: promote ahora/cierre · T-1/T-3 ahora o tras tu review.)
+
+### 2026-06-25 · /pm-luana — reencuadre estructural: programa de FIDELIDAD de pipeline (mockup===resultado)
+
+**Contexto:** Chris pidió cerrar el norte del DS multimarca + storybook y cementarlo en los harnesses. PASO 0 (leí
+canon + ADR-014 + to-be) + Fase A (4 subagentes mapearon el scatter de doctrina DS por docs/rules/skills/agents).
+
+**Hallazgo (verificado, no del to-be):** ~60% del to-be YA está en canon (ratif 2026-06-08) + harness-update
+(aplicado 2026-06-22). El scatter REAL = (1) 5-capas + contratos + loop duplicados 3-4× en docs-arquitectura sin
+cross-pointers · (2) **fork de autoridad 5-capas(canon) vs 3-buckets(to-be DRAFT)** · (3) catálogos brand
+hand-narrados que driftean · (4) genesis-docs sin archivar. La cadena de enforcement (po-ux→architect→dev→auditor)
+está SANA (pointer-chain intacto). Vitalia tiene 44 stories brand-local con duplicados reales (`ChannelBreakdownRow`
+×2, `AttributionMatrixWidget` ×2, `LucasStageRecommendationsCard` ×2). nicolify storybook = 0. Colisión puerto :6006
+(vitalia+nicolify). Promotion FE = de-facto (12 proposals `ui-kit-*`) pero sin doctrina escrita.
+
+**Chris (input clave · ✓ APLICADO) — la necesidad real:** "el mockup que apruebo en refinamiento = el resultado
+final EXACTO, garantizado end-to-end; el inventario debe ser la espina; cada token/átomo con paridad 1:1; el
+architect debe saber CÓMO extender en detalle; el dev-team con lineamientos claros; reglas mapeadas a nivel UX de
+cuándo reusar/extender/crear. Todo lego, no ladrillo con cemento (reemplazar uno sin destruir la pared)." Principios
+HARD recurrentes: alta cohesión · bajo acoplamiento · DRY · clean architecture · hexagonal.
+
+**Chris (decisión 14 · ratifica blueprint estructural) · ✓ APLICADO** — eligió **"Ratifico — arrancá Fase 1
+(auditoría paridad)"**. Blueprint = inventario-como-espina (core hexagonal; actores = adapters que dependen del
+inventario, no entre sí) + **4 pilares**: P1 inventario-1:1 (catálogo generado + gate de paridad) · P2 reglas
+reuse/extend/create mapeadas a UX (vocabulario único, **cero bucket-1/2/3**; toolkit de extensión nombrado:
+compound/slots · asChild/polymorphic-as · variant-props · render-props · wrappers) · P3 contrato de fidelidad por
+actor (handoffs = juntas de lego; architect cita entrada exacta + patrón de extensión + ruta) · P4 garantía
+mockup===resultado (mockup de Storybook → architect cita stories → dev ensambla las mismas → auditor diffea + gates
+mecánicos).
+
+**Chris (decisión 15 · alcance Fase C) · ✓ APLICADO** — eligió **"Full: incluir catálogo-generado ahora"** (el
+recableo de doctrina + el catálogo generado en la misma tanda).
+
+**/pm-luana (decisión propia · Q3 delegada) · ✓ APLICADO** — **ADR-016 nuevo** (gobernanza de inventario +
+composición/extensión) + **recortar ADR-014** a solo-enforcement (apunta al canon para contratos). Justificado por
+el principio de cohesión de Chris (concerns distintos = ADRs distintos).
+
+**Estructura limpia ratificada (1 SSoT por concern · resto apunta):** inventario-generado (espina) · canon
+(contratos QUÉ) · ADR-016 (PORQUÉ: reglas+toolkit) · frontend-visual-fidelity (QUIÉN enforza + contrato por actor) ·
+promotion-protocol §FE (CÓMO promueve) · brand-docs + shell-paradigm compartido (BRAND-LOCAL; skills=routers).
+
+**/pm-luana · 💡 PROPONE (en curso)** — **Fase 1 lanzada**: 4 subagentes read-only auditan paridad (kit inventory +
+extensión · 44 vitalia → destino+acción · file-upload Abel/nicolify lift-candidate + mirror cross-brand · token dual
++ gate-parity HB-106/107). **AWAIT:** sintetizo la evidencia de paridad y te la paso antes de diseñar el spine (P1)
++ reglas (P2). Track aparte (no doctrina): gate-parity vitalia-only · promote-check sin gate · dual-token vitalia
+(`--radius` 0.5 vs 0.625) = Fase 2/3 de core-ds-foundation.
+
+**/pm-luana · ✓ APLICADO (Fase 1 — evidencia de paridad, 4 subagentes read-only):** Kit sano (156 exports · 83
+stories · 92-98% paridad · **0 tier-3** = cero fork forzado · 4 tier-2 con techo: EntityInfoCard/Chart/RichSelect/
+SmartDatetimePicker). **4 fuentes de drift mockup≠resultado:** (1) `@luana/design-tokens` = SOLO nombres para
+color/typo/shadow → marcas inventan valores (driver #1; nicolify es el patrón bueno: importa vía `@theme`, vitalia
+es dual-system) · (2) mirrors locales (vitalia 20 shadcn + EmptyState/Placeholder + 4 dead-stubs `ChannelBreakdownRow`/
+`AttributionMatrix`/`LucasStageRec`/`Bowtie`; cross-brand 7 shell + `button` ~95% copiado) · (3) gates sin paridad
+(no-div-layout solo vitalia · **comunify eslint no-arbitrary APAGADO** · HB-106) · (4) sin promote-gate (HB-107).
+**Taxonomía VALIDADA:** `UniversalIntake` (nicolify Abel = el file-upload de Chris) = **EXTEND** vivo (lift+slot
+`supportedModes`/`fileAccept` → vitalia extiende no forkea) · 20 shadcn+EmptyState/Placeholder = **REUSE** (kit ya
+los tiene) · 4 stubs = **DELETE** · NPS/PHI/Deposit = **KEEP** · los 7 shell = adopción incompleta no lift.
+**Lean /pm-luana:** design-tokens = SSoT de todos los ejes (valores color/typo/shadow incluidos), marcas migran al
+`@theme` de nicolify. **AWAIT Chris:** greenlight Fase 2 (diseño del spine P1 + reglas P2 → draft ADR-016 +
+catalog-spec + toolkit + contrato por actor) o ajustar el modelo con esta evidencia primero.
+
+### 2026-06-25 · Fase 2 — draft ADR-016 + verificación adversarial + endurecimiento
+
+**Chris (decisión 16 · evidencia) · ✓ APLICADO** — "revisá las evidencias y decidí si hay algo que actualizar; si
+no, proseguí con Fase 2". Revisé: **el modelo aguanta, cero cambio estructural**; la evidencia enriquece 4 puntos
+(spine + token-values · toolkit a los 4 tier-2 · adopción≠lift · 3 huecos de gate). Prosigo.
+
+**/pm-luana · ✓ APLICADO (draft ADR-016)** — autoreado (diseño = síntesis, no descubrimiento paralelo):
+`docs/architecture/luana-platform/ADR-016-design-system-inventory-governance.md` (status: proposed). Decide: ejes
+ortogonales (5-capas ⊥ 3-destinos) · vocabulario único `DESTINO{kit/app-code/brand-local}` + `ACCIÓN{REUSE/EXTEND/
+CREATE/ADAPT/KEEP/DELETE}` (retira bucket-1/2/3) · árbol reuse/extend/create · composición>config (fork-de-internal
+= error, EXTEND vía slot = válido) · toolkit nombrado (compound/slots/asChild/variant/render-prop/wrapper) aplicado a
+los 4 tier-2 · inventario-espina 1:1 generado con lifecycle · design-tokens = SSoT de todos los ejes · contrato de
+fidelidad por actor · backstops mecánicos. ADR-016 apunta al canon (contratos) y recorta ADR-014 — cero body duplicado.
+
+**/pm-luana · ✓ APLICADO (verificación adversarial + endurecimiento)** — spawné un revisor adversarial. Veredicto:
+**"core idea SÓLIDA"** + 3 BLOCKER + 5 MAJOR + 4 MINOR de **operacionalización** (no de modelo). Trié (el auditor
+sobreestima) + apliqué 8 fixes al draft: def. de `ADAPT` (vs KEEP) · mecanismo del 2º-consumidor (auditor cuenta
+imports, promote-gate enforça) · copia≠EXTEND afilado · owner de promote (architect marca · builder ejecuta · auditor
+verifica) · auditor = gate-verifier · extension-contract gate (tier-2 sin story-consumidora → CR) · honestidad de
+timing (catálogo/gates = Fase C, interino canon+manual) + **§Caveat** · comunify-eslint = pre-req no quick-win.
+Refuté 1 (MINOR /showcase: el cement 2026-06-22 ya fijó Storybook-only; el canon tiene ref stale → de-dup Fase C).
+
+**/pm-luana · 💡 PROPONE** — **AWAIT Chris (ratificación):** ADR-016 endurecido listo. Es el draft que firmás antes de
+que Fase C toque código/harness. **Caveat clave:** ratificar = ratificar el endpoint + el orden de Fase C; la garantía
+mockup===resultado se completa recién al cerrar Fase C (los gates mecánicos son la última milla; el día que aceptás la
+ADR el pipeline NO cambia, cambia a medida que Fase C aterriza cada gate).
+
+### 2026-06-25 · Fase C · Tramo C1 — homes de doctrina (DONE)
+
+**Chris (decisión 17 · ratifica ADR-016 + arranque) · ✓ APLICADO** — ratificó ADR-016 (→ status accepted) + eligió
+arrancar Fase C por **C1** (homes de doctrina · docs-only · bajo riesgo).
+
+**/pm-luana · ✓ APLICADO (C1)** — home-map cableado: ADR-016 referenciado por canon (×3, con "Mapa de homes") +
+ADR-014 (complemento ortogonal: 014=enforcement, 016=gobernanza, contratos→canon) + frontend-visual-fidelity (×2,
+SSoT-map + el contrato §5 que la rule enforça). 3 genesis-docs **archivados** con banner→ADR-016 (`to-be` DISUELTO ·
+HANDOFF + inventory ARCHIVADOS · refs históricas redirigen sin romper). `bucket-1/2/3` = **0 vivo**. `/showcase` stale
+dropeado del canon. **Verificado:** `machinery-check` **72/0/0 · sin drift**. Commits platform-only → batch al cierre.
+
+**/pm-luana · 💡 PROPONE** — **AWAIT Chris (checkpoint entre tramos):** C1 cerrado. Próximo: **C2 spine** (`/architect`
+actualiza el ready package de core-ds-foundation con scope ADR-016: catálogo generado + lifecycle + token-lift
+color/typo/shadow + migración vitalia off-dual → `/dev-team`) **o** tu **review del set Storybook** (`:6007`, deuda
+AWAIT_CHRIS_VERIFY) primero. C2 toca código → entra por la lane SDD (architect→dev), no por subagentes sueltos.
+
+### 2026-06-25 · Fase C · Tramo C2 (spine) — approach firmado + ready package en producción
+
+**Chris (decisión 18 · arranque C2) · ✓ APLICADO** — eligió **C2 spine**. /pm-luana encadenó a `/architect`
+(technical-story lane · core-ds-foundation es platform-engineering).
+
+**/architect · ✓ APLICADO (recon + approach)** — el spine es thin sobre lo existente: el kit ya corre
+react-docgen-typescript + Storybook genera index.json → el catálogo se extrae de ESE pipeline (cero tooling nuevo);
+design-tokens ya es modular (falta shadow.ts + valores en color/typo); nicolify ya consume vía @theme.
+
+**Chris (decisión 19 · firma del approach C2) · ✓ APLICADO** — firmó con **B1 (full)**: el unwind del dual-system
+de vitalia entra EN C2 (no incremental aparte). Scope C2 = (T1) catálogo generado + gate de paridad 1:1 · (T2)
+design-tokens = SSoT de valores (shadow.ts + color/typo) · (T3) **migración vitalia off-dual** (riesgo visual →
+funcional + live-verify) · (T4) superficies de extensión de los 4 tier-2 + story-consumidora c/u.
+
+**/architect · 💡 PROPONE (en curso)** — spawné architect-orchestrator → ready package C2 sufijado `-C2` (no clobbea
+Fase 0). DAG: T2→T3 · T1/T4 paralelos. T2 toca engine (design-tokens) — autorizado por ADR-016 (technical-story
+core-targeting, no lift WT6). **AWAIT:** valido el package (CONN + verification + boundaries) → transiciono el
+checkpoint → handoff `/dev-team`. NO incluí C3/C4/C5/C6 (tramos aparte).
+
+**/architect · ✓ APLICADO (ready package C2 validado)** — architect-orchestrator escribió 03-arch-C2 + 04-validators-C2
++ 06-tickets-C2 + dispatch-plan-C2 (sufijo -C2, no clobbea Fase 0). Validé: CONN completo (las 4 contenciones por
+ticket) · contract-spec por pieza · DAG coherente (T2→T3 duro · T1/T4 paralelos) · assignment por ticket
+(builder-frontend/workhorse · no agentic) · engine-boundary T2/T4 autorizado por ADR-016. **★ Cazó la decisión
+cardinal:** NO shippear CSS desde design-tokens (canon §6.8 lo descartó) — el package es TS-only SSoT de VALORES, las
+marcas wirean vía @theme guardado por arch-test no-drift; **RN-5 (colores de agente per-brand) preservado** vía split
+shared-value ⊥ brand-identity. T-3 (unwind vitalia · 105 defs/121 consumers) flaggeado funcional/ambas con
+live-verify + el footgun @source JIT.
+
+**/pm-luana · ✓ APLICADO (3 Open Questions confirmadas)** — (1) NO hornear hexes de agente cross-brand (RN-5; la
+paleta semántica success/warning/danger SÍ puede ser shared-by-value) · (2) `@config` de vitalia = migración OPCIONAL
+(canon §2.10 equivalente aceptado, gate=efecto) · (3) T-3 cierra con live-verify + demo Chris (G), no solo arch-test
+verde. checkpoint actualizado (`c2_open_questions_confirmed`).
+
+**/pm-luana · 💡 PROPONE** — **AWAIT Chris (checkpoint architect→dev):** C2 package listo + validado. Próximo:
+arrancar `/dev-team` build (T1 catálogo + T4 tier-2 en paralelo · T2 design-tokens → T3 unwind vitalia secuencial ·
+autonomous_mode:false → T-3 pausa en G para tu demo). O review del set Storybook primero. O pausa + batch commit.

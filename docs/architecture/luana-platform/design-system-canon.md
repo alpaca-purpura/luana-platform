@@ -4,11 +4,13 @@
 
 > **Qué es este doc:** el **contrato binding** del design system — las decisiones que `/po-ux` (mockups), `/architect` (ready package), `/dev-team` (build) y `/auditor` (review) DEBEN respetar **tal cual**, sin reinterpretar. Es el SSoT durable que sobrevive al archivado de la story que lo originó (`user-story-no-es-ssot`).
 >
-> **Relación con los otros docs (no duplica):**
-> - **ADR-014** = la *doctrina* (5 capas + por qué enforcement mecánico). Este doc = los *contratos concretos*.
+> **Mapa de homes (1 SSoT por concern · no se duplica · cement 2026-06-25 ADR-016):**
+> - **ADR-014** = *doctrina estructural* (las 5 capas + por qué enforcement mecánico).
+> - **ADR-016** = *gobernanza de inventario* (reuse/extend/create + vocabulario `DESTINO`/`ACCIÓN` + toolkit de extensión + contrato de fidelidad por actor). ★ apuntá acá para **"¿reúso, extiendo o creo?"**.
+> - **Este doc (canon)** = los *contratos concretos* de cada componente (el QUÉ). ★ apuntá acá para **"¿qué hace / cómo se ve la pieza?"**.
+> - **`.claude/rules/frontend-visual-fidelity.md`** = el *enforcement* (quién verifica qué · el bucle de 5 actores).
 > - **proposal 2026-06-07-design-system-homologation** = el *plan + lift* (Fases 0-3).
-> - **design-system-inventory-best-of-best.md** = el *análisis* (best-of-best con `file:line`).
-> - **Referencia visual fiel:** `vitalia/docs/product/stories/vitalia-ds-showcase/mockups/showcase.html` (espejo derivado; el durable es el `/showcase` route — ver §6).
+> - ~~`design-system-inventory-best-of-best.md`~~ · ~~`design-system-homologation-HANDOFF.md`~~ · ~~`storybook-component-inventory-to-be.md`~~ = **genesis-docs archivados** (su contenido vivo se consolidó en ADR-016 + este canon). La fuente visual es **Storybook** (`:6007`), no la `showcase.html` (espejo derivado, histórico).
 
 ---
 

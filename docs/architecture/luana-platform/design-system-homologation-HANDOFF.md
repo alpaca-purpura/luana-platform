@@ -1,5 +1,7 @@
 # Design System Homologation — HANDOFF para arranque limpio
 
+> **★ ARCHIVADO (génesis) 2026-06-25 — homes vivos: [ADR-016](ADR-016-design-system-inventory-governance.md) (gobernanza) + `design-system-canon.md` (contratos) + `core-ds-foundation/checkpoint.md` (build). No usar como fuente.**
+>
 > **★ SUPERSEDED 2026-06-08:** el showcase fue RATIFICADO (8 rondas /po-ux) y el build se **consolidó en UNA story**: `docs/product/stories/core-ds-foundation/` (Fase 0+1+2). El contrato + ejemplos de código viven en `docs/architecture/luana-platform/design-system-canon.md`. Los bindings de skills/rule ya están hechos. **Para retomar: leé `core-ds-foundation/checkpoint.md` + `design-system-canon.md` → `/architect brand: platform core-ds-foundation`.** Las stories `S-CORE-DS-*` listadas abajo NO se crearon por separado (fusionadas). Lo de abajo es histórico.
 
 > Bootstrap para retomar en **conversación nueva**. Leé esto + los 3 artefactos linkeados y arrancá. Owner: `/pm-luana`. Origen: sesión 2026-06-06/07 (Chris: "el dev-team crea cada interfaz a su forma → se siente otra app; homologar todo de una vez").

@@ -4,7 +4,8 @@ type: platform-engineering                          # engine @luana/ui-kit + har
 owner: /pm-luana
 state: developing
 phase: AWAIT_CHRIS_VERIFY                            # ★ SET STORYBOOK COMPLETO: NO-shell (63) + 3 src bugs RESUELTOS + SHELL inc-1/2/3 + inc-4 (ShellLayout composite + SupervisorSidebar + AppPanelSlot). 247/247 render-smoke + Chrome cada estado. Precondición del harness-update CUMPLIDA (set 100%). Chris hace el review completo.
-next_action: "Chris hace el review COMPLETO del set Storybook en :6007 (todos los grupos Shell/* + los 63 no-shell). Tras OK: (1) harness-update DEFERIDO → /harness-issue al CIL (po-ux/ux-agentico/architect parten de Storybook) · (2) T-1 catálogo generado · T-3 drift-lint · (3) promover los commits platform-only a main (make promote-to-main + sync-all)."
+next_action: "FASE C en curso (ADR-016 accepted). C1 (homes de doctrina) DONE. C2 (spine) ready package producido + validado (03-arch-C2 + 04-validators-C2 + 06-tickets-C2 + dispatch-plan-C2 · 4 tickets: T1 catálogo+gate · T2 design-tokens-valores · T3 unwind vitalia · T4 tier-2 slots). AWAIT Chris: arrancar /dev-team build C2 (T1+T2+T4 paralelo, T3 tras T2) o review del set Storybook primero. Pendientes paralelos: review Storybook (:6007) + batch commit platform-only (make promote-to-main + sync-all)."
+c2_open_questions_confirmed: "RN-5 preservado (no hexes agente cross-brand) · @config vitalia migración OPCIONAL · T-3 cierra con live-verify+demo-G"
 parent_outcome: luana-core-ui-foundation           # docs/product/outcomes/luana-core-ui-foundation.md (§2026-06-07 ya la nombra)
 release: null                                       # engine/infra — no entra en release de marca
 cap_target: null                                    # infra del design system, no capability de producto
