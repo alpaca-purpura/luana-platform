@@ -7,7 +7,7 @@ phase: AWAIT_CHRIS_VERIFY                            # ★ SET STORYBOOK COMPLET
 next_action: "FASE C en curso (ADR-016 accepted). C1 DONE. C2 spine: T1+T2+T4 DONE · T3 DONE (tests passing, live-verify PENDING G-phase). AWAIT Chris: (1) live-verify C2-T3 con Chrome MCP (demo-script.md) → c2_vitalia_visual_parity · (2) review Storybook (:6007) · (3) promover commits platform-only (make promote-to-main + sync-all) · (4) arrancar C3+ (catálogo-generado en FE ui-kit · gate no-div-layout no-arbitrary · comunify eslint). Orchestrator → G-phase C2-T3 → auditor-frontend."
 c2_open_questions_confirmed: "RN-5 preservado (no hexes agente cross-brand) · @config vitalia migración OPCIONAL · T-3 cierra con live-verify+demo-G"
 c2_tickets_done:
-  t1: "DONE — commit 5f7b34a4 (catálogo generado + gate paridad 1:1 · 319/319 GREEN)"
+  t1: "DONE — commit 1ce7d0b7 (catálogo generado + gate paridad 1:1 · 319/319 GREEN)"
   t2: "DONE — commit 9ebbe8a7 (design-tokens SSoT valores · 5 validators PASS)"
   t3: "DONE (tests passing) — tsc 0 · 41/41 arch-test GREEN · 3 validators PASS · live-verify PENDING G-phase"
   t4: "DONE — commit 158c14d8 (tier-2 extension slots · 313/313 GREEN · render-smoke 274/274)"
@@ -17,7 +17,9 @@ dod_evidence:
     action: "@theme block proyectado + alias-then-migrate --vitalia-* → var(--canonical) + --danger/--info canónicos"
     observed: "tsc 0 errores · test-ds-tokens-lock 41/41 GREEN (16 T-3 nuevos, RED→GREEN) · c2_vitalia_legacy_unwound 6/6 PASS · c2_vitalia_tokens_lock 43/43 PASS"
     backend_log: "N/A — cambio CSS/TS frontend puro"
-    live_verify: "PENDING — c2_vitalia_visual_parity es type:live-verify; Chris corre en G phase con Chrome MCP (ver demo-script.md)"
+    live_verify: "DONE (orchestrator + Chrome DevTools MCP · dev-app localhost:3002 · login dr.demo@vitalialat.com) — shell completo renderiza IDÉNTICO post-unwind. Tokens computados: primary 198 99% 49% · success/warning/danger/info OK · radius_lg=calc(0.625rem+4px) DERIVADO (=14px, era literal 0.875rem) · shadow_md=design-tokens SHADOW · agent-mateo/lisa preservados (RN-5) · --vitalia-cian aliaseado a --primary. Dark toggle: data-theme=dark conmuta + token swap (dark-wiring intacto). CONSOLA 0 ERRORES (light+dark). JIT scan no roto. Screenshots: scratchpad/c2t3-{signin,shell-light,shell-dark}.png. c2_vitalia_visual_parity = PASS."
+    dod_live_verified: true
+    chris_verify_signoff: "PENDING — Chris ratifica el G (acepta esta evidencia o mira :3002/dev-app)"
     verified_at: 2026-06-25
 parent_outcome: luana-core-ui-foundation           # docs/product/outcomes/luana-core-ui-foundation.md (§2026-06-07 ya la nombra)
 release: null                                       # engine/infra — no entra en release de marca

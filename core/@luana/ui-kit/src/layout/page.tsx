@@ -26,9 +26,12 @@ export interface PageHeaderProps extends Omit<React.HTMLAttributes<HTMLDivElemen
   subtitle?: React.ReactNode;
   actions?: React.ReactNode;
   /**
-   * Etiqueta del pill de regreso (ej. "Agenda"). Cuando está presente renderiza un
-   * pill clickeable «‹ {backLabel}» ARRIBA del título que llama a `onBack`. Aditivo:
-   * sin `backLabel` el encabezado se comporta igual que antes.
+   * Etiqueta de la afordancia de regreso (ej. "Agenda"). Cuando está presente, el
+   * encabezado se renderiza como FRANJA N3 FULL-BLEED (sticky top, bg-card,
+   * border-bottom, radius:0 — mismo lenguaje visual que EntitySubNavBar · canon
+   * §1.2/§2.2) con el pill «‹ {backLabel}» a la IZQUIERDA (regreso/descarte) +
+   * título·subtítulo inline. Aditivo: sin `backLabel` es el encabezado de contenido
+   * estándar (título prominente + acciones a la derecha).
    */
   backLabel?: string;
   /** Click en el pill de regreso. */
@@ -48,24 +51,52 @@ export function PageHeader({
   className,
   ...props
 }: PageHeaderProps) {
+  // Hoja-leaf alcanzada desde un padre (backLabel presente): se renderiza como
+  // FRANJA N3 FULL-BLEED — mismo lenguaje visual que EntitySubNavBar (canon §1.2/§2.2):
+  // sticky top, bg-card, border-bottom, radius:0, el pill «‹ {backLabel}» a la IZQUIERDA
+  // (afordancia de regreso/descarte), título+subtítulo inline. NO un encabezado de
+  // contenido con padding ni un pill flotante sobre el título.
+  if (backLabel) {
+    return (
+      <div
+        className={cn(
+          "sticky top-0 z-20 w-full rounded-none border-b border-border bg-card",
+          "flex min-h-[44px] items-center gap-3 px-4",
+          className,
+        )}
+        {...props}
+      >
+        <button
+          type="button"
+          onClick={onBack}
+          data-testid="page-header-back"
+          className={cn(
+            "inline-flex shrink-0 items-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium",
+            "text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+          )}
+        >
+          <span aria-hidden="true" className="text-muted-foreground">
+            ‹
+          </span>
+          {backLabel}
+        </button>
+        {leading ? <div className="shrink-0">{leading}</div> : null}
+        <div className="flex min-w-0 items-baseline gap-2">
+          <h1 className="truncate text-sm font-semibold text-foreground">{title}</h1>
+          {subtitle ? (
+            <span className="truncate text-xs text-muted-foreground">{subtitle}</span>
+          ) : null}
+        </div>
+        {actions ? <div className="ml-auto flex shrink-0 items-center gap-2">{actions}</div> : null}
+      </div>
+    );
+  }
+
+  // Encabezado de contenido estándar (sin backLabel): título prominente + acciones a la derecha.
   return (
     <div className={cn("flex items-start justify-between gap-4", className)} {...props}>
       <div className="min-w-0">
-        {backLabel ? (
-          <button
-            type="button"
-            onClick={onBack}
-            data-testid="page-header-back"
-            className={cn(
-              "mb-1 inline-flex items-center gap-1 rounded-full border border-border bg-card px-2.5 py-0.5",
-              "text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-            )}
-          >
-            <span aria-hidden="true">‹</span>
-            {backLabel}
-          </button>
-        ) : null}
         <div className="flex items-center gap-2">
           {leading ? <div className="shrink-0">{leading}</div> : null}
           <h1 className="truncate text-lg font-semibold text-foreground">{title}</h1>
