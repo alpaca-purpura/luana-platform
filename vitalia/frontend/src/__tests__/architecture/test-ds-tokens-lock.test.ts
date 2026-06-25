@@ -7,6 +7,9 @@
  * @luana/design-tokens (SHADOW, TYPOGRAPHY_SCALE, RADIUS_SCALE, SEMANTIC_COLOR_DEFAULTS).
  * These tests are GREEN after T-2. The vitalia globals.css @theme projection is T-3.
  *
+ * C2-T3 extension: verifies that globals.css has @theme block projecting design-token
+ * values, and that --vitalia-* status tokens alias canonical vars (alias-then-migrate).
+ *
  * Covers (canon §0 — tokens-only, ADR-014):
  *   SC-1 — locked-axis arbitrary (font-size / radius / spacing / color-hex)
  *          → rule reports, with an actionable token suggestion (AC-2).
@@ -14,10 +17,13 @@
  *   SC-4 — `// ds-lock-allow: <razón>` named escape → allowed (RN-6).
  *   + tokenized arbitraries (`text-[hsl(var(--x))]`, `rounded-[var(--radius)]`) → 0.
  *   [T-2] SC-5 — new VALUE modules exported from @luana/design-tokens with correct shape.
+ *   [T-3] SC-6 — globals.css @theme block projects design-token values + alias-then-migrate.
  *
  * downstream-regression-na: brand-local arch fitness test; no cross-brand consumers.
  */
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { Linter } from "eslint";
 import noArbitraryValue from "@luana/eslint-config/no-arbitrary-value";
 import {
@@ -27,6 +33,12 @@ import {
   SEMANTIC_COLOR_DEFAULTS,
   TYPOGRAPHY_TIERS,
 } from "@luana/design-tokens";
+
+// ── C2-T3: read globals.css once at module level for T-3 assertions ───────────
+const _globalsCSS = readFileSync(
+  resolve(__dirname, "../../app/globals.css"),
+  "utf8"
+);
 
 const linter = new Linter();
 
@@ -172,5 +184,89 @@ describe("[T-2] SC-5 — SEMANTIC_COLOR_DEFAULTS value module exported and valid
     const wf = SEMANTIC_COLOR_DEFAULTS["warning-foreground"];
     const L = parseFloat(wf.split(" ")[2]);
     expect(L).toBeLessThan(30);
+  });
+});
+
+// ── C2-T3 extension — vitalia globals.css @theme projection ──────────────────
+// RED before globals.css is patched; GREEN after @theme block is added and
+// --vitalia-* status tokens are aliased to canonical vars.
+
+describe("[T-3] globals.css — @theme block projects design-token values", () => {
+  it("has @theme { block (projection gate)", () => {
+    expect(_globalsCSS).toMatch(/@theme\s*\{/);
+  });
+
+  it("preserves @source for @luana/ui-kit JIT scan (footgun guard)", () => {
+    expect(_globalsCSS).toContain('@source "../../../../core/@luana/ui-kit/src"');
+  });
+
+  it("preserves dark wiring — .dark selector present", () => {
+    expect(_globalsCSS).toContain(".dark");
+  });
+
+  it("preserves dark wiring — [data-theme=\"dark\"] selector present", () => {
+    expect(_globalsCSS).toContain('[data-theme="dark"]');
+  });
+
+  it("@theme --shadow-none is 'none'", () => {
+    expect(_globalsCSS).toContain(`--shadow-none: ${SHADOW.none}`);
+  });
+
+  it("@theme --shadow-sm matches SHADOW.sm (no-drift)", () => {
+    expect(_globalsCSS).toContain(`--shadow-sm: ${SHADOW.sm}`);
+  });
+
+  it("@theme --shadow-md matches SHADOW.md (no-drift)", () => {
+    expect(_globalsCSS).toContain(`--shadow-md: ${SHADOW.md}`);
+  });
+
+  it("@theme --shadow-lg matches SHADOW.lg (no-drift)", () => {
+    expect(_globalsCSS).toContain(`--shadow-lg: ${SHADOW.lg}`);
+  });
+
+  it("@theme --shadow-xl matches SHADOW.xl (no-drift)", () => {
+    expect(_globalsCSS).toContain(`--shadow-xl: ${SHADOW.xl}`);
+  });
+
+  it("@theme --text-display at TYPOGRAPHY_SCALE.display.size", () => {
+    expect(_globalsCSS).toContain(`--text-display: ${TYPOGRAPHY_SCALE.display.size}`);
+  });
+
+  it("@theme --text-heading at TYPOGRAPHY_SCALE.heading.size", () => {
+    expect(_globalsCSS).toContain(`--text-heading: ${TYPOGRAPHY_SCALE.heading.size}`);
+  });
+
+  it("@theme --text-body at TYPOGRAPHY_SCALE.body.size", () => {
+    expect(_globalsCSS).toContain(`--text-body: ${TYPOGRAPHY_SCALE.body.size}`);
+  });
+
+  it("@theme --text-caption at TYPOGRAPHY_SCALE.caption.size", () => {
+    expect(_globalsCSS).toContain(`--text-caption: ${TYPOGRAPHY_SCALE.caption.size}`);
+  });
+});
+
+describe("[T-3] globals.css — --vitalia-* status tokens aliased (dual-system unwound)", () => {
+  it("--vitalia-success aliases to var(--success) — not raw HSL (C2-T3 alias-then-migrate)", () => {
+    expect(_globalsCSS).toMatch(/--vitalia-success:\s*var\(--success\)/);
+  });
+
+  it("--vitalia-warning aliases to var(--warning) — not raw HSL (C2-T3 alias-then-migrate)", () => {
+    expect(_globalsCSS).toMatch(/--vitalia-warning:\s*var\(--warning\)/);
+  });
+
+  it("--vitalia-danger aliases to var(--danger) — :root --danger declared (C2-T3)", () => {
+    expect(_globalsCSS).toMatch(/--vitalia-danger:\s*var\(--danger\)/);
+  });
+
+  it("--vitalia-info aliases to var(--info) — :root --info declared (C2-T3)", () => {
+    expect(_globalsCSS).toMatch(/--vitalia-info:\s*var\(--info\)/);
+  });
+
+  it(":root has --danger declaration (canonical status var)", () => {
+    expect(_globalsCSS).toMatch(/--danger:\s*0\s+\d+%\s+\d+%/);
+  });
+
+  it(":root has --info declaration (canonical status var)", () => {
+    expect(_globalsCSS).toMatch(/--info:\s*\d+\s+\d+%\s+\d+%/);
   });
 });

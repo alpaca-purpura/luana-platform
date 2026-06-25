@@ -29,6 +29,38 @@
  */
 @source "../../../../core/@luana/ui-kit/src";
 
+/* ── C2-T3: @theme — projects @luana/design-tokens values into Tailwind v4 ──
+ * Values MUST match the TS package (arch-test test-ds-tokens-lock [T-3] asserts no-drift).
+ * @config "../../tailwind.config.ts" is preserved above (dark wiring: class + [data-theme]).
+ * RADIUS_SCALE stays in :root (avoids @theme conflict with tailwind.config.ts borderRadius).
+ * Status colors project via hsl(var(--status)) so :root dark-override propagates here.
+ */
+@theme {
+  /* Shadow scale — SHADOW from @luana/design-tokens §6.1 ─────────────────── */
+  --shadow-none: none;
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  /* Typography tiers — TYPOGRAPHY_SCALE from @luana/design-tokens §6.2 ─────
+   * Generates text-display/heading/body/caption utilities (additive to v4 scale). */
+  --text-display: 2.25rem;
+  --text-heading: 1.5rem;
+  --text-body: 1rem;
+  --text-caption: 0.75rem;
+
+  /* Semantic status — projected via CSS vars so dark :root overrides propagate ─ */
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-danger: hsl(var(--danger));
+  --color-danger-foreground: hsl(var(--danger-foreground));
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
+}
+
 /* G2-F7: explicit z-index utilities for the shared-shell tokens (@luana/design-tokens
  * Z_INDEX_CLASSES). The kit applies them via `${Z_INDEX_CLASSES.DROPDOWN}` runtime
  * interpolation, so the literal `z-[85]` never reaches Tailwind v4's JIT scanner →
@@ -88,6 +120,12 @@
     --success-foreground: 0 0% 98%;
     --warning: 33 91% 44%;
     --warning-foreground: 0 0% 98%;
+    /* C2-T3: canonical status vars so --vitalia-danger/info can alias these (alias-then-migrate).
+     * Brand-specific values (vitalia overrides design-tokens defaults for clinical context). */
+    --danger: 0 73% 50%;
+    --danger-foreground: 0 0% 98%;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 98%;
     --border: 240 6% 90%;
     --input: 240 6% 90%;
     --ring: 198 99% 49%;
@@ -138,6 +176,11 @@
     --success-foreground: 0 0% 98%;
     --warning: 33 80% 38%;
     --warning-foreground: 0 0% 98%;
+    /* C2-T3: dark overrides for --danger/--info (matched to vitalia brand palette). */
+    --danger: 0 63% 40%;
+    --danger-foreground: 0 0% 98%;
+    --info: 199 80% 40%;
+    --info-foreground: 0 0% 98%;
     --border: 240 4% 20%;
     --input: 240 4% 20%;
     --ring: 198 99% 49%;
@@ -197,16 +240,17 @@
   --vitalia-border: 222 18% 93%; /* #E8EAF0 — bordes default */
   --vitalia-border-soft: 220 25% 96%; /* #F0F2F8 — bordes muy sutiles (grid separators) */
 
-  /* ─── Semantic (status médico) ────────────────────────────────────────────── */
-  --vitalia-success: 142 76% 36%; /* #16A34A — pago confirmado, status verde, paciente al día */
-  --vitalia-warning: 33 91% 44%; /* #D97706 — pago pendiente, atención requerida */
-  --vitalia-danger: 0 73% 50%; /* #DC2626 — error, cancelado, acción destructiva */
-  --vitalia-info: 199 89% 48%; /* #0EA5E9 — info neutra (cian con menos saturación) */
+  /* ─── Semantic (status médico) — ALIASED to canonical :root vars (C2-T3) ──── */
+  /* alias-then-migrate: --vt-* consumers unchanged; tokens now derive from :root  */
+  --vitalia-success: var(--success); /* → 142 76% 36% — pago confirmado, status verde */
+  --vitalia-warning: var(--warning); /* → 33 91% 44% — pago pendiente, atención requerida */
+  --vitalia-danger: var(--danger); /* → 0 73% 50% — error, cancelado, acción destructiva */
+  --vitalia-info: var(--info); /* → 199 89% 48% — info neutra (cian con menos saturación) */
 
   /* ─── Shape (border radius) ───────────────────────────────────────────────── */
   /* --radius base lives ONCE in the Shadcn block above (0.625rem). R-1SRC deleted
    * the legacy 0.5rem clash here — single token source of truth (core-ds-foundation). */
-  --radius-lg: 0.875rem; /* 14px — cards grandes, modals */
+  --radius-lg: calc(var(--radius) + 4px); /* 14px — RADIUS_SCALE.lg = --radius + 4px (C2-T3) */
   --radius-bubble: 1.125rem; /* 18px — chat message bubbles */
   --radius-pill: 999px; /* badges, chips */
   /* RN-7: control-atom radius — brand-overridable via @luana/ui-kit rounded-control.

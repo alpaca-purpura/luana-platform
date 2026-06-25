@@ -460,3 +460,30 @@ TDD: 6 tests RED→GREEN (`tier2-slots.test.tsx`). Gates:
 - `render-smoke` (build-storybook → serve → _smoke_storybook.mjs): **274/274 stories render clean**
 
 Commit: `158c14d8`. Resultado: `docs/product/stories/core-ds-foundation/T-C2-T4-result.md`.
+
+### 2026-06-25 · C2-T3 — unwind vitalia dual-system → @theme design-tokens (DONE, tests passing)
+
+**/dev-team (builder-frontend) · ✓ APLICADO (C2-T3)** — migración `@theme` + alias-then-migrate en
+`vitalia/frontend/src/app/globals.css`. Ponytail mode: shortest diff que pasa los arch-tests:
+
+- `@theme` block agregado (después de `@source`): proyecta SHADOW scale (5 tokens) + TYPOGRAPHY_SCALE tiers
+  (4 tokens) + semantic status colors vía `hsl(var(--status))` (para que el dark `:root` override propague)
+- `--danger` e `--info` canónicos declarados en `:root` (brand vitalia clínica: `0 73% 50%` / `199 89% 48%`)
+  + dark overrides en `.dark, [data-theme="dark"]`
+- Aliases RN-5: `--vitalia-success/warning/danger/info` → `var(--canonical)` (no HSL crudo duplicado)
+- `--radius-lg` derivado: `0.875rem` literal → `calc(var(--radius) + 4px)` (RADIUS_SCALE.lg; mismo valor numérico)
+
+**Decisiones de ponytail (qué NO se hizo y por qué):**
+- `@config` NO migrado (dark wiring ya funciona vía tailwind.config.ts · migración OPCIONAL per arch §9.Q2)
+- RADIUS_SCALE NO en `@theme` (evita conflicto con `tailwind.config.ts::borderRadius` que cambiaría `rounded-lg`)
+- Hexes de agente NO en `@theme` (RN-5: identidad per-brand, solo semántica shared se proyecta)
+
+**TDD RED→GREEN:** 16 tests nuevos en `test-ds-tokens-lock.test.ts` — gate de @theme (presencia · @source
+footgun · dark wiring · shadow no-drift × 5 · typography tiers × 4) + aliases vitalia (×4) + canonical
+--danger/--info (×2). Total **41/41 PASS** (25 T-2 + 16 T-3). Validators:
+`c2_vitalia_tokens_lock` 43/43 · `c2_vitalia_legacy_unwound` 6/6 · `c2_vitalia_tsc_green` PASS.
+
+**Pendiente:** `c2_vitalia_visual_parity` = `type: live-verify` — Chris lo corre en G phase (Chrome MCP,
+`demo-script.md`). NO marcado `dod_live_verified: true` por builder.
+
+Resultado: `docs/product/stories/core-ds-foundation/T-C2-T3-result.md` · `demo-script.md`.

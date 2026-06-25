@@ -4,8 +4,21 @@ type: platform-engineering                          # engine @luana/ui-kit + har
 owner: /pm-luana
 state: developing
 phase: AWAIT_CHRIS_VERIFY                            # ★ SET STORYBOOK COMPLETO: NO-shell (63) + 3 src bugs RESUELTOS + SHELL inc-1/2/3 + inc-4 (ShellLayout composite + SupervisorSidebar + AppPanelSlot). 247/247 render-smoke + Chrome cada estado. Precondición del harness-update CUMPLIDA (set 100%). Chris hace el review completo.
-next_action: "FASE C en curso (ADR-016 accepted). C1 (homes de doctrina) DONE. C2 (spine) ready package producido + validado (03-arch-C2 + 04-validators-C2 + 06-tickets-C2 + dispatch-plan-C2 · 4 tickets: T1 catálogo+gate · T2 design-tokens-valores · T3 unwind vitalia · T4 tier-2 slots). AWAIT Chris: arrancar /dev-team build C2 (T1+T2+T4 paralelo, T3 tras T2) o review del set Storybook primero. Pendientes paralelos: review Storybook (:6007) + batch commit platform-only (make promote-to-main + sync-all)."
+next_action: "FASE C en curso (ADR-016 accepted). C1 DONE. C2 spine: T1+T2+T4 DONE · T3 DONE (tests passing, live-verify PENDING G-phase). AWAIT Chris: (1) live-verify C2-T3 con Chrome MCP (demo-script.md) → c2_vitalia_visual_parity · (2) review Storybook (:6007) · (3) promover commits platform-only (make promote-to-main + sync-all) · (4) arrancar C3+ (catálogo-generado en FE ui-kit · gate no-div-layout no-arbitrary · comunify eslint). Orchestrator → G-phase C2-T3 → auditor-frontend."
 c2_open_questions_confirmed: "RN-5 preservado (no hexes agente cross-brand) · @config vitalia migración OPCIONAL · T-3 cierra con live-verify+demo-G"
+c2_tickets_done:
+  t1: "DONE — commit 5f7b34a4 (catálogo generado + gate paridad 1:1 · 319/319 GREEN)"
+  t2: "DONE — commit 9ebbe8a7 (design-tokens SSoT valores · 5 validators PASS)"
+  t3: "DONE (tests passing) — tsc 0 · 41/41 arch-test GREEN · 3 validators PASS · live-verify PENDING G-phase"
+  t4: "DONE — commit 158c14d8 (tier-2 extension slots · 313/313 GREEN · render-smoke 274/274)"
+dod_evidence:
+  - ticket: C2-T3
+    verification_nature: funcional/ambas
+    action: "@theme block proyectado + alias-then-migrate --vitalia-* → var(--canonical) + --danger/--info canónicos"
+    observed: "tsc 0 errores · test-ds-tokens-lock 41/41 GREEN (16 T-3 nuevos, RED→GREEN) · c2_vitalia_legacy_unwound 6/6 PASS · c2_vitalia_tokens_lock 43/43 PASS"
+    backend_log: "N/A — cambio CSS/TS frontend puro"
+    live_verify: "PENDING — c2_vitalia_visual_parity es type:live-verify; Chris corre en G phase con Chrome MCP (ver demo-script.md)"
+    verified_at: 2026-06-25
 parent_outcome: luana-core-ui-foundation           # docs/product/outcomes/luana-core-ui-foundation.md (§2026-06-07 ya la nombra)
 release: null                                       # engine/infra — no entra en release de marca
 cap_target: null                                    # infra del design system, no capability de producto
