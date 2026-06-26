@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { CalendarIcon, Clock } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { toZonedTime, fromZonedTime } from "date-fns-tz";
@@ -9,7 +9,7 @@ import { cn } from "@luana/format/utils";
 import { Button } from "./button";
 import { Calendar } from "./calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "./popover";
-import { Input } from "./input";
+import { TimePicker } from "./TimePicker";
 
 interface SmartDateTimePickerProps {
   value?: string; // UTC ISO String
@@ -74,12 +74,11 @@ export function SmartDateTimePicker({
     }
   };
 
-  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newTime = e.target.value;
+  const handleTimeChange = (newTime: string) => {
     setTimeStr(newTime);
 
-    // If we have a date selected, update the value immediately
-    if (date) {
+    // If we have a date + a complete time, update the value immediately
+    if (date && newTime) {
       // Create new "Fake Local" base from the existing one
       const newDate = new Date(date);
       const [hours, minutes] = newTime.split(":").map(Number);
@@ -115,14 +114,8 @@ export function SmartDateTimePicker({
         )}
       </PopoverTrigger>
       <PopoverContent className="w-auto min-w-[280px] p-0" align="start">
-        <div className="p-4 border-b border-border flex gap-2 items-center bg-muted/20">
-          <Clock className="h-4 w-4 text-muted-foreground" />
-          <Input
-            type="time"
-            value={timeStr}
-            onChange={handleTimeChange}
-            className="w-full bg-background font-mono"
-          />
+        <div className="flex items-center border-b border-border bg-muted/20 p-4">
+          <TimePicker value={timeStr} onChange={handleTimeChange} aria-label="Hora" />
         </div>
         <Calendar
           mode="single"

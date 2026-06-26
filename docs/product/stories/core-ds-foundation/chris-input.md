@@ -579,3 +579,21 @@ tsc 0 · render-smoke 16/16 (calendar + smart-datetime + time pickers). Commit p
 
 > Nota: el `<input type=time>` interno de `SmartDateTimePicker` sigue siendo nativo (chrome del browser, "a.m./p.m.")
 > — fuera de scope de este comentario (Chris cuestionó el nativo solo en el `TimePicker` standalone, ya resuelto).
+
+### 2026-06-25 · Review #1 (cont.) — SmartDateTimePicker usa el TimePicker segmentado (mata el último nativo)
+
+**Chris · ✓ APLICADO** — "sí, hazlo" (que el `SmartDateTimePicker` use el `TimePicker` nuevo adentro en vez del
+`<input type=time>` nativo).
+
+**/pm-luana · ✓ APLICADO** — reemplacé el `<Input type="time">` + `Clock` del popover por `<TimePicker>`
+(segmentado + dropdown). `handleTimeChange` ahora recibe el string `"HH:mm"` directo (antes el event) + guarda
+`if (date && newTime)` (TimePicker emite `""` en parcial). Imports `Input`/`Clock` removidos. **★ Footgun
+verificado LIVE (Popover anidado):** el dropdown del `TimePicker` es un Popover dentro del Popover del
+`SmartDateTimePicker` — Radix maneja layers anidadas: al abrir el dropdown interno el outer **NO se cierra**
+(ambos `dialog` coexisten), y pick Hora 15 → trigger `22/06/2026 15:00` + ISO UTC `18:00Z` (conversión tz
+correcta). Cero `<input type=time>` nativo en el kit. **Gates:** tsc 0 · vitest 11/11 (tier2-slots SmartDateTimePicker
++ TimePicker) · render-smoke 12/12. Commit platform-only.
+
+> Gap menor pendiente (SR-only, NO visible): los aria-labels de nav del calendar siguen en inglés
+> ("Go to the Next Month", "Today") — react-day-picker no los traduce con `locale`, necesitan el prop `labels`.
+> El texto VISIBLE del calendar está 100% en español. Follow-up opcional si importa el screen-reader en español.
