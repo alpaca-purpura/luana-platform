@@ -198,15 +198,18 @@ vi.mock("@luana/ui-kit", () => ({
     value,
     onChange,
     "data-testid": testId,
+    disablePast,
   }: {
     value?: string;
     onChange?: (iso: string) => void;
     "data-testid"?: string;
+    disablePast?: boolean;
     [key: string]: unknown;
   }) =>
     React.createElement("input", {
       type: "text",
       "data-testid": testId ?? "smart-date-time-picker",
+      "data-disable-past": disablePast ? "true" : undefined,
       value: value ?? "",
       readOnly: !onChange,
       onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange?.(e.target.value),
@@ -522,6 +525,19 @@ describe("NuevaCitaView", () => {
     // startTime is NOT composed yet (hora missing) — verified by endTime placeholder still shown
     expect(screen.queryByTestId("nc-avail-intro")).toBeNull();
     expect(screen.getByText(/Se calculará al seleccionar inicio y duración/i)).toBeInTheDocument();
+  });
+
+  // G-round2: disablePast prop passed to Fecha picker
+  it("G-round2: Fecha SmartDateTimePicker receives disablePast prop", () => {
+    render(
+      React.createElement(NuevaCitaView, {
+        tenantId: "tenant-1",
+        prefillDate: undefined,
+        prefillTime: undefined,
+      }),
+    );
+    const fechaPicker = within(screen.getByTestId("nc-section-fecha")).getByTestId("smart-date-time-picker");
+    expect(fechaPicker).toHaveAttribute("data-disable-past", "true");
   });
 
   it("T-D2: Fecha then Hora compose startTime and trigger endTime autocalc", () => {

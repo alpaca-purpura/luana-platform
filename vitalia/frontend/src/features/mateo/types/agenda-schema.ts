@@ -362,6 +362,13 @@ export const CreateAppointmentRequestSchema = z
       message: "El horario de fin debe ser posterior al inicio",
       path: ["endTime"],
     },
+  )
+  .refine(
+    (s) => new Date(s.startTime).getTime() >= Date.now(),
+    {
+      message: "No se pueden agendar citas en el pasado",
+      path: ["startTime"],
+    },
   );
 
 export type CreateAppointmentRequestDTO = z.infer<

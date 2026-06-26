@@ -481,6 +481,7 @@ export function NuevaCitaView({
                 </Label>
                 <SmartDateTimePicker
                   showTime={false}
+                  disablePast
                   value={startDateStr ? (buildIsoFromDateAndTime(startDateStr, "12:00", timezone) ?? "") : ""}
                   onChange={handleFechaChange}
                   timezone={timezone}

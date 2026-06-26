@@ -484,8 +484,8 @@ describe("CreateAppointmentRequestSchema", () => {
       patientId: UUID.patient,
       doctorId: UUID.doctor,
       serviceLabel: "Consulta general",
-      startTime: "2026-06-02T09:00:00Z",
-      endTime: "2026-06-02T09:30:00Z",
+      startTime: "2030-06-02T09:00:00Z",
+      endTime: "2030-06-02T09:30:00Z",
       notesInternal: null,
       currencyOverride: null,
     });
@@ -501,8 +501,8 @@ describe("CreateAppointmentRequestSchema", () => {
       patientId: UUID.patient,
       doctorId: UUID.doctor,
       serviceLabel: "Limpieza dental",
-      startTime: "2026-06-03T10:00:00Z",
-      endTime: "2026-06-03T10:30:00Z",
+      startTime: "2030-06-03T10:00:00Z",
+      endTime: "2030-06-03T10:30:00Z",
       notesInternal: null,
       currencyOverride: "USD",
     });
@@ -525,6 +525,39 @@ describe("CreateAppointmentRequestSchema", () => {
         currencyOverride: null,
       })
     ).toThrow();
+  });
+
+  // G-round2: past-time guard
+  it("rejects startTime clearly in the past with Spanish-neutro message", () => {
+    const result = CreateAppointmentRequestSchema.safeParse({
+      origin: "walk_in",
+      patientId: UUID.patient,
+      doctorId: UUID.doctor,
+      serviceLabel: "Consulta general",
+      startTime: "2020-01-01T09:00:00Z",
+      endTime: "2020-01-01T09:30:00Z",
+      notesInternal: null,
+      currencyOverride: null,
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const issue = result.error.issues.find((i) => i.path.includes("startTime"));
+      expect(issue?.message).toBe("No se pueden agendar citas en el pasado");
+    }
+  });
+
+  it("accepts startTime clearly in the future", () => {
+    const result = CreateAppointmentRequestSchema.safeParse({
+      origin: "walk_in",
+      patientId: UUID.patient,
+      doctorId: UUID.doctor,
+      serviceLabel: "Consulta general",
+      startTime: "2030-06-01T09:00:00Z",
+      endTime: "2030-06-01T09:30:00Z",
+      notesInternal: null,
+      currencyOverride: null,
+    });
+    expect(result.success).toBe(true);
   });
 });
 
