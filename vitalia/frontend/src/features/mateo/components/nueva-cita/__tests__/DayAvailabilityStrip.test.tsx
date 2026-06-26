@@ -1,121 +1,148 @@
 // cap: scheduling.mateo-agenda
 /**
- * DayAvailabilityStrip.test.tsx — RED-first tests for T-FE-3.
- * Covers: SC-mini-vista (AC-8), empty/loading/error states.
+ * DayAvailabilityStrip.test.tsx — Tests for T-D3 multi-doctor swimlane strip.
+ * UPDATED: component no longer calls useDayStrip; receives doctors[] as props.
+ *
+ * Covers: N-lane render, empty state, sin-horario, loading, error,
+ * time-cursor, selected-slot highlight, lane click (onSelectDoctor).
  */
 import * as React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
+import { DayAvailabilityStrip } from "../DayAvailabilityStrip";
+import type { ServiceDayDoctor } from "../../../types/agenda-schema";
 
-const mockUseDayStrip = vi.fn();
-vi.mock("../../../hooks/use-availability", () => ({
-  useDayStrip: (...args: unknown[]) => mockUseDayStrip(...args),
-  useAvailabilityCheck: vi.fn().mockReturnValue({ data: undefined, isPending: false, isError: false }),
-}));
+const MOCK_SELECT = vi.fn();
 
-const { DayAvailabilityStrip } = await import("../DayAvailabilityStrip");
+const DATE = "2026-06-22";
+
+function doctor(id: string, hasBlocks: boolean): ServiceDayDoctor {
+  return {
+    doctorId: id,
+    doctorLabel: `Dr. ${id}`,
+    blocks: hasBlocks
+      ? [
+          {
+            kind: "working_hours",
+            startTime: `${DATE}T08:00:00Z`,
+            endTime: `${DATE}T17:00:00Z`,
+          },
+          {
+            kind: "busy",
+            startTime: `${DATE}T10:00:00Z`,
+            endTime: `${DATE}T11:00:00Z`,
+          },
+        ]
+      : [],
+  };
+}
 
 const BASE_PROPS = {
-  tenantId: "t-1",
-  // token removed — T-FE-4: hook calls getToken() fresh per-request
-  doctorId: "d-1",
-  dateLocal: "2026-06-22",
-  selectedStartIso: "2026-06-22T10:00:00Z",
-  selectedEndIso: "2026-06-22T10:30:00Z",
-  // H1 fix: pass UTC so local time = UTC time in tests (avoids timezone arithmetic)
+  doctors: [doctor("d-1", true), doctor("d-2", true)],
+  isPending: false,
+  isError: false,
+  dateLocal: DATE,
+  selectedStartIso: null,
+  selectedEndIso: null,
+  selectedDoctorId: null,
+  onSelectDoctor: MOCK_SELECT,
   timezone: "UTC",
 };
 
-describe("DayAvailabilityStrip", () => {
+describe("DayAvailabilityStrip — T-D3 swimlane", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("renders nothing when doctorId is null", () => {
-    mockUseDayStrip.mockReturnValue({ data: undefined, isPending: false, isError: false });
-    const { container } = render(
-      <DayAvailabilityStrip {...BASE_PROPS} doctorId={null} />,
-    );
-    expect(container.firstChild).toBeNull();
-  });
-
-  it("shows skeleton while loading", () => {
-    mockUseDayStrip.mockReturnValue({ data: undefined, isPending: true, isError: false });
-    render(<DayAvailabilityStrip {...BASE_PROPS} />);
+  it("shows loading skeleton while isPending", () => {
+    render(<DayAvailabilityStrip {...BASE_PROPS} isPending={true} doctors={[]} />);
     expect(screen.getByTestId("day-strip-loading")).toBeTruthy();
   });
 
-  it("shows error state on failure", () => {
-    mockUseDayStrip.mockReturnValue({ data: undefined, isPending: false, isError: true });
-    render(<DayAvailabilityStrip {...BASE_PROPS} />);
+  it("shows error state on isError", () => {
+    render(<DayAvailabilityStrip {...BASE_PROPS} isError={true} doctors={[]} />);
     expect(screen.getByTestId("day-strip-error")).toBeTruthy();
   });
 
-  it("SC-mini-vista: renders strip with working_hours block", () => {
-    mockUseDayStrip.mockReturnValue({
-      data: {
-        doctorId: "d-1",
-        dateLocal: "2026-06-22",
-        blocks: [
-          { kind: "working_hours", start: "2026-06-22T08:00:00Z", end: "2026-06-22T17:00:00Z" },
-        ],
-      },
-      isPending: false,
-      isError: false,
-    });
+  it("shows empty state when doctors:[]", () => {
+    render(<DayAvailabilityStrip {...BASE_PROPS} doctors={[]} />);
+    expect(screen.getByTestId("day-strip-empty")).toBeTruthy();
+  });
+
+  it("renders N swimlanes — one per doctor", () => {
     render(<DayAvailabilityStrip {...BASE_PROPS} />);
     expect(screen.getByTestId("day-strip")).toBeTruthy();
-    expect(screen.getByTestId("day-strip-block-0")).toBeTruthy();
+    expect(screen.getByTestId("swimlane-d-1")).toBeTruthy();
+    expect(screen.getByTestId("swimlane-d-2")).toBeTruthy();
   });
 
-  it("SC-mini-vista: renders busy block with distinct class", () => {
-    mockUseDayStrip.mockReturnValue({
-      data: {
-        doctorId: "d-1",
-        dateLocal: "2026-06-22",
-        blocks: [
-          { kind: "working_hours", start: "2026-06-22T08:00:00Z", end: "2026-06-22T17:00:00Z" },
-          { kind: "busy", start: "2026-06-22T10:00:00Z", end: "2026-06-22T11:00:00Z" },
-        ],
-      },
-      isPending: false,
-      isError: false,
-    });
+  it("renders doctor label text in each lane", () => {
     render(<DayAvailabilityStrip {...BASE_PROPS} />);
-    expect(screen.getByTestId("day-strip-block-1")).toBeTruthy();
+    expect(screen.getByText("Dr. d-1")).toBeTruthy();
+    expect(screen.getByText("Dr. d-2")).toBeTruthy();
   });
 
-  it("shows selected-slot highlight when selectedStartIso/End are set", () => {
-    mockUseDayStrip.mockReturnValue({
-      data: {
-        doctorId: "d-1",
-        dateLocal: "2026-06-22",
-        blocks: [
-          { kind: "working_hours", start: "2026-06-22T08:00:00Z", end: "2026-06-22T17:00:00Z" },
-        ],
-      },
-      isPending: false,
-      isError: false,
-    });
+  it("clicking a lane calls onSelectDoctor with that doctor's id", () => {
     render(<DayAvailabilityStrip {...BASE_PROPS} />);
-    expect(screen.getByTestId("day-strip-selected")).toBeTruthy();
+    fireEvent.click(screen.getByTestId("swimlane-d-1"));
+    expect(MOCK_SELECT).toHaveBeenCalledWith("d-1");
   });
 
-  it("no selected highlight when selectedStartIso is null", () => {
-    mockUseDayStrip.mockReturnValue({
-      data: {
-        doctorId: "d-1",
-        dateLocal: "2026-06-22",
-        blocks: [{ kind: "working_hours", start: "2026-06-22T08:00:00Z", end: "2026-06-22T17:00:00Z" }],
-      },
-      isPending: false,
-      isError: false,
-    });
+  it("selected lane has aria-pressed=true", () => {
+    render(<DayAvailabilityStrip {...BASE_PROPS} selectedDoctorId="d-1" />);
+    const lane = screen.getByTestId("swimlane-d-1");
+    expect(lane.getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByTestId("swimlane-d-2").getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("sin-horario lane shows 'Sin horario' when blocks:[]", () => {
+    const props = {
+      ...BASE_PROPS,
+      doctors: [doctor("d-1", true), { doctorId: "d-sin", doctorLabel: "Dr. Sin", blocks: [] }],
+    };
+    render(<DayAvailabilityStrip {...props} />);
+    expect(screen.getByText("Sin horario")).toBeTruthy();
+  });
+
+  it("renders blocks in the swimlane timeline", () => {
+    render(<DayAvailabilityStrip {...BASE_PROPS} />);
+    // working_hours (block-0) + busy (block-1) for d-1
+    expect(screen.getByTestId("swimlane-d-1-block-0")).toBeTruthy();
+    expect(screen.getByTestId("swimlane-d-1-block-1")).toBeTruthy();
+  });
+
+  it("shows time cursor when selectedStartIso is set (on lanes with blocks)", () => {
     render(
       <DayAvailabilityStrip
         {...BASE_PROPS}
-        selectedStartIso={null}
-        selectedEndIso={null}
+        selectedStartIso={`${DATE}T09:00:00Z`}
+        selectedEndIso={`${DATE}T09:30:00Z`}
       />,
     );
-    expect(screen.queryByTestId("day-strip-selected")).toBeNull();
+    expect(screen.getByTestId("swimlane-d-1-cursor")).toBeTruthy();
+    expect(screen.getByTestId("swimlane-d-2-cursor")).toBeTruthy();
+  });
+
+  it("shows selected-slot highlight on the selected doctor lane only", () => {
+    render(
+      <DayAvailabilityStrip
+        {...BASE_PROPS}
+        selectedStartIso={`${DATE}T09:00:00Z`}
+        selectedEndIso={`${DATE}T09:30:00Z`}
+        selectedDoctorId="d-1"
+      />,
+    );
+    expect(screen.getByTestId("swimlane-d-1-selected")).toBeTruthy();
+    expect(screen.queryByTestId("swimlane-d-2-selected")).toBeNull();
+  });
+
+  it("no time cursor when selectedStartIso is null", () => {
+    render(<DayAvailabilityStrip {...BASE_PROPS} selectedStartIso={null} />);
+    expect(screen.queryByTestId("swimlane-d-1-cursor")).toBeNull();
+  });
+
+  it("keyboard Enter triggers onSelectDoctor", () => {
+    render(<DayAvailabilityStrip {...BASE_PROPS} />);
+    const lane = screen.getByTestId("swimlane-d-2");
+    fireEvent.keyDown(lane, { key: "Enter" });
+    expect(MOCK_SELECT).toHaveBeenCalledWith("d-2");
   });
 });

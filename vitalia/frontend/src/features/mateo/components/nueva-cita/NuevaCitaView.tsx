@@ -53,6 +53,7 @@ import {
   useNuevaCitaCreate,
 } from "../../hooks/use-nueva-cita";
 import type { CreateAppointmentPayload } from "../../hooks/use-nueva-cita";
+import { useServiceDayStrips } from "../../hooks/use-availability";
 import { useNuevaCitaStore } from "../../store/nueva-cita-store";
 import { CreateAppointmentRequestSchema } from "../../types/agenda-schema";
 import type { CreateAppointmentRequestDTO } from "../../types/agenda-schema";
@@ -231,6 +232,17 @@ export function NuevaCitaView({
 
   const createMutation = useNuevaCitaCreate({ tenantId });
 
+  // T-D3: day-driven multi-doctor strips (service + date → all doctors for the day)
+  const {
+    data: serviceDayData,
+    isPending: serviceDayPending,
+    isError: serviceDayError,
+  } = useServiceDayStrips({
+    tenantId,
+    serviceId: selectedServiceId,
+    dateLocal: startDateStr,
+  });
+
   // ── Sync selected service → duration default ──────────────────────────────
   React.useEffect(() => {
     if (!selectedServiceId || !servicesData) return;
@@ -353,9 +365,6 @@ export function NuevaCitaView({
     if (availabilityStatus !== "available") return "El médico no está disponible en este horario.";
     return "Completa todos los campos requeridos.";
   }, [submitDisabled, availabilityStatus, watch]);
-
-  // ── Date-only string for DayAvailabilityStrip ─────────────────────────────
-  const dateLocal = startTime ? startTime.slice(0, 10) : "";
 
   // ── Loading gate ──────────────────────────────────────────────────────────
   // ponytail: kept for skeleton; FormPageScaffold removed (obs#1 restructure)
@@ -738,8 +747,8 @@ export function NuevaCitaView({
                 <hr className="mt-2 border-border" />
               </div>
 
-            {/* M1: intro block — shown when no startTime yet */}
-            {!startTime ? (
+            {/* M1: intro block — shown when no date selected yet */}
+            {!startDateStr ? (
               <div
                 data-testid="nc-avail-intro"
                 className="rounded-md border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground"
@@ -766,28 +775,30 @@ export function NuevaCitaView({
               </div>
             ) : null}
 
-            {/* DayAvailabilityStrip: AC-8 mini-vista (T-FE-3) */}
-            {startTime ? (
+            {/* DayAvailabilityStrip: N-doctor swimlanes (T-D3 day-driven) */}
+            {selectedServiceId && startDateStr ? (
               <div data-testid="nc-day-strip-container">
                 <DayAvailabilityStrip
-                  tenantId={tenantId}
-                  doctorId={selectedDoctorId}
-                  dateLocal={dateLocal}
+                  doctors={serviceDayData?.doctors ?? []}
+                  isPending={serviceDayPending}
+                  isError={serviceDayError}
+                  dateLocal={startDateStr}
                   selectedStartIso={startTime || null}
                   selectedEndIso={endTime || null}
+                  selectedDoctorId={selectedDoctorId}
+                  onSelectDoctor={(doctorId) => setSelectedDoctorId(doctorId)}
                   timezone={timezone}
                 />
               </div>
             ) : null}
 
-            {/* FreeDoctorsList: reassign 1-click (T-FE-3) */}
+            {/* FreeDoctorsList: time-filtered 1-click select (T-D3 re-role) */}
             <div data-testid="nc-free-doctors-container">
               <FreeDoctorsList
                 tenantId={tenantId}
-                startIso={startTime ?? ""}
-                durationMinutes={durationMinutes}
-                doctors={freeDoctorsData?.doctors ?? []}
-                isPending={doctorsLoading}
+                doctors={serviceDayData?.doctors ?? []}
+                startHourStr={startHourStr}
+                timezone={timezone}
               />
             </div>
             </div>{/* end right card */}

@@ -482,6 +482,41 @@ export const DayStripResponseSchema = z.object({
 
 export type DayStripResponse = z.infer<typeof DayStripResponseSchema>;
 
+/** DayBlockItem — TypeScript type for a single block (for use in filter utils). */
+export type DayBlockItem = z.infer<typeof DayBlockItemSchema>;
+
+// ────────────────────────────────────────────────────────────────────────────
+// Service-day schemas — T-D3 vitalia-fase2-mateo-nueva-cita delta
+// Mirrors BE ServiceDayResponse (T-D1):
+//   { service_id, date, doctors: [{ doctor_id, doctor_label, blocks: [{kind,start,end}] }] }
+// ────────────────────────────────────────────────────────────────────────────
+
+/**
+ * ServiceDayDoctorSchema — one doctor's working_hours+busy blocks for a service+day.
+ * blocks:[] = no schedule for this doctor on this day (RN-4 "Sin horario").
+ * HIPAA: doctor_label = professional display name only (no patient PHI).
+ */
+export const ServiceDayDoctorSchema = z.object({
+  doctorId: z.string().uuid(),
+  doctorLabel: z.string().min(1),
+  blocks: z.array(DayBlockItemSchema),
+});
+
+export type ServiceDayDoctor = z.infer<typeof ServiceDayDoctorSchema>;
+
+/**
+ * ServiceDayResponseSchema — all doctors for a service+day.
+ * doctors:[] = empty_state (no doctors assigned to this service).
+ * T-D3: queryKey includes dateLocal → React Query auto-refetches on day change.
+ */
+export const ServiceDayResponseSchema = z.object({
+  serviceId: z.string(),
+  dateLocal: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  doctors: z.array(ServiceDayDoctorSchema),
+});
+
+export type ServiceDayResponse = z.infer<typeof ServiceDayResponseSchema>;
+
 // ────────────────────────────────────────────────────────────────────────────
 // Patient inline create schemas — T-FE-1 (nueva-cita)
 // Contract verified against:

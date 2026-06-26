@@ -125,7 +125,7 @@ vi.mock("../../../hooks/use-patients", () => ({
   }),
 }));
 
-// Mock availability hooks (used by AvailabilityChip + DayAvailabilityStrip)
+// Mock availability hooks (used by AvailabilityChip + DayAvailabilityStrip + FreeDoctorsList T-D3)
 vi.mock("../../../hooks/use-availability", () => ({
   useAvailabilityCheck: () => ({
     data: null,
@@ -138,9 +138,16 @@ vi.mock("../../../hooks/use-availability", () => ({
     isPending: false,
     isError: false,
   }),
+  // T-D3: multi-doctor service-day hook
+  useServiceDayStrips: () => ({
+    data: null,
+    isPending: false,
+    isError: false,
+  }),
   availabilityKeys: {
     check: () => ["mateo", "availability", "check"],
     dayStrip: () => ["mateo", "availability", "day-strip"],
+    serviceDay: () => ["mateo", "availability", "service-day"],
   },
 }));
 
@@ -506,11 +513,15 @@ describe("NuevaCitaView", () => {
         prefillTime: undefined,
       }),
     );
+    // avail-intro shows BEFORE date set
+    expect(screen.getByTestId("nc-avail-intro")).toBeInTheDocument();
     fireEvent.change(screen.getByTestId("smart-date-time-picker"), {
       target: { value: "2026-07-01T00:00:00.000Z" },
     });
-    // avail-intro still visible — startTime not set yet (hora missing)
-    expect(screen.getByTestId("nc-avail-intro")).toBeInTheDocument();
+    // T-D3: intro hides as soon as fecha is set (startDateStr set → availability area active)
+    // startTime is NOT composed yet (hora missing) — verified by endTime placeholder still shown
+    expect(screen.queryByTestId("nc-avail-intro")).toBeNull();
+    expect(screen.getByText(/Se calculará al seleccionar inicio y duración/i)).toBeInTheDocument();
   });
 
   it("T-D2: Fecha then Hora compose startTime and trigger endTime autocalc", () => {

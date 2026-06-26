@@ -28,6 +28,7 @@ import { vitaliaFetch } from "@/lib/fetch-client";
 import { useActorHeaders } from "@/hooks/useActorHeaders";
 import { useClinicId } from "@/hooks/useClinicId";
 import type { AvailabilityStatus, NuevaCitaAvailabilityResponse } from "./use-nueva-cita";
+import type { ServiceDayResponse } from "../types/agenda-schema";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -64,6 +65,10 @@ export const availabilityKeys = {
 
   dayStrip: (tenantId: string, doctorId: string, dateLocal: string) =>
     ["mateo", "availability", "day-strip", tenantId, doctorId, dateLocal] as const,
+
+  /** T-D3: includes dateLocal → React Query auto-refetches on day change. */
+  serviceDay: (tenantId: string, serviceId: string, dateLocal: string) =>
+    ["mateo", "availability", "service-day", tenantId, serviceId, dateLocal] as const,
 };
 
 // ── Raw normalizers ────────────────────────────────────────────────────────
@@ -219,5 +224,81 @@ export function useDayStrip({
     },
     enabled: Boolean(doctorId) && Boolean(dateLocal) && isLoaded && Boolean(isSignedIn) && Boolean(tenantId),
     staleTime: 30_000,
+  });
+}
+
+// ── useServiceDayStrips (T-D3) ─────────────────────────────────────────────
+
+interface ServiceDayParams {
+  tenantId: string;
+  serviceId: string | null;
+  dateLocal: string; // YYYY-MM-DD
+}
+
+function normalizeServiceDay(raw: Raw): ServiceDayResponse {
+  const doctors = Array.isArray(raw.doctors)
+    ? (raw.doctors as Raw[]).map((d) => ({
+        doctorId: String(d.doctor_id ?? ""),
+        doctorLabel: String(d.doctor_label ?? ""),
+        blocks: Array.isArray(d.blocks)
+          ? (d.blocks as Raw[]).map((b) => ({
+              startTime: String(b.start ?? ""),
+              endTime: String(b.end ?? ""),
+              kind: (b.kind as "working_hours" | "busy" | "unavailable") ?? "unavailable",
+            }))
+          : [],
+      }))
+    : [];
+  return {
+    serviceId: String(raw.service_id ?? ""),
+    dateLocal: String(raw.date ?? ""),
+    doctors,
+  };
+}
+
+/**
+ * useServiceDayStrips — all-doctors availability for a service+day (T-D3).
+ * queryKey includes dateLocal → React Query auto-refetches when day changes.
+ * doctors:[] = empty_state (no doctors assigned to service on that day).
+ * Fail-closed: disabled until serviceId + dateLocal are both set.
+ */
+export function useServiceDayStrips({
+  tenantId,
+  serviceId,
+  dateLocal,
+}: ServiceDayParams) {
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+  const actorHeaders = useActorHeaders();
+  const clinicId = useClinicId();
+
+  return useQuery({
+    queryKey: availabilityKeys.serviceDay(tenantId, serviceId ?? "", dateLocal),
+    queryFn: async (): Promise<ServiceDayResponse> => {
+      const token = await getToken();
+      const params = new URLSearchParams({
+        serviceId: serviceId ?? "",
+        date: dateLocal,
+      });
+      const raw = await vitaliaFetch<Raw>(
+        `/api/v1/scheduling/availability/service-day?${params.toString()}`,
+        {
+          token: token ?? "",
+          tenantId,
+          headers: {
+            ...(clinicId ? { "X-Clinic-ID": clinicId } : {}),
+            ...actorHeaders,
+          },
+        },
+      );
+      return normalizeServiceDay(raw);
+    },
+    enabled:
+      Boolean(serviceId) &&
+      Boolean(dateLocal) &&
+      isLoaded &&
+      Boolean(isSignedIn) &&
+      Boolean(tenantId),
+    staleTime: 30_000,
+    retry: 2,
   });
 }
