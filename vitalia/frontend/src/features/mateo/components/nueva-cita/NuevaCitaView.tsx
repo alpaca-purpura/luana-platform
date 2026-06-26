@@ -72,6 +72,13 @@ import { FreeDoctorsList } from "./FreeDoctorsList";
 // T-FE-4 actions bar
 import { NuevaCitaActions } from "./NuevaCitaActions";
 
+// T-D2: tz-correct datetime helpers (extracted for testability · G#1 round-1 tz fix)
+import {
+  buildIsoFromDateAndTime,
+  addMinutesToIso,
+  isoToHHMM,
+} from "./datetime-utils";
+
 // ── Constants ──────────────────────────────────────────────────────────────────
 
 const DEFAULT_DURATION_MINUTES = 30;
@@ -87,43 +94,8 @@ export interface NuevaCitaViewProps {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
-
-/** Build UTC ISO string from date + time strings (local wall clock). */
-function buildIsoFromDateAndTime(
-  date: string | undefined,
-  time: string | undefined,
-  _timezone: string, // reserved for SmartDateTimePicker DST normalization
-): string | undefined {
-  if (!date || !time) return undefined;
-  try {
-    // ponytail: simple UTC construct for prefill; SmartDateTimePicker handles full DST
-    const d = new Date(`${date}T${time}:00Z`);
-    return d.toISOString();
-  } catch {
-    return undefined;
-  }
-}
-
-/** Add durationMinutes to an ISO string and return new ISO string. */
-function addMinutesToIso(isoStart: string, minutes: number): string {
-  const d = new Date(isoStart);
-  d.setMinutes(d.getMinutes() + minutes);
-  return d.toISOString();
-}
-
-/** Format ISO string to HH:mm wall-clock display in the given timezone. H1 fix. */
-function isoToHHMM(isoString: string, timezone: string): string {
-  try {
-    return new Intl.DateTimeFormat("es", {
-      timeZone: timezone,
-      hour: "2-digit",
-      minute: "2-digit",
-      hourCycle: "h23",
-    }).format(new Date(isoString));
-  } catch {
-    return "";
-  }
-}
+// buildIsoFromDateAndTime / addMinutesToIso / isoToHHMM moved to ./datetime-utils
+// (tz-correct via Intl + unit-tested · G#1 round-1 fix: 08:00 inicio ya no rinde fin 05:30).
 
 // ── Component ──────────────────────────────────────────────────────────────────
 
@@ -509,7 +481,7 @@ export function NuevaCitaView({
                 </Label>
                 <SmartDateTimePicker
                   showTime={false}
-                  value={startDateStr ? `${startDateStr}T00:00:00.000Z` : ""}
+                  value={startDateStr ? (buildIsoFromDateAndTime(startDateStr, "12:00", timezone) ?? "") : ""}
                   onChange={handleFechaChange}
                   timezone={timezone}
                   placeholder="DD/MM/AAAA"
