@@ -20,7 +20,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent, within } from "@testing-library/react";
 import React from "react";
 
 // Mock router (Next.js)
@@ -220,6 +220,25 @@ vi.mock("@luana/ui-kit", () => ({
         onClick: () => createAction.onCreate("test"),
       }, createAction.label("test")) : null,
     ),
+  // T-D2: time-only picker (separate from SmartDateTimePicker)
+  TimePicker: ({
+    value,
+    onChange,
+    "aria-label": ariaLabel,
+  }: {
+    value?: string;
+    onChange?: (v: string) => void;
+    "aria-label"?: string;
+    [key: string]: unknown;
+  }) =>
+    React.createElement("input", {
+      type: "text",
+      "data-testid": "time-picker",
+      "aria-label": ariaLabel,
+      value: value ?? "",
+      readOnly: !onChange,
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange?.(e.target.value),
+    }),
 }));
 
 import { NuevaCitaView } from "../NuevaCitaView";
@@ -457,5 +476,64 @@ describe("NuevaCitaView", () => {
     );
     expect(screen.getByTestId("nc-notas-counter")).toBeInTheDocument();
     expect(screen.getByTestId("nc-notas-counter").textContent).toContain("/500");
+  });
+
+  // ── T-D2: Split Fecha / Hora controls ────────────────────────────────────
+
+  it("T-D2: Fecha and Hora render as separate sections with distinct controls", () => {
+    render(
+      React.createElement(NuevaCitaView, {
+        tenantId: "tenant-1",
+        prefillDate: undefined,
+        prefillTime: undefined,
+      }),
+    );
+    expect(screen.getByTestId("nc-section-fecha")).toBeInTheDocument();
+    expect(screen.getByTestId("nc-section-hora")).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId("nc-section-fecha")).getByTestId("smart-date-time-picker"),
+    ).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId("nc-section-hora")).getByTestId("time-picker"),
+    ).toBeInTheDocument();
+  });
+
+  it("T-D2: changing Fecha alone does not compose startTime (hora still missing)", () => {
+    render(
+      React.createElement(NuevaCitaView, {
+        tenantId: "tenant-1",
+        prefillDate: undefined,
+        prefillTime: undefined,
+      }),
+    );
+    fireEvent.change(screen.getByTestId("smart-date-time-picker"), {
+      target: { value: "2026-07-01T00:00:00.000Z" },
+    });
+    // avail-intro still visible — startTime not set yet (hora missing)
+    expect(screen.getByTestId("nc-avail-intro")).toBeInTheDocument();
+  });
+
+  it("T-D2: Fecha then Hora compose startTime and trigger endTime autocalc", () => {
+    render(
+      React.createElement(NuevaCitaView, {
+        tenantId: "tenant-1",
+        prefillDate: undefined,
+        prefillTime: undefined,
+      }),
+    );
+    // endTime placeholder visible before both are set
+    expect(screen.getByText(/Se calculará al seleccionar inicio y duración/i)).toBeInTheDocument();
+    // Set fecha
+    fireEvent.change(screen.getByTestId("smart-date-time-picker"), {
+      target: { value: "2026-07-01T00:00:00.000Z" },
+    });
+    // Set hora
+    fireEvent.change(screen.getByTestId("time-picker"), {
+      target: { value: "10:00" },
+    });
+    // startTime composed → avail-intro hides (M1 assertion)
+    expect(screen.queryByTestId("nc-avail-intro")).toBeNull();
+    // endTime autocalc → editar button appears (endTime display is now shown)
+    expect(screen.getByTestId("nc-fin-editar")).toBeInTheDocument();
   });
 });

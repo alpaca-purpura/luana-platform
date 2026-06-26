@@ -42,6 +42,7 @@ import { useTenantLocale } from "@/hooks/useTenantLocale";
 import {
   EntitySubNavBar,
   SmartDateTimePicker,
+  TimePicker,
 } from "@luana/ui-kit";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -150,6 +151,17 @@ export function NuevaCitaView({
   // Default: computed display ("09:30 · ⚙ autocalculado"); "editar" reveals picker
   const [endTimeEditMode, setEndTimeEditMode] = React.useState(false);
 
+  // ── T-D2: Split Fecha / Hora state ───────────────────────────────────────
+  // startDateStr: "YYYY-MM-DD" driven by SmartDateTimePicker(showTime=false)
+  // startHourStr: "HH:mm"     driven by TimePicker
+  // Composed together → setValue("startTime", ...) via handlers below.
+  const [startDateStr, setStartDateStr] = React.useState<string>(
+    prefillDate ?? "",
+  );
+  const [startHourStr, setStartHourStr] = React.useState<string>(
+    prefillTime ?? "",
+  );
+
   // ── Zustand UI state ──────────────────────────────────────────────────────
   const selectedServiceId = useNuevaCitaStore((s) => s.selectedServiceId);
   const setSelectedServiceId = useNuevaCitaStore((s) => s.setSelectedServiceId);
@@ -249,6 +261,41 @@ export function NuevaCitaView({
   }, [patientId, setValue]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
+
+  // T-D2: Fecha selected → extract date part, compose startTime, cascade endTime
+  const handleFechaChange = React.useCallback(
+    (iso: string) => {
+      const dateStr = iso.slice(0, 10); // "YYYY-MM-DD"
+      setStartDateStr(dateStr);
+      const composed = buildIsoFromDateAndTime(dateStr, startHourStr, timezone);
+      if (composed) {
+        setValue("startTime", composed, { shouldValidate: true });
+        if (!endTimeEditMode) {
+          setValue("endTime", addMinutesToIso(composed, durationMinutes), {
+            shouldValidate: true,
+          });
+        }
+      }
+    },
+    [startHourStr, timezone, endTimeEditMode, durationMinutes, setValue],
+  );
+
+  // T-D2: Hora selected → compose startTime, cascade endTime
+  const handleHoraChange = React.useCallback(
+    (hhmm: string) => {
+      setStartHourStr(hhmm);
+      const composed = buildIsoFromDateAndTime(startDateStr, hhmm, timezone);
+      if (composed) {
+        setValue("startTime", composed, { shouldValidate: true });
+        if (!endTimeEditMode) {
+          setValue("endTime", addMinutesToIso(composed, durationMinutes), {
+            shouldValidate: true,
+          });
+        }
+      }
+    },
+    [startDateStr, timezone, endTimeEditMode, durationMinutes, setValue],
+  );
 
   // obs#1: EntitySubNavBar.rootHref handles back nav deterministically.
   // Cancel still needs to reset store + navigate.
@@ -441,35 +488,37 @@ export function NuevaCitaView({
               ) : null}
             </section>
 
-            {/* ── Secciones: Fecha/hora inicio + Duración (2-col row) ─────── */}
-            <div className="grid grid-cols-2 gap-4" data-testid="nc-row-2">
-              {/* Fecha y hora de inicio */}
-              <section aria-labelledby="nc-inicio-label" data-testid="nc-section-inicio">
+            {/* ── Secciones: Fecha inicio + Hora inicio + Duración (3-col · T-D2) ── */}
+            <div className="grid grid-cols-3 gap-4" data-testid="nc-row-2">
+              {/* Fecha de inicio (date-only picker · T-D2) */}
+              <section aria-labelledby="nc-fecha-label" data-testid="nc-section-fecha">
                 <Label
-                  id="nc-inicio-label"
+                  id="nc-fecha-label"
                   className="mb-1.5 block text-sm font-medium"
                 >
-                  Fecha y hora de inicio
+                  Fecha
                 </Label>
-                <Controller
-                  name="startTime"
-                  control={control}
-                  render={({ field }) => (
-                    <SmartDateTimePicker
-                      value={field.value}
-                      onChange={(iso) => {
-                        field.onChange(iso);
-                        // L2: only overwrite endTime when user hasn't manually set it
-                        if (!endTimeEditMode) {
-                          setValue("endTime", addMinutesToIso(iso, durationMinutes), {
-                            shouldValidate: true,
-                          });
-                        }
-                      }}
-                      timezone={timezone}
-                      placeholder="Selecciona fecha y hora..."
-                    />
-                  )}
+                <SmartDateTimePicker
+                  showTime={false}
+                  value={startDateStr ? `${startDateStr}T00:00:00.000Z` : ""}
+                  onChange={handleFechaChange}
+                  timezone={timezone}
+                  placeholder="DD/MM/AAAA"
+                />
+              </section>
+
+              {/* Hora de inicio (time-only picker · T-D2) */}
+              <section aria-labelledby="nc-hora-label" data-testid="nc-section-hora">
+                <Label
+                  id="nc-hora-label"
+                  className="mb-1.5 block text-sm font-medium"
+                >
+                  Hora de inicio
+                </Label>
+                <TimePicker
+                  value={startHourStr}
+                  onChange={handleHoraChange}
+                  aria-label="Hora de inicio"
                 />
                 {errors.startTime ? (
                   <p className="mt-1 text-xs text-destructive" role="alert">
