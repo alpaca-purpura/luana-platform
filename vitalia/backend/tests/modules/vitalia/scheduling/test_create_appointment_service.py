@@ -57,8 +57,8 @@ def _make_create_request() -> dict:
         "patient_id": PATIENT_ID,
         "doctor_id": DOCTOR_ID,
         "service_label": "Limpieza dental",
-        "start_time": datetime(2026, 5, 28, 9, 0, tzinfo=timezone.utc),
-        "end_time": datetime(2026, 5, 28, 9, 30, tzinfo=timezone.utc),
+        "start_time": datetime(2027, 5, 28, 9, 0, tzinfo=timezone.utc),  # future — past guard (G-round-2)
+        "end_time": datetime(2027, 5, 28, 9, 30, tzinfo=timezone.utc),
         "notes_internal": None,
         "currency_override": None,
     }
@@ -290,8 +290,8 @@ class TestCreateAppointmentServiceMirrorColumns:
             growth_emitter=growth_emitter,
         )
 
-        start = datetime(2026, 6, 22, 9, 0, tzinfo=timezone.utc)
-        end = datetime(2026, 6, 22, 9, 30, tzinfo=timezone.utc)
+        start = datetime(2027, 6, 22, 9, 0, tzinfo=timezone.utc)
+        end = datetime(2027, 6, 22, 9, 30, tzinfo=timezone.utc)
 
         await service.create_appointment(
             tenant_id=TENANT_ID,
@@ -352,8 +352,8 @@ class TestCreateAppointmentServiceOverlap:
                 patient_id=PATIENT_ID,
                 doctor_id=DOCTOR_ID,
                 service_label="Limpieza dental",
-                start_time=datetime(2026, 6, 22, 9, 0, tzinfo=timezone.utc),
-                end_time=datetime(2026, 6, 22, 9, 30, tzinfo=timezone.utc),
+                start_time=datetime(2027, 6, 22, 9, 0, tzinfo=timezone.utc),
+                end_time=datetime(2027, 6, 22, 9, 30, tzinfo=timezone.utc),
             )
 
     @pytest.mark.asyncio
@@ -384,8 +384,8 @@ class TestCreateAppointmentServiceOverlap:
                 patient_id=PATIENT_ID,
                 doctor_id=DOCTOR_ID,
                 service_label="Limpieza dental",
-                start_time=datetime(2026, 6, 22, 10, 0, tzinfo=timezone.utc),
-                end_time=datetime(2026, 6, 22, 10, 30, tzinfo=timezone.utc),
+                start_time=datetime(2027, 6, 22, 10, 0, tzinfo=timezone.utc),
+                end_time=datetime(2027, 6, 22, 10, 30, tzinfo=timezone.utc),
             )
 
 
@@ -436,8 +436,8 @@ class TestCreateAppointmentServiceOutOfHours:
                 patient_id=PATIENT_ID,
                 doctor_id=DOCTOR_ID,
                 service_label="Limpieza dental",
-                start_time=datetime(2026, 6, 22, 7, 0, tzinfo=timezone.utc),  # before hours
-                end_time=datetime(2026, 6, 22, 7, 30, tzinfo=timezone.utc),
+                start_time=datetime(2027, 6, 22, 7, 0, tzinfo=timezone.utc),  # before hours
+                end_time=datetime(2027, 6, 22, 7, 30, tzinfo=timezone.utc),
             )
 
         # No insert should have been called
@@ -471,8 +471,8 @@ class TestCreateAppointmentServiceOutOfHours:
             patient_id=PATIENT_ID,
             doctor_id=DOCTOR_ID,
             service_label="Limpieza dental",
-            start_time=datetime(2026, 6, 22, 9, 0, tzinfo=timezone.utc),
-            end_time=datetime(2026, 6, 22, 9, 30, tzinfo=timezone.utc),
+            start_time=datetime(2027, 6, 22, 9, 0, tzinfo=timezone.utc),
+            end_time=datetime(2027, 6, 22, 9, 30, tzinfo=timezone.utc),
         )
 
         assert result is not None  # happy path completed
@@ -511,8 +511,8 @@ class TestCreateAppointmentServiceRealPatientId:
             patient_id=real_patient_id,
             doctor_id=DOCTOR_ID,
             service_label="Limpieza dental",
-            start_time=datetime(2026, 6, 22, 9, 0, tzinfo=timezone.utc),
-            end_time=datetime(2026, 6, 22, 9, 30, tzinfo=timezone.utc),
+            start_time=datetime(2027, 6, 22, 9, 0, tzinfo=timezone.utc),
+            end_time=datetime(2027, 6, 22, 9, 30, tzinfo=timezone.utc),
         )
 
         repo.create.assert_called_once()
@@ -520,3 +520,82 @@ class TestCreateAppointmentServiceRealPatientId:
         assert kw.get("patient_id") == real_patient_id, (
             f"Expected real patient_id={real_patient_id}, got {kw.get('patient_id')}"
         )
+
+
+# ---------------------------------------------------------------------------
+# G-round-2: Past appointment guard (server-side authority)
+# ---------------------------------------------------------------------------
+
+
+class TestCreateAppointmentServicePastGuard:
+    """G-round-2 regression: start_time in the past → PastAppointmentError (HTTP 422).
+
+    Chris correction: "no debo poder sacar citas para fechas y horas pasadas."
+    The guard lives in the service (server-side authority — FE cannot be trusted).
+    """
+
+    @pytest.mark.asyncio
+    async def test_past_start_time_raises_past_appointment_error(self):
+        """start_time strictly in the past → PastAppointmentError; repo.create NOT called.
+
+        RED regression test for G-round-2 guard. Must raise before any DB write.
+        """
+        from src.modules.vitalia.scheduling.domain.exceptions import PastAppointmentError  # noqa: PLC0415
+
+        CreateAppointmentService = _import_service()
+        repo = _make_mock_scheduling_repo()
+        audit_writer = _make_mock_audit_writer()
+        growth_emitter = _make_mock_growth_emitter()
+        service = CreateAppointmentService(
+            repo=repo,
+            audit_writer=audit_writer,
+            growth_emitter=growth_emitter,
+        )
+
+        with pytest.raises(PastAppointmentError):
+            await service.create_appointment(
+                tenant_id=TENANT_ID,
+                clinic_id=CLINIC_ID,
+                offer_id=OFFER_ID,
+                user_id=USER_ID,
+                origin="walk_in",
+                patient_id=PATIENT_ID,
+                doctor_id=DOCTOR_ID,
+                service_label="Limpieza dental",
+                start_time=datetime(2000, 1, 1, 9, 0, tzinfo=timezone.utc),  # clearly past
+                end_time=datetime(2000, 1, 1, 9, 30, tzinfo=timezone.utc),
+            )
+
+        repo.create.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_future_start_time_is_allowed(self):
+        """start_time in the future → guard does NOT fire; happy path proceeds.
+
+        Verifies the guard does not over-block valid future appointments (regression guard).
+        """
+        CreateAppointmentService = _import_service()
+        repo = _make_mock_scheduling_repo()
+        audit_writer = _make_mock_audit_writer()
+        growth_emitter = _make_mock_growth_emitter()
+        service = CreateAppointmentService(
+            repo=repo,
+            audit_writer=audit_writer,
+            growth_emitter=growth_emitter,
+        )
+
+        result = await service.create_appointment(
+            tenant_id=TENANT_ID,
+            clinic_id=CLINIC_ID,
+            offer_id=OFFER_ID,
+            user_id=USER_ID,
+            origin="walk_in",
+            patient_id=PATIENT_ID,
+            doctor_id=DOCTOR_ID,
+            service_label="Limpieza dental",
+            start_time=datetime(2030, 6, 15, 10, 0, tzinfo=timezone.utc),
+            end_time=datetime(2030, 6, 15, 10, 30, tzinfo=timezone.utc),
+        )
+
+        assert result is not None
+        repo.create.assert_called_once()

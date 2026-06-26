@@ -324,6 +324,45 @@ async def test_create_appointment_out_of_hours_returns_422() -> None:
 
 
 @pytest.mark.asyncio
+async def test_create_appointment_past_start_time_returns_422() -> None:
+    """Service raises PastAppointmentError → 422 PAST_APPOINTMENT (G-round-2)."""
+    from src.modules.vitalia.scheduling.domain.exceptions import PastAppointmentError  # noqa: PLC0415
+
+    with (
+        patch("src.modules.vitalia.scheduling.api.agenda_router.CreateAppointmentService") as MockSvc,
+        patch("src.modules.vitalia.scheduling.api.agenda_router.AgendaGridRepositoryImpl"),
+        patch("src.modules.vitalia.scheduling.api.agenda_router.AsyncAuditWriter"),
+    ):
+        svc_instance = MagicMock()
+        svc_instance.create_appointment = AsyncMock(side_effect=PastAppointmentError())
+        MockSvc.return_value = svc_instance
+
+        app = _build_test_app()
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+        ) as client:
+            resp = await client.post(
+                "/api/v1/scheduling/appointments",
+                json={
+                    "origin": "walk_in",
+                    "patient_id": str(PATIENT_ID),
+                    "doctor_id": str(DOCTOR_ID),
+                    "offer_id": str(OFFER_ID),
+                    "service_label": "Limpieza dental",
+                    "start_time": "2020-01-01T09:00:00+00:00",
+                    "end_time": "2020-01-01T09:30:00+00:00",
+                },
+                headers=_PHI_HEADERS,
+            )
+
+    assert resp.status_code == 422
+    body = resp.json()
+    assert body["detail"]["error_code"] == "PAST_APPOINTMENT"
+    assert "pasado" in body["detail"]["message"]
+
+
+@pytest.mark.asyncio
 async def test_create_appointment_service_called_with_dual_filter() -> None:
     """create_appointment service receives tenant_id + clinic_id (dual filter A12)."""
     with (

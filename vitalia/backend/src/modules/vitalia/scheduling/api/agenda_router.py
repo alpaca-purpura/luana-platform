@@ -65,6 +65,7 @@ from src.modules.vitalia.scheduling.domain.exceptions import (
     AppointmentNotFoundError,
     AppointmentOverlapError,
     OutOfWorkingHoursError,
+    PastAppointmentError,
 )
 from src.modules.vitalia.scheduling.infrastructure.repositories.agenda_grid_repository_impl import (
     AgendaGridRepositoryImpl,
@@ -545,6 +546,14 @@ async def create_appointment(
             detail={
                 "error_code": "OUT_OF_HOURS",
                 "message": "El horario solicitado está fuera del horario de atención.",
+            },
+        )
+    except PastAppointmentError:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={
+                "error_code": "PAST_APPOINTMENT",
+                "message": "No se pueden agendar citas en el pasado.",
             },
         )
 

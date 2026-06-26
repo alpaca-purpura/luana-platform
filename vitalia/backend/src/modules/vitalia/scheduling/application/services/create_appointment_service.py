@@ -35,6 +35,7 @@ from typing import Any
 from uuid import UUID
 
 import structlog
+from luana_core_platform.domain.datetime_utils import utc_now
 from sqlalchemy.exc import IntegrityError
 
 logger = structlog.get_logger()
@@ -136,6 +137,14 @@ class CreateAppointmentService:
         Returns:
             Full appointment detail dict (same shape as get_detail).
         """
+        # Step 0a (G-round-2): Reject appointments with start_time strictly in the past.
+        # Server-side authority guard — the FE cannot be trusted to enforce this.
+        # Allow: start_time >= now (including "right now"). Block: start_time < now.
+        if start_time < utc_now():
+            from src.modules.vitalia.scheduling.domain.exceptions import PastAppointmentError  # noqa: PLC0415
+
+            raise PastAppointmentError()
+
         # Step 0 (T-BE-4): Pre-insert working hours check (when availability_check_service provided).
         # Skip when None (proactivo_adrian flow, or Mateo flow without svc injected).
         # OUT_OF_HOURS → OutOfWorkingHoursError (HTTP 422). Never pre-check overlap

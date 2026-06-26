@@ -141,3 +141,16 @@ class OutOfWorkingHoursError(SchedulingDomainError):
 
     def __init__(self, detail: str = "El horario solicitado está fuera del horario de atención.") -> None:
         super().__init__(detail)
+
+
+class PastAppointmentError(SchedulingDomainError):
+    """Raised when the requested appointment start_time is strictly in the past.
+
+    Server-side authority guard — the FE cannot be trusted to enforce this.
+    Callers map this to HTTP 422 PAST_APPOINTMENT.
+
+    Per G-round-2 (chris-input): "no debo poder sacar citas para fechas y horas pasadas."
+    """
+
+    def __init__(self, detail: str = "No se pueden agendar citas en el pasado.") -> None:
+        super().__init__(detail)
