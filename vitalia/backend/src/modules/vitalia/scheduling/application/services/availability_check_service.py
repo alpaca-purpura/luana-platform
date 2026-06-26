@@ -27,7 +27,7 @@ No cross-module imports: clinics domain accessed only via AvailabilitySourcePort
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from uuid import UUID
 
 import structlog
@@ -50,6 +50,24 @@ class FreeDoctorItem:
 
     doctor_id: UUID
     doctor_label: str  # e.g. "Dr. García" — professional display name, NOT patient PHI
+
+
+@dataclass(frozen=True)
+class ServiceDayBlock:
+    """One working_hours / busy strip on the service-day timeline. No PHI."""
+
+    kind: str  # "working_hours" | "busy"
+    start: datetime
+    end: datetime
+
+
+@dataclass(frozen=True)
+class ServiceDayDoctorResult:
+    """A doctor's full-day strips for a service. No PHI (professional label only)."""
+
+    doctor_id: UUID
+    doctor_label: str
+    blocks: list[ServiceDayBlock]
 
 
 class AvailabilityCheckService:
@@ -198,3 +216,50 @@ class AvailabilityCheckService:
             available=len(available),
         )
         return available
+
+    async def service_day(
+        self,
+        *,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        offer_id: UUID,
+        day: date,
+    ) -> list[ServiceDayDoctorResult]:
+        """Return the day's working/busy strips for all doctors of a service.
+
+        Read-only composition (T-D1): delegates to port.get_service_day_strips
+        (which reuses get_working_hours + get_busy_ranges), then tags each strip
+        with its kind and sorts by start. No PHI — professional label only.
+
+        Args:
+            tenant_id: Tenant scope (dual filter L1).
+            clinic_id: Clinic scope (dual filter L2 — HIPAA-lite).
+            offer_id: Service (offer) whose specialists to resolve.
+            day: Calendar date (UTC).
+
+        Returns:
+            List of ServiceDayDoctorResult (may be empty), one per rendered doctor.
+        """
+        strips = await self._port.get_service_day_strips(
+            tenant_id=tenant_id,
+            clinic_id=clinic_id,
+            offer_id=offer_id,
+            day=day,
+        )
+
+        results: list[ServiceDayDoctorResult] = []
+        for doctor_id, label, working, busy in strips:
+            blocks = [ServiceDayBlock(kind="working_hours", start=w.start, end=w.end) for w in working]
+            blocks += [ServiceDayBlock(kind="busy", start=b.start, end=b.end) for b in busy]
+            blocks.sort(key=lambda bl: bl.start)
+            results.append(ServiceDayDoctorResult(doctor_id=doctor_id, doctor_label=label, blocks=blocks))
+
+        logger.debug(
+            "availability_service_day",
+            tenant_id=str(tenant_id),
+            clinic_id=str(clinic_id),
+            offer_id=str(offer_id),
+            day=str(day),
+            doctor_count=len(results),
+        )
+        return results

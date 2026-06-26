@@ -92,3 +92,31 @@ class AvailabilitySourcePort(Protocol):
             List of (UUID, str) tuples for active doctors.
         """
         ...
+
+    async def get_service_day_strips(
+        self,
+        *,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        offer_id: UUID,
+        day: date,
+    ) -> list[tuple[UUID, str, list[TimeRange], list[TimeRange]]]:
+        """Return per-doctor working/busy strips for all doctors of a service on a day.
+
+        Resolves the service (offer) to its linked specialists, restricted to the
+        clinic-active set (dual filter — cross-clinic/cross-tenant excluded). Falls
+        back to all clinic-active doctors when the service has no links.
+
+        No PHI in result: only (doctor_id, professional label, working ranges,
+        busy ranges) — never any patient field.
+
+        Args:
+            tenant_id: Tenant scope (dual filter L1).
+            clinic_id: Clinic scope (dual filter L2 — HIPAA-lite).
+            offer_id: Service (offer) whose specialists to resolve.
+            day: Calendar date (UTC).
+
+        Returns:
+            List of (doctor_id, label, working_ranges, busy_ranges) tuples.
+        """
+        ...

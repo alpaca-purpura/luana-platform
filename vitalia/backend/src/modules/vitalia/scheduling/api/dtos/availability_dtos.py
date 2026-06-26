@@ -111,3 +111,36 @@ class DayStripResponse(BaseModel):
     doctor_id: UUID
     date: date
     blocks: list[DayBlockItem]
+
+
+# ---------------------------------------------------------------------------
+# GET /availability/service-day (T-D1)
+# ---------------------------------------------------------------------------
+
+
+class ServiceDayDoctor(BaseModel):
+    """One doctor's full-day strips for a service — NO PHI.
+
+    doctor_label is professional display name ("Dr. García"), never patient data.
+    Reuses DayBlockItem (working_hours | busy blocks, time-only).
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+    doctor_id: UUID
+    doctor_label: str
+    blocks: list[DayBlockItem]
+
+
+class ServiceDayResponse(BaseModel):
+    """Response for GET /availability/service-day — every doctor of a service on a day.
+
+    No PHI: blocks carry only kind + start/end times. service_id is the offer
+    (catalog) UUID, not a patient reference.
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+    service_id: UUID
+    date: date
+    doctors: list[ServiceDayDoctor]

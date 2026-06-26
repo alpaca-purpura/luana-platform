@@ -229,3 +229,68 @@ class AvailabilityQueryRepository:
         )
 
         return [(row.doctor_id, row.doctor_label) for row in rows]
+
+    async def get_service_day_strips(
+        self,
+        *,
+        tenant_id: UUID,
+        clinic_id: UUID,
+        offer_id: UUID,
+        day: date,
+    ) -> list[tuple[UUID, str, list[TimeRange], list[TimeRange]]]:
+        """Return per-doctor working/busy strips for ALL doctors of a service on a day.
+
+        Composes existing readers — no new free/busy SQL.  The ONLY new query is
+        the service→specialist link resolution below.
+
+        Render set = doctors linked to the offer ∩ clinic-active doctors
+        (dual-filtered tenant_id + clinic_id via list_active_doctors).  A
+        cross-clinic or cross-tenant linked doctor is therefore excluded (no leak).
+        When the service has no links, falls back to all clinic-active doctors.
+
+        Args:
+            tenant_id: Tenant scope (dual filter L1).
+            clinic_id: Clinic scope (dual filter L2 — HIPAA-lite).
+            offer_id: Service (offer) whose specialists to resolve.
+            day: Calendar date to query.
+
+        Returns:
+            List of (doctor_id, label, working_ranges, busy_ranges) tuples,
+            ordered by doctor label (from list_active_doctors).
+        """
+        # Only NEW SQL: resolve service → linked specialists (tenant-scoped, live links).
+        link_stmt = text(
+            "SELECT doctor_id FROM offer_service_specialist_links "
+            "WHERE tenant_id = :tenant_id AND offer_id = :offer_id AND deleted_at IS NULL"
+        ).bindparams(
+            bindparam("tenant_id", value=tenant_id),
+            bindparam("offer_id", value=offer_id),
+        )
+        linked_ids = {row.doctor_id for row in (await self._session.execute(link_stmt)).all()}
+
+        active = await self.list_active_doctors(tenant_id=tenant_id, clinic_id=clinic_id)
+        if linked_ids:
+            # intersect preserves label-ordering + dual-filtered labels (cross-clinic excluded)
+            render = [(did, label) for did, label in active if did in linked_ids]
+        else:
+            render = list(active)
+
+        # ponytail: a clinic doctor with zero slots ever isn't in `active` → excluded even if
+        #   linked; one with slots only on other days appears with empty strips. Per-day view.
+        out: list[tuple[UUID, str, list[TimeRange], list[TimeRange]]] = []
+        for doctor_id, label in render:
+            working = await self.get_working_hours(
+                tenant_id=tenant_id, clinic_id=clinic_id, doctor_id=doctor_id, day=day
+            )
+            busy = await self.get_busy_ranges(tenant_id=tenant_id, clinic_id=clinic_id, doctor_id=doctor_id, day=day)
+            out.append((doctor_id, label, working, busy))
+
+        logger.debug(
+            "availability_service_day_strips_loaded",
+            tenant_id=str(tenant_id),
+            clinic_id=str(clinic_id),
+            offer_id=str(offer_id),
+            day=str(day),
+            doctor_count=len(out),
+        )
+        return out

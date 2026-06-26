@@ -99,6 +99,9 @@ APPROVED_SCHEDULING_QUERY_PARAMS: frozenset[str] = frozenset(
         # strip_date: Python alias for 'date' param (Query(alias="date")) — calendar date
         "doctor_id",
         "strip_date",
+        # T-D1 availability/service-day query param (not PHI):
+        # service_id: offer (catalog/service) UUID, alias 'serviceId' — not a patient reference
+        "service_id",
     ]
 )
 

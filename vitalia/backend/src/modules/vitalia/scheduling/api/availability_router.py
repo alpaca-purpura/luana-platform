@@ -44,6 +44,8 @@ from src.modules.vitalia.scheduling.api.dtos.availability_dtos import (
     FreeDoctorItem,
     FreeDoctorsRequest,
     FreeDoctorsResponse,
+    ServiceDayDoctor,
+    ServiceDayResponse,
 )
 from src.modules.vitalia.scheduling.api.rbac import SCHEDULING_PHI_ROLES
 from src.modules.vitalia.scheduling.application.services.availability_check_service import (
@@ -292,4 +294,78 @@ async def get_day_strip(
         doctor_id=doctor_id,
         date=req_date,
         blocks=blocks,
+    )
+
+
+# ---------------------------------------------------------------------------
+# GET /availability/service-day (T-D1)
+# ---------------------------------------------------------------------------
+
+
+@router.get(
+    "/availability/service-day",
+    response_model=ServiceDayResponse,
+    summary="Vista del día de TODOS los médicos de un servicio",
+    description=(
+        "Devuelve las franjas del día (working_hours + busy) de cada médico "
+        "vinculado al servicio (offer). Sin vínculos → todos los médicos activos de la clínica. "
+        "Read-only, sin PHI — los bloques contienen solo tipo + start/end."
+    ),
+)
+async def get_service_day(
+    service_id: UUID = Query(..., alias="serviceId", description="ID del servicio (offer)"),
+    strip_date: str = Query(alias="date", description="Fecha YYYY-MM-DD (UTC)"),
+    tenant_id: str = Header(alias="X-Tenant-ID"),
+    clinic_id: str = Header(alias="X-Clinic-ID"),
+    user_id: str = Header(alias="X-User-ID", default=""),
+    user_role: str = Header(alias="X-User-Role", default=""),
+    db: AsyncSession = Depends(_get_db),
+) -> ServiceDayResponse:
+    """GET /availability/service-day — day availability of every doctor of a service.
+
+    Read-only composition (T-D1): resolves service→doctors and reuses the existing
+    working/busy readers. No audit write (no PHI mutation). Dual filter enforced at
+    repo layer — cross-clinic/cross-tenant doctors excluded.
+    """
+    _rbac_check(user_role)
+
+    tid = UUID(tenant_id)
+    cid = UUID(clinic_id)
+
+    try:
+        req_date = date.fromisoformat(strip_date)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={"error_code": "INVALID_DATE", "message": "Formato de fecha inválido. Use YYYY-MM-DD."},
+        )
+
+    service = _build_service(db)
+    doctors = await service.service_day(
+        tenant_id=tid,
+        clinic_id=cid,
+        offer_id=service_id,
+        day=req_date,
+    )
+
+    logger.info(
+        "availability_service_day",
+        tenant_id=str(tid),
+        clinic_id=str(cid),
+        service_id=str(service_id),
+        date=str(req_date),
+        doctor_count=len(doctors),
+    )
+
+    return ServiceDayResponse(
+        service_id=service_id,
+        date=req_date,
+        doctors=[
+            ServiceDayDoctor(
+                doctor_id=d.doctor_id,
+                doctor_label=d.doctor_label,
+                blocks=[DayBlockItem(kind=bl.kind, start=bl.start, end=bl.end) for bl in d.blocks],
+            )
+            for d in doctors
+        ],
     )
