@@ -38,7 +38,7 @@ Detalle + el bucle por actor: `design-system-canon.md § 5`.
 - **`EntityPicker`** = buscar (server-side debounced) + fetch paginado (cursor) + render windowed + lazy. **❌ cargar toda la colección al cliente.** (canon §2.4)
 - **`EntityInfoCard` Opción B** (grid `auto-fill minmax(250px)`, circular, clickeable, kebab ⋮ + Skeleton + Empty). (canon §2.3)
 - **`Select` canónico Shadcn-style.** **❌ `<select>` nativo** en producto. (canon §2.5)
-- **Autosave:** `use-autosave` 600ms+coalesce + **UNA** `FloatingAutosaveIndicator` por página (sin badge por-grupo) + barrita de agente. (canon §2.6)
+- **Autosave:** `use-autosave` 600ms+coalesce + **UNA** `FloatingAutosaveIndicator` por **HOJA** (anclada al fondo de la hoja, NO del viewport — `anchor="sheet"` default; `anchor="page"` = escape hatch excepcional · sin badge por-grupo) + barrita de agente. (canon §2.6)
 - **Page-primitives** (PageContainer/PageHeader/Section/Toolbar/FilterBar/EmptyState/ErrorState/skeletons/Pagination/DetailLayout/FormLayout). **❌ `<div>` de layout sueltos** donde hay primitiva. (canon §2.7)
 - **Tooltip + color-por-agente** per canon §2.8. **❌ arbitrary-values** (spacing/radius/font-size/color-hex) — todo de tokens (canon §0).
 

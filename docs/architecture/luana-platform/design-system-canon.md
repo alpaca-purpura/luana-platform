@@ -84,7 +84,7 @@ Reemplaza el `<select>` nativo del browser (feo, no-tokenizado). Componente cust
 
 - Contenedor `Group` + `GroupHeader` (chip "para qué" + estado de error semántico: borde rojo + campos faltantes inline).
 - `use-autosave` **600ms + payload coalescing** (merge, evita pisar edits rápidos) + `flush()`.
-- **UNA sola `FloatingAutosaveIndicator`** por página (sticky abajo-centro, `role=status`). **Sin badge por-grupo** (redundante).
+- **UNA sola `FloatingAutosaveIndicator`** por **HOJA** (anclada al borde inferior de la **hoja** — el panel del shell —, centro, `role=status`). **Pertenece a la hoja, NUNCA a la página/viewport:** default `anchor="sheet"` (`absolute` al marco `relative` de la hoja, siempre pegada abajo, contenido corto o largo); `anchor="page"` (`fixed` al viewport) es escape hatch SOLO para el caso excepcional no-mapeado sin hoja contenedora. **Sin badge por-grupo** (redundante).
 - **Barrita de color del agente** a la izquierda del grupo (marca de quién es la info).
 - Layout: 1-col por defecto; **2-col solo si los campos están conceptualmente pareados** (color+tipografía, tratamiento+idioma).
 
@@ -304,7 +304,7 @@ export function AgentScopedForm({ agentSlug }: Props){
       <Group title="Identidad" agentStrip={agentSlug}>      {/* barrita de color del agente a la izq */}
         <Field {...register("name")} label="Nombre" />       {/* sin botón Guardar */}
       </Group>
-      <FloatingAutosaveIndicator saving={isSaving} saved={isSaved} role="status" />  {/* UNA por página */}
+      <FloatingAutosaveIndicator saving={isSaving} saved={isSaved} role="status" />  {/* UNA por hoja (anchor sheet) */}
     </>
   );
 }

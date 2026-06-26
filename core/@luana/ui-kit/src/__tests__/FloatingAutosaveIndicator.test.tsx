@@ -91,8 +91,22 @@ describe("FloatingAutosaveIndicator — accessibility & layering", () => {
     const { container } = render(<FloatingAutosaveIndicator status="idle" />);
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper.className).toContain("pointer-events-none");
-    expect(wrapper.className).toContain("sticky");
     const pill = screen.getByTestId("autosave-indicator");
     expect(pill.className).toContain("pointer-events-auto");
+  });
+
+  it('anchor defaults to "sheet" → absolute to the hoja frame, not the viewport', () => {
+    const { container } = render(<FloatingAutosaveIndicator status="idle" />);
+    const wrapper = container.firstChild as HTMLElement;
+    expect(wrapper.className).toContain("absolute");
+    expect(wrapper.className).toContain("bottom-4");
+    expect(wrapper.className).not.toContain("fixed");
+  });
+
+  it('anchor="page" → fixed to the viewport (escape hatch)', () => {
+    const { container } = render(<FloatingAutosaveIndicator status="idle" anchor="page" />);
+    const wrapper = container.firstChild as HTMLElement;
+    expect(wrapper.className).toContain("fixed");
+    expect(wrapper.className).not.toContain("absolute");
   });
 });

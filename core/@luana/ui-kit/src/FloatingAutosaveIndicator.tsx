@@ -4,10 +4,16 @@
 /**
  * FloatingAutosaveIndicator.tsx — Indicador de autoguardado flotante (@luana/ui-kit).
  *
- * Canon §2.6 (autosave): UNA sola instancia por página (SSoT del estado de guardado),
- * anclada bottom-center, sticky mientras el panel scrollea, SIEMPRE visible (incl. idle)
- * para que el usuario nunca pierda de vista el estado. Reemplaza el badge inline
- * per-bloque — no se renderiza un badge por grupo.
+ * Canon §2.6 (autosave): UNA sola instancia por HOJA (SSoT del estado de guardado),
+ * anclada al borde inferior de la hoja (centro), SIEMPRE visible (incl. idle) para que
+ * el usuario nunca pierda de vista el estado. Reemplaza el badge inline per-bloque —
+ * no se renderiza un badge por grupo.
+ *
+ * ★ Pertenece a la HOJA, no a la página/viewport (`anchor`, default "sheet"): se ancla
+ * `absolute` al borde inferior del marco `relative` de la hoja (el panel del shell —
+ * `AppPanelSlot`), centrado en el ancho de la HOJA, no de la ventana. Siempre pegado
+ * abajo (contenido corto o largo). El escape hatch `anchor="page"` (`fixed` al viewport)
+ * es SOLO para el caso EXCEPCIONAL no-mapeado, sin hoja contenedora.
  *
  * Brand-agnostic: colores 100% por tokens semánticos (border/card/muted/destructive +
  * emerald AA-safe para "guardado"). NUNCA hex hardcodeado ni color por-agente acá —
@@ -21,11 +27,12 @@
  *
  * i18n: labels en Spanish neutro LatAm por defecto; `labels` permite override por locale.
  *
- * Uso: como ÚLTIMO hijo del contenedor scrolleable de la vista, una sola vez.
- *   <PageContentStack>
- *     ...contenido...
- *     <FloatingAutosaveIndicator status={status} savedAt={savedAt} />
- *   </PageContentStack>
+ * Uso: dentro del marco `relative` de la HOJA (el panel del shell), como hermano del
+ * contenido scrolleable (NO dentro del scroll) → overlay pegado al fondo de la hoja:
+ *   <div className="relative ...hoja...">      {// AppPanelSlot ya es relative }
+ *     <div className="overflow-y-auto">...contenido...</div>
+ *     <FloatingAutosaveIndicator status={status} savedAt={savedAt} />   {// anchor="sheet" }
+ *   </div>
  *
  * core-ds-foundation T-7 (lift desde vitalia FloatingAutosaveIndicator, generalizado).
  */
@@ -84,17 +91,25 @@ export interface FloatingAutosaveIndicatorProps {
    * Pasa cualquier subconjunto de claves AutosaveStatus para i18n / copy por tenant.
    */
   labels?: Partial<Record<AutosaveStatus, string>>;
+  /**
+   * Dónde vive el indicador. **Default `"sheet"` = la HOJA** (comportamiento principal):
+   * `absolute` al borde inferior del marco `relative` de la hoja (panel del shell), centrado
+   * en el ancho de la hoja, NUNCA del viewport. `"page"` = escape hatch EXCEPCIONAL
+   * (`fixed` al viewport) para el caso no-mapeado sin hoja contenedora — usar con cuidado.
+   */
+  anchor?: "sheet" | "page";
   className?: string;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 /**
- * FloatingAutosaveIndicator — píldora de estado de guardado, sticky bottom-center.
- * UNA por página (canon §2.6). El wrapper no captura punteros; la píldora sí.
+ * FloatingAutosaveIndicator — píldora de estado de guardado, anclada al fondo de la HOJA.
+ * UNA por hoja (canon §2.6). El wrapper no captura punteros; la píldora sí.
  *
  * @example
  * ```tsx
+ * // dentro del marco relative de la hoja (AppPanelSlot)
  * <FloatingAutosaveIndicator status={status} savedAt={savedAt} />
  * ```
  */
@@ -102,6 +117,7 @@ export function FloatingAutosaveIndicator({
   status,
   savedAt,
   labels,
+  anchor = "sheet",
   className,
 }: FloatingAutosaveIndicatorProps) {
   const base = labels?.[status] ?? DEFAULT_FLOATING_AUTOSAVE_LABELS[status];
@@ -111,7 +127,9 @@ export function FloatingAutosaveIndicator({
   return (
     <div
       className={cn(
-        "pointer-events-none sticky bottom-4 z-30 mt-2 flex justify-center",
+        "pointer-events-none z-30 flex justify-center",
+        // "sheet" (default) = ancla al marco relative de la HOJA · "page" = viewport (excepcional)
+        anchor === "page" ? "fixed inset-x-0 bottom-4" : "absolute inset-x-0 bottom-4",
         className,
       )}
     >

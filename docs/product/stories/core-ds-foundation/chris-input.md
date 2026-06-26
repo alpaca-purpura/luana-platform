@@ -597,3 +597,23 @@ correcta). Cero `<input type=time>` nativo en el kit. **Gates:** tsc 0 · vitest
 > Gap menor pendiente (SR-only, NO visible): los aria-labels de nav del calendar siguen en inglés
 > ("Go to the Next Month", "Today") — react-day-picker no los traduce con `locale`, necesitan el prop `labels`.
 > El texto VISIBLE del calendar está 100% en español. Follow-up opcional si importa el screen-reader en español.
+
+### 2026-06-25 · Review #1 (cont.) — FloatingAutosaveIndicator pertenece a la HOJA (no a la página)
+
+**Chris · ✓ APLICADO** (confirmó entendimiento antes de construir) — el indicador debe estar **siempre pegado
+al borde inferior de la HOJA**, jamás a toda la página/viewport — le pertenece a la hoja. **Tag/escape hatch**
+para el caso excepcional no-mapeado → página.
+
+**/pm-luana · ✓ APLICADO** — prop **`anchor: "sheet" | "page"`** (default `"sheet"`):
+- `"sheet"` (principal) → `absolute inset-x-0 bottom-4` al marco `relative` de la HOJA (`AppPanelSlot` ya es
+  `relative`), centrado en el ancho de la hoja, **siempre pegado abajo** (contenido corto o largo). Reemplaza el
+  `sticky bottom-4` viejo (que con contenido corto flotaba a media hoja, no pegado al fondo).
+- `"page"` (escape hatch) → `fixed inset-x-0 bottom-4` al viewport, SOLO para el caso excepcional sin hoja.
+
+Contrato de placement: hermano del scroll, dentro del marco `relative` de la hoja (NO dentro del `overflow-y-auto`).
+Wording corregido **página→HOJA** en: doc del componente + displayName + canon §2.6 + `frontend-visual-fidelity.md`.
+**★ Verificado LIVE Chrome (3 casos):** hoja largo → pegado al fondo del marco, centrado en la hoja (no la página) ·
+hoja corto → **igual pegado al fondo** (el caso que el sticky fallaba) · `anchor=page` → fixed al viewport, ignora el
+marco. **Gates:** tsc 0 · vitest 16/16 (+2 tests anchor sheet/page) · render-smoke 7/7. Stories: 5 estados + contenido-corto
++ anchor-page, cada uno en un marco-hoja `relative` (sin meta-decorator: render propio, evita el doble-wrap de decorators).
+Commit platform-only (kit + canon + rule).
