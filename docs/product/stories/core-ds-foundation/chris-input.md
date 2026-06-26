@@ -563,3 +563,19 @@ overridable). Click setea el segmento + resalta el activo (cian). Los **segmento
 (no arbitrary). `TimeRangePicker` hereda el dropdown en sus dos `TimePicker` sin cambios. **Verificado LIVE Chrome:**
 abrir dropdown (14:30 → Hora 14 + Min 30 activos, scrolled) · pick Hora 16 + Min 00 → `16:00` · tipear `31` en
 minuto → `16:31` (fuera de lista, por teclado). **Gates:** tsc 0 · vitest 5/5 · render-smoke 8/8. Commit platform-only.
+
+### 2026-06-25 · Review #1 (cont.) — Calendar/fechas en español (Perú)
+
+**Chris · ✓ APLICADO** — "el calendar y todo en sí debe estar en español, estamos en Perú". El `Calendar`
+(react-day-picker) caía a **inglés** sin `locale` (meses/días) — bug ya flageado en bitácora.
+
+**/pm-luana · ✓ APLICADO** — `Calendar` del kit ahora **default `locale={es}`** (`date-fns/locale`),
+override-able por consumer. Decisión: español es default de **plataforma** (las 10 marcas son LatAm Sp), no
+brand-specific → vive en el kit (RN-2 no se viola; una marca no-española overridearía el prop). También el
+`formatMonthDropdown` respeta el `locale?.code` (antes hardcodeaba `"default"`). `SmartDateTimePicker` ya pasaba
+`es` (redundante ahora, inofensivo). **Verificado LIVE Chrome:** Calendar → "junio 2026" + `lu ma mi ju vi sá do`
+(lunes primero, correcto Perú) · SmartDateTimePicker popover → idem español + formato `22/06/2026`. **Gates:**
+tsc 0 · render-smoke 16/16 (calendar + smart-datetime + time pickers). Commit platform-only.
+
+> Nota: el `<input type=time>` interno de `SmartDateTimePicker` sigue siendo nativo (chrome del browser, "a.m./p.m.")
+> — fuera de scope de este comentario (Chris cuestionó el nativo solo en el `TimePicker` standalone, ya resuelto).

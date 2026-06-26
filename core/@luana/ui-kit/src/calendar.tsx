@@ -3,6 +3,7 @@
 import * as React from "react";
 import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { DayButton, DayPicker, getDefaultClassNames } from "react-day-picker";
+import { es } from "date-fns/locale";
 
 import { cn } from "@luana/format/utils";
 import { Button, buttonVariants } from "./button";
@@ -13,6 +14,8 @@ function Calendar({
   showOutsideDays = true,
   captionLayout = "label",
   buttonVariant = "ghost",
+  // Plataforma LatAm/Perú: español por defecto (meses/días/caption). Override por consumer.
+  locale = es,
   formatters,
   components,
   ...props
@@ -24,6 +27,7 @@ function Calendar({
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
+      locale={locale}
       className={cn(
         "bg-background group/calendar p-3 [--cell-size:2rem] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
         String.raw`rtl:**:[.rdp-button\_next>svg]:rotate-180`,
@@ -32,7 +36,7 @@ function Calendar({
       )}
       captionLayout={captionLayout}
       formatters={{
-        formatMonthDropdown: (date) => date.toLocaleString("default", { month: "short" }),
+        formatMonthDropdown: (date) => date.toLocaleString(locale?.code ?? "es", { month: "short" }),
         ...formatters,
       }}
       classNames={{
