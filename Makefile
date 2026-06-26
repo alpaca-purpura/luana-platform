@@ -228,6 +228,12 @@ extraction-contract:  ## Regenera core/luana-core-analytics-engine/docs/extracti
 ui-catalog:  ## Regenera core/@luana/ui-kit/catalog.json + catalog.md (inventario SSoT · ADR-016 C2-T1)
 	node scripts/generate_ui_catalog.mjs
 
+# Storybook del design system (@luana/ui-kit) = SSoT visual (canon §5 · ADR-016)
+# corepack pnpm (no el shim de PATH) → corre aunque make spawnee un shell sin pnpm en PATH
+.PHONY: storybook
+storybook:  ## Levanta el Storybook del DS (@luana/ui-kit) en http://localhost:6007
+	corepack pnpm --filter @luana/ui-kit storybook
+
 # machinery hardening anti-drift (auditoría 2026-05-28) — doctrina↔templates↔agentes consistentes
 machinery-check:
 	python3 scripts/validate_machinery_consistency.py

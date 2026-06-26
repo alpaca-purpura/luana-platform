@@ -541,3 +541,11 @@ closure stale (`"0"` pre-`"9"`) → padeaba `"00"` pisando `"09"` → blur lee `
 Commit pathspec platform-only → promote-candidate. Stories `Molecules/TimePicker` (3) + `Molecules/TimeRangePicker` (5).
 
 **/pm-luana · 💡 PROPONE** — `:6007 → Molecules/TimePicker` + `Molecules/TimeRangePicker`. Próximo comentario.
+
+### 2026-06-25 · Storybook — target `make storybook`
+
+**Chris · ✓ APLICADO** — pidió levantar el Storybook + un comando `make` para hacerlo él. Agregué target
+**`make storybook`** al Makefile raíz → `corepack pnpm --filter @luana/ui-kit storybook` (`:6007`). Usa
+`corepack pnpm` (no el shim de PATH) porque el subshell de `make` puede no tener `pnpm` en PATH (cazado: el
+target con `pnpm` pelado falló `Error 127` en spawn no-interactivo; corepack ships con node, resuelve el pin
+9.15.9 siempre). Storybook levantado y verificado UP (200). Commit platform-only.
