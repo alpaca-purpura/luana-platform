@@ -14,7 +14,7 @@ const meta = {
         component: [
           "## Cuándo usarlo",
           "",
-          "`TimePicker` selecciona **una hora** (HH:mm 24h) con un campo **segmentado tokenizado** — reemplaza el chrome del `<input type=\"time\"`> nativo (inconsistente cross-navegador). Se escribe con auto-avance, se ajusta con `↑↓` por segmento y se navega con `←→`. Úsalo para hora de inicio de un evento, recordatorio, corte.",
+          "`TimePicker` selecciona **una hora** (HH:mm 24h) con un campo **segmentado tokenizado** — reemplaza el chrome del `<input type=\"time\"`> nativo (inconsistente cross-navegador). **Híbrido teclado + mouse:** se escribe con auto-avance (`↑↓` por segmento, `←→` para moverse) **o** se hace click en el chevron `▾` para abrir un **dropdown** con columnas Hora (00–23) y Min (`minuteOptions`, default 00/10/20/30/40/50) — el mouse-only no necesita teclado, y el teclado igual permite un minuto fuera de lista (ej. 31). Úsalo para hora de inicio de un evento, recordatorio, corte.",
           "",
           "## Cuándo NO / alternativa",
           "",

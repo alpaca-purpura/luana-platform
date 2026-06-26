@@ -549,3 +549,17 @@ Commit pathspec platform-only → promote-candidate. Stories `Molecules/TimePick
 `corepack pnpm` (no el shim de PATH) porque el subshell de `make` puede no tener `pnpm` en PATH (cazado: el
 target con `pnpm` pelado falló `Error 127` en spawn no-interactivo; corepack ships con node, resuelve el pin
 9.15.9 siempre). Storybook levantado y verificado UP (200). Commit platform-only.
+
+### 2026-06-25 · Review #1 (cont.) — TimePicker híbrido: dropdown click + teclado
+
+**Chris · ✓ APLICADO** — pidió que el `TimePicker` despliegue un **dropdown** al click (columna Hora + columna
+Min con 0/10/20/30/40/50) para que la secretaria no suelte el mouse al pasar de fecha a hora, **sin perder el
+teclado** (igual puede tipear, ej. un minuto fuera de lista como 31).
+
+**/pm-luana · ✓ APLICADO** — `TimePicker` ahora es **híbrido**: chevron `▾` (PopoverTrigger) → Popover con dos
+`TimeColumn` scrollables — Hora (00–23, scroll-to-active) + Min (`minuteOptions`, default `[0,10,20,30,40,50]`,
+overridable). Click setea el segmento + resalta el activo (cian). Los **segmentos siguen tipeables** (auto-avance,
+↑↓, y cualquier minuto como 31). Compone `Popover` + `ScrollArea` del kit (no reinventa · ADR-016). `min-w-14`
+(no arbitrary). `TimeRangePicker` hereda el dropdown en sus dos `TimePicker` sin cambios. **Verificado LIVE Chrome:**
+abrir dropdown (14:30 → Hora 14 + Min 30 activos, scrolled) · pick Hora 16 + Min 00 → `16:00` · tipear `31` en
+minuto → `16:31` (fuera de lista, por teclado). **Gates:** tsc 0 · vitest 5/5 · render-smoke 8/8. Commit platform-only.

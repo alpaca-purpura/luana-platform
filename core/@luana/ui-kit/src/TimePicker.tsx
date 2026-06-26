@@ -1,11 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { Clock } from "lucide-react";
+import { ChevronDown, Clock } from "lucide-react";
 import { cn } from "@luana/format/utils";
+import { Popover, PopoverContent, PopoverTrigger } from "./popover";
+import { ScrollArea } from "./scroll-area";
 
 const HOUR_MAX = 23;
 const MINUTE_MAX = 59;
+const HOURS = Array.from({ length: 24 }, (_, i) => i);
+/** Minute presets for the click dropdown (typing any value, e.g. 31, still works). */
+const DEFAULT_MINUTE_OPTIONS = [0, 10, 20, 30, 40, 50];
 
 function pad2(n: number): string {
   return n.toString().padStart(2, "0");
@@ -36,6 +41,49 @@ function segNum(str: string, max: number): number | null {
   return str === "" ? null : clamp(parseInt(str, 10), max);
 }
 
+/** One scrollable column of the click dropdown (hours or minutes). */
+function TimeColumn({
+  label,
+  values,
+  active,
+  activeRef,
+  onPick,
+}: {
+  label: string;
+  values: number[];
+  active: number | null;
+  activeRef: React.RefObject<HTMLButtonElement | null>;
+  onPick: (n: number) => void;
+}) {
+  return (
+    <div className="flex min-w-14 flex-col">
+      <div className="px-3 py-1.5 text-center text-xs font-medium text-muted-foreground">{label}</div>
+      <ScrollArea className="h-48">
+        <div className="flex flex-col gap-0.5 p-1">
+          {values.map((v) => {
+            const isActive = v === active;
+            return (
+              <button
+                key={v}
+                type="button"
+                ref={isActive ? activeRef : undefined}
+                aria-pressed={isActive}
+                onClick={() => onPick(v)}
+                className={cn(
+                  "rounded-md px-3 py-1 text-center font-mono text-sm tabular-nums hover:bg-muted",
+                  isActive && "bg-primary/10 font-semibold text-primary",
+                )}
+              >
+                {pad2(v)}
+              </button>
+            );
+          })}
+        </div>
+      </ScrollArea>
+    </div>
+  );
+}
+
 interface TimePickerProps {
   /** Controlled value, "HH:mm" 24h (or "" when unset). */
   value?: string;
@@ -43,6 +91,8 @@ interface TimePickerProps {
   onChange: (value: string) => void;
   /** Minute increment for ArrowUp/Down (default 5). Hours always step by 1. */
   stepMinutes?: number;
+  /** Minute choices in the click dropdown (default [0,10,20,30,40,50]). Typing any value still works. */
+  minuteOptions?: number[];
   disabled?: boolean;
   className?: string;
   id?: string;
@@ -67,6 +117,7 @@ export function TimePicker({
   value,
   onChange,
   stepMinutes = 5,
+  minuteOptions = DEFAULT_MINUTE_OPTIONS,
   disabled,
   className,
   id,
@@ -76,8 +127,34 @@ export function TimePicker({
   const init = parseTime(value);
   const [hStr, setHStr] = React.useState(init.h == null ? "" : pad2(init.h));
   const [mStr, setMStr] = React.useState(init.m == null ? "" : pad2(init.m));
+  const [open, setOpen] = React.useState(false);
   const hourRef = React.useRef<HTMLInputElement>(null);
   const minuteRef = React.useRef<HTMLInputElement>(null);
+  const activeHourRef = React.useRef<HTMLButtonElement>(null);
+  const activeMinuteRef = React.useRef<HTMLButtonElement>(null);
+  const hourNum = segNum(hStr, HOUR_MAX);
+  const minuteNum = segNum(mStr, MINUTE_MAX);
+
+  // Scroll the active hour/minute into view when the dropdown opens.
+  React.useEffect(() => {
+    if (!open) return;
+    const raf = requestAnimationFrame(() => {
+      activeHourRef.current?.scrollIntoView({ block: "center" });
+      activeMinuteRef.current?.scrollIntoView({ block: "center" });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [open]);
+
+  /** Set one segment from the dropdown: pads + emits ("" until both set). */
+  const pick = (seg: "h" | "m", num: number) => {
+    if (seg === "h") {
+      setHStr(pad2(num));
+      onChange(formatTime(num, minuteNum));
+    } else {
+      setMStr(pad2(num));
+      onChange(formatTime(hourNum, num));
+    }
+  };
 
   // Adopt a COMPLETE external value (e.g. a preset click) or an explicit external clear.
   // Never wipe a half-typed buffer from our own partial "" emits.
@@ -159,48 +236,78 @@ export function TimePicker({
     "w-7 bg-transparent text-center font-mono text-base tabular-nums outline-none placeholder:text-muted-foreground md:text-sm";
 
   return (
-    <div
-      className={cn(
-        "inline-flex h-10 items-center gap-0.5 rounded-control border border-input bg-background px-3 ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
-        ariaInvalid && "border-destructive focus-within:ring-destructive",
-        disabled && "cursor-not-allowed opacity-50",
-        className,
-      )}
-      aria-invalid={ariaInvalid || undefined}
-    >
-      <Clock className="mr-1 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-      <input
-        ref={hourRef}
-        id={id}
-        inputMode="numeric"
-        maxLength={2}
-        disabled={disabled}
-        aria-label={`${ariaLabel} — hora`}
-        placeholder="--"
-        value={hStr}
-        onChange={handleSegment("h")}
-        onKeyDown={handleKey("h")}
-        onBlur={handleBlur("h")}
-        onFocus={(e) => e.target.select()}
-        className={segCls}
-      />
-      <span className="text-muted-foreground" aria-hidden>
-        :
-      </span>
-      <input
-        ref={minuteRef}
-        inputMode="numeric"
-        maxLength={2}
-        disabled={disabled}
-        aria-label={`${ariaLabel} — minutos`}
-        placeholder="--"
-        value={mStr}
-        onChange={handleSegment("m")}
-        onKeyDown={handleKey("m")}
-        onBlur={handleBlur("m")}
-        onFocus={(e) => e.target.select()}
-        className={segCls}
-      />
-    </div>
+    <Popover open={open} onOpenChange={setOpen}>
+      <div
+        className={cn(
+          "inline-flex h-10 items-center gap-0.5 rounded-control border border-input bg-background pl-3 pr-1.5 ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
+          ariaInvalid && "border-destructive focus-within:ring-destructive",
+          disabled && "cursor-not-allowed opacity-50",
+          className,
+        )}
+        aria-invalid={ariaInvalid || undefined}
+      >
+        <Clock className="mr-1 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+        <input
+          ref={hourRef}
+          id={id}
+          inputMode="numeric"
+          maxLength={2}
+          disabled={disabled}
+          aria-label={`${ariaLabel} — hora`}
+          placeholder="--"
+          value={hStr}
+          onChange={handleSegment("h")}
+          onKeyDown={handleKey("h")}
+          onBlur={handleBlur("h")}
+          onFocus={(e) => e.target.select()}
+          className={segCls}
+        />
+        <span className="text-muted-foreground" aria-hidden>
+          :
+        </span>
+        <input
+          ref={minuteRef}
+          inputMode="numeric"
+          maxLength={2}
+          disabled={disabled}
+          aria-label={`${ariaLabel} — minutos`}
+          placeholder="--"
+          value={mStr}
+          onChange={handleSegment("m")}
+          onKeyDown={handleKey("m")}
+          onBlur={handleBlur("m")}
+          onFocus={(e) => e.target.select()}
+          className={segCls}
+        />
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            disabled={disabled}
+            aria-label={`${ariaLabel} — abrir selector`}
+            className="ml-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted disabled:pointer-events-none"
+          >
+            <ChevronDown className={cn("h-4 w-4 transition-transform", open && "rotate-180")} />
+          </button>
+        </PopoverTrigger>
+      </div>
+      <PopoverContent align="start" className="w-auto p-0">
+        <div className="flex divide-x">
+          <TimeColumn
+            label="Hora"
+            values={HOURS}
+            active={hourNum}
+            activeRef={activeHourRef}
+            onPick={(n) => pick("h", n)}
+          />
+          <TimeColumn
+            label="Min"
+            values={minuteOptions}
+            active={minuteNum}
+            activeRef={activeMinuteRef}
+            onPick={(n) => pick("m", n)}
+          />
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
