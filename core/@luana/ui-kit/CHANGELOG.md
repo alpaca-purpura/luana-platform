@@ -1,3 +1,15 @@
+## 0.9.0 — 2026-06-26 (minor · `SmartDateTimePicker` prop aditiva `disablePast` · G #1 round-2 vitalia-fase2-mateo-nueva-cita)
+### Changed — `SmartDateTimePicker`
+- **Prop aditiva `disablePast?: boolean` (default `false`).** Con `true`: deshabilita (grisa) los días anteriores a hoy en la zona horaria del tenant (`timezone`) — calcula la medianoche browser-local de "hoy en `timezone`" vía `Intl.DateTimeFormat("en-CA", { timeZone })` y la pasa al `Calendar` existente como matcher `disabled={{ before: minDay }}` (react-day-picker). Default `false` = `disabled={undefined}` → **conducta idéntica previa, cero cambio para consumidores existentes** (open-closed). No toca `showTime`, el trigger, `onChange` ni ninguna otra conducta. Compone el mismo `Calendar` — no se creó un picker nuevo.
+- Story `inputs.SmartDatetimePicker` += variante `DisablePast` · test `smart-datetime-picker.test.tsx` (días pasados deshabilitados con `disablePast` + regression-guard del default sin días deshabilitados). **tsc 0 · vitest verde (0 regresiones vs baseline 326).**
+- **SEMVER 0.8.0 → 0.9.0 (minor — prop aditiva opt-in; default preserva conducta).**
+
+## 0.8.0 — 2026-06-25 (minor · `SmartDateTimePicker` prop aditiva `showTime` date-only · comentario G #1 vitalia-fase2-mateo-nueva-cita)
+### Changed — `SmartDateTimePicker`
+- **Prop aditiva `showTime?: boolean` (default `true`).** Con `false`: oculta la sección de hora del popover (`TimePicker`) + formatea el trigger date-only (`dd/MM/yyyy`). Default `true` = conducta idéntica previa → **cero cambio para consumidores existentes** (open-closed). Compone el mismo `Calendar`/`Popover`/`TimePicker` que ya tenía — **NO se creó un `DatePicker` nuevo** (decisión Chris: extender, no duplicar; `Calendar` es la primitiva que `SmartDateTimePicker` compone, no su reemplazo). Uso: `<SmartDateTimePicker showTime={false}>` (campo Fecha) junto a `<TimePicker>` standalone (campo Hora).
+- Story `inputs.SmartDatetimePicker` += variante date-only · test `smart-datetime-picker.test.tsx` (date-only + regression-guard del default que protege a los consumidores). **tsc 0 · vitest 326/326 (0 regresiones).**
+- **SEMVER 0.7.0 → 0.8.0 (minor — prop aditiva opt-in; default preserva conducta).** SSoT: `docs/promotion-protocol/proposals/2026-06-25-ui-kit-datepicker-atom.md`.
+
 ## 0.6.0 — 2026-06-16 (minor · `CollapsibleSection` molécula colapsable de sección · lift vitalia-fase2-lisa-servicios)
 ### Added — `molecule/CollapsibleSection`
 - **`CollapsibleSection`** — sección colapsable que compone `accordion` + `Group` (header + cuerpo colapsable). Exportada desde el barrel (`src/index.ts`) + test. SSoT: `docs/promotion-protocol/proposals/2026-06-16-collapsible-section-ui-kit.md`.

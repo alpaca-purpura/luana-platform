@@ -52,6 +52,66 @@ export const Default: Story = {
   },
 };
 
+export const DateOnly: Story = {
+  name: "Solo fecha (showTime=false)",
+  render: () => {
+    const [value, setValue] = React.useState<string | undefined>(
+      "2026-06-22T12:00:00.000Z",
+    );
+    return (
+      <div className="w-72">
+        <SmartDateTimePicker
+          value={value}
+          onChange={setValue}
+          timezone="America/Buenos_Aires"
+          placeholder="Seleccionar fecha"
+          showTime={false}
+        />
+        {value && (
+          <p className="mt-2 text-xs text-muted-foreground">ISO UTC: {value}</p>
+        )}
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "`showTime={false}` oculta la sección de hora y formatea el trigger solo con fecha (`dd/MM/yyyy`). El `onChange` sigue emitiendo un ISO UTC válido (hora interna por defecto 09:00); el consumidor usa solo la parte de fecha. Omitir `showTime` ⇒ comportamiento actual (fecha + hora).",
+      },
+    },
+  },
+};
+
+export const DisablePast: Story = {
+  name: "Grisar días pasados (disablePast=true)",
+  render: () => {
+    const [value, setValue] = React.useState<string | undefined>(undefined);
+    return (
+      <div className="w-72">
+        <SmartDateTimePicker
+          value={value}
+          onChange={setValue}
+          timezone="America/Buenos_Aires"
+          placeholder="Seleccionar fecha y hora"
+          disablePast
+        />
+        {value && (
+          <p className="mt-2 text-xs text-muted-foreground">ISO UTC: {value}</p>
+        )}
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "`disablePast={true}` deshabilita (grisa) los días anteriores a hoy en la zona horaria del tenant (`timezone`). Útil para agendar citas a futuro. Omitir `disablePast` ⇒ comportamiento actual (todos los días seleccionables).",
+      },
+    },
+  },
+};
+
 export const Mexico: Story = {
   name: "México",
   render: () => {

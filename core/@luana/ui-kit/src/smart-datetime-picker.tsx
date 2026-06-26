@@ -24,6 +24,15 @@ interface SmartDateTimePickerProps {
    * Composición sobre fork (ADR-016 §3).
    */
   trigger?: React.ReactNode;
+  /**
+   * When false, hides the time section and formats the trigger date-only.
+   * Default true (current behavior).
+   */
+  showTime?: boolean;
+  /**
+   * When true, days before today (in `timezone`) are disabled. Default false.
+   */
+  disablePast?: boolean;
 }
 
 export function SmartDateTimePicker({
@@ -33,6 +42,8 @@ export function SmartDateTimePicker({
   className,
   placeholder = "Seleccionar fecha",
   trigger,
+  showTime = true,
+  disablePast = false,
 }: SmartDateTimePickerProps) {
   // Compute "Fake Local Date" for display
   // This date object's internal time corresponds to the Wall Time in the target timezone
@@ -45,6 +56,22 @@ export function SmartDateTimePicker({
       return undefined;
     }
   }, [value, timezone]);
+
+  // Browser-local midnight of "today in `timezone`" — the floor for disablePast.
+  // Only computed when needed (default behavior leaves the Calendar untouched).
+  const minDay = React.useMemo(() => {
+    if (!disablePast) return undefined;
+    const [y, mo, d] = new Intl.DateTimeFormat("en-CA", {
+      timeZone: timezone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    })
+      .format(new Date())
+      .split("-")
+      .map(Number);
+    return new Date(y, mo - 1, d);
+  }, [disablePast, timezone]);
 
   // Time string (HH:mm) from the "Fake Local Date"
   // Default to 09:00 if creating new
@@ -109,18 +136,25 @@ export function SmartDateTimePicker({
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {date ? format(date, "dd/MM/yyyy HH:mm", { locale: es }) : <span>{placeholder}</span>}
+            {date ? (
+              format(date, showTime ? "dd/MM/yyyy HH:mm" : "dd/MM/yyyy", { locale: es })
+            ) : (
+              <span>{placeholder}</span>
+            )}
           </Button>
         )}
       </PopoverTrigger>
       <PopoverContent className="w-auto min-w-[280px] p-0" align="start">
-        <div className="flex items-center border-b border-border bg-muted/20 p-4">
-          <TimePicker value={timeStr} onChange={handleTimeChange} aria-label="Hora" />
-        </div>
+        {showTime && (
+          <div className="flex items-center border-b border-border bg-muted/20 p-4">
+            <TimePicker value={timeStr} onChange={handleTimeChange} aria-label="Hora" />
+          </div>
+        )}
         <Calendar
           mode="single"
           selected={date}
           onSelect={handleDateSelect}
+          disabled={minDay ? { before: minDay } : undefined}
           initialFocus
           locale={es}
           className="p-3 pointer-events-auto"
