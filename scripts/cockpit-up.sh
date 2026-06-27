@@ -4,7 +4,7 @@
 #     make cockpit-up      → scripts/cockpit-daemon.sh start
 #
 # COCKPIT = binario ALPACA desde 2026-06-11 (pivote ratificado por Chris):
-# ~/Proyectos/alpaca-harness/products/cockpit-go/cockpit — Go + UI Next.js embebida
+# ~/Proyectos/prenter-harness/products/cockpit-go/cockpit — Go + UI Next.js embebida
 # (go:embed), proceso v5 (tab Proceso · gate G signoff · DoD · gates G1-G9).
 # Los cockpits anteriores (Go-templates tools/luana-cockpit-go y Next
 # tools/_legacy/luana-cockpit) fueron ELIMINADOS del repo (2026-06-11).
@@ -26,10 +26,10 @@ if [[ -z "$WS" ]]; then
   exit 1
 fi
 
-ALPACA_BIN="${ALPACA_COCKPIT_BIN:-$HOME/Proyectos/alpaca-harness/products/cockpit-go/cockpit}"
+ALPACA_BIN="${ALPACA_COCKPIT_BIN:-$HOME/Proyectos/prenter-harness/products/cockpit-go/cockpit}"
 if [[ ! -x "$ALPACA_BIN" ]]; then
   echo "❌ No existe el binario del cockpit: $ALPACA_BIN" >&2
-  echo "   Build: cd ~/Proyectos/alpaca-harness/products/cockpit-go && ./build-ui.sh && go build -o cockpit ." >&2
+  echo "   Build: cd ~/Proyectos/prenter-harness/products/cockpit-go && ./build-ui.sh && go build -o cockpit ." >&2
   exit 1
 fi
 

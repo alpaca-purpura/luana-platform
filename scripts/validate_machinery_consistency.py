@@ -405,10 +405,10 @@ def check_cap_format_enforcement_wired() -> None:
 # de ScenariosSection, o borra el fallback a user_facing_description, el CHECK falla.
 # (negative-test: re-insertar "Cap todavía v3.1 · migrará…" → exit 1.)
 # ★ Pivote cockpit 2026-06-11 (ratificado Chris): la UI del cockpit vive en el
-# repo alpaca-harness (cockpit-ui/, embebida en el binario Go) — ya NO en
+# repo prenter-harness (products/cockpit-ui/, embebida en el binario Go) — ya NO en
 # tools/ de este workspace. El check evalúa la fuente externa si está presente
 # en la máquina; ausente (ej. CI sin el repo hermano) → pass con nota.
-COCKPIT_UI_ROOT = Path(os.environ.get("COCKPIT_UI_DIR", str(Path.home() / "Proyectos/alpaca-harness/products/cockpit-ui")))
+COCKPIT_UI_ROOT = Path(os.environ.get("COCKPIT_UI_DIR", str(Path.home() / "Proyectos/prenter-harness/products/cockpit-ui")))
 CAP_DISPLAY_FILE = "components/cap-drawer/sections/ScenariosSection.tsx"
 CAP_DISPLAY_VERSION_JARGON = re.compile(r"v3\.\d|F\.3|migrar|Fase\s+F\.3", re.IGNORECASE)
 

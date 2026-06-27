@@ -13,7 +13,7 @@ parent_story: null
 state: developing
 phase: P1
 autonomous_mode: false                            # Chris ratifica entre fases (P0→P1→P2→P3)
-last_artifact: scripts/cockpit-{up,daemon}.sh (pivote impl=alpaca · alpaca-harness@aac6675)
+last_artifact: scripts/cockpit-{up,daemon}.sh (pivote impl=alpaca · prenter-harness@aac6675)
 last_modified: 2026-06-11
 next_action: "RESIDUALES CERRADOS (ronda 4 · alpaca d539f84): story-create idea ✓ · regen on-demand ✓ · gherkin discovery ✓ — story COMPLETA, Chris ejerce @ :4002 y decide cierre (G→done)"
 ratified_by_chris: true                           # plan + decisiones ratificados (sweep P0→P3 + warn-first)
@@ -138,7 +138,7 @@ releases + stories linkeadas.
 ## ★ PIVOTE 2026-06-11 (noche) — el cockpit canónico pasa a ser el binario ALPACA
 
 Chris pidió revisión UX con Playwright ("se ve malísimo, replantea todo") y apuntó a
-`../alpaca-harness/`. Tour Playwright de ambos cockpits → veredicto: la UI del binario
+`../prenter-harness/`. Tour Playwright de ambos cockpits → veredicto: la UI del binario
 alpaca (Go + Next.js estática embebida, ~9.3MB) es categóricamente superior a los
 templates Go a mano (sidebar, kanban WIP caps, drawer tabs, dnd, toasts) y ya corre
 PERFECTO contra el workspace luana (brands detectadas, board vitalia, releases, CIL 32).
@@ -147,7 +147,7 @@ PERFECTO contra el workspace luana (brands detectadas, board vitalia, releases, 
 1. Proceso v5 en el drawer (stepper G·R + signoff gate G + DoD) — tipos modelados pero UI nunca los renderizaba + sin endpoint write.
 2. Doctor leía key `gates` (schema viejo, G1-G6) vs `cap_gates` G1-G9 actual.
 
-**Port ejecutado en alpaca-harness (commit `aac6675`):** tab 🧭 Proceso (stepper +
+**Port ejecutado en prenter-harness (commit `aac6675`):** tab 🧭 Proceso (stepper +
 signoff form + DoD + reconciled + banner "⏳ te espera") · POST /api/operator-verify
 con edit QUIRÚRGICO del bloque chris_verify (preserva comentarios — lección del
 writeCheckpoint lossy) · DoctorGates G1-G9 en /drift · fix cap_gates fallback.
@@ -159,7 +159,7 @@ comentarios intactos) · 409 state≠developed · 400 result inválido.
 (auto=alpaca si el binario existe; legacy = tools/luana-cockpit-go como fallback).
 Daemon :4002 corriendo impl=alpaca con default_brand=vitalia.
 
-**⚠️ Sesión paralela en alpaca-harness:** sus commits 38b361a (Fase 3 CLI multi-workspace)
+**⚠️ Sesión paralela en prenter-harness:** sus commits 38b361a (Fase 3 CLI multi-workspace)
 + aa94c68 barrieron mi working-tree (handlers_misc.go viajó en SU commit — sweep M15
 cross-repo). Contenido correcto, provenance mezclada. El binario post-Fase 3 mantiene
 el modo `-workspace -port` que usa el wiring luana (verificado).
@@ -171,7 +171,7 @@ el modo `-workspace -port` que usa el wiring luana (verificado).
    lo preserva) + `tools/_legacy/luana-cockpit/` eliminados. Scripts cockpit-{up,daemon}.sh
    solo-alpaca (sin fallback), pidfile/log → `$WS/.cockpit/` (gitignored). CLAUDE.md
    § Tools actualizado.
-3. **Backlog UX ratificado por Chris** (en curso, en alpaca-harness):
+3. **Backlog UX ratificado por Chris** (en curso, en prenter-harness):
    - Story drawer: demasiados tabs → simplificar agrupando lo técnico, forma de proceso,
      tooltips en TODA propiedad que necesite explicación (como el legacy).
    - Nav configurable: poder agregar/eliminar módulos/tabs/sub-tabs en el tiempo.
