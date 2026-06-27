@@ -2,7 +2,7 @@
 # Luana Cockpit daemon · {start|stop|status|restart} con TRUE detach.
 #
 # COCKPIT = binario ALPACA desde 2026-06-11 (pivote ratificado por Chris):
-# ~/Proyectos/alpaca-harness/cockpit-go/cockpit — Go + UI Next.js embebida
+# ~/Proyectos/prenter-harness/products/cockpit-go/cockpit — Go + UI Next.js embebida
 # (go:embed), proceso v5 (tab Proceso · gate G signoff · DoD · gates G1-G9).
 # Los cockpits anteriores (Go-templates y Next) fueron ELIMINADOS del repo.
 #
@@ -14,7 +14,7 @@
 # Footgun cazado: el port-check via `lsof -i :PORT` matchea sockets ESTABLISHED (ej. una
 # pestaña Chrome retiene bind aparente). Acá usamos `ss -ltn` → SOLO el listener real.
 #
-# Health real: /api/brands (JSON liviano · no SSE). Cualquier HTTP code = sano.
+# Health real: /api/sistemas (JSON liviano · no SSE). Cualquier HTTP code = sano.
 #
 # Paths (gitignored): $WS/.cockpit/cockpit-{PORT}.{pid,log}
 # Override puerto: PORT=4099 bash scripts/cockpit-daemon.sh start
@@ -23,38 +23,38 @@
 
 set -euo pipefail
 
-# ── Resolución de entorno (worktree → brand → puerto) ───────────────────────────
+# ── Resolución de entorno (worktree → sistema → puerto) ───────────────────────────
 WS="$(git rev-parse --show-toplevel 2>/dev/null || echo "")"
 if [[ -z "$WS" ]]; then
   echo "❌ No estás dentro de un repo git." >&2
   exit 1
 fi
 
-ALPACA_BIN="${ALPACA_COCKPIT_BIN:-$HOME/Proyectos/alpaca-harness/cockpit-go/cockpit}"
+ALPACA_BIN="${ALPACA_COCKPIT_BIN:-$HOME/Proyectos/prenter-harness/products/cockpit-go/cockpit}"
 if [[ ! -x "$ALPACA_BIN" ]]; then
   echo "❌ No existe el binario del cockpit: $ALPACA_BIN" >&2
-  echo "   Build: cd ~/Proyectos/alpaca-harness/cockpit-go && ./build-ui.sh && go build -o cockpit ." >&2
+  echo "   Build: cd ~/Proyectos/prenter-harness/products/cockpit-go && ./build-ui.sh && go build -o cockpit ." >&2
   exit 1
 fi
 
 WORKTREE_NAME="$(basename "$WS")"
 case "$WORKTREE_NAME" in
-  luana-platform)            BRAND="cross-brand"; DEFAULT_PORT=4000 ;;
-  luana-vitalia|luana-vitalia-*)   BRAND="vitalia";  DEFAULT_PORT=4002 ;;
-  luana-nicolify|luana-nicolify-*) BRAND="nicolify"; DEFAULT_PORT=4001 ;;
-  luana-comunify|luana-comunify-*) BRAND="comunify"; DEFAULT_PORT=4003 ;;
-  luana-lupulo|luana-lupulo-*)     BRAND="lupulo";   DEFAULT_PORT=4004 ;;
-  luana-protocol-*|luana-core-*)   BRAND="cross-brand"; DEFAULT_PORT=4000 ;;
-  *)                         BRAND="cross-brand"; DEFAULT_PORT=4000 ;;
+  luana-platform)            SISTEMA="cross-sistema"; DEFAULT_PORT=4000 ;;
+  luana-vitalia|luana-vitalia-*)   SISTEMA="vitalia";  DEFAULT_PORT=4002 ;;
+  luana-nicolify|luana-nicolify-*) SISTEMA="nicolify"; DEFAULT_PORT=4001 ;;
+  luana-comunify|luana-comunify-*) SISTEMA="comunify"; DEFAULT_PORT=4003 ;;
+  luana-lupulo|luana-lupulo-*)     SISTEMA="lupulo";   DEFAULT_PORT=4004 ;;
+  luana-protocol-*|luana-core-*)   SISTEMA="cross-sistema"; DEFAULT_PORT=4000 ;;
+  *)                         SISTEMA="cross-sistema"; DEFAULT_PORT=4000 ;;
 esac
 
 # Multi-workspace mode: UN cockpit ve TODOS los worktrees del registry ~/.cockpit/cockpit.yaml
-# (el dropdown de marca se vuelve selector global {proyecto}/{brand}, cada uno leyendo SU worktree
+# (el dropdown de marca se vuelve selector global {proyecto}/{sistema}, cada uno leyendo SU worktree
 # vivo). Se activa con `COCKPIT_MULTI=1` (target `make cockpit-multi`). Puerto fijo 4000.
 # Doctrina del límite: el binario es alpaca · .claude/rules/cockpit-alpaca-boundary.md
 MULTI="${COCKPIT_MULTI:-0}"
 if [[ "$MULTI" == "1" ]]; then
-  BRAND="multi"
+  SISTEMA="multi"
   DEFAULT_PORT=4000
 fi
 
@@ -63,7 +63,7 @@ RUNDIR="$WS/.cockpit"
 mkdir -p "$RUNDIR"
 PIDFILE="$RUNDIR/cockpit-${PORT}.pid"
 LOGFILE="$RUNDIR/cockpit-${PORT}.log"
-HEALTH_PATH="/api/brands"   # JSON liviano · no SSE · responde rápido
+HEALTH_PATH="/api/sistemas"   # JSON liviano · no SSE · responde rápido
 
 # ── Helpers ─────────────────────────────────────────────────────────────────────
 
@@ -143,7 +143,7 @@ do_start() {
   fi
 
   check_cockpit_version
-  echo "🚀 Arrancando Luana Cockpit (alpaca · daemon) · $WORKTREE_NAME · brand=$BRAND · :$PORT"
+  echo "🚀 Arrancando Luana Cockpit (alpaca · daemon) · $WORKTREE_NAME · sistema=$SISTEMA · :$PORT"
   # TRUE detach: setsid = nueva sesión (PID == PGID) → kill del grupo entero después.
   # </dev/null + nohup + redirect = sin tty, sobrevive cierre de terminal y reaping.
   if [[ "$MULTI" == "1" ]]; then
@@ -151,7 +151,7 @@ do_start() {
     # `env -u` garantiza que no se herede un WORKSPACE_ROOT del entorno (forzaría single-mode).
     env -u WORKSPACE_ROOT setsid nohup "$ALPACA_BIN" -port "$PORT" >"$LOGFILE" 2>&1 </dev/null &
   else
-    WORKSPACE_ROOT="$WS" DEFAULT_BRAND="$BRAND" \
+    WORKSPACE_ROOT="$WS" DEFAULT_SISTEMA="$SISTEMA" \
       setsid nohup "$ALPACA_BIN" -workspace "$WS" -port "$PORT" >"$LOGFILE" 2>&1 </dev/null &
   fi
   local pid=$!
@@ -210,7 +210,7 @@ do_status() {
   listener_present && listen_up=yes
   if [[ "$listen_up" == yes ]] && http_healthy; then http_up=yes; fi
 
-  echo "[cockpit-status] worktree=$WORKTREE_NAME brand=$BRAND port=$PORT (alpaca)"
+  echo "[cockpit-status] worktree=$WORKTREE_NAME sistema=$SISTEMA port=$PORT (alpaca)"
   echo "  process(pidfile): $proc_up (pid $pid)"
   echo "  listener(LISTEN): $listen_up"
   echo "  http(health):     $http_up"

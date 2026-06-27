@@ -267,3 +267,377 @@ Chrome de cada estado (Valeria supervisora correcta · color por agente real · 
 
 **/dev-team · 💡 PROPONE** — Storybook dev de nuevo arriba en **:6007** con los avatares + nombres reales. Recorrelo y
 tirame los comentarios. (Mismas decisiones pendientes: promote ahora/cierre · T-1/T-3 ahora o tras tu review.)
+
+### 2026-06-25 · /pm-luana — reencuadre estructural: programa de FIDELIDAD de pipeline (mockup===resultado)
+
+**Contexto:** Chris pidió cerrar el norte del DS multimarca + storybook y cementarlo en los harnesses. PASO 0 (leí
+canon + ADR-014 + to-be) + Fase A (4 subagentes mapearon el scatter de doctrina DS por docs/rules/skills/agents).
+
+**Hallazgo (verificado, no del to-be):** ~60% del to-be YA está en canon (ratif 2026-06-08) + harness-update
+(aplicado 2026-06-22). El scatter REAL = (1) 5-capas + contratos + loop duplicados 3-4× en docs-arquitectura sin
+cross-pointers · (2) **fork de autoridad 5-capas(canon) vs 3-buckets(to-be DRAFT)** · (3) catálogos brand
+hand-narrados que driftean · (4) genesis-docs sin archivar. La cadena de enforcement (po-ux→architect→dev→auditor)
+está SANA (pointer-chain intacto). Vitalia tiene 44 stories brand-local con duplicados reales (`ChannelBreakdownRow`
+×2, `AttributionMatrixWidget` ×2, `LucasStageRecommendationsCard` ×2). nicolify storybook = 0. Colisión puerto :6006
+(vitalia+nicolify). Promotion FE = de-facto (12 proposals `ui-kit-*`) pero sin doctrina escrita.
+
+**Chris (input clave · ✓ APLICADO) — la necesidad real:** "el mockup que apruebo en refinamiento = el resultado
+final EXACTO, garantizado end-to-end; el inventario debe ser la espina; cada token/átomo con paridad 1:1; el
+architect debe saber CÓMO extender en detalle; el dev-team con lineamientos claros; reglas mapeadas a nivel UX de
+cuándo reusar/extender/crear. Todo lego, no ladrillo con cemento (reemplazar uno sin destruir la pared)." Principios
+HARD recurrentes: alta cohesión · bajo acoplamiento · DRY · clean architecture · hexagonal.
+
+**Chris (decisión 14 · ratifica blueprint estructural) · ✓ APLICADO** — eligió **"Ratifico — arrancá Fase 1
+(auditoría paridad)"**. Blueprint = inventario-como-espina (core hexagonal; actores = adapters que dependen del
+inventario, no entre sí) + **4 pilares**: P1 inventario-1:1 (catálogo generado + gate de paridad) · P2 reglas
+reuse/extend/create mapeadas a UX (vocabulario único, **cero bucket-1/2/3**; toolkit de extensión nombrado:
+compound/slots · asChild/polymorphic-as · variant-props · render-props · wrappers) · P3 contrato de fidelidad por
+actor (handoffs = juntas de lego; architect cita entrada exacta + patrón de extensión + ruta) · P4 garantía
+mockup===resultado (mockup de Storybook → architect cita stories → dev ensambla las mismas → auditor diffea + gates
+mecánicos).
+
+**Chris (decisión 15 · alcance Fase C) · ✓ APLICADO** — eligió **"Full: incluir catálogo-generado ahora"** (el
+recableo de doctrina + el catálogo generado en la misma tanda).
+
+**/pm-luana (decisión propia · Q3 delegada) · ✓ APLICADO** — **ADR-016 nuevo** (gobernanza de inventario +
+composición/extensión) + **recortar ADR-014** a solo-enforcement (apunta al canon para contratos). Justificado por
+el principio de cohesión de Chris (concerns distintos = ADRs distintos).
+
+**Estructura limpia ratificada (1 SSoT por concern · resto apunta):** inventario-generado (espina) · canon
+(contratos QUÉ) · ADR-016 (PORQUÉ: reglas+toolkit) · frontend-visual-fidelity (QUIÉN enforza + contrato por actor) ·
+promotion-protocol §FE (CÓMO promueve) · brand-docs + shell-paradigm compartido (BRAND-LOCAL; skills=routers).
+
+**/pm-luana · 💡 PROPONE (en curso)** — **Fase 1 lanzada**: 4 subagentes read-only auditan paridad (kit inventory +
+extensión · 44 vitalia → destino+acción · file-upload Abel/nicolify lift-candidate + mirror cross-brand · token dual
++ gate-parity HB-106/107). **AWAIT:** sintetizo la evidencia de paridad y te la paso antes de diseñar el spine (P1)
++ reglas (P2). Track aparte (no doctrina): gate-parity vitalia-only · promote-check sin gate · dual-token vitalia
+(`--radius` 0.5 vs 0.625) = Fase 2/3 de core-ds-foundation.
+
+**/pm-luana · ✓ APLICADO (Fase 1 — evidencia de paridad, 4 subagentes read-only):** Kit sano (156 exports · 83
+stories · 92-98% paridad · **0 tier-3** = cero fork forzado · 4 tier-2 con techo: EntityInfoCard/Chart/RichSelect/
+SmartDatetimePicker). **4 fuentes de drift mockup≠resultado:** (1) `@luana/design-tokens` = SOLO nombres para
+color/typo/shadow → marcas inventan valores (driver #1; nicolify es el patrón bueno: importa vía `@theme`, vitalia
+es dual-system) · (2) mirrors locales (vitalia 20 shadcn + EmptyState/Placeholder + 4 dead-stubs `ChannelBreakdownRow`/
+`AttributionMatrix`/`LucasStageRec`/`Bowtie`; cross-brand 7 shell + `button` ~95% copiado) · (3) gates sin paridad
+(no-div-layout solo vitalia · **comunify eslint no-arbitrary APAGADO** · HB-106) · (4) sin promote-gate (HB-107).
+**Taxonomía VALIDADA:** `UniversalIntake` (nicolify Abel = el file-upload de Chris) = **EXTEND** vivo (lift+slot
+`supportedModes`/`fileAccept` → vitalia extiende no forkea) · 20 shadcn+EmptyState/Placeholder = **REUSE** (kit ya
+los tiene) · 4 stubs = **DELETE** · NPS/PHI/Deposit = **KEEP** · los 7 shell = adopción incompleta no lift.
+**Lean /pm-luana:** design-tokens = SSoT de todos los ejes (valores color/typo/shadow incluidos), marcas migran al
+`@theme` de nicolify. **AWAIT Chris:** greenlight Fase 2 (diseño del spine P1 + reglas P2 → draft ADR-016 +
+catalog-spec + toolkit + contrato por actor) o ajustar el modelo con esta evidencia primero.
+
+### 2026-06-25 · Fase 2 — draft ADR-016 + verificación adversarial + endurecimiento
+
+**Chris (decisión 16 · evidencia) · ✓ APLICADO** — "revisá las evidencias y decidí si hay algo que actualizar; si
+no, proseguí con Fase 2". Revisé: **el modelo aguanta, cero cambio estructural**; la evidencia enriquece 4 puntos
+(spine + token-values · toolkit a los 4 tier-2 · adopción≠lift · 3 huecos de gate). Prosigo.
+
+**/pm-luana · ✓ APLICADO (draft ADR-016)** — autoreado (diseño = síntesis, no descubrimiento paralelo):
+`docs/architecture/luana-platform/ADR-016-design-system-inventory-governance.md` (status: proposed). Decide: ejes
+ortogonales (5-capas ⊥ 3-destinos) · vocabulario único `DESTINO{kit/app-code/brand-local}` + `ACCIÓN{REUSE/EXTEND/
+CREATE/ADAPT/KEEP/DELETE}` (retira bucket-1/2/3) · árbol reuse/extend/create · composición>config (fork-de-internal
+= error, EXTEND vía slot = válido) · toolkit nombrado (compound/slots/asChild/variant/render-prop/wrapper) aplicado a
+los 4 tier-2 · inventario-espina 1:1 generado con lifecycle · design-tokens = SSoT de todos los ejes · contrato de
+fidelidad por actor · backstops mecánicos. ADR-016 apunta al canon (contratos) y recorta ADR-014 — cero body duplicado.
+
+**/pm-luana · ✓ APLICADO (verificación adversarial + endurecimiento)** — spawné un revisor adversarial. Veredicto:
+**"core idea SÓLIDA"** + 3 BLOCKER + 5 MAJOR + 4 MINOR de **operacionalización** (no de modelo). Trié (el auditor
+sobreestima) + apliqué 8 fixes al draft: def. de `ADAPT` (vs KEEP) · mecanismo del 2º-consumidor (auditor cuenta
+imports, promote-gate enforça) · copia≠EXTEND afilado · owner de promote (architect marca · builder ejecuta · auditor
+verifica) · auditor = gate-verifier · extension-contract gate (tier-2 sin story-consumidora → CR) · honestidad de
+timing (catálogo/gates = Fase C, interino canon+manual) + **§Caveat** · comunify-eslint = pre-req no quick-win.
+Refuté 1 (MINOR /showcase: el cement 2026-06-22 ya fijó Storybook-only; el canon tiene ref stale → de-dup Fase C).
+
+**/pm-luana · 💡 PROPONE** — **AWAIT Chris (ratificación):** ADR-016 endurecido listo. Es el draft que firmás antes de
+que Fase C toque código/harness. **Caveat clave:** ratificar = ratificar el endpoint + el orden de Fase C; la garantía
+mockup===resultado se completa recién al cerrar Fase C (los gates mecánicos son la última milla; el día que aceptás la
+ADR el pipeline NO cambia, cambia a medida que Fase C aterriza cada gate).
+
+### 2026-06-25 · Fase C · Tramo C1 — homes de doctrina (DONE)
+
+**Chris (decisión 17 · ratifica ADR-016 + arranque) · ✓ APLICADO** — ratificó ADR-016 (→ status accepted) + eligió
+arrancar Fase C por **C1** (homes de doctrina · docs-only · bajo riesgo).
+
+**/pm-luana · ✓ APLICADO (C1)** — home-map cableado: ADR-016 referenciado por canon (×3, con "Mapa de homes") +
+ADR-014 (complemento ortogonal: 014=enforcement, 016=gobernanza, contratos→canon) + frontend-visual-fidelity (×2,
+SSoT-map + el contrato §5 que la rule enforça). 3 genesis-docs **archivados** con banner→ADR-016 (`to-be` DISUELTO ·
+HANDOFF + inventory ARCHIVADOS · refs históricas redirigen sin romper). `bucket-1/2/3` = **0 vivo**. `/showcase` stale
+dropeado del canon. **Verificado:** `machinery-check` **72/0/0 · sin drift**. Commits platform-only → batch al cierre.
+
+**/pm-luana · 💡 PROPONE** — **AWAIT Chris (checkpoint entre tramos):** C1 cerrado. Próximo: **C2 spine** (`/architect`
+actualiza el ready package de core-ds-foundation con scope ADR-016: catálogo generado + lifecycle + token-lift
+color/typo/shadow + migración vitalia off-dual → `/dev-team`) **o** tu **review del set Storybook** (`:6007`, deuda
+AWAIT_CHRIS_VERIFY) primero. C2 toca código → entra por la lane SDD (architect→dev), no por subagentes sueltos.
+
+### 2026-06-25 · Fase C · Tramo C2 (spine) — approach firmado + ready package en producción
+
+**Chris (decisión 18 · arranque C2) · ✓ APLICADO** — eligió **C2 spine**. /pm-luana encadenó a `/architect`
+(technical-story lane · core-ds-foundation es platform-engineering).
+
+**/architect · ✓ APLICADO (recon + approach)** — el spine es thin sobre lo existente: el kit ya corre
+react-docgen-typescript + Storybook genera index.json → el catálogo se extrae de ESE pipeline (cero tooling nuevo);
+design-tokens ya es modular (falta shadow.ts + valores en color/typo); nicolify ya consume vía @theme.
+
+**Chris (decisión 19 · firma del approach C2) · ✓ APLICADO** — firmó con **B1 (full)**: el unwind del dual-system
+de vitalia entra EN C2 (no incremental aparte). Scope C2 = (T1) catálogo generado + gate de paridad 1:1 · (T2)
+design-tokens = SSoT de valores (shadow.ts + color/typo) · (T3) **migración vitalia off-dual** (riesgo visual →
+funcional + live-verify) · (T4) superficies de extensión de los 4 tier-2 + story-consumidora c/u.
+
+**/architect · 💡 PROPONE (en curso)** — spawné architect-orchestrator → ready package C2 sufijado `-C2` (no clobbea
+Fase 0). DAG: T2→T3 · T1/T4 paralelos. T2 toca engine (design-tokens) — autorizado por ADR-016 (technical-story
+core-targeting, no lift WT6). **AWAIT:** valido el package (CONN + verification + boundaries) → transiciono el
+checkpoint → handoff `/dev-team`. NO incluí C3/C4/C5/C6 (tramos aparte).
+
+**/architect · ✓ APLICADO (ready package C2 validado)** — architect-orchestrator escribió 03-arch-C2 + 04-validators-C2
++ 06-tickets-C2 + dispatch-plan-C2 (sufijo -C2, no clobbea Fase 0). Validé: CONN completo (las 4 contenciones por
+ticket) · contract-spec por pieza · DAG coherente (T2→T3 duro · T1/T4 paralelos) · assignment por ticket
+(builder-frontend/workhorse · no agentic) · engine-boundary T2/T4 autorizado por ADR-016. **★ Cazó la decisión
+cardinal:** NO shippear CSS desde design-tokens (canon §6.8 lo descartó) — el package es TS-only SSoT de VALORES, las
+marcas wirean vía @theme guardado por arch-test no-drift; **RN-5 (colores de agente per-brand) preservado** vía split
+shared-value ⊥ brand-identity. T-3 (unwind vitalia · 105 defs/121 consumers) flaggeado funcional/ambas con
+live-verify + el footgun @source JIT.
+
+**/pm-luana · ✓ APLICADO (3 Open Questions confirmadas)** — (1) NO hornear hexes de agente cross-brand (RN-5; la
+paleta semántica success/warning/danger SÍ puede ser shared-by-value) · (2) `@config` de vitalia = migración OPCIONAL
+(canon §2.10 equivalente aceptado, gate=efecto) · (3) T-3 cierra con live-verify + demo Chris (G), no solo arch-test
+verde. checkpoint actualizado (`c2_open_questions_confirmed`).
+
+**/pm-luana · 💡 PROPONE** — **AWAIT Chris (checkpoint architect→dev):** C2 package listo + validado. Próximo:
+arrancar `/dev-team` build (T1 catálogo + T4 tier-2 en paralelo · T2 design-tokens → T3 unwind vitalia secuencial ·
+autonomous_mode:false → T-3 pausa en G para tu demo). O review del set Storybook primero. O pausa + batch commit.
+
+### 2026-06-25 · C2-T1 — catálogo generado + gate paridad 1:1 (DONE)
+
+**/dev-team (builder-frontend) · ✓ APLICADO (C2-T1)** — catálogo generado del source real en 4 piezas:
+(1) `scripts/generate_ui_catalog.mjs` — cruza index.ts + storybook-static/index.json + react-docgen-typescript ref;
+emite `catalog.json` (GITIGNORED, 54 módulos) + `catalog.md` (humano, 7 capas con links Storybook). RETIRING_NO_STORY
+= `["AutosaveBadge"]` (exento per canon §2.6).
+(2) `scripts/_check_catalog_parity.mjs` — gate de paridad CLI (`--mode=coverage` + default parity); exit 0/1.
+(3) `scripts/_assert_parity_gate.mjs` — probe TDD (`--plant=export-without-story` + `--plant=retiring-no-story`).
+(4) `core/@luana/ui-kit/tests/catalog-parity.test.ts` — vitest arch-test (RED→GREEN, 6 tests).
+(5) `make ui-catalog` — Makefile target. `.gitignore` + `.gitignore` entries para catalog.json + catalog.md.
+**4 validators PASS · 319/319 vitest GREEN · tsc 0 errores.**
+Resultado: `docs/product/stories/core-ds-foundation/T-C2-T1-result.md`.
+
+### 2026-06-25 · C2-T2 — SSoT de valores (shadow+color/typo/radius) @theme guardado (DONE)
+
+**/dev-team (builder-frontend) · ✓ APLICADO (C2-T2)** — `@luana/design-tokens` 0.2.0 pasa de names-only a VALUES
+en los 4 ejes pendientes:
+(1) `shadow.ts` NEW — `SHADOW` elevation scale (none/sm/md/lg/xl) como valores CSS box-shadow cross-brand.
+(2) `typography.ts` — ADD `TYPOGRAPHY_SCALE` (size/lineHeight/weight por tier display/heading/body/caption).
+(3) `radius.ts` — ADD `RADIUS_SCALE` (sm/md/lg calc-based + control=md−2px per RN-7).
+(4) `color-values.ts` NEW — `SEMANTIC_COLOR_DEFAULTS` (HSL channels success/warning/danger/info + foregrounds)
+    + `AGENT_ACCENT_CONTRAST` (familias de contraste yellow-warm/dark-neutral per canon §2.8).
+(5) `index.ts` + `package.json` — barrel exports shadow + color-values (exports map actualizado).
+(6) `nicolify/frontend/src/app/globals.css` — @theme +shadow scale + semantic status color vars + :root HSL channels.
+(7) Arch-test nicolify (`test-ds-single-token-source.test.ts`) — C2-T2 SHADOW equality (no-drift) +
+    TYPOGRAPHY_SCALE/RADIUS_SCALE completeness + semantic colors (69/69 PASS, must_pass: true).
+(8) Arch-test vitalia (`test-ds-tokens-lock.test.ts`) — C2-T2 SC-5 TS export structure checks (22/22 PASS;
+    globals.css projection es T-3, no T-2).
+(9) Guard scripts: `scripts/_assert_no_css_in_tokens_pkg.mjs` (canon §6.8 NO-CSS) +
+    `scripts/_assert_token_value_renders.mjs` (renderable value check per token path).
+
+Cardinal: NO CSS shippeado desde el package (canon §6.8); RN-5 preservado (hex agente per-brand, solo semántica shared).
+**5 validators PASS · 31/31 scale tests + 69/69 nicolify + 22/22 vitalia GREEN · tsc 0 errores.**
+Commit: `9ebbe8a7`. Resultado: `docs/product/stories/core-ds-foundation/T-C2-T2-result.md`.
+
+### 2026-06-25 · C2-T4 — superficies de extensión 4 tier-2 + consumer stories (DONE)
+
+**/dev-team (builder-frontend) · ✓ APLICADO (C2-T4)** — superficies de extensión NOMBRADAS y ADITIVAS para los 4 tier-2 (ADR-016 §3 toolkit composición>fork):
+
+- `EntityInfoCard`: slot `footer?: React.ReactNode` — debajo del status chip; testid `entity-info-card-footer-{testId}`
+- `ChartContainer`: slot `footer?: React.ReactNode` — debajo de `<ResponsiveContainer>`, atributo `data-chart-footer`; `useChart` ya estaba exportado (sin cambio)
+- `RichSelect`: render-prop `renderItem?: (option: RichSelectOption) => React.ReactNode` — override del layout label+descripción por item; **+ fix**: eliminado `<FormControl>` interno que crasheaba fuera de un Form (patrón Shadcn correcto: el consumer wrappea; workaround ya documentado en ResumenView.tsx `ponytail:` comment)
+- `SmartDateTimePicker`: slot `trigger?: React.ReactNode` — `PopoverTrigger asChild` + `React.isValidElement` check; cuando se omite, el `<Button>` default aparece
+
+4 consumer stories ejerciendo cada slot (nuevos named exports en los `.stories.tsx` existentes):
+  `ConSlotFooter` · `ConFooterCustom` · `ConRenderItem` · `ConTriggerCustom`
+
+TDD: 6 tests RED→GREEN (`tier2-slots.test.tsx`). Gates:
+- `tsc --noEmit`: **0 errores**
+- `vitest run`: **313/313 PASS** (sin regresiones)
+- `render-smoke` (build-storybook → serve → _smoke_storybook.mjs): **274/274 stories render clean**
+
+Commit: `158c14d8`. Resultado: `docs/product/stories/core-ds-foundation/T-C2-T4-result.md`.
+
+### 2026-06-25 · C2-T3 — unwind vitalia dual-system → @theme design-tokens (DONE, tests passing)
+
+**/dev-team (builder-frontend) · ✓ APLICADO (C2-T3)** — migración `@theme` + alias-then-migrate en
+`vitalia/frontend/src/app/globals.css`. Ponytail mode: shortest diff que pasa los arch-tests:
+
+- `@theme` block agregado (después de `@source`): proyecta SHADOW scale (5 tokens) + TYPOGRAPHY_SCALE tiers
+  (4 tokens) + semantic status colors vía `hsl(var(--status))` (para que el dark `:root` override propague)
+- `--danger` e `--info` canónicos declarados en `:root` (brand vitalia clínica: `0 73% 50%` / `199 89% 48%`)
+  + dark overrides en `.dark, [data-theme="dark"]`
+- Aliases RN-5: `--vitalia-success/warning/danger/info` → `var(--canonical)` (no HSL crudo duplicado)
+- `--radius-lg` derivado: `0.875rem` literal → `calc(var(--radius) + 4px)` (RADIUS_SCALE.lg; mismo valor numérico)
+
+**Decisiones de ponytail (qué NO se hizo y por qué):**
+- `@config` NO migrado (dark wiring ya funciona vía tailwind.config.ts · migración OPCIONAL per arch §9.Q2)
+- RADIUS_SCALE NO en `@theme` (evita conflicto con `tailwind.config.ts::borderRadius` que cambiaría `rounded-lg`)
+- Hexes de agente NO en `@theme` (RN-5: identidad per-brand, solo semántica shared se proyecta)
+
+**TDD RED→GREEN:** 16 tests nuevos en `test-ds-tokens-lock.test.ts` — gate de @theme (presencia · @source
+footgun · dark wiring · shadow no-drift × 5 · typography tiers × 4) + aliases vitalia (×4) + canonical
+--danger/--info (×2). Total **41/41 PASS** (25 T-2 + 16 T-3). Validators:
+`c2_vitalia_tokens_lock` 43/43 · `c2_vitalia_legacy_unwound` 6/6 · `c2_vitalia_tsc_green` PASS.
+
+**Pendiente:** `c2_vitalia_visual_parity` = `type: live-verify` — Chris lo corre en G phase (Chrome MCP,
+`demo-script.md`). NO marcado `dod_live_verified: true` por builder.
+
+Resultado: `docs/product/stories/core-ds-foundation/T-C2-T3-result.md` · `demo-script.md`.
+
+### 2026-06-25 · Review Storybook · comentario #1 — gap selección de hora/rango horario
+
+**Chris (review #1) · ✓ APLICADO** — "tengo calendar pero ningún componente para selección de hora y/o
+rango horario". Verifiqué el inventario: **hora sola YA existía** (`SmartDateTimePicker` + `Input type=time`),
+**rango de fechas YA existía** (`Calendar mode=range`), **slots/disponibilidad YA existía brand-local** en
+vitalia (`DayAvailabilityStrip`/`AvailabilityChip`, D11 · `ADAPT`/vitalia-shared, owner /pm-vitalia, sin 2º
+consumer refined/ready → no se promueve aún). El gap REAL = **rango horario inicio–fin**, no existía.
+
+**Chris (decisión) · ✓ APLICADO** — eligió **TimeRangePicker (inicio–fin)** como `CREATE` genérico de kit
+(vs TimePicker dedicado / promover slots / solo-visibilidad).
+
+**/pm-luana (build directo · loop de review) · ✓ APLICADO** — `core/@luana/ui-kit/src/TimeRangePicker.tsx`:
+compone **dos `Input type=time`** (mismo átomo que SmartDateTimePicker, NO reinventa dropdown de slots) +
+separador "a" + validación inicio<fin (`aria-invalid` + mensaje `role=alert` en `text-destructive`). Props
+`{value, onChange, stepMinutes, startLabel, endLabel, separator, disabled, errorMessage}`. Story
+`Molecules/TimeRangePicker` (4 estados: default/con-valores/inválido/deshabilitado) + "Cuándo usarlo/NO".
+**Gates:** tsc 0 · render-smoke 4/4 clean · **Chrome verify** (con-valores `09:00→18:00` ✓ · inválido con
+error rojo ✓). Compone primitivas per ADR-016 §3 (composición>fork). Commit `303ed411` (3 files, platform-only
+→ promote-candidate al cierre) · push wip/vitalia.
+
+**/pm-luana · 💡 PROPONE** — gap cerrado. `:6007 → Molecules/TimeRangePicker`. Tirame el próximo comentario.
+(Pendientes del cierre sin tocar: promote-to-main de los commits platform-only · tu firma G de C2-T3.)
+
+### 2026-06-25 · Review #1 (cont.) — "no me gustó del todo, buscá en shadcn / cómo lo hacen mejor"
+
+**Chris · ⚠️ DUDA (el nativo no convence)** — pidió buscar en shadcn si hay un componente mejor (que sirva
+para una hora Y rango, o si sí o sí dos componentes), sin reemplazar a lo loco si no hay algo mejor, y revisar
+cómo lo hacen más intuitivo/usable otros en internet.
+
+**/pm-luana · ✓ APLICADO (investigación)** — WebSearch/WebFetch: **shadcn core NO tiene time picker oficial**
+(los docs usan `<input type=time>` nativo = exactamente lo que teníamos → no hay "mejor" listo para adoptar
+tal cual). El punto débil del nuestro = el **chrome del browser** del nativo (inconsistente). Lo mejor del
+ecosistema = **input segmentado** (OpenStatus TimePicker MIT · huybuidac DateTimeInput): campo `HH:MM`
+tokenizado, ↑↓ por segmento, cero widget del browser. UX (Eleken): rango = híbrido (2 campos + validación +
+**presets** + defaults). **Una o dos componentes:** dos, por composición (lego ADR-016) — átomo single + range
+compone dos. Fuentes: time.openstatus.dev · github huybuidac/shadcn-datetime-picker · eleken.co/blog-posts/time-picker-ux.
+
+**Chris (decisión) · ✓ APLICADO** — eligió **"subir lo nuestro a segmentado + presets"** (vs adoptar lib
+externa / dejar el nativo).
+
+**/pm-luana · ✓ APLICADO (build)** — **átomo `TimePicker`** segmentado tokenizado (HH:mm 24h, ↑↓/←→/auto-avance/
+blur-pad, buffer de display por segmento) + **`TimeRangePicker` reescrito** componiendo dos `TimePicker` +
+**presets** (Mañana 09–13 / Tarde 14–18 / Todo el día, overridables vía `presets`, `[]` los oculta) + validación.
+**★ 3 bugs reales cazados por la verificación LIVE en Chrome (no por el render-smoke ni tsc — verification-real≠render):**
+(1) buffer parcial: emitir "" en estado a-medio-escribir wipeaba la hora en el parent controlado → estado interno
+de segmentos + sync solo de valores completos; (2) padding-en-vivo bloqueaba el 2º dígito (`"3"→"03"`, maxLength
+trababa el "0") → mostrar crudo mientras se escribe, padear on-blur; (3) el auto-avance dispara blur síncrono con
+closure stale (`"0"` pre-`"9"`) → padeaba `"00"` pisando `"09"` → blur lee `e.target.value` del DOM, no el closure.
+3 tests de regresión + verificación live de cada uno (typing `0930`→`09:30` · ↑ step 5 · preset puebla + chip activo).
+**Gates:** tsc 0 · vitest 5/5 (TimePicker) + 6/6 (catalog-parity, catálogo regen 54→56) · render-smoke 8/8 · Chrome.
+Commit pathspec platform-only → promote-candidate. Stories `Molecules/TimePicker` (3) + `Molecules/TimeRangePicker` (5).
+
+**/pm-luana · 💡 PROPONE** — `:6007 → Molecules/TimePicker` + `Molecules/TimeRangePicker`. Próximo comentario.
+
+### 2026-06-25 · Storybook — target `make storybook`
+
+**Chris · ✓ APLICADO** — pidió levantar el Storybook + un comando `make` para hacerlo él. Agregué target
+**`make storybook`** al Makefile raíz → `corepack pnpm --filter @luana/ui-kit storybook` (`:6007`). Usa
+`corepack pnpm` (no el shim de PATH) porque el subshell de `make` puede no tener `pnpm` en PATH (cazado: el
+target con `pnpm` pelado falló `Error 127` en spawn no-interactivo; corepack ships con node, resuelve el pin
+9.15.9 siempre). Storybook levantado y verificado UP (200). Commit platform-only.
+
+### 2026-06-25 · Review #1 (cont.) — TimePicker híbrido: dropdown click + teclado
+
+**Chris · ✓ APLICADO** — pidió que el `TimePicker` despliegue un **dropdown** al click (columna Hora + columna
+Min con 0/10/20/30/40/50) para que la secretaria no suelte el mouse al pasar de fecha a hora, **sin perder el
+teclado** (igual puede tipear, ej. un minuto fuera de lista como 31).
+
+**/pm-luana · ✓ APLICADO** — `TimePicker` ahora es **híbrido**: chevron `▾` (PopoverTrigger) → Popover con dos
+`TimeColumn` scrollables — Hora (00–23, scroll-to-active) + Min (`minuteOptions`, default `[0,10,20,30,40,50]`,
+overridable). Click setea el segmento + resalta el activo (cian). Los **segmentos siguen tipeables** (auto-avance,
+↑↓, y cualquier minuto como 31). Compone `Popover` + `ScrollArea` del kit (no reinventa · ADR-016). `min-w-14`
+(no arbitrary). `TimeRangePicker` hereda el dropdown en sus dos `TimePicker` sin cambios. **Verificado LIVE Chrome:**
+abrir dropdown (14:30 → Hora 14 + Min 30 activos, scrolled) · pick Hora 16 + Min 00 → `16:00` · tipear `31` en
+minuto → `16:31` (fuera de lista, por teclado). **Gates:** tsc 0 · vitest 5/5 · render-smoke 8/8. Commit platform-only.
+
+### 2026-06-25 · Review #1 (cont.) — Calendar/fechas en español (Perú)
+
+**Chris · ✓ APLICADO** — "el calendar y todo en sí debe estar en español, estamos en Perú". El `Calendar`
+(react-day-picker) caía a **inglés** sin `locale` (meses/días) — bug ya flageado en bitácora.
+
+**/pm-luana · ✓ APLICADO** — `Calendar` del kit ahora **default `locale={es}`** (`date-fns/locale`),
+override-able por consumer. Decisión: español es default de **plataforma** (las 10 marcas son LatAm Sp), no
+brand-specific → vive en el kit (RN-2 no se viola; una marca no-española overridearía el prop). También el
+`formatMonthDropdown` respeta el `locale?.code` (antes hardcodeaba `"default"`). `SmartDateTimePicker` ya pasaba
+`es` (redundante ahora, inofensivo). **Verificado LIVE Chrome:** Calendar → "junio 2026" + `lu ma mi ju vi sá do`
+(lunes primero, correcto Perú) · SmartDateTimePicker popover → idem español + formato `22/06/2026`. **Gates:**
+tsc 0 · render-smoke 16/16 (calendar + smart-datetime + time pickers). Commit platform-only.
+
+> Nota: el `<input type=time>` interno de `SmartDateTimePicker` sigue siendo nativo (chrome del browser, "a.m./p.m.")
+> — fuera de scope de este comentario (Chris cuestionó el nativo solo en el `TimePicker` standalone, ya resuelto).
+
+### 2026-06-25 · Review #1 (cont.) — SmartDateTimePicker usa el TimePicker segmentado (mata el último nativo)
+
+**Chris · ✓ APLICADO** — "sí, hazlo" (que el `SmartDateTimePicker` use el `TimePicker` nuevo adentro en vez del
+`<input type=time>` nativo).
+
+**/pm-luana · ✓ APLICADO** — reemplacé el `<Input type="time">` + `Clock` del popover por `<TimePicker>`
+(segmentado + dropdown). `handleTimeChange` ahora recibe el string `"HH:mm"` directo (antes el event) + guarda
+`if (date && newTime)` (TimePicker emite `""` en parcial). Imports `Input`/`Clock` removidos. **★ Footgun
+verificado LIVE (Popover anidado):** el dropdown del `TimePicker` es un Popover dentro del Popover del
+`SmartDateTimePicker` — Radix maneja layers anidadas: al abrir el dropdown interno el outer **NO se cierra**
+(ambos `dialog` coexisten), y pick Hora 15 → trigger `22/06/2026 15:00` + ISO UTC `18:00Z` (conversión tz
+correcta). Cero `<input type=time>` nativo en el kit. **Gates:** tsc 0 · vitest 11/11 (tier2-slots SmartDateTimePicker
++ TimePicker) · render-smoke 12/12. Commit platform-only.
+
+> Gap menor pendiente (SR-only, NO visible): los aria-labels de nav del calendar siguen en inglés
+> ("Go to the Next Month", "Today") — react-day-picker no los traduce con `locale`, necesitan el prop `labels`.
+> El texto VISIBLE del calendar está 100% en español. Follow-up opcional si importa el screen-reader en español.
+
+### 2026-06-25 · Review #1 (cont.) — FloatingAutosaveIndicator pertenece a la HOJA (no a la página)
+
+**Chris · ✓ APLICADO** (confirmó entendimiento antes de construir) — el indicador debe estar **siempre pegado
+al borde inferior de la HOJA**, jamás a toda la página/viewport — le pertenece a la hoja. **Tag/escape hatch**
+para el caso excepcional no-mapeado → página.
+
+**/pm-luana · ✓ APLICADO** — prop **`anchor: "sheet" | "page"`** (default `"sheet"`):
+- `"sheet"` (principal) → `absolute inset-x-0 bottom-4` al marco `relative` de la HOJA (`AppPanelSlot` ya es
+  `relative`), centrado en el ancho de la hoja, **siempre pegado abajo** (contenido corto o largo). Reemplaza el
+  `sticky bottom-4` viejo (que con contenido corto flotaba a media hoja, no pegado al fondo).
+- `"page"` (escape hatch) → `fixed inset-x-0 bottom-4` al viewport, SOLO para el caso excepcional sin hoja.
+
+Contrato de placement: hermano del scroll, dentro del marco `relative` de la hoja (NO dentro del `overflow-y-auto`).
+Wording corregido **página→HOJA** en: doc del componente + displayName + canon §2.6 + `frontend-visual-fidelity.md`.
+**★ Verificado LIVE Chrome (3 casos):** hoja largo → pegado al fondo del marco, centrado en la hoja (no la página) ·
+hoja corto → **igual pegado al fondo** (el caso que el sticky fallaba) · `anchor=page` → fixed al viewport, ignora el
+marco. **Gates:** tsc 0 · vitest 16/16 (+2 tests anchor sheet/page) · render-smoke 7/7. Stories: 5 estados + contenido-corto
++ anchor-page, cada uno en un marco-hoja `relative` (sin meta-decorator: render propio, evita el doble-wrap de decorators).
+Commit platform-only (kit + canon + rule).
+
+### 2026-06-26 · Promotion gate — `UniversalIntake` (nicolify) → `DataIntake` en `@luana/ui-kit`
+
+**Chris · 💡 PROPONE** — promover el componente de ingesta (URL/archivo/texto/conectar, hoy en el ICP de Abel)
+al kit como **el mecanismo de ingesta de datos de la plataforma**, igual en todas las marcas. Ubicación +
+análisis genérico-vs-acoplado + API `DataIntake`/`IntakeSeed` provistos. Pedido: ratificar la API → escribir
+el proposal formal → lift.
+
+**/pm-luana · ✓ APLICADO** — leí los 4 archivos de ubicación (`UniversalIntake` + `IcpIntakeOverlay` +
+`use-icp-extract` + `extract.ts`) + ADR-016. La API **cierra**. Escribí el proposal formal
+`docs/promotion-protocol/proposals/2026-06-26-ui-kit-data-intake.md` (state `proposed`, recomendación **APPROVED**).
+Acción ADR-016 = `CREATE`/`kit` (lift de código genérico, ≥3 consumidores hoy + mitad-BE ya en
+`core/luana-core-extraction`). **3 ajustes a la API (operacionalización, no objeciones):**
+(1) `maxSizeMB` es **net-new behavior** — el origin muestra "10 MB" como copy pero no valida nada → el lift agrega
+el chequeo real + error state + test; (2) `accentSlug` **no puede** ser `bg-agent-${slug}` (Tailwind JIT lo purga ·
+G3) → resuelve a CSS var `--intake-accent` = `var(--agent-${slug})`, default `--primary`; (3) `IntakeSeed.file`
+rico (`{name,base64,size,mimeType}`) — mejor que el `fileContent/fileName` flat del origin, habilita el size-check.
+
+> Reconcile: ui-kit committed = **0.9.0** (el datepicker `showTime` ya está `migrated`; el "0.7→0.8 in-flight" del
+> mandato quedó stale). Target bump del lift = `0.9.0 → 0.10.0` (reconcile contra current al ejecutar).
+
+**Próximo paso:** Chris ratifica la API + el proposal (APPROVED → state `accepted`) → recién ahí el lift
+(`/dev-team` o inline): build `DataIntake` + story + verify LIVE Chrome + refactor nicolify a wrapper fino.
+NO encadeno a `/dev-team` ahora — el lift necesita tu APPROVED primero.
