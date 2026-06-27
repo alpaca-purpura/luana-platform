@@ -569,3 +569,15 @@ DAG: kit ∥ BE (corriendo) → FE después del kit. Entra a `chris_verify.round
 - Fixtures de tests actualizados 2026→2027 (fechas que estaban en el pasado)
 - Gates: ruff check PASS · ruff format PASS · **22/22 scheduling tests GREEN** · arch 361/366 (5 pre-existing inbound_mode_seam+pgcrypto, sin regresión)
 FE (`disablePast` + Zod refine) espera cierre del kit en la sesión paralela.
+
+✓ APLICADO — G round-2 FE (SHA `9948e4ef`): disablePast en SmartDateTimePicker + refine past-guard Zod · 433/433 tests GREEN
+
+### 2026-06-26 · 🤖 claude · `/dev-team` (G round-2 cerrado · re-verify de Chris pendiente) · ✓ APLICADO
+**RN-11 (no-pasado) completa en 3 capas + committeada:**
+- **Kit** `1d8d8c4f` (`@luana/ui-kit 0.9.0`): prop aditiva `disablePast` (grisa días pasados; default false = sin cambio). tsc 0 · vitest 330.
+- **BE (autoridad)** `179fdc6c`: `PastAppointmentError` → `start_time < utc_now() → 422`. 22/22 · arch limpio.
+- **FE** `9948e4ef`: `disablePast` en la Fecha + Zod refine `startTime >= ahora` (cubre hora-pasada-de-hoy) + error inline + submit off. 433/433 · tsc/eslint 0.
+- **Round-1 (tz)** `52595fa6` también committeado.
+Sanity: ruta `nueva-cita` compila 200 (sin chunk-error). Story sigue en **developed · AWAIT_CHRIS_VERIFY** (G). Lock `code:scheduling` sigo (vuelvo a soltarlo cuando firmes).
+- **Re-verificá** (hard-reload): (round-1) inicio 08:00 → fin **08:30** + Fecha día correcto · (round-2) los **días pasados salen grises** en el calendario + si forzás una hora pasada de hoy → **error + no podés guardar** (y el BE rechaza 422 igual). Si OK, ratificás el delta (§6 swimlane) + firmás `chris_verify.signoff`. Si no, otro fix-loop.
+- ⚠️ **Commit compartido pendiente:** el kit (`1d8d8c4f`, puro `core/`) → `make promote-to-main SHA=1d8d8c4f && make sync-all` (anti-drift cross-marca) — tu OK al cerrar el round.

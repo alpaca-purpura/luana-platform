@@ -14,11 +14,10 @@ dependencies:
   soft: []
 blocks_hard: []
 blocks_soft: []
-release: F2
+release: F3
 cap_target: lisa.landing_public
 parent_story: null
 ---
-
 # vitalia-fase2-lisa-landing-public — idea
 
 **Goal:** Landing pública (sin autenticación) — describe servicios clínica, galería, testimonios, reserva intro.

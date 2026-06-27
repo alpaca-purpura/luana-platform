@@ -282,3 +282,146 @@ tickets:
 # T-BE-2 ─┼─→ T-BE-3 ─→ T-BE-4    (BE core)
 # T-BE-5 ─┘ (independiente)
 # T-FE-1 ─→ T-FE-2 / T-FE-3 ─→ T-FE-4   (FE, tras BE endpoints)
+
+# ══════════════════════════════════════════════════════════════════════════════
+# DELTA — Availability redesign (G round 1) · comentario G #1 · SSoT 03-arch-delta-availability.md
+# Scope-delta sobre story `developed` (base = 9 tickets arriba, TODOS pushed/preservados).
+# NO re-arquitectura los 9; NO toca el create path / patient inline / tokens.
+# 3 tickets (1 BE + 2 FE), ids no-colisionan (T-D*). autonomous_mode: false (Chris ratifica en G).
+# ══════════════════════════════════════════════════════════════════════════════
+delta_tickets:
+
+  - id: T-D1
+    title: "BE-D · endpoint GET /availability/service-day (disponibilidad de todos los médicos del servicio por día)"
+    surface: backend
+    state: ready
+    depends_on: []          # reusa T-BE-2/3 ya pushed (clinic_map mirror + repo existente)
+    description: >
+      EXTEND availability_router/service/repo con el flujo día-driven multi-doctor.
+      Nuevo método AvailabilityQueryRepository.get_service_day_strips(tenant, clinic,
+      offer_id, day): resuelve médicos del servicio vía offer_service_specialist_links
+      (fallback list_active_doctors cuando el servicio no tiene links seedeados) +
+      por cada médico COMPONE get_working_hours + get_busy_ranges EXISTENTES (cero SQL
+      free/busy nuevo, RN-6 CANCELLED excluido). DTOs ServiceDayDoctor + ServiceDayResponse
+      (reusa DayBlockItem). Ruta GET /availability/service-day?serviceId&date espejando
+      get_day_strip (RBAC SCHEDULING_PHI_ROLES, dual filter, response_model, no_phi_in_url,
+      422 fecha inválida). SIN migración (read-only). SIN audit write (no muta PHI).
+    gherkin_coverage: [SC-dia-auto-lista-todos-medicos, SC-cambio-dia-refresh, SC-servicio-sin-medicos, SC-dia-sin-disponibilidad, SC-service-day-cross-clinic, SC-service-day-rbac, SC-strip-tz-clinica]
+    acceptance:
+      validator_ids: [V-D-service-day, V-D-service-day-dual]
+      checks:
+        - "GET /service-day devuelve doctors[] con blocks per-médico del servicio"
+        - "servicio sin links → fallback todos los médicos activos del clinic"
+        - "servicio/clinic sin médicos → doctors:[] (empty_state)"
+        - "médico de otra clínica NO aparece (dual filter); cross-tenant sin leak"
+        - "rol fuera SCHEDULING_PHI_ROLES → 403; sin PHI de paciente en la respuesta"
+        - "response_model + no_phi_in_url + arch fitness verdes"
+    seam_coverage:
+      - { seam: "código↔DB", test_type: integration-realdb, file: "tests/modules/vitalia/scheduling/test_service_day_strips_realdb.py" }
+      - { seam: "router PHI", test_type: integration-realdb, file: "tests/modules/vitalia/scheduling/test_service_day_router_phi.py" }
+    assignment:
+      primary_agent: builder-backend
+      model_preference: workhorse
+      must_load_skills: [backend-expert, offer-expert]
+      must_load_artifacts: [03-arch-delta-availability.md, 04-validators.yaml, 05-guidelines.md]
+      forbidden_to_touch:
+        - "core/luana-core-*/src (engine — read-only)"
+        - "otras marcas (nicolify/comunify/lupulo)"
+        - "modules/vitalia/copilot, modules/vitalia/sales_agent (agentic)"
+        - "los 9 tickets base — create path / patient inline (solo se EXTIENDE el availability surface)"
+        - "el cómputo free/busy existente (REUSA get_working_hours/get_busy_ranges; NO mirror)"
+      must_load_rules: [".claude/rules/tenant-isolation.md", "vitalia/.claude/rules/hipaa-lite.md"]
+      rationale: "Endpoint read-only que COMPONE métodos del repo existente + el link servicio→médico de offer; cero capa nueva, cero migración."
+
+  - id: T-D2
+    title: "FE-D1 · separar Fecha de Hora (DatePicker PROMOTE + TimePicker del kit)"
+    surface: frontend
+    state: ready
+    depends_on: []          # independiente del BE; solo toca la sección Fecha/Hora del form
+    description: >
+      Reemplazar SmartDateTimePicker (combinado) por DOS controles del canon en la
+      sección de inicio de NuevaCitaView: Fecha = DatePicker (date-only) + Hora =
+      TimePicker (ya en @luana/ui-kit, molecules-timepicker--default). Componer
+      startTime ISO-UTC desde fecha(YYYY-MM-DD tz tenant) + hora(HH:MM) reusando la
+      normalización tz/DST existente (H1 ya correcto). Preservar endTime autocalc
+      (servicio·duración) al cambiar fecha O hora. DELIVERABLE DE PROMOCIÓN (canon §5):
+      crear DatePicker date-only (Calendar mode=single en Popover + Button trigger) en
+      core/@luana/ui-kit/src/DatePicker.tsx + export en index.ts + story
+      stories/inputs.DatePicker.stories.tsx + tests, ANTES del merge. NO <select>/<input>
+      nativo, NO arbitrary-values.
+    gherkin_coverage: [SC-fecha-hora-split]
+    acceptance:
+      validator_ids: [V-D-fecha-hora]
+      checks:
+        - "Fecha y Hora son controles SEPARADOS (DatePicker + TimePicker), no SmartDateTimePicker combinado"
+        - "DatePicker creado en @luana/ui-kit + story + export (no local en el feature) — canon §5"
+        - "startTime ISO-UTC se compone bien; endTime autocalc se preserva al cambiar fecha u hora"
+        - "tz tenant en ingreso/display, UTC en wire; sin <select>/<input> nativo ni arbitrary-values"
+        - "tsc/eslint/vitest verdes + kit tsc/vitest verdes"
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: workhorse
+      must_load_skills: [frontend-expert, vitalia-design-system, playwright-expert]
+      must_load_artifacts: [03-arch-delta-availability.md, 04-validators.yaml, 05-guidelines.md]
+      must_load_rules: [".claude/rules/frontend-visual-fidelity.md", ".claude/rules/spanish-text.md"]
+      design_system_canon: "Storybook SSoT: Hora=molecules-timepicker--default (reuse) · Fecha=inputs-datepicker--default (PROMOTE: crear en el kit + story antes del merge). Calendar base=organisms-calendar--default."
+      forbidden_to_touch:
+        - "core/luana-core-*/src (excepto la PROMOCIÓN explícita de DatePicker a core/@luana/ui-kit/src/ — el ÚNICO core edit permitido, vía deliverable canon §5)"
+        - "otras marcas"
+        - "la columna de disponibilidad / DayAvailabilityStrip / FreeDoctorsList (las owna T-D3)"
+        - "el create path / patient inline / tokens (preservados)"
+      rationale: "1a Fecha/Hora del canon; DatePicker net-new shared → PROMOTE al kit (no local-y-olvidado). Aislado de T-D3 salvo el ensamble de startTime en NuevaCitaView."
+
+  - id: T-D3
+    title: "FE-D2 · strip multi-doctor día-driven + filtro por hora + FreeDoctorsList re-role"
+    surface: frontend
+    state: ready
+    depends_on: [T-D1, T-D2]   # T-D1 = el endpoint; T-D2 = serializa NuevaCitaView (mismo file, bucket code:scheduling)
+    description: >
+      Invertir la IA de disponibilidad a día-driven multi-doctor. (1b) hook nuevo
+      useServiceDayStrips(serviceId, dateLocal) en use-availability.ts (key incluye
+      dateLocal ⇒ 1d auto-refetch al cambiar día) + tipos ServiceDayResponse/ServiceDayDoctor
+      en agenda-schema.ts (reusa DayBlockItemSchema). EXTEND DayAvailabilityStrip de 1 a N
+      médicos (swimlane por médico: label avatar+nombre estilo EntityInfoCard + timeline
+      07–21 reusando isoToStripMinutes/blockToPct EXISTENTES; working verde/busy rojo/slot
+      amarillo --agent-mateo; time-cursor vertical cuando hay hora). (1c) helper nuevo
+      availability-filter.ts::isDoctorFreeAt (mirror advisory half-open [s,e), RN-2/RN-10) +
+      RE-ROLE FreeDoctorsList → lista filtrada-por-hora client-side (sin hora = hint; con hora
+      = libres a esa hora, 1-clic elige médico). Data-flow: servicio+día→fetch-all, hora→
+      filtra client, día-change→refetch, elegir médico→availability/check (autoridad)→chip.
+      Decisión §6 (swimlane + columna derecha se queda re-roleada) — Chris ratifica en G.
+    gherkin_coverage: [SC-dia-auto-lista-todos-medicos, SC-hora-filtra-disponibles, SC-cambio-dia-refresh, SC-strip-multidoctor-render, SC-half-open-filtra, SC-servicio-sin-medicos, SC-dia-sin-disponibilidad, SC-service-day-endpoint-down, SC-muchos-medicos, SC-strip-swimlanes-a11y, SC-strip-tz-clinica]
+    acceptance:
+      validator_ids: [V-D-service-day, V-D-strip-multidoctor, V-D-hora-filter, V-D-empty, V-D-a11y]
+      checks:
+        - "elegir servicio + día → strip lista TODOS los médicos del servicio (N lanes) SIN elegir médico antes (AC nueva 1b)"
+        - "poner hora → FreeDoctorsList = solo libres a esa hora (client-side, cero round-trip) + time-cursor (1c)"
+        - "cambiar día → strip auto-refresh (1d, key incluye dateLocal)"
+        - "swimlane por médico con bandas de color + click lane elige médico"
+        - "servicio sin médicos → empty_state; lane sin horario → 'Sin horario' (RN-4)"
+        - "half-open back-to-back libre en el filtro (RN-2); filtro es advisory, check/EXCLUDE = autoridad (RN-10)"
+        - "lanes a11y navegables (axe wcag2aa 0 violations, assertShellMounted antes)"
+        - "tsc/eslint/vitest verdes; live-verify del flujo (Chrome MCP) en el cierre"
+    seam_coverage:
+      - { seam: "FE↔BE contract", test_type: contract, file: "features/mateo/hooks/__tests__/use-service-day.contract.test.ts" }
+      - { seam: "componente↔shell", test_type: e2e-live, file: "e2e/regression/mateo/nueva-cita.spec.ts" }
+    assignment:
+      primary_agent: builder-frontend
+      model_preference: workhorse
+      must_load_skills: [frontend-expert, vitalia-design-system, playwright-expert]
+      must_load_artifacts: [03-arch-delta-availability.md, 04-validators.yaml, 05-guidelines.md]
+      must_load_rules: [".claude/rules/frontend-visual-fidelity.md", ".claude/rules/spanish-text.md"]
+      design_system_canon: "DayAvailabilityStrip = componente feature (NO en kit; extend in-feature, lift-candidate core NO ahora). Header lane=organisms-entityinfocard--default · chips=atoms-badge--semanticas. NO arbitrary-values, NO <div> de layout donde hay page-primitive."
+      forbidden_to_touch:
+        - "core/@luana/ui-kit/src (consume; DatePicker ya lo creó T-D2)"
+        - "core/luana-core-*/src"
+        - "otras marcas"
+        - "el create path / patient inline / tokens / el BE (consume T-D1)"
+        - "la lógica free/busy del BE (el filtro 1c es client-side advisory; NO duplicar en server)"
+      rationale: "1b/1c/1d sobre componente feature (DayAvailabilityStrip 1→N) + endpoint T-D1; FreeDoctorsList re-role; decisión §6 swimlane ratificable live."
+
+# ── DAG DELTA (orden de build) ────────────────────────────────────────────────
+# T-D1 (BE service-day) ──┐
+#                         ├─► T-D3 (FE multi-doctor strip + filtro + re-role)
+# T-D2 (FE Fecha/Hora) ───┘   (T-D3 depende de T-D1=endpoint + T-D2=serializa NuevaCitaView, bucket code:scheduling)
+# Wave D1 (paralelo): T-D1, T-D2.  Wave D2: T-D3.  → vuelve a G (Chris ejerce live + firma).

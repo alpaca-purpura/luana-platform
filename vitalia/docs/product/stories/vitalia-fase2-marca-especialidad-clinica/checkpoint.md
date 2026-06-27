@@ -8,7 +8,7 @@ module: brand
 capability: lisa.marca
 state: idea
 architecture_pattern: ADR-vitalia-004
-last_modified: '2026-06-07T01:20:00.000Z'
+last_modified: "2026-06-07T01:20:00.000Z"
 ratified_by_chris: false
 parallel_safe: true
 priority: medium
@@ -16,31 +16,21 @@ estimated_dev_days: 2-3
 dependencies:
   hard: []
   soft:
-    - vitalia-fase2-onboarding-clinica   # surface de CREACIÓN (set once al alta)
-    - vitalia-fase2-lisa-marca           # surface de EDICIÓN (done → esta historia la EXTIENDE)
+    - vitalia-fase2-onboarding-clinica
+    - vitalia-fase2-lisa-marca
 blocks_hard: []
 blocks_soft:
-  - vitalia-fase2-lisa-servicios          # consume la especialidad (presets + hints + dropdown per-servicio)
-reuse_map_summary: >-
-  EXTEND lisa-marca (done) con un atributo de marca "especialidad(es) de la clínica" +
-  EXTEND onboarding-clinica con el paso que lo declara al alta (set once). El atributo vive a
-  nivel tenant/brand; lo consumen lisa-servicios (seed presets + ejemplos del rung-picker +
-  opciones del dropdown de categoría per-servicio) y la capa agéntica de Lisa (ejemplos/sugerencias
-  condicionados a la especialidad). Posible refinamiento engine: expandir OFFER_LADDER_HINTS
-  (hoy fila genérica PROFESIONAL_SALUD) a filas por sub-vertical → /pm-luana si aplica.
-spawned_at: 2026-06-07T01:20:00.000Z
-spawned_from: vitalia-fase2-lisa-servicios   # capturada en round 3 del refinamiento de servicios
+  - vitalia-fase2-lisa-servicios
+reuse_map_summary: 'EXTEND lisa-marca (done) con un atributo de marca "especialidad(es) de la clínica" + EXTEND onboarding-clinica con el paso que lo declara al alta (set once). El atributo vive a nivel tenant/brand; lo consumen lisa-servicios (seed presets + ejemplos del rung-picker + opciones del dropdown de categoría per-servicio) y la capa agéntica de Lisa (ejemplos/sugerencias condicionados a la especialidad). Posible refinamiento engine: expandir OFFER_LADDER_HINTS (hoy fila genérica PROFESIONAL_SALUD) a filas por sub-vertical → /pm-luana si aplica.'
+spawned_at: 2026-06-07T01:20:00Z
+spawned_from: vitalia-fase2-lisa-servicios
 created_by: /po-ux (capture — pendiente formalizar /pm-vitalia)
-next_action: >-
-  /pm-vitalia formaliza: release + priority + cap lineage (extend lisa.marca) + decidir si el
-  paso de CREACIÓN se implementa dentro de vitalia-fase2-onboarding-clinica o como parte de esta
-  story · luego /po-ux refina (mockup del campo en Lisa → Marca + el paso en onboarding)
-release: F2
+next_action: '/pm-vitalia formaliza: release + priority + cap lineage (extend lisa.marca) + decidir si el paso de CREACIÓN se implementa dentro de vitalia-fase2-onboarding-clinica o como parte de esta story · luego /po-ux refina (mockup del campo en Lisa → Marca + el paso en onboarding)'
+release: F3
 cap_target: lisa.marca
 cap_change_type: extend
 parent_story: null
 ---
-
 # checkpoint · vitalia-fase2-marca-especialidad-clinica
 
 > **★ Capturada por `/po-ux` durante el refinamiento de `vitalia-fase2-lisa-servicios` (round 3, 2026-06-07).**

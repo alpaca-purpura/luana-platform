@@ -14,11 +14,10 @@ dependencies:
   soft: []
 blocks_hard: []
 blocks_soft: []
-release: F2
+release: F3
 cap_target: camila.multiplicar
 parent_story: null
 ---
-
 # vitalia-fase2-camila-multiplicar — idea
 
 **Goal:** Vista especialista Camila (Retener) — crear + gestionar campañas de re-engagement multipaquete.

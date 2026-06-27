@@ -4,12 +4,34 @@ type: ui-story
 agent_owner: mateo
 module: scheduling
 capability: mateo.agenda
-state: developed
-phase: AWAIT_CHRIS_VERIFY                            # G · verify-battery + auditoría UX live (16 fixes) verde + live-verified. Chris ejerce + firma chris_verify.signoff
+state: developed                                     # ⤺ /dev-team cerró el build del delta (T-D1+T-D2+T-D3 pushed · gates verdes · wiring live OK). Pausa en G para que Chris ejerza el rediseño. Base de 9 tickets preservada.
+phase: AWAIT_CHRIS_VERIFY                            # G · Chris ejerce el rediseño de disponibilidad live + firma chris_verify.rounds[1]/signoff (autonomous_mode:false → NO auto-auditor).
+next_action: "Chris ejerce el rediseño live (G) → firma chris_verify.rounds[1] + signoff → /pm-vitalia reconcile (R) → /auditor"
+delta_ready_package:                                 # ★ G round 1 — scope-delta (NO reemplaza el ready package base de 9 tickets)
+  arch: 03-arch-delta-availability.md                # endpoint service-day (decisión A) + Fecha/Hora split + strip 1→N + §6 swimlane recomendado
+  validators: 04-validators.yaml § delta_availability # SC nuevos + sub-categorías + seam_coverage + mutation/schemathesis
+  tickets: 06-tickets.yaml § delta_tickets           # T-D1 (BE) + T-D2 (FE Fecha/Hora) + T-D3 (FE strip multi-doctor) — BUILT
+  dispatch: dispatch-plan.md § "DELTA dispatch"      # DAG: T-D1+T-D2 ∥ → T-D3 ; autonomous_mode:false
+  design_decision: "§6 — swimlane-por-médico + FreeDoctorsList re-roleada (filtrada-por-hora). Chris ratifica live en G."
+  engine_boundary: "cero edit a core/luana-core-* salvo la extensión del kit ya migrada (SmartDateTimePicker showTime, @luana/ui-kit 0.8.0 — NO DatePicker nuevo · ratificado Chris). BE brand-local."
+  build_commits: { T-D1: 0b2adb07, T-D2: f38e0978, T-D3: 82731018 }   # kit precursor (SmartDateTimePicker showTime) uncommitted en working-tree (verificado tsc/vitest 326) — shared commit, promote-to-main pendiente (pregunta a Chris)
 chris_verify:
   required: true
   signoff: null                                      # → {by: Chris, date, result: SATISFIED|SATISFIED_WITH_FOLLOWUPS|REJECTED, notes, open_items}
-  rounds: []                                         # allowlist de scope ratificado para el auditor
+  rounds:                                            # allowlist de scope ratificado para el auditor
+    - round: 1
+      date: 2026-06-25
+      ratified_by: Chris
+      status: built                                  # construido (T-D1/2/3 pushed · gates verdes · wiring live OK) → Chris ejerce + firma en G
+      delta: >
+        Disponibilidad día-driven multi-doctor (comentario G #1). (1a) Separar Fecha de Hora
+        (TimePicker/TimeRangePicker recién en @luana/ui-kit). (1b) Día + servicio → auto-listar
+        disponibilidad de TODOS los médicos del servicio en el grafiquito (DayAvailabilityStrip
+        pasa de 1 a N médicos, swimlanes) SIN elegir médico antes. (1c) Hora → filtra a los
+        disponibles a esa hora (FreeDoctorsList = resultado filtrado, no marcar a mano). (1d)
+        Cambio de día → auto-refresh. SSoT del requisito: chris-input.md comentario G #1.
+        Decisión de diseño abierta (la resuelve /architect, Chris ratifica en G): visualización
+        N-médicos del strip (swimlane recomendado) + fate de la columna derecha.
 reconciled: false                                    # /pm-vitalia lo pone true en R (precondición del auditor)
 build_started: 2026-06-22                           # /pm-vitalia ready→developing + handoff /dev-team
 dod_live_verified: true                             # ★ happy path core ejercido live (cita-create 201 + patient-create 201, filas reales). Falta G de Chris (full functional + 409 + toast + demo) + auditor de los 9 fixes
@@ -31,7 +53,11 @@ dod_evidence:
     observed: "L1 canal de vuelta a '🚶 Walk-in'/'📞 Teléfono' (mockup ratificado). L3: picker de médico muestra 'Ana Garcia Mendoza' (nombre real) — era 'Dr. 2b0d9466' placeholder; el nombre estaba en la DB, el query no lo joineaba. Era CÓDIGO (no seed)."
     backend_log: "free-doctors endpoint ahora resuelve CONCAT(first_name,last_name) vía JOIN; 272/272 scheduling + 5/5 nuevos tests real-DB"
     verified_at: 2026-06-24
-  pending_at_G: "409 solape live (cubierto por integration test) · toast 'Cita creada' + grilla refleja (no observado, sesión expiró tras el 201) · demo-script.md · firma Chris"
+  - action: "DELTA G#1 build (T-D1 service-day + T-D2 Fecha/Hora + T-D3 strip N-médicos) — sanity de wiring live (orchestrator; ejercicio funcional completo = G de Chris)"
+    observed: "BE GET /availability/service-day → 422 (registrado, idéntico al day-strip existente, NO 404) · FE /mateo/agenda/nueva-cita compila+renderiza 200 (sin chunk-error). Contrato FE↔BE cubierto por contract-test del builder (verde)."
+    backend_log: "service-day en availability_router; sin tracebacks. Tests: scheduling 285/285 (T-D1 +13 real-DB) · mateo FE 425/425 (T-D3)."
+    verified_at: 2026-06-26
+  pending_at_G: "Rediseño G#1 ejercer live: servicio+día → strip multi-doctor (N swimlanes) · poner hora → filtra · cambiar día → refetch · ratificar §6 (swimlane + columna derecha re-roleada) · + base pendiente (409 solape · toast 'Cita creada'+grilla) · demo-script.md · firma Chris"
 live_verify_findings:                               # Chrome DevTools MCP (dr.demo · localhost:3002) 2026-06-22/23 — detalle en chris-input.md
   - "bug1 render token-isLoaded → skeleton eterno · FIXED+verificado (/offer/servicios 200, pickers pueblan)"
   - "bug2 token 60s cacheado → writes 307 · FIXED 1d63734f (free-doctors POST 200, era 307)"

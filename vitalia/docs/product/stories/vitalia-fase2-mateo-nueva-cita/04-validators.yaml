@@ -186,3 +186,117 @@ promotion_dependency:
   contract: "mockups/PROPOSED-CANON-ATOMS.md"
   soft_dep: true
   note: "tickets FE consumen los atoms desde @luana/ui-kit; build FE espera la promoción si el kit no los tiene. NUNCA editar core/@luana/ui-kit/src/ desde un ticket de marca."
+
+# ══════════════════════════════════════════════════════════════════════════════
+# DELTA — Availability redesign (G round 1) · comentario G #1 · SSoT 03-arch-delta-availability.md
+# Scope-delta sobre story `developed`. NO reemplaza los validators base (los 28 SC siguen).
+# Suma SC nuevos + sub-categorías mandatory donde aplican + seam_coverage. Tickets T-D1..T-D3.
+# ══════════════════════════════════════════════════════════════════════════════
+delta_availability:
+  verification_nature: funcional        # writes no nuevos; cambia interacción + contrato de lectura. G live.
+  demo_required: true                   # Chris ratifica el swimlane + el flujo live en G (chris_verify.rounds[1])
+  dev_app_verified:
+    required: true
+    env: "localhost:3002 + localhost:8002 (BE docker) · dr.demo@vitalialat.com · Chrome DevTools MCP"
+    must_exercise_writes: false         # delta = lectura (service-day) + interacción; el create 201 base ya verificado
+    must_exercise_flow: true            # ejercer: elegir servicio+día → strip auto-puebla N médicos → hora filtra → elegir médico libre → chip Disponible
+    evidence_fields: [dod_live_verified, dod_evidence, verified_at]
+
+  # ── Scenario coverage (delta) ───────────────────────────────────────────────
+  scenario_coverage:
+    by_subcategory:
+      happy:           [SC-fecha-hora-split, SC-dia-auto-lista-todos-medicos, SC-hora-filtra-disponibles, SC-cambio-dia-refresh]
+      edge:            [SC-strip-multidoctor-render, SC-half-open-filtra]      # back-to-back libre en el filtro client (RN-2)
+      empty_state:     [SC-servicio-sin-medicos, SC-dia-sin-disponibilidad]
+      network_failure: [SC-service-day-endpoint-down]
+      large_dataset:   [SC-muchos-medicos]
+      accessibility:   [SC-strip-swimlanes-a11y]
+      i18n:            [SC-strip-tz-clinica]
+      adversarial:     [SC-service-day-cross-clinic, SC-service-day-rbac]
+    mapping:
+      SC-fecha-hora-split:            { graders: [e2e], verification: "Fecha (DatePicker) y Hora (TimePicker) son controles separados; componen startTime ISO-UTC; endTime autocalc al cambiar cualquiera", playwright_required: true, validator_ids: [V-D-fecha-hora] }
+      SC-dia-auto-lista-todos-medicos: { graders: [e2e, state_check], verification: "elegir servicio + día → strip lista TODOS los médicos del servicio (N lanes) SIN elegir médico antes; GET /service-day 200 con doctors[]", playwright_required: true, validator_ids: [V-D-service-day, V-D-strip-multidoctor] }
+      SC-hora-filtra-disponibles:     { graders: [e2e], verification: "poner hora → FreeDoctorsList = solo médicos libres a esa hora (client-side desde blocks); time-cursor en el strip; cero round-trip extra", playwright_required: true, validator_ids: [V-D-hora-filter] }
+      SC-cambio-dia-refresh:          { graders: [e2e], verification: "cambiar día → useServiceDayStrips refetch (key incluye dateLocal); strip se actualiza con la disponibilidad del nuevo día", playwright_required: true, validator_ids: [V-D-service-day] }
+      SC-strip-multidoctor-render:    { graders: [e2e], verification: "swimlane por médico: label (avatar+nombre) + timeline 07–21 con working(verde)/busy(rojo)/slot-nuevo(amarillo); click lane elige médico", playwright_required: true, validator_ids: [V-D-strip-multidoctor] }
+      SC-half-open-filtra:            { graders: [unit], verification: "isDoctorFreeAt: [s,e) back-to-back NO solapa (RN-2); dentro de working AND sin overlap busy = libre", playwright_required: false, validator_ids: [V-D-hora-filter] }
+      SC-servicio-sin-medicos:        { graders: [e2e, state_check], verification: "servicio sin links Y clínica sin médicos activos → doctors:[] → empty_state 'Este servicio no tiene médicos asignados'", playwright_required: true, validator_ids: [V-D-service-day, V-D-empty] }
+      SC-dia-sin-disponibilidad:      { graders: [e2e], verification: "médicos existen pero ninguno con horario ese día → lanes con blocks=[] → 'Sin horario' por lane (RN-4)", playwright_required: true, validator_ids: [V-D-strip-multidoctor, V-D-empty] }
+      SC-service-day-endpoint-down:   { graders: [e2e], verification: "GET /service-day 5xx → strip error + reintentar (fail-soft); Crear sigue gated por chip", playwright_required: true, validator_ids: [V-D-strip-multidoctor] }
+      SC-muchos-medicos:              { graders: [e2e], verification: "clínica con muchos médicos del servicio → N lanes scroll/virtualizado, sin romper layout", playwright_required: true, validator_ids: [V-D-strip-multidoctor] }
+      SC-strip-swimlanes-a11y:        { graders: [{ type: axe, ruleset: wcag2aa }], verification: "lanes navegables por teclado; cada lane region/img con aria-label; time-cursor no atrapa foco; 0 violations (assertShellMounted antes)", playwright_required: true, validator_ids: [V-D-a11y] }
+      SC-strip-tz-clinica:            { graders: [e2e], verification: "día en tz clínica; bloques renderizados tz tenant (Intl); sin falso solape por DST; UTC en wire", playwright_required: true, validator_ids: [V-D-service-day] }
+      SC-service-day-cross-clinic:    { graders: [{ type: e2e, note: "BE integration" }], verification: "médico de otra clínica NO aparece en service-day (dual filter via slots/JOIN); cross-tenant sin leak", playwright_required: false, validator_ids: [V-D-service-day-dual] }
+      SC-service-day-rbac:            { graders: [{ type: e2e, note: "BE integration" }], verification: "rol fuera de SCHEDULING_PHI_ROLES → 403; sin auth → 403", playwright_required: false, validator_ids: [V-D-service-day-dual] }
+
+  # ── Business rules (delta — reusan RN base) ─────────────────────────────────
+  business_rules:
+    - { id: RN-2,  desc: "half-open back-to-back conviven (aplica al filtro client 1c)", must_pass: true, scenarios: [SC-half-open-filtra] }
+    - { id: RN-4,  desc: "sin-horario por lane (médico del servicio sin working_hours ese día)", must_pass: true, scenarios: [SC-dia-sin-disponibilidad] }
+    - { id: RN-7,  desc: "RBAC + PHI dual filter en service-day (sin paciente en la respuesta)", must_pass: true, scenarios: [SC-service-day-cross-clinic, SC-service-day-rbac] }
+    - { id: RN-8,  desc: "UTC + tz clínica/tenant + DST-safe en el strip multi-doctor", must_pass: true, scenarios: [SC-strip-tz-clinica] }
+    - { id: RN-10, desc: "filtro 1c = client-side advisory; autoridad = availability/check (médico elegido) + EXCLUDE submit", must_pass: true, scenarios: [SC-hora-filtra-disponibles] }
+
+  # ── seam_coverage (HARD · cobertura = colaborador real, no mock) ─────────────
+  test_construction_plan:
+    seam_coverage:
+      - { seam: "código↔DB (service-day resuelve servicio→médicos + per-doctor blocks, dual-filter)", test_type: integration-realdb, file: "tests/modules/vitalia/scheduling/test_service_day_strips_realdb.py", red_first: true, covers: [RN-4, RN-7], validator: V-D-service-day }
+      - { seam: "FE↔BE (contrato ServiceDayResponse shape camelCase)", test_type: contract, file: "features/mateo/hooks/__tests__/use-service-day.contract.test.ts", red_first: true, covers: [SC-dia-auto-lista-todos-medicos], validator: V-D-service-day }
+      - { seam: "componente↔shell (strip N-lanes renderiza en la hoja leaf real)", test_type: e2e-live, file: "e2e/regression/mateo/nueva-cita.spec.ts", red_first: true, covers: [SC-dia-auto-lista-todos-medicos, SC-strip-multidoctor-render], validator: V-D-strip-multidoctor }
+    backend:
+      api_integration:
+        - { file: "tests/modules/vitalia/scheduling/test_service_day_router_phi.py", red_first: true, covers: [RN-7], validator: V-D-service-day-dual }
+    frontend:
+      utils:
+        - { file: "features/mateo/utils/__tests__/availability-filter.test.ts", red_first: true, covers: [RN-2, RN-10], validator: V-D-hora-filter }
+      components:
+        - { file: "features/mateo/components/nueva-cita/__tests__/DayAvailabilityStrip.test.tsx", red_first: true, covers: [SC-strip-multidoctor-render, SC-dia-sin-disponibilidad], validator: V-D-strip-multidoctor }
+        - { file: "features/mateo/components/nueva-cita/__tests__/FreeDoctorsList.test.tsx", red_first: true, covers: [SC-hora-filtra-disponibles], validator: V-D-hora-filter }
+        - { file: "features/mateo/components/nueva-cita/__tests__/NuevaCitaView.test.tsx", red_first: true, covers: [SC-fecha-hora-split], validator: V-D-fecha-hora }
+      e2e:
+        - { file: "e2e/regression/mateo/nueva-cita.spec.ts", red_first: true, covers: [SC-dia-auto-lista-todos-medicos, SC-hora-filtra-disponibles, SC-cambio-dia-refresh, SC-fecha-hora-split] }
+      kit_promote:
+        - { file: "core/@luana/ui-kit/src/__tests__/DatePicker.test.tsx", note: "deliverable de T-D2: DatePicker date-only en el kit + story inputs.DatePicker.stories.tsx ANTES del merge (canon §5)" }
+    arch_fitness_extend:
+      - test_response_model_required.py     # service-day declara response_model
+      - test_phi_dual_filter.py
+      - test_no_phi_in_url_params.py         # serviceId/date no son PHI
+      - test-no-div-layout.test.ts           # strip swimlanes con page-primitives, no <div> de layout
+      - test-features-no-cross-imports.test.ts
+
+  # ── Technical gates (delta) ─────────────────────────────────────────────────
+  technical_gates:
+    mutation:
+      enabled: true
+      mode: diff-scoped-HARD
+      targets:
+        - "vitalia/backend/src/modules/vitalia/scheduling/infrastructure/repositories/availability_query_repository.py"  # get_service_day_strips
+        - "vitalia/frontend/src/features/mateo/utils/availability-filter.ts"                                            # isDoctorFreeAt half-open
+      note: "survivor líneas-nuevas → CHANGES_REQUESTED; tool ausente → degrada advisory"
+    schemathesis:
+      enabled: true
+      note: "endpoint nuevo /availability/service-day — fuzz contra OpenAPI"
+    ci_parity:
+      required_before_merge: true
+
+  # ── Playwright visual scope (delta · scope creep guard) ─────────────────────
+  playwright_visual_scope:
+    story_scope_routes:
+      - "/{tenantId}/mateo/agenda/nueva-cita"
+    story_scope_components:
+      - NuevaCitaView           # solo la sección Fecha/Hora + columna disponibilidad
+      - DayAvailabilityStrip    # 1→N swimlanes
+      - FreeDoctorsList         # re-role filtrado-por-hora
+      - DatePicker              # @luana/ui-kit (PROMOTE) — story propia en el kit
+    forbidden_to_touch:
+      - "components/ui/ shell primitives"
+      - "AgendaCalendar / WeekCalendar / DayCalendar (grilla — solo refleja, no se re-screenshotea)"
+      - "los 9 tickets base (create path, patient inline, tokens) — preservados"
+    render_sanity: "await assertShellMounted(page) antes de axe/visual sobre el shell (HB-68)"
+    storybook_ssot: "Fecha=inputs-datepicker--default (PROMOTE) · Hora=molecules-timepicker--default · chips=atoms-badge--semanticas · header lane=organisms-entityinfocard--default"
+
+  # ── Engine boundary (delta) ─────────────────────────────────────────────────
+  promotion_dependency:
+    atom: "DatePicker (date-only · Calendar+Popover wrapper)"
+    gate: "deliverable de T-D2 (FE) — se crea en core/@luana/ui-kit/src/DatePicker.tsx + story ANTES del merge (canon §5). NO precursora /pm-luana separada."
+    note: "Net-new shared = PROMOTE al kit, NUNCA re-implementación local-y-olvidada. TimePicker ya existe (reuse)."

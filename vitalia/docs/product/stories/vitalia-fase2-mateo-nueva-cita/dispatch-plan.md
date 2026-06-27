@@ -72,3 +72,56 @@ Single-hub (ADR-009): bucket `code:scheduling` + `code:crm` + `code:mateo` — p
 ## Soft-dep de los 4 atoms del canon (recordatorio)
 
 Los tickets FE consumen `FormActionBar`, `Badge variant=success|warning`, `PageHeader back-pill`, `EntityPicker.createAction` desde `@luana/ui-kit`. Si P-0 no se completó, el builder-frontend NO los re-implementa local (driftea → auditor CHANGES_REQUESTED). Escalar a `/pm-luana` si el kit no los tiene al arrancar el FE.
+
+---
+
+## DELTA dispatch (G round 1 · disponibilidad día-driven multi-doctor)
+
+> Scope-delta sobre story `developed`. SSoT del diseño: `03-arch-delta-availability.md`. SSoT del requisito: `chris-input.md` comentario G #1. Base (9 tickets) preservada — NO se re-despacha.
+
+### autonomous_mode
+
+```yaml
+autonomous_mode: false        # Chris ratifica el swimlane (§6) + ejerce el flujo live en G
+```
+
+**Por qué false (HARD):** la decisión de diseño abierta (swimlane N-médicos + fate de la columna derecha) la **ratifica Chris live en G** (es justo lo que `chris_verify.rounds[1]` dejó "in_design"). `verification_nature: funcional` → demo + live-verify. No es safe para autonomous.
+
+### Handoff matrix (ticket → agent → model → costo)
+
+| Ticket | Surface | primary_agent | model | costo rel. | depende |
+|---|---|---|---|---|---|
+| T-D1 | BE service-day endpoint | builder-backend | workhorse | medio | — (reusa T-BE-2/3 pushed) |
+| T-D2 | FE Fecha/Hora split (+ DatePicker PROMOTE) | builder-frontend | workhorse | medio | — |
+| T-D3 | FE strip multi-doctor + filtro + re-role | builder-frontend | workhorse | alto | T-D1, T-D2 |
+
+Auditores: `auditor-backend` (T-D1), `auditor-frontend` (T-D2, T-D3) — flagship.
+
+### DAG delta
+
+```
+T-D1 (BE service-day) ──┐
+                        ├─► T-D3 (FE strip N-médicos + filtro 1c + FreeDoctorsList re-role)
+T-D2 (FE Fecha/Hora) ───┘
+```
+
+- **Wave D1 (paralelo):** T-D1 (bucket `code:scheduling`-BE) + T-D2 (FE Fecha/Hora — toca NuevaCitaView sección inicio).
+- **Wave D2:** T-D3 (FE — toca NuevaCitaView columna disponibilidad + DayAvailabilityStrip + FreeDoctorsList; depende del endpoint T-D1 + serializa NuevaCitaView tras T-D2).
+- Single-hub (ADR-009): bucket `code:scheduling`. T-D2 y T-D3 ambos tocan `NuevaCitaView.tsx` → **serializar** (T-D3 depende de T-D2) para evitar colisión de archivo. La otra OPEN (`adrian-canal-inbound` = `code:crm/inbox`) no colisiona. Commit por pathspec.
+
+### Engine boundary (delta)
+
+- **DatePicker (date-only)** = PROMOTE a `core/@luana/ui-kit/src/DatePicker.tsx` + story — **deliverable de T-D2**, el ÚNICO core edit permitido (canon §5: net-new shared = al kit, no local). NO precursora `/pm-luana` separada.
+- `TimePicker` ya en el kit (reuse). `DayAvailabilityStrip` = componente feature vitalia (extend in-feature; lift-candidate core NO ahora).
+- BE: todo brand-local (`vitalia/backend/src/modules/vitalia/scheduling/` + `offer_service_specialist_links`). **CERO** edit a `core/luana-core-*/src`.
+
+### Playwright visual scope (delta)
+
+- `story_scope_routes`: `/{tenantId}/mateo/agenda/nueva-cita`.
+- `story_scope_components`: NuevaCitaView (sección Fecha/Hora + columna disponibilidad), DayAvailabilityStrip (1→N), FreeDoctorsList (re-role), DatePicker (kit, story propia).
+- `forbidden`: `components/ui/` shell primitives · la grilla de Agenda · los 9 tickets base.
+- `render_sanity`: `assertShellMounted(page)` antes de axe/visual.
+
+### Cierre
+
+Batería delta verde → **vuelve a G** (`developed` + `phase: AWAIT_CHRIS_VERIFY`): Chris ejerce live (servicio+día→strip auto-puebla N médicos→hora filtra→elige médico libre→chip Disponible→Crear) + ratifica el swimlane + firma `chris_verify.rounds[1].status: ratified`. NO auto-handoff a auditor mientras Chris siga dando observaciones G.

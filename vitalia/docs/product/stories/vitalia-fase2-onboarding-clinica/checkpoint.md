@@ -11,14 +11,14 @@ priority: critical
 estimated_dev_days: 5-6
 dependencies:
   hard: []
-  soft: [vitalia-fase2-config-cuenta]
+  soft:
+    - vitalia-fase2-config-cuenta
 blocks_hard: []
 blocks_soft: []
-release: F2
+release: F3
 cap_target: onboarding.clinica
 parent_story: null
 ---
-
 # vitalia-fase2-onboarding-clinica — idea
 
 **Goal:** Flujo onboarding nuevo tenant (clínica) — captura datos esenciales, configuración inicial, signup completo.
