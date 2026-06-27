@@ -617,3 +617,27 @@ hoja corto → **igual pegado al fondo** (el caso que el sticky fallaba) · `anc
 marco. **Gates:** tsc 0 · vitest 16/16 (+2 tests anchor sheet/page) · render-smoke 7/7. Stories: 5 estados + contenido-corto
 + anchor-page, cada uno en un marco-hoja `relative` (sin meta-decorator: render propio, evita el doble-wrap de decorators).
 Commit platform-only (kit + canon + rule).
+
+### 2026-06-26 · Promotion gate — `UniversalIntake` (nicolify) → `DataIntake` en `@luana/ui-kit`
+
+**Chris · 💡 PROPONE** — promover el componente de ingesta (URL/archivo/texto/conectar, hoy en el ICP de Abel)
+al kit como **el mecanismo de ingesta de datos de la plataforma**, igual en todas las marcas. Ubicación +
+análisis genérico-vs-acoplado + API `DataIntake`/`IntakeSeed` provistos. Pedido: ratificar la API → escribir
+el proposal formal → lift.
+
+**/pm-luana · ✓ APLICADO** — leí los 4 archivos de ubicación (`UniversalIntake` + `IcpIntakeOverlay` +
+`use-icp-extract` + `extract.ts`) + ADR-016. La API **cierra**. Escribí el proposal formal
+`docs/promotion-protocol/proposals/2026-06-26-ui-kit-data-intake.md` (state `proposed`, recomendación **APPROVED**).
+Acción ADR-016 = `CREATE`/`kit` (lift de código genérico, ≥3 consumidores hoy + mitad-BE ya en
+`core/luana-core-extraction`). **3 ajustes a la API (operacionalización, no objeciones):**
+(1) `maxSizeMB` es **net-new behavior** — el origin muestra "10 MB" como copy pero no valida nada → el lift agrega
+el chequeo real + error state + test; (2) `accentSlug` **no puede** ser `bg-agent-${slug}` (Tailwind JIT lo purga ·
+G3) → resuelve a CSS var `--intake-accent` = `var(--agent-${slug})`, default `--primary`; (3) `IntakeSeed.file`
+rico (`{name,base64,size,mimeType}`) — mejor que el `fileContent/fileName` flat del origin, habilita el size-check.
+
+> Reconcile: ui-kit committed = **0.9.0** (el datepicker `showTime` ya está `migrated`; el "0.7→0.8 in-flight" del
+> mandato quedó stale). Target bump del lift = `0.9.0 → 0.10.0` (reconcile contra current al ejecutar).
+
+**Próximo paso:** Chris ratifica la API + el proposal (APPROVED → state `accepted`) → recién ahí el lift
+(`/dev-team` o inline): build `DataIntake` + story + verify LIVE Chrome + refactor nicolify a wrapper fino.
+NO encadeno a `/dev-team` ahora — el lift necesita tu APPROVED primero.
