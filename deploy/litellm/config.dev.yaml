@@ -26,20 +26,32 @@
 model_list:
   # ── NANO / FAST → DeepSeek V4 Flash NON-THINKING (classification, routing,
   #    structured extraction e.g. abel ICP extractor). 1M ctx, $0.14/$0.28 per M,
-  #    98% cache discount. `deepseek-chat` = v4-flash non-thinking (deprecates
-  #    2026/07/24 → then thinking-disabled param on deepseek/deepseek-v4-flash).
+  #    98% cache discount.
+  #    MIGRATED 2026-06-25: legacy alias `deepseek-chat` retires 2026-07-24 15:59
+  #    UTC (namespace change, NOT a sunset — same V4-Flash engine). Now explicit
+  #    deepseek/deepseek-v4-flash with reasoning_effort=none (thinking OFF, as the
+  #    high-volume role needs). ⚠ LiteLLM bug #27453/#27439: some versions ignore
+  #    effort=none and force thinking ON → VALIDATE at deploy; if it leaks, add
+  #    `thinking: {type: disabled}`. drop_params:true guards malformed params.
   - model_name: deepseek/deepseek-v4-flash
     litellm_params:
-      model: deepseek/deepseek-chat
+      model: deepseek/deepseek-v4-flash
       api_key: os.environ/DEEPSEEK_API_KEY
+      reasoning_effort: none
     model_info:
       mode: chat
 
-  # ── REASONING → DeepSeek reasoner (= v4-flash thinking mode).
+  # ── REASONING → DeepSeek v4-flash THINKING mode.
+  #    MIGRATED 2026-06-25: legacy alias `deepseek-reasoner` retires 2026-07-24
+  #    15:59 UTC → now explicit deepseek/deepseek-v4-flash with reasoning_effort=
+  #    high (thinking ON). Same engine, no quality change. The model_name alias
+  #    stays `deepseek/deepseek-reasoner` → engine role-binding, DB and fallbacks
+  #    below are untouched.
   - model_name: deepseek/deepseek-reasoner
     litellm_params:
-      model: deepseek/deepseek-reasoner
+      model: deepseek/deepseek-v4-flash
       api_key: os.environ/DEEPSEEK_API_KEY
+      reasoning_effort: high
     model_info:
       mode: chat
 
