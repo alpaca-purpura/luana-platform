@@ -9,8 +9,8 @@
 # Los cockpits anteriores (Go-templates tools/luana-cockpit-go y Next
 # tools/_legacy/luana-cockpit) fueron ELIMINADOS del repo (2026-06-11).
 #
-# Puerto convencional por brand (Paradigma A · per-worktree):
-#   ~/Proyectos/luana-platform/   → :4000 (cross-brand · vista consolidada)
+# Puerto convencional por sistema (Paradigma A · per-worktree):
+#   ~/Proyectos/luana-platform/   → :4000 (cross-sistema · vista consolidada)
 #   ~/Proyectos/luana-nicolify/   → :4001
 #   ~/Proyectos/luana-vitalia/    → :4002
 #   ~/Proyectos/luana-comunify/   → :4003
@@ -33,16 +33,16 @@ if [[ ! -x "$ALPACA_BIN" ]]; then
   exit 1
 fi
 
-# Brand detection from worktree path (basename)
+# Sistema detection from worktree path (basename)
 WORKTREE_NAME="$(basename "$WS")"
 case "$WORKTREE_NAME" in
-  luana-platform)                  BRAND="cross-brand"; DEFAULT_PORT=4000 ;;
-  luana-vitalia|luana-vitalia-*)   BRAND="vitalia";  DEFAULT_PORT=4002 ;;
-  luana-nicolify|luana-nicolify-*) BRAND="nicolify"; DEFAULT_PORT=4001 ;;
-  luana-comunify|luana-comunify-*) BRAND="comunify"; DEFAULT_PORT=4003 ;;
-  luana-lupulo|luana-lupulo-*)     BRAND="lupulo";   DEFAULT_PORT=4004 ;;
-  luana-protocol-*|luana-core-*)   BRAND="cross-brand"; DEFAULT_PORT=4000 ;;
-  *)                               BRAND="cross-brand"; DEFAULT_PORT=4000 ;;
+  luana-platform)                  SISTEMA="cross-sistema"; DEFAULT_PORT=4000 ;;
+  luana-vitalia|luana-vitalia-*)   SISTEMA="vitalia";  DEFAULT_PORT=4002 ;;
+  luana-nicolify|luana-nicolify-*) SISTEMA="nicolify"; DEFAULT_PORT=4001 ;;
+  luana-comunify|luana-comunify-*) SISTEMA="comunify"; DEFAULT_PORT=4003 ;;
+  luana-lupulo|luana-lupulo-*)     SISTEMA="lupulo";   DEFAULT_PORT=4004 ;;
+  luana-protocol-*|luana-core-*)   SISTEMA="cross-sistema"; DEFAULT_PORT=4000 ;;
+  *)                               SISTEMA="cross-sistema"; DEFAULT_PORT=4000 ;;
 esac
 
 PORT="${PORT:-$DEFAULT_PORT}"
@@ -52,7 +52,7 @@ if ss -ltn "sport = :$PORT" 2>/dev/null | grep -q LISTEN; then
 fi
 
 echo ""
-echo "🚀 Luana Cockpit (alpaca) · worktree: $WORKTREE_NAME · brand: $BRAND"
+echo "🚀 Luana Cockpit (alpaca) · worktree: $WORKTREE_NAME · sistema: $SISTEMA"
 echo "   URL: http://localhost:$PORT · Ctrl+C para detener · logs abajo:"
 echo ""
-exec env WORKSPACE_ROOT="$WS" DEFAULT_BRAND="$BRAND" "$ALPACA_BIN" -workspace "$WS" -port "$PORT"
+exec env WORKSPACE_ROOT="$WS" DEFAULT_SISTEMA="$SISTEMA" "$ALPACA_BIN" -workspace "$WS" -port "$PORT"
