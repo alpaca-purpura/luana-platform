@@ -3,9 +3,10 @@
 # - Quitar una línea = ocultar ese módulo.
 # - Reordenar líneas = reordenar el sidebar.
 # - Borrar el archivo (o la key `nav`) = volver al default (todos los tabs).
-# IDs disponibles hoy: roadmap · board · map · drift · learnings · harness
+# IDs disponibles hoy: roadmap · evolucion · board · map · drift · learnings · harness
 nav:
   - roadmap
+  - evolucion
   - board
   - map
   - drift

@@ -99,9 +99,9 @@ toolchain:
   package_manager_fe: "pnpm@9.15.9"      # node 20 LTS via nvm
   venv_path: "${WS}/.venv"               # venv AT WORKSPACE ROOT
   postgres_port: 5435                    # shared dev postgres
-  # Cockpit = binario externo del repo alpaca-harness (NO vendored — se consume POR VERSIÓN; el código
+  # Cockpit = binario externo del repo prenter-harness (NO vendored — se consume POR VERSIÓN; el código
   # de alpaca jamás se copia a luana). Pin = la release tag de alpaca contra la que luana fue probada.
-  # cockpit-daemon.sh avisa (NO bloquea) si el repo alpaca local difiere. Subir el pin = deliberado,
+  # cockpit-daemon.sh avisa (NO bloquea) si el repo prenter local difiere. Subir el pin = deliberado,
   # tras testear una release nueva. Boundary completo: .claude/rules/cockpit-alpaca-boundary.md
   cockpit_min_version: "0.4.0"           # alpaca git tag (proxy: alpaca no expone -version flag)
   backend:

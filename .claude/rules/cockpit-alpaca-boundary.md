@@ -1,6 +1,6 @@
 # Cockpit ↔ alpaca Boundary (consumo versionado · cero fork · triage genérico/específico)
 
-> **tier: project.** El cockpit NO es código de luana — es el binario del repo separado **alpaca-harness** (`github.com/alpacapurpura/penter-harness`, carpeta `~/Proyectos/alpaca-harness`). luana lo **consume**, no lo contiene. Esta rule protege el límite: que mejorar alpaca con el tiempo NO desfase luana, y que pedidos al cockpit desde una marca NO filtren lo luana-específico al motor genérico. **Origen:** 2026-06-17 (temor de Chris: fork/drift + fuga de vocabulario "Marca" vs "Sistema/proyecto").
+> **tier: project.** El cockpit NO es código de luana — es el binario del repo separado **prenter-harness** (`github.com/alpacapurpura/prenter-harness`, carpeta `~/Proyectos/prenter-harness`). luana lo **consume**, no lo contiene. Esta rule protege el límite: que mejorar alpaca con el tiempo NO desfase luana, y que pedidos al cockpit desde una marca NO filtren lo luana-específico al motor genérico. **Origen:** 2026-06-17 (temor de Chris: fork/drift + fuga de vocabulario "Marca" vs "Sistema/proyecto").
 
 ## Modelo mental (cementado)
 
@@ -20,14 +20,14 @@ alpaca = **motor** (un programa). NO se instancia dentro de luana. Se **corre ap
 
 ## Cómo subir el pin (upgrade deliberado)
 
-1. Mejorás alpaca en su repo (`~/Proyectos/alpaca-harness`), taggeás release (`git tag vX.Y.Z`), rebuild (`./build-ui.sh && go build -o cockpit .`).
+1. Mejorás alpaca en su repo (`~/Proyectos/prenter-harness`), taggeás release (`git tag vX.Y.Z`), rebuild (`./build-ui.sh && go build -o cockpit .`).
 2. Probás el cockpit nuevo contra luana (levantás, verificás los tabs que usás).
 3. Subís `cockpit_min_version` en `project.config.yaml` a la tag nueva. **Recién ahí** queda "bendecido".
 4. Sin paso 3, `cockpit-daemon.sh` avisa al arrancar (no bloquea) — drift visible, no silencioso.
 
 ## Editar alpaca desde una sesión de luana (cuándo SÍ, cómo)
 
-Default: **NO**. Un cambio genérico al cockpit es trabajo del repo alpaca — idealmente en una sesión/worktree de alpaca, no mezclado con producto de marca. Si el cambio es legítimamente genérico (pasó triage regla 3+4): se **propone**, se ratifica con Chris, y se ejecuta **en `~/Proyectos/alpaca-harness`** (otro repo, otros commits). El límite de repo te protege mecánicamente — tocar alpaca obliga a cruzar a otro git, no pasa por accidente.
+Default: **NO**. Un cambio genérico al cockpit es trabajo del repo alpaca — idealmente en una sesión/worktree de alpaca, no mezclado con producto de marca. Si el cambio es legítimamente genérico (pasó triage regla 3+4): se **propone**, se ratifica con Chris, y se ejecuta **en `~/Proyectos/prenter-harness`** (otro repo, otros commits). El límite de repo te protege mecánicamente — tocar alpaca obliga a cruzar a otro git, no pasa por accidente.
 
 ## Anti-patterns prohibidos
 
@@ -35,7 +35,7 @@ Default: **NO**. Un cambio genérico al cockpit es trabajo del repo alpaca — i
 - ❌ Hornear una necesidad luana-específica en el motor genérico (lo que pasó con "Marca") en vez de seamizarla
 - ❌ Bumpear alpaca y dar por bueno el cockpit sin testear + sin subir `cockpit_min_version` (upgrade accidental)
 - ❌ Diseñar un feature del cockpit que `demo-environment` no podría apagar (rompe el test del segundo cliente)
-- ❌ Editar `~/Proyectos/alpaca-harness` mid-feature de marca sin triage + ratificación (mezcla producto con motor)
+- ❌ Editar `~/Proyectos/prenter-harness` mid-feature de marca sin triage + ratificación (mezcla producto con motor)
 
 ## Referencias
 
