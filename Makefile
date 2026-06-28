@@ -334,9 +334,9 @@ migrate-vitalia-schema:  ## One-shot · migrate vitalia to schema v2 (releases +
 
 # ════════════════════════════════════════════════════════════════
 # Cockpit: el launcher (cockpit-daemon.sh) MIGRÓ a chris-corp (home base, I-48).
-# El multi-cockpit es la vista del DUEÑO → se prende desde chris-corp:
-#   COCKPIT_MULTI=1 bash ~/Proyectos/chris-corp/harnesses/scripts/cockpit-daemon.sh start
-# (single-mode descartado). Binario = prenter-harness/products/cockpit-go; registry = ~/.cockpit/cockpit.yaml.
+# El multi-cockpit es la vista del DUEÑO → se prende desde chris-corp (modo único = multi · :4000):
+#   make -C ~/Proyectos/chris-corp cockpit-up
+# Binario = prenter-harness/products/cockpit-go; registry = ~/.cockpit/cockpit.yaml.
 # ════════════════════════════════════════════════════════════════
 
 # ── hooks ────────────────────────────────────────────────────────────────────
