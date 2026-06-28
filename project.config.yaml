@@ -100,10 +100,10 @@ toolchain:
   venv_path: "${WS}/.venv"               # venv AT WORKSPACE ROOT
   postgres_port: 5435                    # shared dev postgres
   # Cockpit = binario externo del repo prenter-harness (NO vendored — se consume POR VERSIÓN; el código
-  # de alpaca jamás se copia a luana). Pin = la release tag de alpaca contra la que luana fue probada.
+  # de prenter jamás se copia a luana). Pin = la release tag de prenter contra la que luana fue probada.
   # cockpit-daemon.sh avisa (NO bloquea) si el repo prenter local difiere. Subir el pin = deliberado,
-  # tras testear una release nueva. Boundary completo: .claude/rules/cockpit-alpaca-boundary.md
-  cockpit_min_version: "0.4.0"           # alpaca git tag (proxy: alpaca no expone -version flag)
+  # tras testear una release nueva. Boundary completo: .claude/rules/cockpit-boundary.md
+  cockpit_min_version: "0.4.0"           # prenter git tag (proxy: el cockpit no expone -version flag)
   backend:
     cwd: "{brand}/backend"
     lint:      "${WS}/.venv/bin/ruff check ."          # line-length 120, py312
