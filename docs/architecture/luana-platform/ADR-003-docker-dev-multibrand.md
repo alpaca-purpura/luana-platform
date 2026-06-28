@@ -79,6 +79,8 @@ Hasta 2026-05-15, el monorepo tenia un `docker-compose.dev.yml` raiz legacy con 
 
 **Cockpit per-worktree (Paradigma A):** el Luana Cockpit (visualizador SDD, filesystem-as-DB) corre por separado en cada worktree y usa el siguiente rango adicional:
 
+> **⚠ SUPERSEDED (I-48, 2026-06-28):** el cockpit dejó de ser per-worktree. Hoy = **un solo multi-cockpit `:4000`** consumido desde chris-corp (home base). La tabla de puertos de abajo se conserva como registro de la decisión original. Modelo vigente: `CLAUDE.md § Cockpit` + `.claude/rules/cockpit-boundary.md`.
+
 | Worktree | Brand inferido | Puerto cockpit |
 |---|---|---|
 | `luana-platform/` (main) | cross-brand | 4000 |
