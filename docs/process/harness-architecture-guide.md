@@ -152,7 +152,7 @@ El harness se auto-mejora con su propio proceso (dogfood):
 
 ## 8 · El cockpit (la ventana)
 
-`tools/luana-cockpit/` — Next.js standalone, **filesystem-as-DB** (lee los .md/.yaml del worktree, NO genera): board por estados, `/functionality` (cap↔código bidireccional), agents, map (3 zonas del paradigma), `/harness` (el backlog CIL como kanban read-only). **Per-worktree** (Paradigma A): cada hub corre el suyo (vitalia :4002, main :4000 cross-brand); pinta 🔨 lane por sesión leyendo `.session-locks/`. Para el harness es la capa de OBSERVABILIDAD (R-OBS): el move W7 fue path-stable precisamente para que el cockpit no note nada.
+El **Prenter Cockpit** — binario externo (`~/Proyectos/prenter-harness/products/cockpit-go/cockpit`, Go + UI Next embebida), **filesystem-as-DB** (lee los .md/.yaml de cada workspace, NO genera): board por estados, `/functionality` (cap↔código bidireccional), agents, map (3 zonas del paradigma), `/harness` (el backlog CIL como kanban read-only). **luana lo consume, no lo contiene** — su home base + launcher viven en chris-corp (I-48; boundary: `.claude/rules/cockpit-boundary.md`). Un **solo** multi-cockpit en `:4000` lee el registry del portfolio y ve todos los workspaces a la vez; pinta 🔨 lane por sesión leyendo `.session-locks/`. Se prende con `make -C ~/Proyectos/chris-corp cockpit-up`. Para el harness es la capa de OBSERVABILIDAD (R-OBS): el move W7 fue path-stable precisamente para que el cockpit no note nada.
 
 ## 9 · Qué quedó probado y qué decide Chris
 
