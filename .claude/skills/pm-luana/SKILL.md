@@ -61,7 +61,7 @@ scan_checkpoint "platform" "${WS}/docs/product/stories/*/checkpoint.md"
 Las **platform stories SÍ** las resuelve `/pm-luana` (es su owner): si una sale 🔴 acá, retomarla
 es trabajo propio (Modo Core), no handoff. Layer 1 enforcement del story-closure-gate.
 
-> **Monitor canónico en el cockpit:** el panorama vive en el cockpit (`make cockpit-up`):
+> **Monitor canónico en el cockpit:** el panorama vive en el cockpit (`make -C ~/Proyectos/chris-corp cockpit-up`):
 > platform stories → selector **⬡ Platform · core** → `/board`; deuda del harness/CIL → **`/harness`**
 > (4 carriles: L1 harness-backlog · L2 learnings · L3 tech-debt · L4 drift). Este scan es el gate
 > textual de cada bootstrap; el cockpit es la vista continua. Ambos leen los mismos `.md` (SSoT).

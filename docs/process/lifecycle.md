@@ -148,7 +148,7 @@ Release (cuándo) → Story-origin (por qué) → Scenarios (qué hace, humano)
 
 ```
 ┌─ COCKPIT (bosque · decidir) ────────────────┐      ┌─ CLAUDE CODE (ejecutar) ───────────────┐
-│ make cockpit-up   (→ :400X por brand)       │      │ /pm-{brand}                            │
+│ cockpit-up  →  chris-corp (multi · :4000)   │      │ /pm-{brand}                            │
 │ 1. Roadmap: ¿qué release toca?              │      │ 2. levanta story refining-ratificada   │
 │ 2. Salud de Producto: ¿qué caps stub/drift? │ ───► │ 3. encadena /po-ux → /architect →      │
 │ 3. Backlog Board: muevo idea→refining       │      │    /dev-team → /auditor (auto-chain)    │
@@ -157,9 +157,9 @@ Release (cuándo) → Story-origin (por qué) → Scenarios (qué hace, humano)
 └─────────────────────────────────────────────┘ SSE  └────────────────────────────────────────┘
 ```
 
-_(Puertos cockpit por brand: vitalia=:4002, nicolify=:4001, comunify=:4003, lupulo=:4004. Ver `CLAUDE.md` § Cockpit · Paradigma A.)_
+_(Cockpit = un solo multi-cockpit en :4000, prendido desde chris-corp (home base). Ver `CLAUDE.md` § Cockpit.)_
 
-1. **Cockpit** (`make cockpit-up` → puerto de la brand): ves la Salud de Producto (cuántas caps stub/partial/live/drift), el Roadmap (releases F0..FN), y el Backlog Board (10 estados). Decidís qué sigue. Movés `idea→refining` (única transición que Chris hace en el cockpit), ajustás prioridad/release, dejás notas y scenarios-draft en `chris-input.md`.
+1. **Cockpit** (`make -C ~/Proyectos/chris-corp cockpit-up` → multi :4000): ves la Salud de Producto (cuántas caps stub/partial/live/drift), el Roadmap (releases F0..FN), y el Backlog Board (10 estados). Decidís qué sigue. Movés `idea→refining` (única transición que Chris hace en el cockpit), ajustás prioridad/release, dejás notas y scenarios-draft en `chris-input.md`.
 2. **Claude Code** (`/pm-{brand}`): levanta la story que marcaste, valida WIP caps (≤1), y encadena `Skill(po-ux)`→`Skill(architect)`→`Skill(dev-team)`→`Skill(auditor)` programáticamente. Ejecuta el build con TDD.
 3. **Merge** (`/pm-{brand} merge`): al APPROVED, escribe `07-merge.md`, promueve la capability (status + scenarios desde el spec), archiva la story, squash-merge.
 4. **Cockpit refleja en vivo** (SSE): la cap pasa de stub→partial→verified-live, la traza Release→Story→Scenarios→Code→Tests→Status se completa. El bosque se actualizó.
