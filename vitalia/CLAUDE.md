@@ -120,7 +120,7 @@ Toda story que toque `cap_change_type ∈ {new, extend}` sobre cap user_visible:
 
 ```bash
 # Levantar cockpit y abrir tab Functionality (vista narrada del producto)
-make cockpit-up                                    # http://localhost:4002/functionality
+make -C ~/Proyectos/chris-corp cockpit-up          # http://localhost:4000/functionality
 
 # Crear una cap NUEVA (HB-51 · NUNCA hand-author el YAML)
 make new-cap BRAND=vitalia MODULE=inbox SLUG=adrian-inbox AREA=adrian.inbox

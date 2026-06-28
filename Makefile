@@ -31,7 +31,7 @@ BRANDS := nicolify vitalia comunify lupulo
 .PHONY: dev-clean-nicolify dev-clean-vitalia dev-clean-comunify dev-clean-lupulo dev-clean-all
 .PHONY: infra-matrix portfolio portfolio-check scan-promotables
 .PHONY: ci-parity $(BRANDS:%=ci-parity-%) ci-parity-be ci-parity-fe
-.PHONY: releases-vitalia capability-ledger-check migrate-vitalia-schema cockpit-up cockpit-down cockpit-status cockpit-restart
+.PHONY: releases-vitalia capability-ledger-check migrate-vitalia-schema
 .PHONY: install-hooks help sync-all sync-check promote-to-main
 
 COMPOSE_BASE := docker compose -f docker-compose.dev.yml
@@ -336,25 +336,11 @@ migrate-vitalia-schema:  ## One-shot · migrate vitalia to schema v2 (releases +
 	$(PYTHON) scripts/migrate_capability_ledger.py --brand vitalia
 
 # ════════════════════════════════════════════════════════════════
-# Tools operativas (cross-brand · cockpit SDD visualizer)
+# Cockpit: el launcher (cockpit-daemon.sh) MIGRÓ a chris-corp (home base, I-48).
+# El multi-cockpit es la vista del DUEÑO → se prende desde chris-corp (modo único = multi · :4000):
+#   make -C ~/Proyectos/chris-corp cockpit-up
+# Binario = prenter-harness/products/cockpit-go; registry = ~/.cockpit/cockpit.yaml.
 # ════════════════════════════════════════════════════════════════
-cockpit-up:  ## Levantar luana-cockpit (daemon · TRUE detach · sobrevive cierre de terminal · idempotente)
-	@bash scripts/cockpit-daemon.sh start
-
-cockpit-down:  ## Detener el cockpit daemon de este worktree
-	@bash scripts/cockpit-daemon.sh stop
-
-cockpit-status:  ## Estado del cockpit (proceso + listener + health HTTP)
-	@bash scripts/cockpit-daemon.sh status
-
-cockpit-restart:  ## Reiniciar el cockpit daemon (tras pull/edits del cockpit)
-	@bash scripts/cockpit-daemon.sh restart
-
-cockpit-multi:  ## Cockpit UNIFICADO (multi-workspace): un cockpit, el dropdown ve TODOS los worktrees del registry ~/.cockpit/cockpit.yaml en vivo · :4000
-	@COCKPIT_MULTI=1 bash scripts/cockpit-daemon.sh start
-
-cockpit-multi-down:  ## Detener el cockpit multi-workspace (:4000)
-	@COCKPIT_MULTI=1 bash scripts/cockpit-daemon.sh stop
 
 # ── hooks ────────────────────────────────────────────────────────────────────
 # D2 (W7, 2026-06-09): source-DETERMINISTIC. The shared .git/hooks/ (common-git-dir) must

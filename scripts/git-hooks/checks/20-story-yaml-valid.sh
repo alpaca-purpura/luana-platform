@@ -6,7 +6,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Un checkpoint.md con frontmatter YAML inválido (HB-93) o un 04-validators.yaml /
 # 06-tickets.yaml mal-formado (HB-102) llegó a `developed` sin que ningún gate lo
-# cazara → el cockpit (alpaca, Go-yaml) no parsea la story y NO renderiza sus
+# cazara → el cockpit (prenter, Go-yaml) no parsea la story y NO renderiza sus
 # artefactos (demo-script incluido). El gate 17 cubre SOLO keys duplicadas; este
 # cubre la validez ESTRUCTURAL completa (indentación, flow-mapping, etc.).
 # Además (HB-91): un checkpoint.md que se mueve a docs/archive/ DEBE estar

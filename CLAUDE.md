@@ -47,41 +47,34 @@ Por-brand: `{brand}/docs/` = SSoT autónomo. Vista master cross-brand: `docs/por
 
 **Venv at workspace root** — `.venv/bin/{python,pytest,ruff}`. NUNCA `cd {brand}/backend && python -m venv .venv` (rompe resolución `luana_core_*`).
 
-**Port allocation:** nicolify=8001/3001, vitalia=8002/3002, comunify=8003/3003, lupulo=8004/3004. **Cockpit per-worktree (Paradigma A):** main=4000, nicolify=4001, vitalia=4002, comunify=4003, lupulo=4004.
+**Port allocation:** nicolify=8001/3001, vitalia=8002/3002, comunify=8003/3003, lupulo=8004/3004. **Cockpit:** un solo multi-cockpit en `:4000`, prendido desde **chris-corp** (home base) — ver § Cockpit.
 
 ## Tools operativas (cross-brand · no son código de producto)
 
 | Tool | Path | Trigger conversacional | Cómo levantar |
 |---|---|---|---|
-| **Luana Cockpit** (SDD visualizer · **per-worktree** Paradigma A) | binario externo `~/Proyectos/prenter-harness/products/cockpit-go/cockpit` (Go + UI Next.js embebida go:embed · filesystem-as-DB · NO Docker · NO PG · NO node en runtime) | usuario pide "levantar cockpit", "abrir luana-cockpit", "arrancar la tool cockpit" (variantes coloquiales aceptadas) | **Comando único: `make cockpit-up`** desde el worktree actual (brand detection + port asignado + daemon TRUE-detach · pidfile/log `$WS/.cockpit/`). **Pivote 2026-06-11 ratificado Chris**: los cockpits anteriores (Go-templates `tools/luana-cockpit-go` y Next `tools/_legacy/luana-cockpit`) ELIMINADOS del repo — alpaca es el único y final. Rebuild binario: `cd ~/Proyectos/prenter-harness/products/cockpit-go && ./build-ui.sh && go build -o cockpit .`. Proceso v5 visible: tab Proceso (gate G signoff · DoD · stepper G·R) + gates G1-G9 en Drift. |
+| **Prenter Cockpit** (SDD visualizer · **consumido**, no contenido — vive en chris-corp) | binario externo `~/Proyectos/prenter-harness/products/cockpit-go/cockpit` (Go + UI Next.js embebida go:embed · filesystem-as-DB · NO Docker · NO PG · NO node en runtime) | usuario pide "levantar cockpit", "abrir el cockpit", "arrancar la tool cockpit" (variantes coloquiales aceptadas) | **Comando único: `make -C ~/Proyectos/chris-corp cockpit-up`** (un solo multi-cockpit · `:4000` · daemon TRUE-detach, sobrevive cierre de terminal). El launcher vive en **chris-corp** (home base, I-48); luana es **consumidor** (boundary: `.claude/rules/cockpit-boundary.md`). Rebuild binario: `cd ~/Proyectos/prenter-harness/products/cockpit-go && ./build-ui.sh && go build -o cockpit .`. Proceso v5 visible: tab Proceso (gate G signoff · DoD · stepper G·R) + gates G1-G9 en Drift. |
 
-### Cockpit · Paradigma A · per-worktree (cement 2026-05-28)
+### Cockpit · single multi-cockpit · consumido desde chris-corp (I-48)
 
-El cockpit es **filesystem-as-DB**: lee/escribe directo de `.md`/`.yaml` del worktree donde corre. Por eso vive con uno en CADA worktree (no es un servicio compartido).
+El cockpit es **filesystem-as-DB**: lee/escribe directo de los `.md`/`.yaml` de cada workspace. Su **home base es chris-corp** (`~/Proyectos/chris-corp`), NO luana — luana es **consumidor** del binario versionado (boundary: `.claude/rules/cockpit-boundary.md`). Un **solo** multi-cockpit corre en `:4000` y lee el registry del portfolio (`~/.cockpit/cockpit.yaml`, generado desde `chris-corp/portfolio/registry.yaml`) → ve TODOS los workspaces/sistemas a la vez (vista del dueño). El per-worktree-per-brand-port anterior quedó **descartado** (single-mode también).
 
-**Convención puertos** (alineada con backend/frontend brand allocation):
+**Levantar / bajar / estado** (desde cualquier worktree — apunta al registry, no al cwd):
 
-| Worktree | Brand inferido | Puerto cockpit | Backend brand | Frontend brand |
-|---|---|---|---|---|
-| `~/Proyectos/luana-platform/` (main) | cross-brand (vista consolidada) | 4000 | n/a | n/a |
-| `~/Proyectos/luana-nicolify/` | nicolify | 4001 | 8001 | 3001 |
-| `~/Proyectos/luana-vitalia/` | vitalia | 4002 | 8002 | 3002 |
-| `~/Proyectos/luana-comunify/` | comunify | 4003 | 8003 | 3003 |
-| `~/Proyectos/luana-lupulo/` | lupulo | 4004 | 8004 | 3004 |
-| `~/Proyectos/luana-protocol-*/` (efímero) | cross-brand | 4000 | n/a | n/a |
-| `~/Proyectos/luana-core-*/` (efímero lift) | cross-brand | 4000 | n/a | n/a |
+```bash
+make -C ~/Proyectos/chris-corp cockpit-up        # prende (multi · :4000 · TRUE-detach, sobrevive cierre de terminal)
+make -C ~/Proyectos/chris-corp cockpit-status    # proceso · listener · health
+make -C ~/Proyectos/chris-corp cockpit-down      # baja
+make -C ~/Proyectos/chris-corp cockpit-restart   # recarga el binario nuevo
+```
 
-`scripts/cockpit-daemon.sh` (vía `make cockpit-up`) detecta el worktree via `git rev-parse --show-toplevel`, infiere brand del basename, asigna puerto + `WORKSPACE_ROOT` + `DEFAULT_BRAND` y lanza el binario alpaca con `-workspace -port`. Override puerto manual: `PORT=4099 make cockpit-up`. Override binario: `ALPACA_COCKPIT_BIN=/otro/path`.
+Override binario: `COCKPIT_BIN=/otro/path` (default `~/Proyectos/prenter-harness/products/cockpit-go/cockpit`). El daemon (`chris-corp/harnesses/scripts/cockpit-daemon.sh`) avisa (no bloquea) si el binario local difiere del pin `toolchain.cockpit_min_version` de `project.config.yaml` (`check_cockpit_version`).
 
-**Por qué per-worktree:** cuando Chris edita un story en `~/Proyectos/luana-vitalia/` (wip/vitalia), esos cambios viven SOLO en ese filesystem hasta squash-merge a main. Un cockpit central apuntando a main NO los vería. Cada worktree levanta SU propio cockpit que ve sus cambios live.
+**Filesystem-as-DB en vivo:** el multi-cockpit lee directo del filesystem de cada worktree (incluido `wip/{brand}` antes del squash-merge a main) → los cambios de una sesión se ven live, sin esperar el merge. No hay cockpit por-worktree que mantener: uno solo, multi.
 
-**Cross-brand views**: cuando se necesita ver el estado consolidado de las 4 brands (Roadmap cross-brand, learnings comparativos), levanta el cockpit desde `~/Proyectos/luana-platform/` (worktree main) en `:4000`.
+**Session mapping (single-hub · ADR-009):** con N sesiones sobre el hub de una marca, el cockpit lee `.session-locks/*.lock` y pinta **"🔨 {lane}"** sobre la story que cada sesión está construyendo (board + franja "Construyendo ahora"). Lane = `$LUANA_LANE` (export opcional por terminal, ej. `export LUANA_LANE=A`) o `pid<PID>`. Así Chris ve mapeado qué sesión construye qué sin salir del cockpit.
 
-**Múltiples cockpits coexisten** sin colisión: si hay sesiones paralelas en vitalia + comunify, ambos cockpits corren simultáneo en `:4002` y `:4003` respectivamente.
-
-**Session mapping (single-hub · ADR-009):** con N sesiones sobre el hub de una marca, el cockpit de ese hub lee `.session-locks/*.lock` y pinta **"🔨 {lane}"** sobre la story que cada sesión está construyendo (board + franja "Construyendo ahora"). Lane = `$LUANA_LANE` (export opcional por terminal, ej. `export LUANA_LANE=A`) o `pid<PID>`. Así Chris ve mapeado qué sesión construye qué sin salir del cockpit.
-
-**Detener:** Ctrl+C en pnpm dev (foreground) o `lsof -ti:400X | xargs kill` por puerto.
+**Detener:** `make -C ~/Proyectos/chris-corp cockpit-down` (o `lsof -ti:4000 | xargs kill`).
 
 ## SDD Level 3 — vocabulario v4 (cementado 2026-05-06)
 
@@ -178,7 +171,7 @@ Detail: `.claude/rules/git-safety.md` + `.claude/rules/parallel-safety.md` + `.c
 | 35 | Test design doctrine (naturaleza del ticket → batería de tests · jscpd+arch-fitness first-class) | `test-design-doctrine.md` |
 | 36 | Paradigma arquitectura (3 planos · mapa = 3 zonas · trabajadores sobre un sistema · acción única · un engine) | `paradigm-arquitectura.md` + `docs/architecture/luana-platform/PARADIGM.md` |
 | 37 | Definition of Done live-verify (ninguna story `done` sin que Claude la ejerza live en el stack dev real + `dod_evidence`) | `definition-of-done-live-verify.md` |
-| 38 | Cockpit↔alpaca boundary (binario versionado · cero fork · cambios triage genérico/específico · alpaca-source jamás en luana) | `cockpit-alpaca-boundary.md` |
+| 38 | Cockpit boundary (binario versionado · cero fork · cambios triage genérico/específico · prenter-source jamás en luana) | `cockpit-boundary.md` |
 
 ## Conditional Rules (stub → skill on-demand)
 
