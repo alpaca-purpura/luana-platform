@@ -15,13 +15,13 @@ Para paralelizar refinamiento + build dentro de la MISMA marca, **NO se crean wo
 ## Anti-patterns (top 3 — lista completa en el detalle)
 
 - ❌ Crear worktree separado refine-lane dentro de una marca como operación diaria (violación ADR-009 — el hub es el default)
-- ❌ Worktree refine editando `{brand}/backend/src/` o `{brand}/frontend/src/` (viola scope discipline)
-- ❌ Bug visto en otra worktree ignorado sin documentar en `{brand}/docs/observed-bugs/`
+- ❌ Worktree refine editando `{sistema}/backend/src/` o `{sistema}/frontend/src/` (viola scope discipline)
+- ❌ Bug visto en otra worktree ignorado sin documentar en `{sistema}/docs/observed-bugs/`
 
 ## Referencias
 
 - `.claude/skills/worktree-protocol/references/dual-strategy.md` — **cuerpo operativo completo** (setup ad-hoc, naming convention, no-egoísmo clause, cross-worktree sync, enforcement layers)
 - `.claude/rules/parallel-safety.md` D2 + M14 — base topología + locks
 - `.claude/rules/step-0-worktree.md` — manifest + verification
-- `.claude/rules/git-safety.md` § Sync wip/{brand} con main — post squash-merge sync
-- `docs/architecture/luana-platform/ADR-009-single-hub-worktree.md` — decisión hub único
+- `.claude/rules/git-safety.md` § Sync wip/{sistema} con main — post squash-merge sync
+- `docs/architecture/{workspace.repo_prefix}-platform/ADR-009-single-hub-worktree.md` — decisión hub único

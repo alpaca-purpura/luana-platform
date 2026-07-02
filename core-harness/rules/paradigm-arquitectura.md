@@ -1,10 +1,10 @@
 # Paradigma de Arquitectura — trabajadores sobre un sistema (rule enforce-able)
 
-**Origen:** sesión 2026-05-30 — Chris fijó el modelo operativo de Luana ANTES de organizar las cajas del cockpit. **Cement-date:** 2026-05-30. **SSoT vivo:** `docs/architecture/luana-platform/PARADIGM.md`. **Decisión:** `ADR-010-orquestacion-agentica.md`. **Esta rule = la versión enforce-able** (árbol de decisión + anti-patterns + layers) que los skills citan. Si rule y PARADIGM divergen, manda PARADIGM (este file se corrige).
+**Origen:** sesión 2026-05-30 — Chris fijó el modelo operativo del producto ANTES de organizar las cajas del cockpit. **Cement-date:** 2026-05-30. **SSoT vivo:** `docs/architecture/{workspace.repo_prefix}-platform/PARADIGM.md`. **Decisión:** `ADR-010-orquestacion-agentica.md`. **Esta rule = la versión enforce-able** (árbol de decisión + anti-patterns + layers) que los skills citan. Si rule y PARADIGM divergen, manda PARADIGM (este file se corrige).
 
 ## Regla cardinal
 
-Toda funcionalidad de Luana vive en **uno de 3 planos** y aterriza en **una zona/caja del mapa**. Desde la **idea** se declara la caja; se deriva la zona; se valida hasta el merge. Quien refina/diseña/arquitectura/audita una story DEBE aplicar el árbol de decisión de abajo — no improvisar la ubicación.
+Toda funcionalidad del producto vive en **uno de 3 planos** y aterriza en **una zona/caja del mapa**. Desde la **idea** se declara la caja; se deriva la zona; se valida hasta el merge. Quien refina/diseña/arquitectura/audita una story DEBE aplicar el árbol de decisión de abajo — no improvisar la ubicación.
 
 ### Los 3 planos (no confundirlos = no duplicar)
 
@@ -36,22 +36,22 @@ Reglas de desempate:
 - **Si toca datos sensibles/regulados o seguridad:** el *enforcement técnico* (cifrado at-rest, audit, dual-filter) va a Infraestructura→Seguridad; la *vista user-facing* (ej. consentimiento que el dueño gestiona) va a su caja user-facing.
 - **Motor agéntico (engine copilot/sales_agent, RAG):** Infraestructura→motor-agentico. NO es una caja de feature que compita con los agentes — es su runtime. (Anti-duplicación de PARADIGM §2.)
 - **`Acceso` y `Onboarding` NO van en `Configuración`** — son superficies transversales propias.
-- La **zona se DERIVA** del registro `{brand}/docs/architecture/SYSTEM-MAP.yaml` (`zones`), no se escribe a mano por cap (evita campos que se desincronizan).
+- La **zona se DERIVA** del registro `{sistema}/docs/architecture/SYSTEM-MAP.yaml` (`zones`), no se escribe a mano por cap (evita campos que se desincronizan).
 
 ## Dónde se declara/valida (gates idea → done)
 
 | Fase | Owner | Qué hace con el paradigma |
 |---|---|---|
-| **idea / refining** | `/pm-{brand}` · `/po-ux` · `/po` · `/ux-agentico` | Aplica el árbol → declara la caja en checkpoint (`agent_owner`/`cap_target`). Sin caja válida no pasa a `refined`. Para agentic: confirma engine compartido + scope del trabajador (no engine nuevo). |
+| **idea / refining** | `/pm-{sistema}` · `/po-ux` · `/po` · `/ux-agentico` | Aplica el árbol → declara la caja en checkpoint (`agent_owner`/`cap_target`). Sin caja válida no pasa a `refined`. Para agentic: confirma engine compartido + scope del trabajador (no engine nuevo). |
 | **refined → ready** | `/architect` | `03-arch.md § Integration design (CONN)`: reachability entre planos + hogar (zona). Acción única (Plano 2), no mirror. |
 | **developing** | `builder-*` | No cruza de plano sin escalar. Trabajador llama acción del Plano 2, no reimplementa. Un solo engine. |
 | **developed → reviewing** | `/auditor` | Categoría Connectivity: verifica zona/caja válida + cap↔código + cero isla + cero engine duplicado. |
-| **reviewing → done** | `/pm-{brand}` | Fase F.3: la cap refleja su zona/caja en SYSTEM-MAP; `dev_preview` apunta a código real. |
+| **reviewing → done** | `/pm-{sistema}` | Fase F.3: la cap refleja su zona/caja en SYSTEM-MAP; `dev_preview` apunta a código real. |
 
 ## Anti-patterns prohibidos (top 4 — lista completa en PARADIGM.md)
 
 - ❌ Un trabajador (agente) que reimplementa lógica de negocio en vez de invocar la acción del Plano 2
-- ❌ Crear un engine agéntico por agente o por marca (debe ser un solo engine en `core/`; lift vía `/pm-luana`)
+- ❌ Crear un engine agéntico por agente o por marca (debe ser un solo engine en `core/`; lift vía `/pm-{platform}`)
 - ❌ Cap que llega a `developing` sin caja/zona declarada desde la idea; o escribir `zone` a mano en vez de derivarla del registro SYSTEM-MAP
 - ❌ Confundir invariante con implementación (MCP es swappable; la doctrina es "acción única descubrible") · exponer un MCP "gordo" al contexto (usar progressive disclosure)
 
@@ -59,10 +59,10 @@ Reglas de desempate:
 
 ## Referencias
 
-- `docs/architecture/luana-platform/PARADIGM.md` — SSoT vivo (modelo de 3 planos, invariantes, invariante-vs-implementación)
-- `docs/architecture/luana-platform/ADR-010-orquestacion-agentica.md` — decisión registrada
+- `docs/architecture/{workspace.repo_prefix}-platform/PARADIGM.md` — SSoT vivo (modelo de 3 planos, invariantes, invariante-vs-implementación)
+- `docs/architecture/{workspace.repo_prefix}-platform/ADR-010-orquestacion-agentica.md` — decisión registrada
 - `.claude/rules/anti-duplication.md` — un solo engine, una sola acción
 - `.claude/rules/anti-orphan-integration.md` — nada llega a `done` como isla (la caja es el hogar)
 - `docs/process/capability-protocol.md` — schema cap + dimensiones + derivación de zona
 - `docs/process/lifecycle.md` — 4 ejes (Release→Story→Capability→Scenario)
-- `{brand}/docs/architecture/SYSTEM-MAP.yaml` — registro zonas→cajas→áreas
+- `{sistema}/docs/architecture/SYSTEM-MAP.yaml` — registro zonas→cajas→áreas

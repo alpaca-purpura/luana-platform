@@ -1,6 +1,6 @@
 # Harness Lifecycle Process (HLP)
 
-> SSoT del proceso de gestión del ciclo de vida del **harness** (skills, rules, agents, hooks, cockpit, templates, docs de proceso) de luana-platform. Premisa: **tus herramientas son un producto que mantenés.** Diseñado para **un solo operador (Chris)** + Claude. Origen: sesión modernización 2026-06-01. Cement-date: 2026-06-01.
+> SSoT del proceso de gestión del ciclo de vida del **harness** (skills, rules, agents, hooks, cockpit, templates, docs de proceso) de {workspace.repo_prefix}-platform. Premisa: **tus herramientas son un producto que mantenés.** Diseñado para **un solo operador (Chris)** + Claude. Origen: sesión modernización 2026-06-01. Cement-date: 2026-06-01.
 
 ## Por qué existe
 
@@ -71,7 +71,7 @@ Workflow JS multi-agente (`.claude/workflows/harness-audit.js`) que enumera todo
 
 ## 9. Maduración → plugin
 
-Cuando el harness se estabilice, empaquetarlo como **plugin `luana-harness`** versionado (semver) → tus herramientas pasan a tener "releases" (Wave 5 del roadmap de modernización). Distribución/versionado limpio incluso para una persona.
+Cuando el harness se estabilice, empaquetarlo como **plugin `prenter-harness`** versionado (semver) → tus herramientas pasan a tener "releases" (Wave 5 del roadmap de modernización). Distribución/versionado limpio incluso para una persona.
 
 ## Automatización CC-2026 que lo sostiene
 

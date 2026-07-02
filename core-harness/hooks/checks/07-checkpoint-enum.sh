@@ -21,9 +21,9 @@
 
 if [ "${GATE_LEVEL}" = "full" ]; then
 
-# Multibrand: capturar checkpoints en docs/ raíz (platform/legacy) + per-brand
-# {brand}/docs/product/stories/{story}/checkpoint.md. Validación v4 states es
-# universal cross-brand (mismo paradigma 10 estados).
+# Multisistema: capturar checkpoints en docs/ raíz (platform/legacy) + per-sistema
+# {sistema}/docs/product/stories/{story}/checkpoint.md. Validación v4 states es
+# universal cross-sistema (mismo paradigma 10 estados).
 CHECKPOINT_FILES_STAGED=$(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null \
   | grep -E '^(docs/(product/stories/[^/]+/checkpoint\.md|projects/active/.+/checkpoint\.md)|[a-z][a-z0-9_-]*/docs/product/stories/[^/]+/checkpoint\.md)$' \
   || true)
