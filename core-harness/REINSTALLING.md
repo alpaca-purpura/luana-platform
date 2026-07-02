@@ -31,14 +31,22 @@ and any `settings.json` hook entries that reference old core paths.
 (`installer/new-project.sh` from the factory, or `cp -r` of the pinned tag). Verify
 `core-harness/VERSION` shows the expected `KIT_VERSION`.
 
-**4 · Install the plugin.** In Claude Code, inside the repo:
+**4 · Install the plugin — FROM the private marketplace (KIT-06).** In Claude Code,
+inside the repo:
 ```
-/plugin marketplace add ./core-harness
-/plugin install harness@prenter-harness
+claude plugin marketplace add alpacapurpura/prenter-marketplace
+/plugin install harness@prenter-marketplace
 ```
-Skills/agents/hooks activate — including the telemetry hooks (Stop · SubagentStop ·
-SessionEnd → `telemetry/emit.py`). Reinstall later = `/plugin update` after a version
-bump (explicit semver — no silent updates), or uninstall + install (idempotent).
+Access rides your ambient git credentials — the account's client code is a read-only
+token/deploy-key on the marketplace repo (export `GITHUB_TOKEN` for background
+auto-updates). `harness` = STABLE channel · `harness-beta` = beta; ONE channel per
+machine (switching = uninstall + install). Skills/agents/hooks activate — including the
+telemetry hooks (Stop · SubagentStop · SessionEnd → `telemetry/emit.py`). Update later =
+a semver bump published to your channel, then `claude plugin marketplace update
+prenter-marketplace` + `/plugin update harness` (explicit semver — no silent updates).
+Air-gapped fallback (no marketplace reachable — I-31): the local index that travels in
+the kit still works: `/plugin marketplace add ./core-harness` + `/plugin install
+harness@prenter-harness`.
 
 **5 · `/harness:bootstrap`.** Re-exposes the rules corpus, runs the DETECTION SWEEP
 (proposes seam values with provenance — slots already signed are NOT overwritten), and

@@ -239,8 +239,8 @@ agent_roster:
     - { slug: christian, name: Christian, emoji: "🏹", color: "#3B82F6", role: especialista, subtitle: "SDR · outbound" }
     - { slug: norvil,    name: Norvil,    emoji: "🌱", color: "#EC4899", role: especialista, subtitle: "Account mgr · retención" }
     # TODO: Sara (Jefa Proyectos / "Mi Día", #F59E0B, ADR-nicolify-002) — pendiente en agent-meta.ts
-  comunify: __FILL_ME__    # no roster in cockpit yet (ADR propio pendiente)
-  lupulo: __FILL_ME__
+  comunify: []    # declarado-vacío: sin roster en cockpit — ADR comunify pendiente (firma Chris 2026-07-02, sesión reinstall kit)
+  lupulo: []      # declarado-vacío: marca placeholder — bootstrap pendiente (firma Chris 2026-07-02)
 
 # ── SLOT 9 ──────────────────────────────────────────────────────────────
 #  value_stream  ·  replaces: cockpit map-zones.ts VALUE_STREAM_STAGES.
@@ -253,9 +253,13 @@ value_stream:
     - { id: vender,    name: Vender,    order: 2, description: "Captar, calificar y cerrar al paciente.",          boxIds: [adrian] }
     - { id: operar,    name: Operar,    order: 3, description: "Agenda, reservas prepagadas y día clínico.",        boxIds: [mateo] }
     - { id: fidelizar, name: Fidelizar, order: 4, description: "Post-tratamiento, NPS, reputación y cohortes.",     boxIds: [camila] }
-  nicolify: __FILL_ME__    # derive from nicolify roster (Abel→Brenda→Christian→Norvil) at W5b/bootstrap
-  comunify: __FILL_ME__
-  lupulo: __FILL_ME__
+  nicolify:    # derivado del roster nicolify (firma Chris 2026-07-02, sesión reinstall kit)
+    - { id: atraer,  name: Atraer,  order: 1, description: "Estrategia de oferta + growth/pauta que trae cuentas.", boxIds: [abel, brenda] }
+    - { id: vender,  name: Vender,  order: 2, description: "Outbound SDR: calificar y cerrar cuentas B2B.",         boxIds: [christian] }
+    - { id: operar,  name: Operar,  order: 3, description: "Gestión/delivery de la cuenta activa.",                 boxIds: [] }   # Sara pendiente ADR-nicolify-002
+    - { id: retener, name: Retener, order: 4, description: "Retención + expansión de cuentas.",                     boxIds: [norvil] }
+  comunify: []    # declarado-vacío: se deriva del roster cuando exista — ADR comunify pendiente (firma Chris 2026-07-02)
+  lupulo: []      # declarado-vacío: marca placeholder — bootstrap pendiente (firma Chris 2026-07-02)
 
 # ── SLOT 10 (D1) ─────────────────────────────────────────────────────────
 #  wip_caps  ·  replaces: the CAP NUMBERS duplicated VERBATIM in
