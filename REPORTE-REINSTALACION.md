@@ -7,7 +7,7 @@
 
 | | Antes | Después |
 |---|---|---|
-| `core-harness/` | **sin pin registrado** (instalación origen, pre-disciplina de pin; contenido ≈ v0.4.0 + 4 hot-fixes locales) | **`KIT_VERSION=0.5.0`** @ commit fábrica `f1f32bb` — byte-idéntico verificado (`diff -rq` limpio) |
+| `core-harness/` | **sin pin registrado** (instalación origen, pre-disciplina de pin; contenido ≈ v0.4.0 + 4 hot-fixes locales) | **`KIT_VERSION=0.5.0`** @ **TAG `v0.5.0`** (`aecea6e`) — byte-idéntico verificado (`diff -rq` limpio). *(Primera pasada fue @ `f1f32bb` pre-tag; corregido a tag — delta único: REINSTALLING.md paso 4, KIT-06)* |
 
 ## Veredicto por paso
 
@@ -16,7 +16,7 @@
 | 1 · Backflow audit | ✅ **CERO hot-fixes por upstrear** | 7 deltas vs v0.4.0: 6 ya absorbidos en 0.5.0 (verificado contenido), 1 cosmético descartado consciente. `BACKFLOW.md` en el repo. ⚠️ firma operador pendiente (AFK) — nada quedó enterrado igualmente |
 | 2 · Retirar exposición vieja | ✅ | 21 symlinks `.claude/rules/*→core-harness` removidos · 1 agent copiado del core removido (idéntico verificado pre-borrado) · hooks settings: 0 refs viejas (nada que retirar) |
 | 3 · Kit wholesale | ✅ | reemplazo total; `VERSION` = 0.5.0; integridad byte-idéntico vs `f1f32bb` |
-| 4 · Plugin (SC-6) | ✅ | `marketplace add ./core-harness` + `install harness@prenter-harness` vía CLI headless · **scope: project** (declaración tracked, rollback coherente) · path marketplace relativizado `./core-harness` (cross-worktree safe) — resuelve OK |
+| 4 · Plugin (SC-6) | ✅ | instalación final: **`harness@prenter-marketplace` (canal estable, KIT-06)** · **scope: project** (declaración tracked, rollback coherente) · primera pasada fue por marketplace local `./core-harness` (fallback air-gapped) — corregido, ver § SC-10 |
 | 4b · SC-7 idempotencia | ✅ | uninstall + install (scope project) → settings hash **idéntico** + plugin list **idéntico** |
 | 5 · Bootstrap | 🟡 **parcial** | re-exposición ✅ (21 symlinks rules re-creados, 0 rotos · agents vía plugin, sin copia duplicada · symlink-backs convencionales verificados) · sweep: **5 slots de negocio `__FILL_ME__` PRE-existentes** → doctor **exit 3** (no exit 0): son hechos de negocio que requieren firma del operador (AFK) — el kit prohíbe escribir seam sin firma. Propuestas con procedencia registradas lado cliente (`BACKFLOW.md § Anexo`) |
 | 6 · Telemetría | ✅ | ver evidencia abajo |
@@ -34,10 +34,11 @@
 | `templates/01-spec-template.md` | doctrina mockups Storybook-first | ya absorbido |
 | `process/tech-debt.md` | remoción de fila placeholder en ledger vacío | descarte consciente |
 
-## SC-6 / SC-7
+## SC-6 / SC-7 / SC-10
 
-- **SC-6 SELLADO:** kit instalado como plugin versionado (`harness@prenter-harness` v0.5.0, scope project, enabled). Hooks del plugin: SessionStart · Stop · SubagentStop · SessionEnd (telemetría embebida).
+- **SC-6 SELLADO:** kit instalado como plugin versionado. Hooks del plugin: SessionStart · Stop · SubagentStop · SessionEnd (telemetría embebida).
 - **SC-7 SELLADO:** uninstall+install = estado byte-idéntico (hash settings + inventario).
+- **SC-10 CERRADO (KIT-06):** plugin re-instalado desde el **marketplace privado canal ESTABLE** (`claude plugin marketplace add alpacapurpura/prenter-marketplace` — acceso vía credenciales git ambient, clone+validación OK). Evidencia `/plugin list`: `harness@prenter-marketplace · Version: 0.5.0 · Scope: project · Status: ✔ enabled`. El marketplace local `./core-harness` quedó como lo que es: fallback air-gapped (I-31), removido de settings. Update futuro = `claude plugin marketplace update prenter-marketplace` + `/plugin update harness` (semver explícito).
 
 ## Evidencia telemetría (OBS-14 — nace medible)
 
@@ -66,4 +67,4 @@
 
 ## Rollback
 
-Todo el reinstall = **1 commit** en el repo del engagement → `git revert <sha>` + `claude plugin uninstall harness@prenter-harness --scope project` restaura el estado previo. Seam y propiedad del cliente: intocados.
+Reinstall = commit `132074c7` + commit fix SC-10 → `git revert` de ambos + `claude plugin uninstall harness@prenter-marketplace --scope project` restaura el estado previo. Seam y propiedad del cliente: intocados.

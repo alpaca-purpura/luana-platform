@@ -70,13 +70,13 @@
     "claude-md-management@claude-plugins-official": true,
     "commit-commands@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": false,
-    "harness@prenter-harness": true
+    "harness@prenter-marketplace": true
   },
   "extraKnownMarketplaces": {
-    "prenter-harness": {
+    "prenter-marketplace": {
       "source": {
-        "source": "directory",
-        "path": "./core-harness"
+        "source": "github",
+        "repo": "alpacapurpura/prenter-marketplace"
       }
     }
   }
