@@ -9,7 +9,7 @@
 #   MAX_AGE_DAYS    — Age threshold in days (default: 30). Branches with no commits
 #                     in the last MAX_AGE_DAYS days are cleanup candidates.
 #   GH_TOKEN        — GitHub token with branch delete scope (set by workflow).
-#   GITHUB_REPOSITORY — owner/repo (set by workflow, e.g. org/luana-platform).
+#   GITHUB_REPOSITORY — owner/repo (set by workflow, e.g. org/{workspace.repo_prefix}-platform).
 #
 # Output:
 #   Summary with N candidates, M preserved, K deleted.

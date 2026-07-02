@@ -1,6 +1,6 @@
 # Hot-fix Repro Mandatory
 
-> **Slim stub (context-rot pass 2026-05-30).** Detalle operativo completo (workflow 4 steps verbatim, caso origen detallado T-1.bis, schema `repro_evidence` completo, enforcement layers, multibrand awareness) en `docs/rules-detail/hotfix-repro-mandatory.md` — load on-demand. **Origen:** PI-12 S1 T-1.bis (2026-05-05). Handoff doc misdiagnosed bug → ~$8 USD wasted en builder Opus wrong scope.
+> **Slim stub (context-rot pass 2026-05-30).** Detalle operativo completo (workflow 4 steps verbatim, caso origen detallado T-1.bis, schema `repro_evidence` completo, enforcement layers, multisistema awareness) en `docs/rules-detail/hotfix-repro-mandatory.md` — load on-demand. **Origen:** PI-12 S1 T-1.bis (2026-05-05). Handoff doc misdiagnosed bug → ~$8 USD wasted en builder Opus wrong scope.
 
 ## Regla cardinal
 
@@ -26,7 +26,7 @@ La forma B (trace) vale cuando el repro local no es viable; el diagnóstico DEBE
 
 ## Cuándo carga el detalle
 
-- Commands verbatim de reproducción (brand-specific vs engine compartido)
+- Commands verbatim de reproducción (sistema-specific vs engine compartido)
 - Schema completo `repro_evidence` con todos los fields (`diagnosis_correction`, etc.)
 - Caso origen verbatim (T-1.bis: provider fallback ya funcionaba, bug real era fixture `litellm_call_id`)
 

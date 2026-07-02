@@ -33,7 +33,7 @@ links:
 > Zona/caja del sistema + shell + ruta donde el user aterriza. Derivada del árbol de `.claude/rules/paradigm-arquitectura.md`. (Para service/agentic stories esta sección es opcional.)
 
 - **Zona/caja:** [Agentes {agente} | Plataforma {acceso/onboarding/configuración} | Infraestructura {...}] — derivada del `SYSTEM-MAP.yaml`
-- **Shell:** [qué shell aplica · del `{brand}/docs/architecture/SHELL-DESIGN-CONTRACT.md` · si no existe → generar con el design-system actual]
+- **Shell:** [qué shell aplica · del `{sistema}/docs/architecture/SHELL-DESIGN-CONTRACT.md` · si no existe → generar con el design-system actual]
 - **Ruta del user:** [`/[tenantId]/(shell-organism)/{agent}/{subtab}/...` donde el user aterriza]
 
 > **Sin mockup en RONDA 1 (W0.5-bis · funcional-primero).** Primero se cementa lo funcional (mapa + pantallas/campos);
@@ -104,16 +104,16 @@ Happy path
 > ★ W0.5-bis (REQ-TAKING-DETAIL §4 · spec-mapa-funcional.md § Dos rondas · `design-system-canon.md` binding HARD).
 > Recién acá — con lo funcional ya cerrado (FIRMA 1) — nace el mockup creativo: **shell completo + la hoja
 > correspondiente + TODOS los campos conversados + TODOS los átomos**, **compuesto partiendo de Storybook**
-> (`core/@luana/ui-kit` = SSoT visual · `design-system-canon.md §5` · átomos + layout-primitives + archetypes REALES,
+> (`{design_system_ref.package}` = SSoT visual · `design-system-canon.md §5` · átomos + layout-primitives + archetypes REALES,
 > tokens de la fuente única — spacing/radius/tipografía/color **NUNCA arbitrary**). **Partí de las stories de Storybook
-> (`build-storybook` / `:6007` / `/showcase`) para reusar lo que ya existe ANTES de crear**; un átomo/primitiva faltante
-> se **PROPONE + PROMUEVE a `@luana/ui-kit` + su story** (vía `/pm-luana`, queda reusable). NO se maqueta a mano con
-> `<div>` + clases sueltas, NO se copia `_shared.css`, NO se reinventa una primitiva existente. El refiner es creativo y
-> **puede MEJORAR lo escrito** (actualiza el § Mapa funcional si la forma cambió algo). Lo que se ve en Storybook = lo
-> que se programa. Iterá hasta que Chris lo apruebe. **✍ FIRMA 2 = la firma FINAL única**
+> (`build-storybook` / `:{design_system_ref.storybook_port}` / `{design_system_ref.showcase_route}`) para reusar lo que ya existe ANTES de crear**;
+> un átomo/primitiva faltante se **PROPONE + PROMUEVE a `{design_system_ref.package}` + su story** (vía `/pm-{platform}`, queda reusable).
+> NO se maqueta a mano con `<div>` + clases sueltas, NO se copia CSS compartido a mano, NO se reinventa una primitiva
+> existente. El refiner es creativo y **puede MEJORAR lo escrito** (actualiza el § Mapa funcional si la forma cambió
+> algo). Lo que se ve en Storybook = lo que se programa. Iterá hasta que Chris lo apruebe. **✍ FIRMA 2 = la firma FINAL única**
 > (`mockup_final_signed: true`) → dispara la GENERACIÓN de la RONDA 2.
 
-- **Mockup:** [compuesto de Storybook — shell (stories `Shell/*`) + hoja + átomos reales nombrados de `@luana/ui-kit` (revisá Storybook `build-storybook`/`:6007` o `/showcase`); link opcional al render]
+- **Mockup:** [compuesto de Storybook — shell (stories `Shell/*`) + hoja + átomos reales nombrados de `{design_system_ref.package}` (revisá Storybook `build-storybook` / `:{design_system_ref.storybook_port}` o `{design_system_ref.showcase_route}`); link opcional al render]
 - **Estados:** default / hover / loading / empty / error / success
 - **Microcopy:** [Spanish neutro · ver `.claude/rules/spanish-text.md`]
 
@@ -209,7 +209,7 @@ Happy path
 
 **playwright_required:** true (testear via Promise.all 2 requests)
 **Graders:**
-- { type: e2e, path: "{brand}/frontend/e2e/regression/{story-id}/{m}-edge.spec.ts", function: "test_concurrent_create" }
+- { type: e2e, path: "{sistema}/frontend/e2e/regression/{story-id}/{m}-edge.spec.ts", function: "test_concurrent_create" }
 - { type: state_check, target: db, query: "SELECT count(*) FROM {table} WHERE slug='X'", expect: 1 }
 
 `not_applicable_reason: <razón si NO aplica>`
@@ -359,7 +359,7 @@ Happy path
 
 **Huecos detectados:** [ninguno | lista de Bif/RN sin SC — bloquea refined]
 **SC huérfanos (sin ítem del mapa):** [ninguno | lista — revisar scope creep]
-**Diferido (ledger · lo NO construido, visible):** [ninguno | `Bif-N → historia {brand}-{slug}` con razón]
+**Diferido (ledger · lo NO construido, visible):** [ninguno | `Bif-N → historia {sistema}-{slug}` con razón]
 
 ## Non-functional requirements
 

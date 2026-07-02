@@ -1,6 +1,6 @@
 # Spec · § Mapa funcional + § Matriz de cobertura (capa humana del refinamiento)
 
-> **Cement-date:** 2026-05-31. **Owner del proceso:** `/pm-luana`. **Decisión:** Chris ratificó Opción A
+> **Cement-date:** 2026-05-31. **Owner del proceso:** `/pm-{platform}`. **Decisión:** Chris ratificó Opción A
 > (panorama humano + Gherkin juntos en `01-spec.md`, ligados por matriz). **Aplica a:** `/po-ux`, `/po`,
 > `/ux-agentico` + template `docs/specs/templates/01-spec-template.md`. **Origen:** sesión 2026-05-31 —
 > Chris pidió ver, en lenguaje humano, QUÉ se va a construir (happy path + bifurcaciones + reglas + criterios)
@@ -81,9 +81,9 @@ La intención humana vive arriba del `01-spec.md` y sobrevive como el "porqué".
 hasta el GO de la RONDA 2.
 
 **Disciplina de mockup:** antes de dibujar, po-ux declara la **zona/caja** (árbol de `paradigm-arquitectura.md`) →
-de ahí sale el **shell**; lo toma del `{brand}/docs/architecture/SHELL-DESIGN-CONTRACT.md` (si el shell no existe, se
+de ahí sale el **shell**; lo toma del `{sistema}/docs/architecture/SHELL-DESIGN-CONTRACT.md` (si el shell no existe, se
 genera con el design-system actual). El mockup vive DENTRO del shell, en la ruta donde el user aterriza, con **átomos
-reales escogidos y nombrados** (`components/ui/` + `@luana/ui-kit`) — disciplina D1 de `frontend-visual-fidelity.md`.
+reales escogidos y nombrados** (`components/ui/` + `{design_system_ref.package}`) — disciplina D1 de `frontend-visual-fidelity.md`.
 Esto garantiza "lo que veo = lo que se programa".
 
 ## Reglas duras (gate `/po-ux` y `/po`)

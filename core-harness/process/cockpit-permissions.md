@@ -31,14 +31,14 @@ El endpoint `POST /api/transition` del cockpit SOLO permite las siguientes trans
 
 | State | Owner skill | Trigger |
 |---|---|---|
-| `idea` | Chris + `/pm-{brand}` | story creada manual o desde idea del backlog |
-| `refining` | Chris (cockpit) o `/pm-{brand}` | priorizar para refinamiento |
-| `refined` | `/architect` (cierra spec) o `/pm-{brand}` (ratifica) | Chris ratifica spec + diseño |
+| `idea` | Chris + `/pm-{sistema}` | story creada manual o desde idea del backlog |
+| `refining` | Chris (cockpit) o `/pm-{sistema}` | priorizar para refinamiento |
+| `refined` | `/architect` (cierra spec) o `/pm-{sistema}` (ratifica) | Chris ratifica spec + diseño |
 | `ready` | `/architect` | ready package completo (4 archivos canónicos) |
 | `developing` | `/dev-team` | builder spawn empieza |
 | `developed` | `/dev-team` | validators GREEN |
 | `reviewing` | `/auditor` (AUTO-HANDOFF desde developed) | audit start |
-| `done` | `/pm-{brand}` (Fase F MERGE) | auditor APPROVED + merge a main |
+| `done` | `/pm-{sistema}` (Fase F MERGE) | auditor APPROVED + merge a main |
 | `parked` | Chris (cockpit) | pausa con razón |
 | `dropped` | Chris (cockpit) | descarte terminal con razón |
 
@@ -59,10 +59,10 @@ El endpoint `POST /api/transition` del cockpit SOLO permite las siguientes trans
 Si Chris necesita forzar un state que no le pertenece (caso raro, ej. corregir un state mal asignado), debe hacerlo via Claude Code:
 
 ```
-/pm-{brand} <story-id> force-state <new-state>
+/pm-{sistema} <story-id> force-state <new-state>
 ```
 
-`/pm-{brand}` pide razón explícita + ratifica + escribe checkpoint.md con `force_state_reason: <texto>` + `force_state_by: chris` + `force_state_at: <timestamp>`. Auditor revisa estos casos al cierre del release.
+`/pm-{sistema}` pide razón explícita + ratifica + escribe checkpoint.md con `force_state_reason: <texto>` + `force_state_by: chris` + `force_state_at: <timestamp>`. Auditor revisa estos casos al cierre del release.
 
 **No hay endpoint cockpit para force-state.** Eso evita que un click accidental rompa el state-machine.
 
@@ -135,9 +135,9 @@ Chris puede editar cap YAMLs SOLO via cockpit "✚ Extender" modal o "+ Nueva st
 | `verified_by`, `verified_at`, `verification_note` | NO edit a mano (los sella el flujo "Cerrar → shipped" con el check de comportamiento) |
 | `production_status`, `production_version`, `production_scheduled_at`, `deployed_at`, `release_branch` | NO edit (eje despliegue · futuro · lo escribirá el flujo "pase a producción") |
 | `release_id` | NO edit (es PK funcional) |
-| `brand`, `created_at`, `created_by` | NO edit |
+| `sistema`, `created_at`, `created_by` | NO edit |
 
-**Release `shipped` = inmutable.** El cockpit bloquea `PUT` (editar) y `DELETE` (archivar) sobre releases shipped → 403. Correcciones excepcionales solo vía `/pm-{brand}`. Ver `docs/process/release-protocol.md` § 2 + § 5.
+**Release `shipped` = inmutable.** El cockpit bloquea `PUT` (editar) y `DELETE` (archivar) sobre releases shipped → 403. Correcciones excepcionales solo vía `/pm-{sistema}`. Ver `docs/process/release-protocol.md` § 2 + § 5.
 
 **Cerrar → shipped (gate de comportamiento):** el botón "Cerrar → shipped" del Roadmap abre un modal que (1) le da a Chris el prompt exacto para correr la prueba de integración + E2E smoke en Claude Code, y (2) exige un checkbox confirmando que dio verde sin romper lo anterior. Sin ese check, el endpoint no marca shipped. Ver release-protocol.md § 5.
 
@@ -152,7 +152,7 @@ Chris puede editar cap YAMLs SOLO via cockpit "✚ Extender" modal o "+ Nueva st
 - ❌ `parked` o `dropped` sin razón documentada (cockpit valida ≥10 chars)
 - ❌ Chris edita entry Claude del chris-input.md (rompe trazabilidad conversación)
 - ❌ Chris edita scenarios[]/change_log de cap YAML manualmente (debe ser via story con cap_change_type)
-- ❌ Force-state via cockpit endpoint (debe ser via `/pm-{brand} force-state`)
+- ❌ Force-state via cockpit endpoint (debe ser via `/pm-{sistema} force-state`)
 - ❌ Cockpit permite drag de story `developing+` entre releases (debe estar bloqueado · state demasiado avanzado para reasignar)
 
 ---
@@ -163,5 +163,5 @@ Chris puede editar cap YAMLs SOLO via cockpit "✚ Extender" modal o "+ Nueva st
 - `docs/process/capability-protocol.md` — cap YAML edits flow
 - `docs/process/chris-input-protocol.md` — chris-input edits flow
 - `docs/process/release-protocol.md` — release YAML edits flow
-- `tools/luana-cockpit/app/api/transition/route.ts` — endpoint enforce whitelist
+- `tools/{workspace.repo_prefix}-cockpit/app/api/transition/route.ts` — endpoint enforce whitelist
 - `.claude/rules/story-closure-gate.md` — state machine completo
