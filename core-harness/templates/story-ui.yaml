@@ -1,5 +1,5 @@
 # UI Story Template — Schema SSoT atómico
-# Vive en: {brand}/docs/product/stories/{module}/{story-id}.yaml
+# Vive en: {sistema}/docs/product/stories/{module}/{story-id}.yaml
 # Owner: /po (redacta) · /pm (ratifica al merge)
 # Eval policy: Playwright e2e + state_check + (opcional) screenshot diff
 

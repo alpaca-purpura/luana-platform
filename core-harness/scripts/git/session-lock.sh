@@ -3,7 +3,7 @@ set -euo pipefail
 # session-lock.sh — Bucket lock para N sesiones paralelas mismo cwd (v2 cementado 2026-05-18)
 # SSoT: docs/process/worktree-protocol-v2-plan.md § CORE #5 + parallel-safety.md M14
 #
-# Permite N sesiones Claude/opencode en mismo canónico (mismo branch wip/{brand})
+# Permite N sesiones Claude/opencode en mismo canónico (mismo branch wip/{sistema})
 # coordinadas por buckets de scope: code, docs, tests.
 #
 # Usage:
@@ -13,16 +13,16 @@ set -euo pipefail
 #   scripts/git/session-lock.sh kick BUCKET       # force release (use si PID crashed)
 #
 # Buckets:
-#   code            → {brand}/{backend,frontend}/src/ (whole-code, ej. refactor cross-módulo)
-#   code:{module}   → {brand}/.../modules/{module}/ (build module-scoped · ADR-009 single-hub)
-#   docs            → {brand}/docs/ + raíz docs/
-#   tests           → {brand}/{backend,frontend}/tests/
+#   code            → {sistema}/{backend,frontend}/src/ (whole-code, ej. refactor cross-módulo)
+#   code:{module}   → {sistema}/.../modules/{module}/ (build module-scoped · ADR-009 single-hub)
+#   docs            → {sistema}/docs/ + raíz docs/
+#   tests           → {sistema}/{backend,frontend}/tests/
 #
 # code:{module} (ADR-009): dos builds sobre módulos distintos NO contienden → corren
 # en paralelo sobre el MISMO worktree (hub único). Dos builds del mismo módulo comparten
 # bucket → se serializan (dependencia real). `code` (sin módulo) bloquea todo `code:*`.
 #
-# Build-claim: el 3er arg opcional STORY_ID + la env var LUANA_LANE (fallback pid<PID>)
+# Build-claim: el 3er arg opcional STORY_ID + la env var HARNESS_LANE (fallback pid<PID>)
 # se registran en el lock. El cockpit lee `.session-locks/*.lock` y pinta "🔨 lane"
 # sobre la story en construcción. Lock line: `PID SKILL TIMESTAMP STORY_ID LANE BUCKET`.
 #
@@ -42,7 +42,7 @@ ACTION="$1"
 BUCKET="${2:-}"
 SKILL="${3:-unknown}"
 STORY_ID="${4:-—}"
-LANE="${LUANA_LANE:-pid$$}"
+LANE="${HARNESS_LANE:-pid$$}"
 
 # Worktree detection
 WORKTREE="$(git rev-parse --show-toplevel 2>/dev/null || true)"
@@ -89,7 +89,7 @@ case "${ACTION}" in
         echo "::error::Bucket '${BUCKET}' LOCKED by PID ${OWNER_PID} (skill=${OWNER_SKILL}, at=${OWNER_AT})"
         echo "  Opciones:"
         echo "    1. Esperar a que termine + reintentar"
-        echo "    2. Pedir worktree story explícito (EXPLICIT_USER_REQUEST=1 scripts/git/new-session.sh BRAND story SLUG)"
+        echo "    2. Pedir worktree story explícito (EXPLICIT_USER_REQUEST=1 scripts/git/new-session.sh SISTEMA story SLUG)"
         echo "    3. Kick lock si crashed: scripts/git/session-lock.sh kick ${BUCKET}"
         exit 1
       fi

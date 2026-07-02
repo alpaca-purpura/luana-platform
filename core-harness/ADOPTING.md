@@ -1,4 +1,4 @@
-# ADOPTING.md — install this dev-process kit in a NEW product (any stack, single- or multi-brand)
+# ADOPTING.md — install this dev-process kit in a NEW product (any stack, single- or multi-sistema)
 
 > **Audience:** a team (or a solo operator) starting a NEW product on a DIFFERENT tech stack, who wants the full agentic dev-process — lifecycle, gates, roles, doctrine, safety — without re-inventing it. **You never edit a file inside `core-harness/`.** Everything product-specific goes into ONE file: `project.config.yaml` (the seam), plus your own project-layer rules/skills as you grow. This procedure was proven end-to-end with a fictional adopter (`ledgerline`: a Go 1.23 / SQLite, single-tenant, en-US bookkeeping CLI+API — deliberately unlike the source product on every axis); the source repo keeps that run's record as its W8 extraction-test output.
 
@@ -28,7 +28,7 @@
                  └──────────────────────────────────────────────┘
 ```
 
-The kit encodes HOW software gets built with agents: the `idea→done` lifecycle (10 macro states + the human-verify and reconcile phases), TDD doctrine, story-closure and anti-duplication gates, git/parallel-session safety, learning capture, the auditor's responsibility model, and the worker-role contracts. It names **zero** technologies and **zero** brands — every concrete fact (your linter, your test runner, your market names, your live-verify URL) is read from the seam at runtime.
+The kit encodes HOW software gets built with agents: the `idea→done` lifecycle (10 macro states + the human-verify and reconcile phases), TDD doctrine, story-closure and anti-duplication gates, git/parallel-session safety, learning capture, the auditor's responsibility model, and the worker-role contracts. It names **zero** technologies and **zero** sistemas — every concrete fact (your linter, your test runner, your market names, your live-verify URL) is read from the seam at runtime.
 
 ## 1 · Step-by-step
 
@@ -52,19 +52,19 @@ If `project.config.yaml` does not exist (or has `__FILL_ME__` slots), the doctor
 ```
 harness-doctor · project.config.yaml · product=__FILL_ME__
   ✗ 11 slot(s) UNFILLED (__FILL_ME__) — declare these:
-      meta.product · brands · toolchain · locale · engine_prefix · live_verify_infra
+      meta.product · sistemas · toolchain · locale · engine_prefix · live_verify_infra
       · design_system_ref · domain_modules · agent_roster · value_stream · wip_caps
 EXIT=3
 ```
 
 This is the contract: **the core tells you what it needs; you never tell the core anything by editing it.**
 
-### Step 3 — fill the slots (worked example: `ledgerline`, Go / single-brand / en-US)
+### Step 3 — fill the slots (worked example: `ledgerline`, Go / single-sistema / en-US)
 
 | Slot | What it declares | `ledgerline` example value |
 |---|---|---|
 | `meta.product` | product name + 1-line description | `ledgerline` — double-entry bookkeeping CLI+API |
-| `brands` | your market instances. **Single-brand = a list with ONE entry** — nothing else changes | `active: [{slug: main}]` · `loop_order: [main]` |
+| `sistemas` | your market instances. **Single-sistema = a list with ONE entry** — nothing else changes | `active: [{slug: main}]` · `loop_order: [main]` |
 | `toolchain` | lint / format / typecheck / test / migrate commands per stack | `lint: "go vet ./..."` · `format: "gofmt -l ."` · `test: "go test ./..."` · `audit: "govulncheck ./..."` |
 | `locale` | the user-facing language rule the copy gates enforce | `identifier: en-US` (no dialect gate needed) |
 | `engine_prefix` | where your SHARED/reusable code lives (the anti-duplication grep target) | `go_module_prefix: github.com/acme/ledgerline/internal/` |
@@ -104,14 +104,14 @@ Take your first idea through the lifecycle: refine it into a spec (the `template
 ## 2 · What you must NEVER do
 
 - **Never edit a file under `core-harness/`** to make it fit your product. If a core file seems to need your product's name in it, that is a seam gap — add/extend a slot VALUE, or (if you really found a missing slot) open an issue against the kit. The source repo enforces this with a proxy-clean gate (a dependency-grep over the kit = 0 product tokens, run on every commit).
-- **Never fork the kit per brand/market.** A new market instance = one more entry in `brands.active`. The whole multibrand machinery degrades gracefully to single-brand with a 1-entry list.
+- **Never fork the kit per sistema/market.** A new market instance = one more entry in `sistemas.active`. The whole multisistema machinery degrades gracefully to single-sistema with a 1-entry list.
 - **Never bypass the gates** (`--no-verify`, skipping the doctor, declaring "done" on a green test suite without live exercise). The kit's value IS the gates.
 
 ## 3 · How you extend (without touching the core)
 
 - **Project-layer rules/skills:** your stack conventions (your framework's patterns, your module boundaries) live in YOUR `.claude/rules/` + `.claude/skills/` as project files, NEXT TO the symlinked core ones. The core never references them; they may reference the core.
 - **Domain skills:** one expert skill per business module (`domain_modules`) with a `references/` dir for on-demand depth — keep always-on context lean (the kit's slim-pointer pattern).
-- **More brands:** append to `brands.active` + bootstrap their config. Zero core edits (that is the kit's open-closed rule).
+- **More sistemas:** append to `sistemas.active` + bootstrap their config. Zero core edits (that is the kit's open-closed rule).
 - **Kit upgrades:** pull a newer `core-harness/` (or plugin update). Because you never edited it, the upgrade is a clean replace; your seam + project layer are untouched.
 
 ## 4 · Troubleshooting

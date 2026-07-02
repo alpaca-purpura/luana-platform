@@ -45,7 +45,7 @@ Sin notas todavía · Chris escribe aquí.
 >
 > Verdict labels: ✓ APLICADO · ⚠️ DUDA · ❌ REFUTADO · 💡 PROPONE.
 
-### YYYY-MM-DD HH:MM · 🤖 claude · `/pm-{brand}` · ✓ APLICADO
+### YYYY-MM-DD HH:MM · 🤖 claude · `/pm-{sistema}` · ✓ APLICADO
 Story creada en state=idea con cap_target=`CAP_TARGET` y cap_change_type=`CAP_CHANGE_TYPE`.
 
-Cuando estés listo para refinar, llena 💭 Notas + 📎 Referencias arriba e invoca `/po-ux <brand> <story-id>` (o `/po` si es service story, o `/ux-agentico` si es agentic).
+Cuando estés listo para refinar, llena 💭 Notas + 📎 Referencias arriba e invoca `/po-ux <sistema> <story-id>` (o `/po` si es service story, o `/ux-agentico` si es agentic).

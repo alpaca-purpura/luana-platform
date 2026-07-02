@@ -1,6 +1,6 @@
 # CIL — Continuous Improvement Ledger (4 carriles)
 
-> **Estado:** SSoT vivo · **Owner:** `/pm-luana` (transversal `docs/process/`). **Origen:** proceso v5 §5.7 (HB-53), 2026-06-05. **Naturaleza:** el ÚNICO artefacto nuevo del proceso v5 — y **CONSOLIDA**, no agrega un tracker que compite. Es la **evolución** del `harness-backlog.md` ("eran solo notas y no trasladaban aprendizajes").
+> **Estado:** SSoT vivo · **Owner:** `/pm-{platform}` (transversal `docs/process/`). **Origen:** proceso v5 §5.7 (HB-53), 2026-06-05. **Naturaleza:** el ÚNICO artefacto nuevo del proceso v5 — y **CONSOLIDA**, no agrega un tracker que compite. Es la **evolución** del `harness-backlog.md` ("eran solo notas y no trasladaban aprendizajes").
 >
 > **★ Es un ROUTER/índice, NO un 5º store.** Cada carril vive en su **hogar existente** (DIP — depende de la taxonomía de `learning-capture.md`, no la forkea). El CIL solo dice *dónde* vive cada tipo de aprendizaje + *cómo* se rutea + *cuándo* se homologa. **Cero archivo huérfano.**
 
@@ -13,7 +13,7 @@ El harness-backlog captura fricción sin trasladar el aprendizaje; los `learning
 | Carril | Qué | Hogar (SSoT real · NO duplicar acá) | Origen / alimentación |
 |---|---|---|---|
 | **L1 · harness** | proceso/tooling → reforzar skill/rule/agent/hook/template/cockpit | **`docs/process/harness-backlog.md`** (= L1 tipado · captura vía `/harness-issue`) | uso diario + auditoría |
-| **L2 · producto / skills-arq** | aprendizaje de producto → skills/arquitectura/domain docs | **`docs/learnings/{date}-{slug}.md`** (técnico ≥2 brands) · **`{brand}/docs/learnings/`** (negocio) · `docs/process/learnings.md` (process) — taxonomía de `learning-capture.md` | `L · story-closure` rutea |
+| **L2 · producto / skills-arq** | aprendizaje de producto → skills/arquitectura/domain docs | **`docs/learnings/{date}-{slug}.md`** (técnico ≥2 sistemas) · **`{sistema}/docs/learnings/`** (negocio) · `docs/process/learnings.md` (process) — taxonomía de `learning-capture.md` | `L · story-closure` rutea |
 | **L3 · deuda técnica** | deuda de código/infra pura | **`docs/process/tech-debt.md`** (registro liviano · append) | dev / auditor |
 | **L4 · capability-desfasada** | caps con reglas viejas, hoy stale | **auto-detect** (no hand-written): `scripts/cap_doctor.py` + caps anteriores a su cement-date + survivors heredados del mutation gate (`scripts/mutation_gate.py` §5.6) | auto |
 
@@ -24,7 +24,7 @@ problema → causa raíz → cómo se resolvió → acción de refuerzo → carr
 
 ## Alimentación — `L · story-closure` rutea al carril
 
-Al cerrar una story (`reviewing → done`), `/pm-{brand}` + `/auditor` rutean cada problema/aprendizaje detectado al carril correspondiente (relaja el `learnings.md` per-story a "un lugar donde se acumulen"):
+Al cerrar una story (`reviewing → done`), `/pm-{sistema}` + `/auditor` rutean cada problema/aprendizaje detectado al carril correspondiente (relaja el `learnings.md` per-story a "un lugar donde se acumulen"):
 
 - fricción de proceso/tooling → **L1** (`/harness-issue` → harness-backlog).
 - aprendizaje de producto/arquitectura → **L2** (`learning-capture.md` path canónico).

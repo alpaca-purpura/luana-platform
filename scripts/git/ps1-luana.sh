@@ -1,1 +1,1 @@
-../../core-harness/scripts/git/ps1-luana.sh
+../../core-harness/scripts/git/ps1-harness.sh

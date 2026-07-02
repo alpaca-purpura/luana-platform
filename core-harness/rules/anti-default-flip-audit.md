@@ -1,6 +1,6 @@
 # Anti-Default-Flip Audit
 
-> **Slim stub (context-rot pass 2026-05-30).** Detalle operativo completo (4 steps verbatim con grep/run commands cross-brand, ejemplos CORRECTO/INCORRECTO commit body, enforcement layers 7, penalizaciones, multibrand awareness) en `docs/rules-detail/anti-default-flip-audit.md` — load on-demand. **Origen:** failed `/pase-produccion` 2026-05-04 (commit `64738354` flipeó `USE_OUTBOX_PATTERN_*` False→True sin auditar → 25 BE failures + ~3h + ~500k tokens).
+> **Slim stub (context-rot pass 2026-05-30).** Detalle operativo completo (4 steps verbatim con grep/run commands cross-sistema, ejemplos CORRECTO/INCORRECTO commit body, enforcement layers 7, penalizaciones, multisistema awareness) en `docs/rules-detail/anti-default-flip-audit.md` — load on-demand. **Origen:** failed `/pase-produccion` 2026-05-04 (commit `64738354` flipeó `USE_OUTBOX_PATTERN_*` False→True sin auditar → 25 BE failures + ~3h + ~500k tokens).
 
 ## Regla cardinal
 
@@ -37,4 +37,4 @@ ANTES de flipear default de feature flag (`USE_*_PATTERN_*`, `USE_DEEPAGENTS_*`,
 - `docs/rules-detail/anti-default-flip-audit.md` — **detalle completo** (steps verbatim, ejemplos CORRECTO/INCORRECTO, enforcement 7 layers)
 - `.claude/rules/tdd-mandatory.md` § Default flag flips
 - `.claude/rules/auditor-downstream-regression.md` — Step 1 grep tests path viejo (ortogonal)
-- `docs/promotion-protocol/README.md` — workflow brand→core lift gate
+- `docs/promotion-protocol/README.md` — workflow sistema→core lift gate
