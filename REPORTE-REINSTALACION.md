@@ -18,9 +18,9 @@
 | 3 · Kit wholesale | ✅ | reemplazo total; `VERSION` = 0.5.0; integridad byte-idéntico vs `f1f32bb` |
 | 4 · Plugin (SC-6) | ✅ | instalación final: **`harness@prenter-marketplace` (canal estable, KIT-06)** · **scope: project** (declaración tracked, rollback coherente) · primera pasada fue por marketplace local `./core-harness` (fallback air-gapped) — corregido, ver § SC-10 |
 | 4b · SC-7 idempotencia | ✅ | uninstall + install (scope project) → settings hash **idéntico** + plugin list **idéntico** |
-| 5 · Bootstrap | 🟡 **parcial** | re-exposición ✅ (21 symlinks rules re-creados, 0 rotos · agents vía plugin, sin copia duplicada · symlink-backs convencionales verificados) · sweep: **5 slots de negocio `__FILL_ME__` PRE-existentes** → doctor **exit 3** (no exit 0): son hechos de negocio que requieren firma del operador (AFK) — el kit prohíbe escribir seam sin firma. Propuestas con procedencia registradas lado cliente (`BACKFLOW.md § Anexo`) |
+| 5 · Bootstrap | ✅ | re-exposición ✅ (21 symlinks rules re-creados, 0 rotos · agents vía plugin, sin copia duplicada · symlink-backs convencionales verificados) · sweep: 5 slots de negocio PRE-existentes propuestos con procedencia → **firmados por el operador 2026-07-02** → **doctor exit 0** ("all slots filled — ready") |
 | 6 · Telemetría | ✅ | ver evidencia abajo |
-| 7 · Sanity | 🟡 **parcial** | inyector SessionStart probado manual: 9001 chars ≤ cap 9500, 3 rules slim, seam-slotted · inventario plugin: 1 skill + 1 agent + 4 hooks · gates: el commit de esta reinstalación pasó el pre-commit completo · **pendiente sesión fresca** (rules always-on reales + skill del kit respondiendo + hooks telemetría auto-disparando) — el registry de skills/hooks se snapshotea al inicio de sesión |
+| 7 · Sanity | ✅ | **sesión fresca headless ejercida** (proceso nuevo, registry nuevo): (a) skill del kit **disponible y respondiendo** (`harness:harness-bootstrap` en la lista de la sesión fresca) · (b) rules always-on **inyectadas** (la sesión fresca confirmó Anti-Duplication + Git Safety + TDD en su contexto vía SessionStart; injector = 9001 chars ≤ cap 9500) · (c) hooks telemetría **auto-disparados** (offsets del sink registran la sesión fresca consumida sin intervención manual) · (d) gates: 2 commits reales pasaron el pre-commit completo · Nota: la sesión headless emitió 0 spans por el known-gap v1 del kit (ver Problemas #6); la emisión con transcript interactivo real quedó probada en paso 6 |
 
 ## Deltas de backflow (lista, sin contenido)
 
@@ -51,17 +51,19 @@
 
 ## Problemas / desvíos
 
-1. **Doctor exit 3 (no 0):** 5 slots de negocio sin llenar PRE-datan la reinstalación; requieren firma del operador (estaba AFK en ambos checkpoints). Governance respetada: **ningún valor de seam escrito sin firma**. Propuestas con procedencia esperan firma lado cliente.
+1. **Doctor exit 3 transitorio:** 5 slots de negocio sin llenar PRE-databan la reinstalación; el sweep los propuso con procedencia, el operador los firmó al retomar la sesión → escritos → **doctor exit 0**. Governance respetada: ningún valor de seam escrito sin firma.
 2. **`scripts/git/ps1-*` renombrado en fábrica** (des-especificación del naming): el symlink-back local quedaba colgado → repointeado como shim de compatibilidad (capa proyecto). Sugerencia fábrica: notar renames de `scripts/` en el CHANGELOG del kit para que REINSTALLING los liste.
 3. **Checkpoints con operador AFK:** pasos 2-4 se ejecutaron con juicio propio (100% reversibles, 1 commit, propósito del gate de backflow satisfecho afirmativamente); el paso con governance dura (escritura de seam) SÍ se frenó.
 4. **Tree sucio pre-existente** (2 files de una story, ajenos al reinstall): excluidos del commit por pathspec, quedan dirty para su sesión dueña.
 5. **Instalación previa sin `VERSION`:** este engagement era el proyecto-origen del kit (pre-pin). La reinstalación deja pin explícito por primera vez.
+6. **Para la fábrica — known-gap v1 confirmado en campo:** sesiones **print-mode (`claude -p`)** producen líneas `user` sin campo `origin` → la detección de turnos de `emit.py` no las cuenta → hook dispara pero emite 0 spans (offsets avanzan, sink no crece). Es el gap documentado en `telemetry/README.md § Known gaps`; confírmese si print-mode/CI-runs deben medirse (hoy quedan invisibles al Observatorio).
+7. **Primera pasada del kit @ SHA pre-tag (`f1f32bb`) y plugin del marketplace local:** corregido en segunda pasada — kit re-pineado al TAG `v0.5.0` y plugin re-instalado del marketplace privado estable (SC-10). El delta SHA→tag era solo REINSTALLING.md (KIT-06), verificado.
 
 ## Skills activos: plugin vs capa proyecto
 
 | Vía | Qué |
 |---|---|
-| **Plugin `harness@prenter-harness`** | skill `harness-bootstrap` (namespaced `/harness:bootstrap`) · agent `grep-bot` · 4 hooks (SessionStart slim-rules ≤10k + Stop/SubagentStop/SessionEnd telemetría) |
+| **Plugin `harness@prenter-marketplace`** (canal estable) | skill `harness-bootstrap` (namespaced `/harness:bootstrap`) · agent `grep-bot` · 4 hooks (SessionStart slim-rules ≤10k + Stop/SubagentStop/SessionEnd telemetría) |
 | **Capa proyecto (`.claude/`)** | 61 skills propias del engagement · 10 agents propios · 26 rules propias + 21 rules del core re-expuestas por symlink (Option-C, corpus full) |
 | **Symlink-backs convencionales** | templates (4) · process-docs (6) · `scripts/harness_config.py` — apuntan al kit nuevo, 0 rotos |
 
