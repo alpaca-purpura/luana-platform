@@ -2,8 +2,8 @@
 # voseo-allowed: loader interno de maquinaria (no user-facing)
 """harness_config.py — the harness DIP-seam loader (W5b · 2026-06-09).
 
-Reads the single PROJECT/BRAND/TECH store ``project.config.yaml`` (repo root) for the
-harness CORE. The CORE names ZERO concrete tech/brand/locale/engine/live-env; it reads
+Reads the single PROJECT/SISTEMA/TECH store ``project.config.yaml`` (repo root) for the
+harness CORE. The CORE names ZERO concrete tech/sistema/locale/engine/live-env; it reads
 abstract SLOTS through this one module (charter §0.5 north-star · §3 seam).
 
 ONE module, four consumer classes (RESEARCH-loader-mechanism.md, date-aware verified):
@@ -70,8 +70,20 @@ class SlotNotFound(KeyError):
     """Dotted slot path does not resolve in the config tree."""
 
 
+# Back-compat seam aliases (I-52): the kit now speaks `sistemas`; seams authored before the
+# rename declare `brands`. The alias is BIDIRECTIONAL so the rename can land incrementally —
+# a new kit asking `sistemas.*` resolves an old `brands:` seam, AND an un-migrated script still
+# asking `brands.*` resolves a migrated `sistemas:` seam. Either side moves first, never breaks
+# (the cockpit reader does the same, trying `sistemas` then `brands`).
+_SEAM_ALIASES = {"sistemas": "brands", "brands": "sistemas"}
+
+
 def _navigate(cfg: Any, dotted: str) -> Any:
-    """Walk a dotted path; a digit segment indexes a list, else a dict key."""
+    """Walk a dotted path; a digit segment indexes a list, else a dict key.
+
+    An absent dict segment falls back to its legacy alias (``_SEAM_ALIASES``) so
+    ``sistemas.*`` resolves against a pre-rename ``brands:`` seam.
+    """
     node = cfg
     for seg in dotted.split("."):
         if isinstance(node, list) and seg.lstrip("-").isdigit():
@@ -79,8 +91,13 @@ def _navigate(cfg: Any, dotted: str) -> Any:
             if not -len(node) <= idx < len(node):
                 raise SlotNotFound(dotted)
             node = node[idx]
-        elif isinstance(node, dict) and seg in node:
-            node = node[seg]
+        elif isinstance(node, dict):
+            if seg in node:
+                node = node[seg]
+            elif seg in _SEAM_ALIASES and _SEAM_ALIASES[seg] in node:
+                node = node[_SEAM_ALIASES[seg]]
+            else:
+                raise SlotNotFound(dotted)
         else:
             raise SlotNotFound(dotted)
     return node
@@ -95,7 +112,7 @@ def get(
     """Resolve a dotted slot.
 
     ``where=(field, value)`` filters a list-of-dicts to the items whose ``field`` equals
-    ``value`` (string-compared) BEFORE plucking — e.g. ``get("brands.active", pluck="slug",
+    ``value`` (string-compared) BEFORE plucking — e.g. ``get("sistemas.active", pluck="slug",
     where=("cap_gate", "hard"))`` → the slugs whose cap-gate is hard. ``pluck`` then extracts
     one key from each surviving dict.
 

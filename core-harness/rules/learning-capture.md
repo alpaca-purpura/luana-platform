@@ -10,14 +10,14 @@ Cada aprendizaje vive en un archivo `.md` dedicado bajo un path canónico. **MEM
 
 | Tipo | Path canónico |
 |---|---|
-| Técnico transversal (≥2 brands) | `docs/learnings/{date}-{slug}.md` |
-| Negocio per-brand | `{brand}/docs/learnings/{date}-{slug}.md` |
+| Técnico transversal (≥2 sistemas) | `docs/learnings/{date}-{slug}.md` |
+| Negocio per-sistema | `{sistema}/docs/learnings/{date}-{slug}.md` |
 | Process/paradigm | `docs/process/learnings.md` (append) |
 | Tooling/workspace | `docs/learnings/tooling/{slug}.md` |
 
 **Naming:** `YYYY-MM-DD-{kebab-slug}.md`.
 
-**★ Ruteo al CIL (proceso v5 §5.7):** estos paths SON el **carril L2** del CIL (`docs/process/continuous-improvement.md`). Al cerrar story (`L · story-closure`), `/pm-{brand}` + `/auditor` rutean cada aprendizaje al carril: producto/arq → **L2** (estos paths, sin forkear la taxonomía) · proceso/tooling → **L1** (`harness-backlog.md` vía `/harness-issue`) · deuda código/infra → **L3** (`docs/process/tech-debt.md`) · cap stale → **L4** (auto-detect cap_doctor/survivors). El stop `/harnesses-improvement` los homologa. Relaja el `learnings.md` per-story a "un lugar donde se acumulen" — cero archivo huérfano.
+**★ Ruteo al CIL (proceso v5 §5.7):** estos paths SON el **carril L2** del CIL (`docs/process/continuous-improvement.md`). Al cerrar story (`L · story-closure`), `/pm-{sistema}` + `/auditor` rutean cada aprendizaje al carril: producto/arq → **L2** (estos paths, sin forkear la taxonomía) · proceso/tooling → **L1** (`harness-backlog.md` vía `/harness-issue`) · deuda código/infra → **L3** (`docs/process/tech-debt.md`) · cap stale → **L4** (auto-detect cap_doctor/survivors). El stop `/harnesses-improvement` los homologa. Relaja el `learnings.md` per-story a "un lugar donde se acumulen" — cero archivo huérfano.
 
 ## Cuándo carga el detalle
 
@@ -29,7 +29,7 @@ Cada aprendizaje vive en un archivo `.md` dedicado bajo un path canónico. **MEM
 
 - ❌ Escribir contenido del aprendizaje DENTRO de `MEMORY.md` (rompe pointer-first)
 - ❌ Capturar aprendizaje sin ratificación Chris (especialmente hook auto-trigger)
-- ❌ Learning técnico capturado en `{brand}/docs/learnings/` cuando aplica cross-brand
+- ❌ Learning técnico capturado en `{sistema}/docs/learnings/` cuando aplica cross-sistema
 
 ## Referencias
 

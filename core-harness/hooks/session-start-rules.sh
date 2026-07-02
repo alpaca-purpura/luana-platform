@@ -10,7 +10,7 @@
 #   capped at 10,000 chars (overflow → saved to a file + a pointer, NOT the body) → keep the slim core lean.
 #
 # SCAFFOLD (W7 2026-06-09): always-on-core.manifest is EMPTY until the W7 rules-move curates it →
-#   this hook is a safe NO-OP today (emits nothing). NOT wired into luana's settings.json (inert).
+#   this hook is a safe NO-OP today (emits nothing). NOT wired into the project's settings.json (inert).
 #
 # Wired only when the harness plugin is installed (hooks/hooks.json → SessionStart).
 set -euo pipefail

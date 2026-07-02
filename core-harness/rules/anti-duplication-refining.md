@@ -4,12 +4,12 @@
 
 ## Regla cardinal
 
-ANTES de refinar/diseñar/arquitecturar una story nueva, `/pm-{brand}`, `/po-ux`, `/po`, `/ux-agentico`, `/architect` MUST correr el **Step `prior-art-scan`** (grep cross-brand + core) y documentar el resultado en el artifact:
-- `/pm-{brand}` → `## Prior art scan` en checkpoint
+ANTES de refinar/diseñar/arquitecturar una story nueva, `/pm-{sistema}`, `/po-ux`, `/po`, `/ux-agentico`, `/architect` MUST correr el **Step `prior-art-scan`** (grep cross-sistema + core) y documentar el resultado en el artifact:
+- `/pm-{sistema}` → `## Prior art scan` en checkpoint
 - `/po-ux`/`/po`/`/ux-agentico` → `## Prior art applied` en spec/design
 - `/architect` → `## Prior art audit` en 03-arch
 
-Detecta: (1) pattern ya shipped en otra brand activa, (2) engine abstraction → consumir vía import NO recrear, (3) brand con feature parecido → lift candidate, (4) learning previo → aplicar.
+Detecta: (1) pattern ya shipped en otro sistema activo, (2) engine abstraction → consumir vía import NO recrear, (3) sistema con feature parecido → lift candidate, (4) learning previo → aplicar.
 
 ## Cuándo carga el detalle (`docs/rules-detail/anti-duplication-refining.md`)
 
@@ -19,13 +19,13 @@ Detecta: (1) pattern ya shipped en otra brand activa, (2) engine abstraction →
 
 ## Decision matrix (resumen)
 
-Engine cubre 100% → CONSUMIR import · 60-99% → EXTEND herencia · brand parecido transversal → lift `/pm-luana` · vertical-specific → Extension SDK EP-N · net-new → from scratch documentando scan.
+Engine cubre 100% → CONSUMIR import · 60-99% → EXTEND herencia · sistema parecido transversal → lift `/pm-{platform}` · vertical-specific → Extension SDK EP-N · net-new → from scratch documentando scan.
 
 ## Anti-patterns (top 3 — lista completa en el detalle)
 
-- ❌ Refinar sin grep cross-brand (sólo brand propia → riesgo recrear)
+- ❌ Refinar sin grep cross-sistema (sólo sistema propio → riesgo recrear)
 - ❌ Documentar "prior art scan: clean" sin haber corrido el grep verbatim
-- ❌ Lift candidate detectado + no escalar a `/pm-luana` (pollution per-brand silenciosa)
+- ❌ Lift candidate detectado + no escalar a `/pm-{platform}` (pollution per-sistema silenciosa)
 
 ## Referencias
 

@@ -9,7 +9,7 @@ Chris fijó (2026-06-03): el auditor es el **último adulto responsable** del PR
 ### Decision tree v5
 ```
 ¿Categoría STAKE-ASIMÉTRICO? (security/auth/tenant_id/PII/migration/prompt-slot/
- eval-goldens/state-machine/engine-core/cross-brand/meta-paradigm)
+ eval-goldens/state-machine/engine-core/cross-sistema/meta-paradigm)
 ├─ SÍ → CARRIL C: ESCALATE Chris (invariante de seguridad — v5 NO lo override).
 └─ NO → ¿El fix es una FEATURE entera nunca diseñada? (> ~2 archivos nuevos de
          producto o > ~120 LOC nuevas de feature; ej. un endpoint compound nunca cableado)
@@ -54,7 +54,7 @@ El routing v4.2 (3 carriles por NATURALEZA: Carril A mecánico self-fix · Carri
 
 - ❌ ~~Auditor escribe un test nuevo~~ — **OBSOLETO v4.2**: v5 Carril R PUEDE escribir tests. El anti-pattern restante: escribir tests de comportamiento agentic (stake-asimétrico → Carril C siempre)
 - ❌ Carril R sin citar el test RED que reproduce el bug antes del fix (TDD: regresión primero, fix después)
-- ❌ Carril R en categoría stake-asimétrico (security/tenant/PII/migration/prompt/engine/cross-brand) — sigue siendo Carril C
+- ❌ Carril R en categoría stake-asimétrico (security/tenant/PII/migration/prompt/engine/cross-sistema) — sigue siendo Carril C
 
 ## Referencias
 
