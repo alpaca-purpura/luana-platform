@@ -31,3 +31,9 @@ D10/D11/D12 con diseño. 3 stories separadas. D12 (vista Semana) va después de 
 
 ### 2026-06-21 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO
 Creé esta story (idea) derivada de D12. Scope: eje horario + leyenda de colores + resumen del día, portando el wrapper del shell. Queda en backlog; se refina vía `/po-ux` después de D11.
+
+### 2026-06-27 · 🧑 chris
+Quiero refinar una historia de usuario chica. Elegí `mateo-vista-semana`.
+
+### 2026-06-27 · 🤖 claude · `/pm-vitalia` · ✓ APLICADO
+Subí `idea → refining` (cap refining 0/3 libre; las 2 en vuelo esperan tu gate G, no bloquean refining=bucket docs). `ui-story` + `ADR-vitalia-004` ya citado, 0 deps hard. Handoff inline a `/po-ux` (UI std). Scope de partida: grilla vista Semana legible de un vistazo (eje horario izq · leyenda colores estado-pago · resumen/conteos por día), owna solo `panel-content`, porta wrapper shell.

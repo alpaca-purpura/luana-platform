@@ -4,7 +4,7 @@ type: ui-story
 agent_owner: mateo
 module: scheduling
 capability: mateo.agenda
-state: idea
+state: refining                                  # ⤺ /pm-vitalia 2026-06-27: Chris eligió refinar esta (UI chica). Handoff /po-ux.
 architecture_pattern: ADR-vitalia-004
 created: 2026-06-21T00:00:00Z
 priority: medium
@@ -25,7 +25,7 @@ box: mateo
 functional_area: mateo.agenda
 ---
 
-# vitalia-fase2-mateo-vista-semana — idea
+# vitalia-fase2-mateo-vista-semana — refining
 
 **Origen:** D12 de la live-QA `vitalia-scheduling-mateo-review` (2026-06-21). La vista "Semana" es columnas/tarjetas por día sin eje horario, sin leyenda de colores, sin resumen del día.
 
@@ -39,4 +39,4 @@ functional_area: mateo.agenda
 
 **Constraints:** CONSUME scheduling (mismo data de la grilla, ya fixed en el bugfix) · tokens de `globals.css` · ENFORCE-CHECKLIST · Spanish neutro LatAm · NO toca core ni otras marcas.
 
-**Next action:** backlog — refinar vía `/po-ux` después de D11 (Chris ratificó arrancar por D11).
+**Next action:** `/po-ux` refina (01-spec unificado: Gherkin + mockup vía Storybook `@luana/ui-kit` + estados visuales + microcopy neutro) → Chris ratifica → `refined` → `/architect`.
