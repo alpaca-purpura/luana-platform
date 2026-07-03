@@ -16,6 +16,9 @@ Each firing:
    A turn = one human prompt → one span; `attributionSkill` names the node (else
    `"conversacion"`); sidechain traffic becomes a child span (`"subagente"`).
    SubagentStop fires mid-turn, so the open turn is HELD BACK until Stop/SessionEnd.
+   Stop also holds a trailing turn that has no assistant usage yet — in print-mode
+   (`claude -p`) it can fire before the response lines are flushed; SessionEnd closes
+   everything (KIT-07).
 2. Appends the trace (`medicion.schema` shape — see the byte-synced copy
    [`medicion.schema.yaml`](./medicion.schema.yaml); the factory gate enforces equality
    with the L0 SSoT) to the **local sink**: `~/.prenter/telemetry/<project>/trazas.jsonl`
@@ -54,8 +57,12 @@ KEY bites; it is never wired into the hooks and never egresses regardless.
 - Per-subagent fine attribution depends on what the MAIN transcript exposes
   (`isSidechain` lines); subagents with separate transcripts aggregate into the parent
   turn's child span at best.
-- Turn detection keys on `user` lines with a truthy `origin`; harness-injected prompts
-  without `origin` fold into the previous turn.
+- Turn detection v2 (KIT-07): interactive prompts carry a truthy `origin`; headless
+  `claude -p` prompts carry none, so plain-string `user` lines without `origin` ALSO open
+  turns — excluding meta/sidechain/tool-result lines and local-command wrappers
+  (`<command-name>` · `<local-command-stdout>` · `<local-command-caveat>`). A NEW kind of
+  injected plain-string line would open a spurious turn until its wrapper joins the
+  exclusion list in `emit.py`.
 - Native Claude Code OTel (`CLAUDE_CODE_ENABLE_TELEMETRY`) was evaluated and NOT adopted
   as the channel: api-request granularity, traces still beta, and egress would bypass
   THE KEY. Running it in parallel double-counts — don't.

@@ -21,12 +21,13 @@ A new product drops `core-harness/` + an empty `project.config.yaml` into its re
 3. **DETECTION SWEEP (the instanciador v1 — KIT-04/KIT-02).** The install stops being a
    photocopier and becomes surveyor + notary: read the repo's EVIDENCE and propose seam
    values — the lockfiles are the SSoT, never a static language→tooling table.
-   - **Detect:** walk the repo root for build/lock files — `pyproject.toml`/`setup.py`/
-     `requirements*.txt` (Python: propose `pytest`/`ruff`/`mypy` only if declared there),
-     `package.json` (+`pnpm-lock.yaml`/`yarn.lock`: read the actual `scripts` for
-     lint/test/typecheck), `go.mod` (Go version → `go vet`/`go test ./...`),
-     `pom.xml`/`build.gradle(.kts)` (JUnit version from the dependency tree),
-     `*.csproj` (TFM + test framework packages), `Cargo.toml`, `docker-compose*.yml`.
+   - **Detect:** walk the repo root for the ecosystem's own EVIDENCE files — dependency
+     manifests, lockfiles, build descriptors, container/CI descriptors. Propose ONLY
+     what those files DECLARE: the exact test/lint/typecheck/build commands, frameworks
+     and versions the client's repo itself evidences (declared scripts, dev-dependency
+     trees, target-framework fields). The CLASS never carries a language→tooling table
+     and never names stacks (I-52 · KIT-02 corrección (a)); the repo's files are the
+     sole source of tool names — quote them verbatim as provenance.
    - **Propose per slot, WITH PROVENANCE:** for each detectable slot (`toolchain` ·
      `domain_modules` (top-level src dirs/packages) · `engine_prefix` (shared-code
      scope/module prefix if visible)), present the proposed value naming the exact file

@@ -39,7 +39,7 @@ WS = Path(
 # mencionan la muerte del concepto ("MUERTO", "killed", "atomics↔headers", "Atomic write" DB).
 ATOMICS_DEAD_FILES = [
     ".claude/rules/story-closure-gate.md",
-    ".claude/rules/brand-docs-schema.md",
+    ".claude/rules/sistema-docs-schema.md",
     ".claude/rules/anti-duplication-refining.md",
 ]
 ATOMICS_ALLOWED_CTX = re.compile(
@@ -759,12 +759,12 @@ def check_core_harness_proxy_clean() -> None:
 
 
 # ── CHECK 30 — LSP sync template↔instancias PM (W10 anti-rot) ────────────────
-# Conceptos que _pm-brand-template cementa y CADA pm-{brand} activa debe llevar
+# Conceptos que _pm-sistema-template cementa y CADA pm-{brand} activa debe llevar
 # (drift real cazado 2026-06-09: pm-comunify/pm-lupulo sin § Auto-chain rule).
 # Concept-based (substring) como CHECK 9. Agregá un concepto al cementarlo en el template.
 PM_TEMPLATE_CONCEPTS = ["Auto-chain rule", "story-closure-gate", "chris-input", "Step 0"]
 PM_SKILL_FILES = [
-    ".claude/skills/_pm-brand-template/SKILL.md",
+    ".claude/skills/_pm-sistema-template/SKILL.md",
     ".claude/skills/pm-vitalia/SKILL.md",
     ".claude/skills/pm-nicolify/SKILL.md",
     ".claude/skills/pm-comunify/SKILL.md",

@@ -85,7 +85,7 @@ Score against:
 - `.claude/rules/parallel-safety.md` — scoped commits only (no `git add .` / `-A` / `-u`)
 - `.claude/rules/git-safety.md` — Conventional Commits
 - `.claude/rules/debugging.md` — root-cause fixes; regression test FIRST
-- `.claude/rules/brand-docs-schema.md` — R1+R2+R3 schema enforcement `{brand}/docs/` (flag PR creating `.md` sueltos en `{brand}/docs/` raíz, editing auto-gen BACKLOG without source change, or merging story=done without `git mv` to archive)
+- `.claude/rules/sistema-docs-schema.md` — R1+R2+R3 schema enforcement `{brand}/docs/` (flag PR creating `.md` sueltos en `{brand}/docs/` raíz, editing auto-gen BACKLOG without source change, or merging story=done without `git mv` to archive)
 - FastAPI canonical patterns — `response_model=` PII allowlist; flag PII fields without mask/remove/justify
 
 ## Step 3 — Scope check FIRST

@@ -6,7 +6,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Section 14 — Brand docs schema R1 enforcement (cement 2026-05-19)
 # ─────────────────────────────────────────────────────────────────────────────
-# SSoT: .claude/rules/brand-docs-schema.md § R1
+# SSoT: .claude/rules/sistema-docs-schema.md § R1
 #
 # Bloquea staging de archivos .md sueltos en {brand}/docs/ raíz.
 # {brand}/docs/ solo permite sub-dirs canónicos: product/, archive/,
@@ -37,7 +37,7 @@ BRAND DOCS SCHEMA VIOLATION (R1): MD suelto en {brand}/docs/ raíz
 
 File:    $f
 Brand:   $BRAND_R1
-Schema:  .claude/rules/brand-docs-schema.md § R1
+Schema:  .claude/rules/sistema-docs-schema.md § R1
 
 ${BRAND_R1}/docs/ raíz NO permite archivos .md sueltos. Solo sub-dirs:
   - ${BRAND_R1}/docs/product/   (stories, capabilities, modules, releases)
@@ -55,7 +55,7 @@ Reubicar '${FILE_NAME}' al sub-dir apropiado según contenido:
   - ¿Handoff cross-session?        → dentro de la story relevante
 
 Override (emergencias documentadas): BRAND_DOCS_SCHEMA_SKIP=1 git commit ...
-SSoT: .claude/rules/brand-docs-schema.md
+SSoT: .claude/rules/sistema-docs-schema.md
 ─────────────────────────────────────────────────────────────
 EOF
       printf "\033[0m"

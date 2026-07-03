@@ -25,7 +25,10 @@ silently bury an unbackflowed fix. Zero deltas expected if the governance held.
 
 **2 · Retire the old exposure.** Remove `.claude/rules/*` symlinks that point into
 `core-harness/`, agents/skills that were COPIED from the core (project-layer ones stay),
-and any `settings.json` hook entries that reference old core paths.
+and any `settings.json` hook entries that reference old core paths. **Consult
+[`CHANGELOG.md`](./CHANGELOG.md) (travels in the kit):** its RENAMES tables list every
+renamed/moved/removed piece between your pinned tag and the new version, each with a
+one-line migration — apply them so project-layer pointers don't dangle.
 
 **3 · Drop the new kit.** Replace `core-harness/` wholesale with the new version
 (`installer/new-project.sh` from the factory, or `cp -r` of the pinned tag). Verify

@@ -37,7 +37,7 @@ Gastronomía (reservas mesa, pedidos digitales, integración KDS via agentes IA)
 
 ## ★ Brand docs schema (R1+R2+R3 — MANDATORIO)
 
-> SSoT: `.claude/rules/brand-docs-schema.md` (cement-date 2026-05-19).
+> SSoT: `.claude/rules/sistema-docs-schema.md` (cement-date 2026-05-19).
 
 Toda escritura a `lupulo/docs/` debe cumplir:
 
@@ -276,7 +276,7 @@ NUNCA dumps largos. Pointer-first. Si necesitás más detalle escribilo a archiv
 - `docs/promotion-protocol/README.md` — workflow brand→core
 - `.claude/skills/pm/SKILL.md` — master orquestador
 - `.claude/skills/pm-luana/SKILL.md` — core PM
-- `.claude/rules/brand-docs-schema.md` — R1+R2+R3 schema enforcement `lupulo/docs/` (cement 2026-05-19)
+- `.claude/rules/sistema-docs-schema.md` — R1+R2+R3 schema enforcement `lupulo/docs/` (cement 2026-05-19)
 - `.claude/rules/story-closure-gate.md` — Fase F MERGE concreta R2 (archive como parte del 07-merge)
 - `lupulo/.claude/rules/` — rules brand-specific (overlay)
 - `lupulo/config/brand.yaml` — feature flags + opt-in core packages

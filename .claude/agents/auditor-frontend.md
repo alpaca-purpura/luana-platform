@@ -83,7 +83,7 @@ Score against:
 - `.claude/rules/e2e-testing.md` — Playwright preflight obligatorio, native Linux only (host)
 - `.claude/rules/master-data.md` — `useTenantLocale()`, `formatTenantDate*()`, `formatMoney(amount, currency)`. NO `toLocaleDateString()`, NO `currency || 'USD'`.
 - `.claude/rules/architectural-fitness.md` — FE 20 arch tests ratchet
-- `.claude/rules/brand-docs-schema.md` — R1+R2+R3 schema enforcement `{brand}/docs/` (flag PR creating `.md` sueltos en `{brand}/docs/` raíz, editing auto-gen BACKLOG without source change, or merging story=done without `git mv` to archive)
+- `.claude/rules/sistema-docs-schema.md` — R1+R2+R3 schema enforcement `{brand}/docs/` (flag PR creating `.md` sueltos en `{brand}/docs/` raíz, editing auto-gen BACKLOG without source change, or merging story=done without `git mv` to archive)
 
 ## Step 3 — Domain skill routing (CRITICAL — invoke before scoring)
 
