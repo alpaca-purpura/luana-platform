@@ -529,7 +529,7 @@ Agent({
 - [ ] Migrations idempotentes (IF NOT EXISTS, no sa.Enum() in create_table)
 - [ ] Default flag flips audited (R31 anti-default-flip-audit if applicable)
 - [ ] Security: no SQL injection / XSS / prompt injection vectors
-- [ ] Brand docs schema R1 respected — no `.md` files staged directly under `{brand}/docs/` root (cite `.claude/rules/brand-docs-schema.md`)
+- [ ] Brand docs schema R1 respected — no `.md` files staged directly under `{brand}/docs/` root (cite `.claude/rules/sistema-docs-schema.md`)
 - [ ] Brand docs schema R3 respected — no manual edits to auto-gen files (`{brand}/docs/product/BACKLOG*.{md,yaml}`, `modules/{m}.md` auto-list section). Diff inspection: if BACKLOG modified, must have corresponding source change (checkpoint/outcomes/stories/capabilities)
 
 ## C5 — Trace
@@ -538,7 +538,7 @@ Agent({
 - [ ] Capability migration ready (scenarios → {brand}/docs/product/capabilities/{m}/{cap}.yaml)
 - [ ] {brand}/docs/product/modules/{m}.md auto-list refresh ready
 - [ ] {brand}/docs/learnings/ entry si decisión cardinal (note for /pm-{brand}; si promotable cross-brand → ping /pm-luana)
-- [ ] Story folder ready for archive to {brand}/docs/archive/{year}/stories/{story-id}/ (R2 per `.claude/rules/brand-docs-schema.md` — `git mv` debe ir en MISMO commit que `07-merge.md` al cerrar reviewing→done)
+- [ ] Story folder ready for archive to {brand}/docs/archive/{year}/stories/{story-id}/ (R2 per `.claude/rules/sistema-docs-schema.md` — `git mv` debe ir en MISMO commit que `07-merge.md` al cerrar reviewing→done)
 
 ## Findings summary
 - C1: <X/4 ✅, Y FAIL>
@@ -767,7 +767,7 @@ Ref: `.claude/rules/auditor-self-fix-policy.md` + `.claude/rules/definition-of-d
 - ❌ Producir REVIEW-final.md (paradigma viejo — usa CHECKPOINTS.md C1-C5 grid)
 - ❌ Inferir el brand del contexto si Chris no lo dijo — PREGUNTAR primero
 - ❌ Approve PR que edita `core/luana-core-*/src/` o `{other_brand}/...` desde story brand-específica — flag CHANGES_REQUESTED + escalate /pm-luana
-- ❌ Approve PR con `.md` sueltos en `{brand}/docs/` raíz (R1 violation — ver `.claude/rules/brand-docs-schema.md`)
+- ❌ Approve PR con `.md` sueltos en `{brand}/docs/` raíz (R1 violation — ver `.claude/rules/sistema-docs-schema.md`)
 - ❌ Approve PR que cierra story state=done sin `git mv` a `{brand}/docs/archive/{year}/stories/` en mismo commit (R2 violation)
 - ❌ Approve PR que modifica `{brand}/docs/product/BACKLOG*.{md,yaml}` sin cambio correspondiente en source (checkpoint/outcomes/stories/capabilities) — R3 violation. BACKLOG es OUTPUT auto-gen.
 
@@ -804,7 +804,7 @@ Al cierre de cada turn, MUST appendear una entry a la sección 💬 Conversació
 - `.claude/rules/anti-duplication.md` — inventario shared abstractions
 - `.claude/rules/paradigm-arquitectura.md` + `docs/architecture/luana-platform/PARADIGM.md` — ★ 3 planos · Connectivity verifica caja/zona + un solo engine + acción única (no isla)
 - `.claude/rules/anti-orphan-integration.md` — CONN: nada llega a `done` como isla
-- `.claude/rules/brand-docs-schema.md` — R1+R2+R3 schema enforcement `{brand}/docs/` (auditor C4 + C5 verifica)
+- `.claude/rules/sistema-docs-schema.md` — R1+R2+R3 schema enforcement `{brand}/docs/` (auditor C4 + C5 verifica)
 - `.claude/rules/story-closure-gate.md` — Fase F MERGE concreta R2 (archive move)
 - `.claude/rules/tdd-mandatory.md` — TDD discipline (auditor NEVER writes tests)
 - `docs/architecture/luana-platform/ADR-007-paradigm-v4.1-autonomy.md` — decisión cementada 2026-05-19

@@ -81,7 +81,7 @@ brands:
       dev_app_url: dev-app.lupulo.com          # placeholder · sin deploy
       cap_gate: advisory
 
-  pending_bootstrap:               # template _pm-brand-template; ports allocated at bootstrap
+  pending_bootstrap:               # template _pm-sistema-template; ports allocated at bootstrap
     - { slug: saasora,  vertical: "SaaS / Productos digitales" }
     - { slug: inmoflow, vertical: "Real Estate" }
     - { slug: retailly, vertical: "E-commerce / D2C" }
@@ -333,7 +333,7 @@ models:
     pm-fixia: coordinator
     pm-guestly: coordinator
     pm-fitflow: coordinator
-    _pm-brand-template: coordinator
+    _pm-sistema-template: coordinator
     commit-push: coordinator
     handoff: coordinator
     harness-issue: mechanical

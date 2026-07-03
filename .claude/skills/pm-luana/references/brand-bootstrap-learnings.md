@@ -46,10 +46,10 @@ ls ${WS}/docs/promotion-protocol/proposals/ | xargs -I{} grep -l "state: migrate
 
 Output: lista explícita de QUÉ models/services/contracts engine cubre + QUÉ falta crear como brand-extension.
 
-### Step 1 — Scaffold brand desde `_pm-brand-template/`
+### Step 1 — Scaffold brand desde `_pm-sistema-template/`
 
 ```bash
-cp -r ${WS}/.claude/skills/_pm-brand-template ${WS}/.claude/skills/pm-{slug}
+cp -r ${WS}/.claude/skills/_pm-sistema-template ${WS}/.claude/skills/pm-{slug}
 # Editar pm-{slug}/SKILL.md reemplazando placeholders {BRAND}
 mkdir -p ${WS}/{slug}/{backend,frontend,deploy,config,docs}/
 mkdir -p ${WS}/{slug}/docs/product/{outcomes,stories,capabilities,modules}/
@@ -335,7 +335,7 @@ Admin auth: bcrypt single super-admin password `{SLUG}_ADMIN_PASSWORD_HASH` env 
 Cuando Chris dice "bootstrap brand {slug}", verificar:
 
 - [ ] Step 0: auditoría cross-engine ejecutada + reporte qué cubre engine vs qué falta brand
-- [ ] Step 1: scaffold desde `_pm-brand-template/` ejecutado
+- [ ] Step 1: scaffold desde `_pm-sistema-template/` ejecutado
 - [ ] Step 2: brand.yaml + .env.dev.template completos con bloque "brand-specific config" canónico
 - [ ] Step 3: migration 001 crea tablas engine (users, tenants, user_tenants) verbatim desde nicolify proven canonical
 - [ ] Step 4: backend imports `luana_core_iam` (no SQL crudo)
@@ -361,7 +361,7 @@ Cuando Chris dice "bootstrap brand {slug}", verificar:
 - Nicolify reference: `nicolify/backend/alembic/versions/001_initial_snapshot.py:2210-2300` (canonical CREATE TABLE engine pattern)
 - Vitalia reference (post fix): `vitalia/backend/alembic/versions/001_vitalia_initial_snapshot.py` (después de adopt-luana-core-iam story)
 - Anti-duplication rule: `.claude/rules/anti-duplication.md` § lift shared rule
-- Bootstrap template: `.claude/skills/_pm-brand-template/`
+- Bootstrap template: `.claude/skills/_pm-sistema-template/`
 - INFRA-MATRIX: `docs/portfolio/INFRA-MATRIX.md` (puertos cross-brand)
 
 ## Bitácora

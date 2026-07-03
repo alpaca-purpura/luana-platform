@@ -14,7 +14,7 @@ repro_evidence:                 # story-level (R26 = espejo ticket-level en 06-t
   reproduced_local: true        # forma A: lo reprodujiste en el stack dev real (preferida)
   # —o—
   trace_evidence:               # forma B: incident prod-only / no reproducible local
-    source: docker-logs | sentry | copilot_trace_event | conversation-log
+    source: runtime-logs | apm-alert | copilot_trace_event | conversation-log
     ref: "<id/url/snippet del traceback o traza que ancla el diagnóstico>"
 ```
 

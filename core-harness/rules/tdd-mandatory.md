@@ -4,12 +4,12 @@ Tests PRIMERO, implementación DESPUÉS. Sin excepciones.
 
 ## Aplica
 Feature nuevo / modificación existente / bug fix (test regresión ANTES fix) / refactor (tests pasan antes+después).
-**No aplica:** config pura (Docker/CI/env), docs, styling sin lógica.
+**No aplica:** config pura (contenedores/CI/env), docs, styling sin lógica.
 
 ## RED → GREEN → REFACTOR
 - BE (tests por capa, DDD): domain → infrastructure → application → API arch+E2E. RED por capa antes implementar.
-- FE (Vitest): hook → component → store. RED antes.
-- E2E (Playwright): ruta nueva → smoke en `e2e/specs/smoke/` ANTES página. Flow crítico modificado → regression.
+- FE (runner de test del seam — `toolchain`): hook → component → store. RED antes.
+- E2E (runner e2e del seam): ruta nueva → smoke en el árbol e2e del sistema ANTES página. Flow crítico modificado → regression.
 - Feature existente sin tests: baseline (comportamiento actual) → RED cambio → GREEN.
 
 ## Prohibido
