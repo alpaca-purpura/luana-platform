@@ -115,7 +115,7 @@ Activado cuando query es panorámica, comparativa o de routing.
 | "estado {brand}" | Handoff `/pm-{brand}` (ese skill carga su BACKLOG + checkpoint) |
 | "qué brand toca" / "priorizar" | Comparativa cross-brand basada en frontmatter 1-pagers (status + last_updated). Recomendación con why_now |
 | "regen portfolio" | `make portfolio` (auto-gen `scripts/generate_portfolio.py`) |
-| "bootstrap brand {slug}" | **MANDATORY:** cargar `references/brand-bootstrap-learnings.md` ANTES de ejecutar (10 anti-patterns catalogados + checklist 13 pasos canónicos). Después handoff `_pm-brand-template/` workflow + crear `{slug}/` desde scaffold |
+| "bootstrap brand {slug}" | **MANDATORY:** cargar `references/brand-bootstrap-learnings.md` ANTES de ejecutar (10 anti-patterns catalogados + checklist 13 pasos canónicos). Después handoff `_pm-sistema-template/` workflow + crear `{slug}/` desde scaffold |
 | "outcome cross-brand {tema}" | Saltá a Modo Core Engineering — outcome platform vive ahí |
 
 ### Routing matrix (cuándo handoff)
@@ -387,5 +387,5 @@ Al cierre de cada turn, MUST appendear una entry a la sección 💬 Conversació
 - `.claude/rules/auditor-downstream-regression.md` — R3 downstream regression
 - `.claude/skills/pm/SKILL.md` — alias delgado de retro-compat (apunta acá)
 - `.claude/skills/pm-{brand}/SKILL.md` — per-brand PM (×4 existentes + 6 templates futuros)
-- `.claude/skills/_pm-brand-template/SKILL.md` — scaffold bootstrap brand nueva
+- `.claude/skills/_pm-sistema-template/SKILL.md` — scaffold bootstrap brand nueva
 - `references/brand-bootstrap-learnings.md` — **MANDATORY load** cuando user dice "bootstrap brand {slug}". Catálogo anti-patterns observados (vitalia 2026-05-19 caso origen) + checklist 13 pasos canónicos para evitar reinventar engine IAM, hardcodes brand en core/config.py, mirror admin module cross-brand, migrations no aplicadas post-bootstrap, etc.

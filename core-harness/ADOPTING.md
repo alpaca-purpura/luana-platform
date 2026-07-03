@@ -65,7 +65,7 @@ This is the contract: **the core tells you what it needs; you never tell the cor
 |---|---|---|
 | `meta.product` | product name + 1-line description | `ledgerline` — double-entry bookkeeping CLI+API |
 | `sistemas` | your market instances. **Single-sistema = a list with ONE entry** — nothing else changes | `active: [{slug: main}]` · `loop_order: [main]` |
-| `toolchain` | lint / format / typecheck / test / migrate commands per stack | `lint: "go vet ./..."` · `format: "gofmt -l ."` · `test: "go test ./..."` · `audit: "govulncheck ./..."` |
+| `toolchain` | lint / format / typecheck / test / migrate commands per stack | the exact commands YOUR repo's own build files declare, quoted verbatim into `lint:` · `format:` · `test:` · `audit:` |
 | `locale` | the user-facing language rule the copy gates enforce | `identifier: en-US` (no dialect gate needed) |
 | `engine_prefix` | where your SHARED/reusable code lives (the anti-duplication grep target) | `go_module_prefix: github.com/acme/ledgerline/internal/` |
 | `live_verify_infra` | how a story is exercised LIVE before `done` (URL/binary, test creds, evidence sources) | local binary smoke + `LEDGERLINE_API_TOKEN` |

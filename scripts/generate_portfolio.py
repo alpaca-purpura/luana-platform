@@ -221,7 +221,7 @@ def render_portfolio_md(today: str) -> str:
         for u in pending:
             lines.append(
                 f"| {u['slug']} | {u['vertical']} | {STATUS_EMOJI['pending-bootstrap']} pending | "
-                f"template `_pm-brand-template/` |"
+                f"template `_pm-sistema-template/` |"
             )
         lines.append("")
 

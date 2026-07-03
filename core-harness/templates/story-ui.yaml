@@ -1,7 +1,7 @@
 # UI Story Template — Schema SSoT atómico
 # Vive en: {sistema}/docs/product/stories/{module}/{story-id}.yaml
 # Owner: /po (redacta) · /pm (ratifica al merge)
-# Eval policy: Playwright e2e + state_check + (opcional) screenshot diff
+# Eval policy: e2e (runner del seam) + state_check + (opcional) screenshot diff
 
 ---
 id: STORY_ID_KEBAB                              # único, kebab-case, ej: brand-identity-edit
@@ -139,7 +139,7 @@ estimate:
 
 # ── Test coverage status (auto-actualizable por /auditor) ────
 test_coverage:
-  e2e_test: null                                                # path al spec Playwright
+  e2e_test: null                                                # path al spec e2e
   state_check_implemented: false
   unit_tests: false
   integration_tests: false

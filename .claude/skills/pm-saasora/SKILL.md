@@ -12,10 +12,10 @@ disable-model-invocation: true   # marca sin bootstrapear: user-invocable (/pm-s
 
 ## Para bootstrapear Saasora
 
-Seguí `.claude/skills/_pm-brand-template/SKILL.md`:
+Seguí `.claude/skills/_pm-sistema-template/SKILL.md`:
 
 ```bash
-cp -r .claude/skills/_pm-brand-template .claude/skills/pm-saasora
+cp -r .claude/skills/_pm-sistema-template .claude/skills/pm-saasora
 # reemplazar placeholders {{SLUG}}/{{NAME_CAP}}/{{VERTICAL}}/{{TRIGGERS_EXTRA}}
 # crear saasora/docs/product/{releases,stories,capabilities,modules}/ + checkpoint + BACKLOG
 make portfolio
@@ -25,6 +25,6 @@ El cuerpo completo (Step 0 closure-gate · **Intake-handshake** W0.5-bis · Auto
 
 ## Referencias
 
-- `.claude/skills/_pm-brand-template/SKILL.md` — scaffold de bootstrap (SSoT del cuerpo)
+- `.claude/skills/_pm-sistema-template/SKILL.md` — scaffold de bootstrap (SSoT del cuerpo)
 - `.claude/skills/pm-vitalia/SKILL.md` — instancia activa de referencia
 - `CLAUDE.md` § 10 Brand verticals — catálogo + estado de bootstrap

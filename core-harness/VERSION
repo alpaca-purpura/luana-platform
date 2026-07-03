@@ -8,7 +8,7 @@
 # Versioning: semver tags on prenter-harness (v0.3.0+); adopters pin a tag.
 # Anti-rot gates: tooling/scripts/hooks -> gen_all.py --check on every commit.
 
-KIT_VERSION=0.5.0
+KIT_VERSION=0.5.2
 LAST_SYNC_DATE=2026-06-11
 LAST_SYNC_COMMIT=b586efe
 UPSTREAM_REPO=https://github.com/alpacapurpura/prenter-harness

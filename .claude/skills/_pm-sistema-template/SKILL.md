@@ -1,11 +1,11 @@
 ---
-name: _pm-brand-template
-description: "Template scaffold para crear /pm-{brand} skill nuevo cuando se hace bootstrap de una brand pendiente (saasora, inmoflow, retailly, fixia, guestly, fitflow). NO ES UN SKILL EJECUTABLE — es scaffold copy-paste. Para usar: cp -r .claude/skills/_pm-brand-template .claude/skills/pm-{brand} y reemplazar placeholders. Activa SOLO cuando user pide 'bootstrap brand {slug}'."
+name: _pm-sistema-template
+description: "Template scaffold para crear /pm-{brand} skill nuevo cuando se hace bootstrap de una brand pendiente (saasora, inmoflow, retailly, fixia, guestly, fitflow). NO ES UN SKILL EJECUTABLE — es scaffold copy-paste. Para usar: cp -r .claude/skills/_pm-sistema-template .claude/skills/pm-{brand} y reemplazar placeholders. Activa SOLO cuando user pide 'bootstrap brand {slug}'."
 allowed-tools: Read, Write, Edit, Bash
 model: opus
 ---
 
-# _pm-brand-template — scaffold
+# _pm-sistema-template — scaffold
 
 > **NO INVOCAR DIRECTO.** Este skill es solo scaffold para bootstrap brand nueva.
 
@@ -28,7 +28,7 @@ mkdir -p ${SLUG}/.claude/{rules,skills}
 # (usar mismos templates que generamos en F1 reorg multimarca)
 
 # 3. Crear /pm-{slug} skill
-cp -r .claude/skills/_pm-brand-template .claude/skills/pm-${SLUG}
+cp -r .claude/skills/_pm-sistema-template .claude/skills/pm-${SLUG}
 # Reemplazar placeholders {{SLUG}}, {{NAME_CAP}}, {{VERTICAL}}, {{TRIGGERS_EXTRA}} en SKILL.md
 
 # 4. Crear ${SLUG}/config/brand.yaml inicial
@@ -167,7 +167,7 @@ automático, requiere tipear manual). Ver `.claude/rules/pm-skill-chaining.md`.
 
 - [ ] Estructura física `{slug}/` creada
 - [ ] `{slug}/config/brand.yaml` con frontmatter inicial
-- [ ] `{slug}/docs/` con templates iniciales heredados (BACKLOG, checkpoint, READMEs) — **schema canónico per `.claude/rules/brand-docs-schema.md` (R1+R2+R3)**
+- [ ] `{slug}/docs/` con templates iniciales heredados (BACKLOG, checkpoint, READMEs) — **schema canónico per `.claude/rules/sistema-docs-schema.md` (R1+R2+R3)**
 - [ ] `.claude/skills/pm-{slug}/SKILL.md` creado con placeholders reemplazados
 - [ ] `make portfolio` regenerado para incluir nuevo brand en `docs/portfolio/PORTFOLIO.md`
 - [ ] Commit + push (Conventional Commits: `feat({slug}): bootstrap brand topology`)
@@ -177,7 +177,7 @@ automático, requiere tipear manual). Ver `.claude/rules/pm-skill-chaining.md`.
 
 ## ★ Brand docs schema (MANDATORIO desde el día 1)
 
-> SSoT: `.claude/rules/brand-docs-schema.md` (R1+R2+R3 cementadas 2026-05-19).
+> SSoT: `.claude/rules/sistema-docs-schema.md` (R1+R2+R3 cementadas 2026-05-19).
 
 Todo `{slug}/docs/` debe cumplir 3 reglas hard:
 
@@ -270,5 +270,5 @@ Al cierre de cada turn, MUST appendear una entry a la sección 💬 Conversació
 - `docs/process/capability-protocol.md` — schema cap YAML v2 + Fase F.3 4 ramas
 - `docs/process/release-protocol.md` — Release entity SSoT
 - `docs/process/chris-input-protocol.md` — output protocol per skill
-- `.claude/rules/brand-docs-schema.md` — schema canónico `{slug}/docs/` + R1+R2+R3 enforcement (MANDATORIO desde bootstrap)
+- `.claude/rules/sistema-docs-schema.md` — schema canónico `{slug}/docs/` + R1+R2+R3 enforcement (MANDATORIO desde bootstrap)
 - `.claude/rules/story-closure-gate.md` — Fase F MERGE concreta R2 (archive como parte del 07-merge)

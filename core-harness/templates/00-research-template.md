@@ -79,7 +79,7 @@ decision_options: ["refining", "parked", "dropped"]
 | Componente | USD/mes/tenant | USD/mes 1000 tenants |
 |---|---|---|
 | LLM tokens (provider X) | 0.50 | 500 |
-| Infra (Postgres+Redis+Qdrant adicional) | 0.10 | 100 |
+| Infra (DB + cache + vector store adicional) | 0.10 | 100 |
 | External API calls | 0.20 | 200 |
 | **Total runtime** | **0.80** | **800** |
 

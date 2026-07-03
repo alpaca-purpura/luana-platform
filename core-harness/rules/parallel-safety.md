@@ -19,7 +19,7 @@
 |---|---|
 | M1 | Sesiones paralelas = branches DISTINTOS — EXCEPTO mismo canónico con bucket lock M14 |
 | M2 | SSoT (BACKLOG, MEMORY, PORTFOLIO) SOLO `/pm-{sistema}` o `/pm-{platform}`. Builders nunca |
-| M3 | Tests/Docker/migrations SECUENCIAL por sistema. Max 1 stack docker por sistema |
+| M3 | Tests/contenedores/migrations SECUENCIAL por sistema. Max 1 stack de contenedores por sistema |
 | M4 | Claim by commit: state change en checkpoint.md + commit/push inmediato pre-claim |
 | M5 | NO pull · NO force push · NO revert sin aprobación · Push non-FF → STOP |
 | M6 | Bootstrap PM pregunta story activa antes proceder |
