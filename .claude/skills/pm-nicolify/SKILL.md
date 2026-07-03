@@ -52,7 +52,7 @@ model: opus
 
 ## ★ Brand docs schema (R1+R2+R3 — MANDATORIO)
 
-> SSoT: `.claude/rules/brand-docs-schema.md` (cement-date 2026-05-19).
+> SSoT: `.claude/rules/sistema-docs-schema.md` (cement-date 2026-05-19).
 
 Toda escritura a `nicolify/docs/` debe cumplir:
 
@@ -369,6 +369,6 @@ Al cierre de cada turn, MUST appendear una entry a la sección 💬 Conversació
 - `docs/promotion-protocol/README.md` — workflow brand→core
 - `.claude/skills/pm/SKILL.md` — master orquestador
 - `.claude/skills/pm-luana/SKILL.md` — core PM
-- `.claude/rules/brand-docs-schema.md` — R1+R2+R3 schema enforcement `nicolify/docs/`
+- `.claude/rules/sistema-docs-schema.md` — R1+R2+R3 schema enforcement `nicolify/docs/`
 - `.claude/rules/story-closure-gate.md` — Fase F MERGE concreta R2
 - `nicolify/config/brand.yaml` — feature flags + opt-in core packages + tier gating

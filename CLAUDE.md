@@ -30,7 +30,7 @@ Luana = **equipo de trabajadores digitales** que operan un sistema de Go-To-Mark
 luana-platform/
 ├── core/luana-core-{27 paquetes}/   ← engine SSoT
 ├── {vitalia,nicolify,comunify,lupulo}/{backend,frontend,config}/   ← 4 brands activas
-├── {saasora,inmoflow,retailly,fixia,guestly,fitflow}/   ← 6 brands pendientes bootstrap (template _pm-brand-template)
+├── {saasora,inmoflow,retailly,fixia,guestly,fitflow}/   ← 6 brands pendientes bootstrap (template _pm-sistema-template)
 ├── docs/   ← transversales Luana (portfolio + promotion-protocol + core-modules + process + specs + architecture)
 └── scripts/   ← framework
 ```
@@ -112,7 +112,7 @@ Paradigm full + flujo 3 conversaciones + cost-routing + skills ejes + ready pack
 | **Guestly** | Turismo + Hotelería | ⏳ bootstrap pendiente |
 | **FitFlow** | Fitness + Deporte | ⏳ bootstrap pendiente |
 
-Bootstrap brand nueva: pattern Story 11 (vitalia) o Story 12 (comunify) → ver `_pm-brand-template/SKILL.md` + `docs/rules-detail/_CLAUDE-original-backup.md` § "Bootstrap pattern".
+Bootstrap brand nueva: pattern Story 11 (vitalia) o Story 12 (comunify) → ver `_pm-sistema-template/SKILL.md` + `docs/rules-detail/_CLAUDE-original-backup.md` § "Bootstrap pattern".
 
 ## Brand → Core mapping (Extension SDK)
 
@@ -151,7 +151,7 @@ Detail: `.claude/rules/git-safety.md` + `.claude/rules/parallel-safety.md` + `.c
 | 15 | Hot-fix repro mandatory | `hotfix-repro-mandatory.md` |
 | 16 | Git Haiku delegation | `git-haiku-delegation.md` |
 | 17 | Story closure gate (developed→reviewing→done auto) | `story-closure-gate.md` |
-| 18 | Brand docs schema (R1+R2+R3) | `brand-docs-schema.md` |
+| 18 | Brand docs schema (R1+R2+R3) | `sistema-docs-schema.md` |
 | 19 | Auditor self-fix policy | `auditor-self-fix-policy.md` |
 | 20 | Anti default-flip audit | `anti-default-flip-audit.md` |
 | 21 | PM skill chaining (Skill tool inline) | `pm-skill-chaining.md` |
@@ -179,7 +179,7 @@ Detail: `.claude/rules/git-safety.md` + `.claude/rules/parallel-safety.md` + `.c
 |---|---|---|
 | Vista portfolio / cross-brand / core / promotion gate | `/pm-luana` (alias `/pm`) | `docs/portfolio/` + `docs/promotion-protocol/` + `docs/core-modules/` |
 | PM brand-specific (×4 + 6 templates) | `/pm-{brand}` | `{brand}/docs/product/` |
-| Bootstrap brand nueva | `_pm-brand-template/` | scaffold workflow |
+| Bootstrap brand nueva | `_pm-sistema-template/` | scaffold workflow |
 | User story UI std | `/po-ux` | `docs/specs/templates/01-spec-template.md` |
 | User story service | `/po` | idem |
 | Conversational flow design | `/ux-agentico` | `docs/specs/templates/02-design-agentic-template.md` |

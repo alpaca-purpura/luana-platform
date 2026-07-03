@@ -37,7 +37,7 @@ Salud + Bienestar (reservas prepagadas, HIPAA-lite, seguimiento post-tratamiento
 
 ## ★ Brand docs schema (R1+R2+R3 — MANDATORIO)
 
-> SSoT: `.claude/rules/brand-docs-schema.md` (cement-date 2026-05-19).
+> SSoT: `.claude/rules/sistema-docs-schema.md` (cement-date 2026-05-19).
 
 Toda escritura a `vitalia/docs/` debe cumplir:
 
@@ -367,7 +367,7 @@ Al cierre de cada turn, MUST appendear una entry a la sección 💬 Conversació
 - `docs/promotion-protocol/README.md` — workflow brand→core
 - `.claude/skills/pm/SKILL.md` — master orquestador
 - `.claude/skills/pm-luana/SKILL.md` — core PM
-- `.claude/rules/brand-docs-schema.md` — R1+R2+R3 schema enforcement `vitalia/docs/` (cement 2026-05-19)
+- `.claude/rules/sistema-docs-schema.md` — R1+R2+R3 schema enforcement `vitalia/docs/` (cement 2026-05-19)
 - `.claude/rules/story-closure-gate.md` — Fase F MERGE concreta R2 (archive como parte del 07-merge)
 - `vitalia/.claude/rules/hipaa-lite.md` — overlay defensivo CONDICIONAL para datos sensibles paciente.
   NO es claim de compliance HIPAA US (sin BAA / sin certificación) — es framework de referencia para

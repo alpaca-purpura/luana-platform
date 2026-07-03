@@ -6,7 +6,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Section 16 — chris-input.md consistency (R4 brand-docs-schema, cement 2026-05-27)
 # ─────────────────────────────────────────────────────────────────────────────
-# SSoT: .claude/rules/brand-docs-schema.md § R4
+# SSoT: .claude/rules/sistema-docs-schema.md § R4
 #
 # Si el commit toca {brand}/docs/product/stories/{id}/checkpoint.md y el state
 # está en {idea, refining, refined, ready, developing, developed, reviewing},
@@ -69,7 +69,7 @@ Override (advisory, audit escruta):
   * En checkpoint frontmatter agregar: # chris-input-skip: razón
   * Emergency env: CHRIS_INPUT_SKIP=1 git commit ...
 
-SSoT: .claude/rules/brand-docs-schema.md § R4
+SSoT: .claude/rules/sistema-docs-schema.md § R4
 ─────────────────────────────────────────────────────────────
 EOF
             printf "\033[0m"

@@ -7,10 +7,10 @@
 Hasta que haya servidor real con deploy automatizado, **GitHub Actions workflows están en modo `deferred`**: no se garantiza que corran. La calidad se enforce 100% via hooks locales:
 
 - `scripts/git-hooks/pre-commit` — SSoT calidad por commit (light en `wip/*`, full en `main`/`release/*`)
-- `scripts/git-hooks/pre-push` — tests + tsc + arch fitness antes de push
+- `scripts/git-hooks/pre-push` — tests + typecheck + arch fitness antes de push
 - `make ci-parity` — full suite equivalente a `ci.yml`, obligatorio antes de squash-merge wip→main
 
-**Sentinel `.ci-parity-deferred` (tracked, existe):** cuando este archivo está presente en la raíz, `make ci-parity` se vuelve **ADVISORY** en la fase dev-only (solo reporta, no bloquea). El gate real sigue siendo nativo (pre-commit + pre-push). La excepción HARD que persiste incluso con el sentinel: **bidirectional `cross_check_3`** (cap↔código) — sigue siendo HARD. Para reactivar el gate Docker completo: borrar el sentinel + `make install-hooks` + agregar stage `test` a los Dockerfiles, al provisionar testing/prod.
+**Sentinel `.ci-parity-deferred` (tracked, existe):** cuando este archivo está presente en la raíz, `make ci-parity` se vuelve **ADVISORY** en la fase dev-only (solo reporta, no bloquea). El gate real sigue siendo nativo (pre-commit + pre-push). La excepción HARD que persiste incluso con el sentinel: **bidirectional `cross_check_3`** (cap↔código) — sigue siendo HARD. Para reactivar el gate de CI-en-contenedores completo: borrar el sentinel + `make install-hooks` + agregar stage `test` a las imágenes de build, al provisionar testing/prod.
 
 **Reactivar cuando:** servidor staging provisionado · primera release vX.Y.Z · 2º developer · customer-paying contract · auditor SOC2/ISO.
 

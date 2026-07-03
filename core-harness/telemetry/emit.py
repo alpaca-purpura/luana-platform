@@ -95,6 +95,26 @@ def sensitive_fields() -> set[str]:
 
 
 # ---------------------------------------------------------------- transcript parsing
+# Echoes of local slash-commands travel as `user` lines with string content and no
+# `origin` — same shape as a headless prompt. These wrappers tell them apart (KIT-07).
+COMMAND_WRAPPERS = ("<command-name>", "<local-command-stdout>", "<local-command-caveat>")
+
+
+def _starts_turn(line: dict) -> bool:
+    """Turn-detection v2 (KIT-07). Interactive human prompts carry a truthy ``origin``;
+    headless ``claude -p`` prompts carry none — so a plain-string ``user`` line without
+    ``origin`` also opens a turn, unless it is harness noise: meta lines, sidechain
+    (subagent) prompts, tool results, or local-command wrappers."""
+    if line.get("type") != "user":
+        return False
+    if line.get("origin"):
+        return True
+    if line.get("isMeta") or line.get("isSidechain") or line.get("sourceToolUseID") is not None:
+        return False
+    content = (line.get("message") or {}).get("content")
+    return isinstance(content, str) and not content.lstrip().startswith(COMMAND_WRAPPERS)
+
+
 def _ts(line: dict):
     raw = line.get("timestamp")
     if not raw:
@@ -105,14 +125,27 @@ def _ts(line: dict):
         return None
 
 
-def parse_turns(path: Path, start_offset: int, close_at_eof: bool):
+def _turn_has_usage(turn: dict) -> bool:
+    return any(ln.get("type") == "assistant" and (ln.get("message") or {}).get("usage")
+               for ln in turn["lines"])
+
+
+def parse_turns(path: Path, start_offset: int, mode: str):
     """Read transcript lines from ``start_offset``; group them into turns.
 
-    A turn starts at a ``user`` line whose ``origin`` is truthy (a human prompt); tool
-    results / meta lines continue the current turn. Only COMPLETE lines are consumed (a
-    partial trailing line stays for the next firing). When ``close_at_eof`` is False
-    (SubagentStop fires mid-turn) the trailing open turn is HELD BACK — neither emitted
-    nor consumed — so its remaining lines land in one span on the next Stop/SessionEnd.
+    A turn starts at a ``user`` line that ``_starts_turn`` accepts (interactive prompt
+    with ``origin``, or headless prompt without it — KIT-07); tool results / meta lines
+    continue the current turn. Only COMPLETE lines are consumed (a partial trailing line
+    stays for the next firing).
+
+    ``mode`` decides the fate of the TRAILING open turn:
+      - ``"hold"`` (SubagentStop, fires mid-turn): always held back — neither emitted nor
+        consumed — so its remaining lines land in one span on the next Stop/SessionEnd.
+      - ``"stop"`` (Stop): closed, UNLESS it has no assistant usage yet — in print-mode
+        (``claude -p``) Stop can fire before the assistant lines are flushed to the
+        transcript (caught in the 0.5.1 beta smoke); the usage-less turn is held for
+        SessionEnd instead of emitting an empty span.
+      - ``"final"`` (SessionEnd): everything closes — last chance, emit what there is.
     Returns (turns, consumed_offset).
     """
     turns, current = [], None
@@ -127,13 +160,13 @@ def parse_turns(path: Path, start_offset: int, close_at_eof: bool):
             except json.JSONDecodeError:
                 consumed += len(raw)
                 continue
-            if line.get("type") == "user" and line.get("origin"):
+            if _starts_turn(line):
                 current = {"lines": [line], "_starts_at": consumed}
                 turns.append(current)
             elif current is not None:
                 current["lines"].append(line)
             consumed += len(raw)
-    if turns and not close_at_eof:
+    if turns and (mode == "hold" or (mode == "stop" and not _turn_has_usage(turns[-1]))):
         held = turns.pop()  # open turn stays for the next firing
         consumed = held["_starts_at"]
     return turns, consumed
@@ -353,7 +386,7 @@ def post_otlp(cfg: dict, payload: dict) -> bool:
 
 # ---------------------------------------------------------------- sink + offsets
 def emit(transcript: Path, session_id: str, project: str, cfg: dict,
-         close_at_eof: bool, capture_sensible: bool, no_egress: bool) -> str:
+         mode: str, capture_sensible: bool, no_egress: bool) -> str:
     proj_dir = cfg["sink_dir"] / project
     proj_dir.mkdir(parents=True, exist_ok=True)
     sink = proj_dir / "trazas.jsonl"
@@ -366,7 +399,7 @@ def emit(transcript: Path, session_id: str, project: str, cfg: dict,
             offsets = {}
     state = offsets.get(session_id) or {"ingest": 0, "egress": 0, "seq": 0}
 
-    turns, consumed = parse_turns(transcript, state["ingest"], close_at_eof)
+    turns, consumed = parse_turns(transcript, state["ingest"], mode)
     new_spans = []
     for turn in turns:
         turn["_session"] = session_id
@@ -437,8 +470,8 @@ def main() -> int:
     cfg = load_config()
     if args.sink:
         cfg["sink_dir"] = Path(args.sink)
-    close_at_eof = event in ("stop", "sessionend")
-    print(emit(transcript, session_id, project, cfg, close_at_eof,
+    mode = {"stop": "stop", "sessionend": "final"}.get(event, "hold")
+    print(emit(transcript, session_id, project, cfg, mode,
                args.capture_sensible, args.no_egress), file=sys.stderr)
     return 0
 

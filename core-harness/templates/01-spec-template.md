@@ -227,7 +227,7 @@ Happy path
 - [no cross-leak en queries]
 - [performance: p95 < N ms ambos]
 
-**playwright_required:** true (2 contextos Playwright paralelos)
+**playwright_required:** true (2 contextos e2e paralelos)
 **Graders:** ...
 
 `not_applicable_reason: <razón si NO aplica>`
@@ -297,7 +297,7 @@ Happy path
 > Aplica cuando: TODO surface FE user-facing.
 
 **Given:** [pantalla cualquier estado]
-**When:** [axe-core scan + keyboard nav + screen reader]
+**When:** [scan a11y automatizado + keyboard nav + screen reader]
 **Then:**
 - [0 violaciones critical/serious WCAG AA]
 - [Tab order lógico]
@@ -305,7 +305,7 @@ Happy path
 - [Contrast ratio ≥ 4.5:1 (text), ≥ 3:1 (UI)]
 - [Focus visible en TODOS interactivos]
 
-**playwright_required:** true (axe-core via @axe-core/playwright)
+**playwright_required:** true (scan a11y automatizado del runner e2e)
 **Graders:**
 - { type: axe, ruleset: "wcag2aa", paths: ["all-screens"] }
 
@@ -367,10 +367,10 @@ Happy path
 |---|---|---|
 | Latencia | p95 < N ms | métrica + load test |
 | Cost | <= $X/session (agentic) | copilot_llm_call |
-| Mobile | viewport >= 375px (ui) | Playwright resize |
-| Accesibilidad | WCAG AA (ui) | axe-core |
+| Mobile | viewport >= 375px (ui) | e2e viewport resize |
+| Accesibilidad | WCAG AA (ui) | scan a11y automatizado |
 | i18n | Spanish neutro (no voseo, salvo sales_agent voz tenant) | Lint regex |
-| PII | Response no expone PII sin mask | response_model Pydantic |
+| PII | Response no expone PII sin mask | validación del response model |
 | Tenant isolation | Tenant cross → 403/404 | adversarial scenario |
 
 ## Constraints técnicos heredados
