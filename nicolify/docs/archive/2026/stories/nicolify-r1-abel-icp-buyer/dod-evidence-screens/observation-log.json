@@ -1,0 +1,70 @@
+{
+  "timestamp": "2026-06-04T08:32:50.920Z",
+  "auth_as": "hola@alpacapurpura.lat",
+  "tenant_slug": "alpaca-purpura",
+  "tenant_uuid_expected": "e4373552-f70f-58e0-b2bf-55425cc3259f",
+  "verdict": "CREATE-BLANK-WORKS",
+  "auth_result": "ok",
+  "empty_state": "yes",
+  "click_result": "clicked",
+  "post_request": {
+    "status": 201,
+    "x_tenant_id_sent": "e4373552-f70f-58e0-b2bf-55425cc3259f",
+    "response_body_snippet": "{\"id\":\"0397674d-a705-4a74-bca8-aff573999727\",\"label\":\"Nuevo ICP\",\"description\":null,\"vertical\":null,\"company_size\":null,\"geo\":null,\"business_model\":null,\"avg_ticket\":null,\"avg_ticket_currency\":null,\"sales_cycle\":null,\"main_pain\":null,\"sales_angle\":null,\"signals\":[],\"anti_pattern\":null,\"status\":\"borr",
+    "duration_ms": 33
+  },
+  "get_after_create": [
+    {
+      "url": "http://localhost:3001/api/v1/abel/icp/0397674d-a705-4a74-bca8-aff573999727/buyers",
+      "status": 200,
+      "x_tenant_id": "e4373552-f70f-58e0-b2bf-55425cc3259f"
+    },
+    {
+      "url": "http://localhost:3001/api/v1/abel/icp/0397674d-a705-4a74-bca8-aff573999727",
+      "status": 200,
+      "x_tenant_id": "e4373552-f70f-58e0-b2bf-55425cc3259f"
+    }
+  ],
+  "url_after_click": "http://localhost:3001/alpaca-purpura/abel/icp/0397674d-a705-4a74-bca8-aff573999727/datos",
+  "url_final": "http://localhost:3001/alpaca-purpura/abel/icp/0397674d-a705-4a74-bca8-aff573999727/datos",
+  "final_page": "datos-form",
+  "console_errors": [],
+  "page_errors": [],
+  "has_next_error_overlay": false,
+  "all_network_events": [
+    {
+      "method": "GET",
+      "url": "/api/v1/abel/icp",
+      "status": 200,
+      "x_tenant_id": "e4373552-f70f-58e0-b2bf-55425cc3259f"
+    },
+    {
+      "method": "POST",
+      "url": "/api/v1/abel/icp",
+      "status": 201,
+      "x_tenant_id": "e4373552-f70f-58e0-b2bf-55425cc3259f"
+    },
+    {
+      "method": "GET",
+      "url": "/api/v1/abel/icp",
+      "status": 200,
+      "x_tenant_id": "e4373552-f70f-58e0-b2bf-55425cc3259f"
+    },
+    {
+      "method": "GET",
+      "url": "/api/v1/abel/icp/0397674d-a705-4a74-bca8-aff573999727/buyers",
+      "status": 200,
+      "x_tenant_id": "e4373552-f70f-58e0-b2bf-55425cc3259f"
+    },
+    {
+      "method": "GET",
+      "url": "/api/v1/abel/icp/0397674d-a705-4a74-bca8-aff573999727",
+      "status": 200,
+      "x_tenant_id": "e4373552-f70f-58e0-b2bf-55425cc3259f"
+    }
+  ],
+  "screenshots": {
+    "empty_state": "/home/chalreme/Proyectos/luana-nicolify/nicolify/docs/product/stories/nicolify-r1-abel-icp-buyer/dod-evidence-screens/01-empty-state.png",
+    "post_click": "/home/chalreme/Proyectos/luana-nicolify/nicolify/docs/product/stories/nicolify-r1-abel-icp-buyer/dod-evidence-screens/02-post-click-state.png"
+  }
+}

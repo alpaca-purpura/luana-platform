@@ -6,7 +6,7 @@ capability_id: "abel.icp-buyer"
 module: "abel"
 slug: "icp-buyer"
 title: "ICP & Buyer de Abel (perfil de cliente ideal a nivel cuenta + N buyer personas) — draft-first"
-status: wip                              # wip = construido, no live aún (pendiente DoD #37 + merge). /pm-nicolify → live en Fase F.3
+status: live                             # live 2026-07-15 — chris_verify.signoff SATISFIED, merge Fase F.3 completa
 # audit 2026-06-03: /auditor APPROVED (BE+AG+FE) · gherkin-matrix 0 MISSING/0 FAIL · pendiente solo DoD #37 live-verify
 # tenant-id 2026-06-04: ★ Chris cazó EL blocker del dev-app real (X-Tenant-ID mandaba slug, no UUID) → fix useTenantId() publicMetadata d6fd864d, confirmado live (header=UUID→200)
 # converged 2026-06-04: FE-UI core flows live-verificados (detalle/autosave/buyer/set-primary/mark-ready/404/a11y) · anti-burbuja CLEAN · 4 baselines · 7 bugs #37 reparados · pendiente solo demo_signoff Chris
@@ -93,4 +93,13 @@ dev_preview:
   e2e_test: "nicolify/frontend/e2e/specs/smoke/abel-icp.smoke.spec.ts"
 
 # ── Reconciled auto-gen (DO NOT hand-edit below · /pm-nicolify reconcilia en Fase F.3) ──
-reconciled: {}
+reconciled:
+  date_introduced: "2026-06-03"
+  story_introduced: "nicolify-r1-abel-icp-buyer"
+  story_merge_artifact: "nicolify/docs/product/stories/nicolify-r1-abel-icp-buyer/07-merge.md"
+  verification:
+    commands:
+      - "cd ${WS}/nicolify/backend && ${WS}/.venv/bin/pytest tests/modules/nicolify/abel/ -v"
+      - "cd ${WS}/nicolify/frontend && npx playwright test --grep 'abel-icp'"
+    gherkin_evidence: "15/15 SC PASS — ver 06-audit/gherkin-matrix.md (archivado con la story)"
+  chris_verify_signoff: "SATISFIED 2026-07-15 (evidencia acumulada, ver 07-merge.md § 6)"

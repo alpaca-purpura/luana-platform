@@ -28,7 +28,8 @@ areas:
   - config.conexiones
   - config.preferencias    # completar base
 
-stories: []                             # se pueblan al refinar (1 área = 1+ stories)
+stories:
+  - nicolify-r1-abel-icp-buyer               # DONE 2026-07-15 · primera hoja de Abel (ICP nivel cuenta + N buyer personas, draft-first). cap abel/icp-buyer live. Archivada nicolify/docs/archive/2026/stories/. Desbloquea nicolify-r1-abel-buyer-multi-icp.
 maps_legacy_outcome: null
 maps_legacy_phase: null
 ---
