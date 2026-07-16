@@ -11,14 +11,16 @@ cap_target: abel/icp-buyer                        # mismo target que nicolify-r1
 cap_change_type: extend                            # agrega scenarios nuevos (attach existing buyer + directory) al mismo cap
 parent_story: null                                 # NO se pobla: parent (nicolify-r1-abel-icp-buyer) aún no está `done`
 
-state: idea
-phase_workflow: PM_DRAFT
-phase: null
+state: ready
+phase_workflow: ARCHITECT_DONE
+phase: READY_PACKAGE_COMPLETE
+architecture_pattern: ADR-nicolify-001        # sub-tab "buyers" nueva → G0-G3
+adr_001_compliance: full
 autonomous_mode: false
-last_artifact: checkpoint.md
-last_modified: 2026-07-15T17:47:04-05:00
-next_action: "DESBLOQUEADA 2026-07-15 — nicolify-r1-abel-icp-buyer llegó a done (chris_verify.signoff SATISFIED, merge completo). Schema abel_icps/abel_buyers estable. Próximo paso: refinar lite vía /po (backend-heavy, sin diseño nuevo mayor — la vista 'Buyers' directory es la única superficie UI nueva)."
-ratified_by_chris: false
+last_artifact: 06-tickets.yaml
+last_modified: 2026-07-15T21:45:00-05:00
+next_action: "/dev-team nicolify nicolify-r1-abel-buyer-multi-icp T-BE-1 → build (DAG BE→FE, ready package v2). G Chris-verify obligatorio — checklist de 6 puntos en dispatch-plan.md (SC-8 migración 3-clases + SC-4 edit-propagates + SC-12 cascade + SC-14 confirm destructivo live)."
+ratified_by_chris: true
 input_spec_signed: false
 mockup_final_signed: false
 spawned_at: 2026-07-15T17:47:04-05:00
@@ -32,12 +34,18 @@ parked_reason: null
 dropped_reason: null
 
 # Bugfix repro-first gate (ADR-011 · hereda hotfix-repro-mandatory.md)
-# Gap de diseño confirmado por lectura de schema (no incident/handoff) — repro_verified formal
-# (test RED o ejercicio live) es responsabilidad de /po ANTES de developing, no de esta captura.
+# Gap de diseño — repro_evidence formalizada por /po vía lectura del CÓDIGO MERGEADO (forma A, reproduced_local),
+# no del texto del handoff/checkpoint. hotfix_metadata legacy se mantiene abajo por compat, repro_evidence es la SSoT.
 hotfix_metadata:
-  repro_verified: false
-  repro_command: "Leer nicolify/docs/product/stories/nicolify-r1-abel-icp-buyer/03-arch-be.md:97 → `Buyer.icp_id: UUID` (FK NOT NULL, comentario 'RN-5 → Icp, no huérfanos'). Live (cuando dev-app up): crear buyer 'CTO' en ICP A → intentar reusar el mismo perfil en ICP B → UI fuerza crear-de-nuevo (sin opción 'elegir existente'), confirmando el 1:1 duro."
-  diagnosis_validates_handoff: null                # no viene de handoff/incidente — origina de conversación de diseño Chris↔Claude 2026-07-15
+  repro_verified: true
+  repro_command: "nicolify/backend/src/modules/nicolify/abel/infrastructure/models/buyer_model.py:33 → `icp_id: Mapped[UUID] = mapped_column(..., nullable=False)`; migración 002_abel_icp_buyer.py:78 `icp_id UUID NOT NULL` (sin join table). router.py confirma la ausencia estructural: `create_buyer` (icp/{icp_id}/buyers) SIEMPRE crea buyer nuevo (no hay 'attach existing'), `set_buyer_primary` no recibe icp_id, `delete_buyer` es soft-delete directo (no 'detach'), no existe `GET /buyers` directory. El 1:1 duro es estructural en el schema mergeado, no un comportamiento a click-through."
+  diagnosis_validates_handoff: true                # no viene de handoff/incidente — origina de conversación de diseño; el código mergeado CONFIRMA el diagnóstico línea por línea
+
+repro_evidence:
+  repro_verified: true
+  reproduced_local: true          # forma A — confirmado leyendo el código mergeado real (modelo + migración + router), no el texto del handoff
+  diagnosis_validates_handoff: true
+  diagnosis_correction: null
 
 dod_live_verified: false
 dod_env: null
@@ -135,6 +143,17 @@ Por qué join table y no array/JSON: `is_primary` es propiedad del **par** (icp,
 - Impacta directamente a R2 (Christian/outbound) — ICP+buyer es su materia prima (`01-spec.md:49`). Vale cerrarla ANTES de decompose R2 para no heredar el modelo 1:1 a los tickets de outbound.
 - Sin cambios a `Stakeholder`/CRM (`agent-revenue-engine.md §5`) — esa es la capa de contactos reales, ortogonal a esta.
 
+## Prior art scan (/pm-nicolify · idea→refining · 2026-07-15)
+
+- **Engine `core/luana-core-brand-studio`** — `BuyerPersona` (entidad rica: demographics/psychographics/pain_points/desires/buyer_journey/purchase_triggers/anti_patterns, scope GLOBAL|OFFER|CAMPAIGN, `is_primary`). Este SÍ es el mismo namespace conceptual ("buyer") pero **ya fue evaluado y consumido correctamente** por el parent `nicolify-r1-abel-icp-buyer` (`Prior art applied § 01-spec.md`: "Buyer = consumir vía import + extensión Extension SDK, NO recrear"). El `abel_buyers` de nicolify extiende `BuyerPersona`, no lo duplica → **decisión: sin cambios**, esta story NO toca el engine.
+- **Join-table many-to-many pattern** — grep de `PRIMARY KEY (x_id, y_id)` en `alembic/versions/` de las 3 marcas activas: el único precedente es el join `user_tenants` de IAM (`001_nicolify_iam_baseline.py` / equivalentes vitalia+comunify). Confirma que composite-PK join table (no array/JSON) **es el patrón de la casa** para relaciones N:M — alineado con la propuesta de Chris (`abel_icp_buyers`). No existe una abstracción genérica de "association table" en `core/` que debiera heredarse — cada brand la declara ad-hoc porque los campos de la relación (`is_primary`, `attached_at`) son domain-specific.
+- **Vitalia/Comunify** — sin hits de `buyer`/`icp_` en sus módulos (concepto exclusivo nicolify/abel, esperado — ICP B2B no aplica a salud ni creator economy).
+- **Learnings cross-brand** — sin entries relacionadas a join-table/attach patterns.
+- **Decisión:** `net-new` dentro del brand-extension (`abel_icp_buyers` en `nicolify/backend/src/modules/nicolify/abel/`), siguiendo el patrón de composite-PK join table ya usado en IAM. Cero engine change, cero mirror cross-brand.
+
 ## Bitácora
 
 - 2026-07-15 — Story creada en state=idea desde conversación de diseño Chris↔Claude (revisando modelo ICP/buyer de cara a R2 outbound). Detalle técnico completo capturado arriba para que /po no rederive el análisis al refinar.
+- 2026-07-15 — `/pm-nicolify`: Step 0 story-closure scan GREEN (única otra story abierta, `nicolify-r0-storybook-inventory`, es módulo `design-system` distinto — WIP cap v2 no conflictúa). Prior-art scan corrido (arriba). Transición `idea → refining`. Handoff a `/po`.
+- 2026-07-15 (noche) — **Ready package v2** (review funcional adversarial Chris↔Claude, rol architect ejecutado inline con Fable — ratificado por Chris en conversación): el pase de escenarios de usuario adversos contra spec+arch+código mergeado detectó 4 huecos que habrían obligado a modificar post-build. Cerrados en los 8 artefactos: **(1) RN-11** `DELETE /icp/{id}` cascadea (existía sin cascade en `router.py:185` → joins fantasma + buyers atrapados sin affordance de remoción; el backfill de la migración 003 también filtra ICPs vivos + cierra zombies legacy); **(2) RN-12** primer buyer auto-primary UNIFICADO create+attach vía helper `_attach_link` (attach no seteaba primary; race 2-firsts resuelta por retry, desambiguación por estado no por constraint-name; el `isPrimary` que el FE mandaba en create era payload muerto — `BuyerCreate` nunca tuvo el campo — se elimina); **(3) SC-14** detach necesita affordance NET-NEW (`useDeleteBuyer` sin consumidor UI, verificado) + confirm destructivo en último-ICP (RN-5 destruía el perfil sin aviso); **(4) AC-10** tab "Crear nuevo" con nombre required (create-blank "Nuevo buyer" contaminaría directory+picker). Extras: RN-9 awareness "También en:", SC-15 empty-states del picker, SC-2 409-stale con toast+refresh, RN-6 no-re-promoción fijada por test, readiness-stale declarado (pre-existente, fuera de scope). Spec v2 (SC-12..15, AC-7..10, Bif-7/8) · 03-arch v2 · validators (RN-11/12, mutation +icp_service, test_icp_service regression→coverage_update) · tickets (T-BE-3 7→9h, T-FE-2 7→9h) · guidelines · dispatch-plan (+checklist G 6 puntos). Story sigue `ready`.
+- 2026-07-15 — `/architect nicolify`: ready package completo (`03-arch.md` + `03-arch-be.md` + `03-arch-fe.md` + `04-validators.yaml` + `05-guidelines.md` + `06-tickets.yaml` + `dispatch-plan.md`). Prior-art audit re-verificado contra código mergeado real (modelo/migración/router/service/repo BE + api/hooks/rutas FE) — confirma EXTEND del módulo `abel` (join table `abel_icp_buyers` composite-PK, patrón IAM `user_tenants`), cero engine change, cero mirror cross-brand. **Correcciones al spec documentadas (anti imagined-contract):** (1) el "sheet + buyer con 2 tabs" NO existe hoy (es affordance de create-inmediato) → composición nueva; (2) "BuyerLeafForm sin cambios" es inexacto → 3 cambios reales (is_primary per-ICP, set-primary con icp_id, directory-mode); (3) `BuyerResponse` pierde `icp_id`+`is_primary` escalares → `attached_icps[]` (breaking FE type, T-FE-1). **Decisión de routing:** buyer-detail del directory = panel client-side, NO ruta nueva (evita tocar el dispatch entity-bearing hardcodeado a `abel.icp`). 6 tickets (BE 3 → FE 3), todos workhorse (non-agentic). Transición `refined → ready`. Open questions §9 de `03-arch.md` para Chris en G.

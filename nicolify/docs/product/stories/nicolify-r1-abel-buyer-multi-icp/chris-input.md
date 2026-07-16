@@ -69,3 +69,24 @@ Bloqueo real detectado: parent `nicolify-r1-abel-icp-buyer` seguía en `reviewin
 Gate #37 de `nicolify-r1-abel-icp-buyer`: stack caído, Chris firmó `chris_verify.signoff: SATISFIED` basado en evidencia LIVE ya registrada (múltiples rondas 2026-06-03/04/25) en vez de re-ejecutar demo-script.md. Ejecutada Fase F completa: 07-merge.md · cap `abel/icp-buyer` wip→live · `modules/abel.md` creado · R1.yaml actualizado · story archivada a `nicolify/docs/archive/2026/stories/`. Detalle: `nicolify/docs/archive/2026/stories/nicolify-r1-abel-icp-buyer/07-merge.md`.
 
 Story **DESBLOQUEADA** — `blocked_reason: null`. Schema `abel_icps`/`abel_buyers` estable. Lista para refinar vía `/po` (backend-heavy).
+
+### 2026-07-15 · 👤 chris · 💡 PROPONE
+Invoca `/po` directo pidiendo "implementación" del bugfix.
+
+### 2026-07-15 · 🤖 claude · `/po`→`/pm-nicolify` · ✓ APLICADO
+Gate de `/po` Step 1: state=idea ≠ refining → escala `/pm-nicolify` (no salta el gate). Corrido Step 0 (story-closure scan GREEN, único open story es módulo distinto) + prior-art-scan (grep engine `BuyerPersona` — ya consumido correctamente por el parent, sin cambios; grep join-table pattern — precedente `user_tenants` IAM confirma composite-PK es el patrón de la casa, alinea con la propuesta de Chris). Documentado en `checkpoint.md § Prior art scan`. Transición `idea → refining` formalizada. Nota: "implementación" es prematuro — falta `01-spec.md` (`/po`) → `03-arch`+tickets (`/architect`) → recién ahí `/dev-team` construye. Retomando como `/po` en el mismo turno.
+
+### 2026-07-15 · 🤖 claude · `/po` · ✓ APLICADO
+Repro re-verificado contra el CÓDIGO MERGEADO (no el texto del checkpoint): `buyer_model.py` (`icp_id NOT NULL`), migración `002_abel_icp_buyer.py`, y `router.py` confirman línea-por-línea el diagnóstico (sin `attach`/`detach`/`GET /buyers`, `set-primary` sin `icp_id`). `checkpoint.md § repro_evidence` actualizada a `reproduced_local: true` (forma A, evidencia más fuerte que la cita al doc archivado original). Mapeado el registro FE real de la sub-tab (`shell-routes.ts::AGENT_SUBTABS.abel` + `SubTabContent.tsx`) para que la reachability de "Buyers" sea concreta, no aspiracional. Escrito `01-spec.md` v1: Mapa funcional (happy + 6 bifurcaciones) + 4 RN (RN-5 rewrite, RN-6, RN-9, RN-10) + 6 AC + § Pantallas reuse-only + § API delta contra el router real + 11 scenarios Gherkin (happy/negative×2/edge×6/adversarial/race-condition×2) + Matriz de cobertura sin huecos. 2 open questions (botón "Agregar a otro ICP" flujo exacto + nombre "Buyers" vs "Compradores"). **Pendiente ratificación Chris antes de handoff a `/architect`.**
+
+### 2026-07-15 · 👤 chris · ✓ APLICADO
+"si, lanza el architect" — ratifica el spec sin objeciones a los 2 open questions (quedan resueltas por default documentado en `01-spec.md`).
+
+### 2026-07-15 · 🤖 claude · `/po` · ✓ APLICADO
+`01-spec.md` → `ratified_by_chris: true`, open questions cerradas por default (mismo sheet modo attach · nombre "Buyers"). `checkpoint.md` transición `refining → refined`. Handoff a `/architect nicolify nicolify-r1-abel-buyer-multi-icp`.
+
+### 2026-07-15 · 👤 chris · 💡 PROPONE
+Pide review funcional adversarial del spec+arch ("ponte en todos los escenarios posibles desde el punto de vista de usuario… dime si el diseño está coherente y no tendremos que andar haciendo modificaciones luego") y luego: "actualiza todo el spec y arch con todo, de forma muy granular… deja los tickets para que /dev-team pueda tomarlo… todo lo que dice /architect que se debe hacer, solo que hazlo tú con Fable".
+
+### 2026-07-15 · 🤖 claude · review funcional + architect v2 (Fable inline) · ✓ APLICADO
+Pase de escenarios adversos contra spec+arch+CÓDIGO MERGEADO. 4 huecos confirmados (habrían forzado modificaciones post-build): (1) `DELETE /icp/{id}` sin cascade → joins fantasma + buyers atrapados (verificado `router.py:185` + `icp_service.py:201`); (2) attach a ICP vacío sin primary (asimetría con create; además el `isPrimary` del FE en create era payload muerto — `BuyerCreate` sin el campo); (3) detach del último ICP = destrucción silenciosa + detach SIN affordance UI (`useDeleteBuyer` sin consumidor, verificado); (4) create-blank "Nuevo buyer" contaminaría directory+picker. Ready package v2 en los 8 artefactos: RN-11 (cascade + backfill ICPs-vivos + zombies legacy), RN-12 (`_attach_link` compartida create+attach, race por retry, desambiguación por estado), SC-12..SC-15, AC-7..AC-10, Bif-7/8, tab "Crear nuevo" con nombre required, confirm destructivo ×2, badges "También en:", empty-states picker, 409-stale toast+refresh, RN-6 no-re-promoción fijada. Validators: +2 rules, mutation +icp_service, `test_icp_service` regression→coverage_update. Tickets: T-BE-3 y T-FE-2 7→9h con directrices verbatim. Dispatch-plan: +3 riesgos + checklist G de 6 puntos live. Story sigue `ready` — `/dev-team nicolify nicolify-r1-abel-buyer-multi-icp T-BE-1`.

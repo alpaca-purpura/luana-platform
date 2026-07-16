@@ -1,0 +1,346 @@
+# 04-validators.yaml — nicolify-r1-abel-buyer-multi-icp
+# Owner: /architect. Schema v4.1. story_type: bugfix (extend).
+
+story_id: nicolify-r1-abel-buyer-multi-icp
+brand: nicolify
+schema_version: v4.1
+
+# ═══════════════════════════════════════════════════════════════
+# VERIFICATION (Critical Rule #37)
+# ═══════════════════════════════════════════════════════════════
+verification:
+  nature: both                    # BE-only scenarios (SC-5,6,7,8,12,13) + FE (SC-1,3,4,9,10,11,14,15) + mixtos (SC-2)
+  technical_gates:
+    baseline: [tsc_strict, ruff, eslint_max_warnings_0, arch_fitness]
+    opt_in:
+      schemathesis: true          # endpoints nuevos (attach, directory) + firma cambiada (set-primary) → contrato FE↔BE antes del runtime Next
+      hypothesis: false
+    mutation:
+      enabled: true
+      mode: hard                  # HB-50 persistencia-crítica: migración backfill + join write paths (attach/detach/set-primary)
+      surfaces:
+        - "nicolify/backend/alembic/versions/003_abel_buyer_multi_icp.py"
+        - "nicolify/backend/src/modules/nicolify/abel/infrastructure/repositories/icp_buyer_repository.py"
+        - "nicolify/backend/src/modules/nicolify/abel/application/services/buyer_service.py"
+        - "nicolify/backend/src/modules/nicolify/abel/application/services/icp_service.py"   # v2 — soft_delete cascade (RN-11) es write-path persistencia-crítica
+      note: "100% mutantes muertos sobre líneas NUEVAS de estos write-paths. Survivor líneas-nuevas → CHANGES_REQUESTED. DEGRADA advisory si mutmut ausente."
+  runtime_error_gate: required
+  business_rules:
+    - rule: "RN-1 · toda query de abel_icp_buyers filtra tenant_id (denormalizado)"
+      tag: "@rule-tenant-isolation"
+      scenario_id: "SC-5"
+    - rule: "RN-5 · un buyer pertenece a ≥1 ICP; 0 attachments (huérfano) → soft-delete real"
+      tag: "@rule-buyer-min-one-icp"
+      scenario_id: "SC-3b"
+    - rule: "RN-6 · is_primary único por ICP (vive en abel_icp_buyers)"
+      tag: "@rule-primary-unique-per-icp"
+      scenario_id: "SC-7"
+    - rule: "RN-9 · editar buyer desde cualquier ICP escribe la MISMA fila → visible en todos"
+      tag: "@rule-edit-propagates"
+      scenario_id: "SC-4"
+    - rule: "RN-10 · backfill de migración 1 fila vieja con ICP VIVO → exactamente 1 fila join (0 pérdida); ICP muerto legacy → 0 join fantasma + zombie cerrado"
+      tag: "@rule-migration-no-loss"
+      scenario_id: "SC-8"
+    - rule: "RN-11 · DELETE /icp cascadea: detach all + soft-delete de buyers en 0 attachments, 1 transacción — cero join hacia ICP muerto"
+      tag: "@rule-icp-delete-cascade"
+      scenario_id: "SC-12"
+    - rule: "RN-12 · primer buyer de un ICP (create O attach) → is_primary automático; race 2 firsts → exactamente 1 primary (retry); detach de primary NO re-promociona"
+      tag: "@rule-first-buyer-auto-primary"
+      scenario_id: "SC-13"
+  demo_required: true
+  demo_skip_reason: null
+  regression_guard:
+    # tests EXISTENTES del parent que NO deben cambiar de verde (o cambian de forma controlada por el diff)
+    - "nicolify/backend/tests/modules/nicolify/abel/api/test_icp_api.py"
+    - "nicolify/backend/tests/architecture/test_growth_studio_event_no_pii.py"
+    - "nicolify/frontend/src/features/abel/components/icp/IcpMasterListView.test.tsx"
+  coverage_update:
+    # tests del comportamiento CAMBIADO a actualizar revisando el diff (nunca -u mecánico)
+    - "nicolify/backend/tests/modules/nicolify/abel/application/test_icp_service.py"         # v2 — SALE de regression_guard: soft_delete CAMBIA (cascade RN-11/SC-12); buyer_count+mark_ready siguen verdes
+    - "nicolify/backend/tests/modules/nicolify/abel/infrastructure/test_icp_repository.py"   # si asume abel_buyers.icp_id
+    - "nicolify/frontend/src/features/abel/api/buyer-api.test.ts"                            # delete→detach, set-primary body {icp_id}, v2: create SIN is_primary
+    - "nicolify/frontend/src/features/abel/hooks/use-buyer-mutations.test.ts"                # useDeleteBuyer→useDetachBuyer, setPrimary(icpId), v2: 409 handler
+    - "nicolify/frontend/src/features/abel/hooks/use-icp-mutations.test.ts"                  # v2 — useDeleteIcp invalida directory
+    - "nicolify/frontend/src/features/abel/components/icp/BuyerLeafForm.test.tsx"            # is_primary per-ICP, set-primary icpId, v2: detach confirm ×2 + "También en:"
+    - "nicolify/frontend/src/features/abel/components/icp/IcpWorkspaceView.test.tsx"         # v2 — copy cascade en confirm descartar (SC-12)
+  new_coverage:
+    - "nicolify/backend/tests/modules/nicolify/abel/infrastructure/test_icp_buyer_repository.py"
+    - "nicolify/backend/tests/modules/nicolify/abel/application/test_buyer_service.py"
+    - "nicolify/backend/tests/modules/nicolify/abel/api/test_buyer_multi_icp_api.py"
+    - "nicolify/backend/tests/integration/test_abel_icp_buyer_migration_backfill.py"
+    - "nicolify/frontend/src/features/abel/hooks/use-buyers.test.ts"                          # useAllBuyers
+    - "nicolify/frontend/src/features/abel/components/icp/AddBuyerSheet.test.tsx"
+    - "nicolify/frontend/src/features/abel/components/icp/BuyersMasterListView.test.tsx"
+    - "nicolify/frontend/e2e/regression/nicolify-r1-abel-buyer-multi-icp/"                    # v2 incluye detach-last-confirm.spec.ts (SC-14)
+
+  dev_app_verified:
+    required: true
+    evidence: ""                  # dev-team completa: attach real + PATCH cross-ICP + detach + migración sobre DB con filas + efecto observado
+
+  playwright_visual_scope:
+    story_scope_routes:
+      - "/{tenantId}/abel/buyers"                 # sub-tab nueva (master + panel detalle)
+      - "/{tenantId}/abel/icp/{icpId}/{buyerId}"  # detalle buyer en contexto ICP (BuyerLeafForm + set-primary)
+      - "/{tenantId}/abel/icp/{icpId}/datos"      # detalle ICP (affordance "+ buyer" → AddBuyerSheet)
+    story_scope_components:
+      - "nicolify/frontend/src/features/abel/components/icp/BuyersMasterListView.tsx"
+      - "nicolify/frontend/src/features/abel/components/icp/BuyerCard.tsx"
+      - "nicolify/frontend/src/features/abel/components/icp/AddBuyerSheet.tsx"
+      - "nicolify/frontend/src/features/abel/components/icp/AttachToIcpSheet.tsx"
+      - "nicolify/frontend/src/features/abel/components/icp/BuyerLeafForm.tsx"
+      - "nicolify/frontend/src/features/abel/components/icp/IcpEntityLayoutClient.tsx"
+    forbidden_visual_changes:
+      paths:
+        - "nicolify/frontend/src/components/ui/"
+        - "nicolify/frontend/src/components/shared/"       # EXCEPCIÓN registro: SubTabContent.tsx 1-línea dispatch (NO visual) — declarado en 03-arch-fe.md §5
+        - "nicolify/frontend/src/app/[tenantId]/(shell-organism)/[agent]/[subtab]/[subsubtab]/layout.tsx"   # dispatch entity-bearing abel.icp — NO tocar
+        - "nicolify/frontend/src/app/[tenantId]/(shell-organism)/[agent]/[subtab]/[subsubtab]/page.tsx"
+      reasons:
+        - "Shadcn primitives impactan toda la app"
+        - "shared afecta features fuera de scope — SubTabContent excepción SOLO registro (dispatch abel.buyers→BuyersMasterListView), no restyle"
+        - "el dispatch entity-bearing (abel.icp) es path crítico del parent — extenderlo a abel.buyers está fuera de scope (buyer-detail = panel client-side, no ruta)"
+    playwright_assertions_scope:
+      - "Assertions visuales SOLO sobre story_scope_routes + story_scope_components"
+      - "NUNCA toHaveScreenshot() de página completa — bounded locators"
+      - "assertShellMounted antes de axe/visual sobre el shell (HB-68)"
+    non_egoismo_clause: "Bug real en otra ruta no tocada → T-{n}-impl-log.md § Cross-story observed bugs. NO fix inline."
+
+# ═══════════════════════════════════════════════════════════════
+# TEST CONSTRUCTION PLAN (architect dicta orden + seam_coverage HB-95)
+# ═══════════════════════════════════════════════════════════════
+test_construction_plan:
+  order: [domain, infrastructure, application, api, integration, fe_unit, e2e]
+  seam_coverage:
+    # HB-95: cobertura = colaborador REAL, no mock, por costura
+    - seam: "código↔DB (migración backfill + join reads/writes)"
+      test_type: integration-realdb
+      why: "SC-8 corre la migración real sobre una DB con filas pre-existentes + join queries reales; un mock de repo NO valida el backfill ni el composite-PK"
+      covered_by:
+        - "nicolify/backend/tests/integration/test_abel_icp_buyer_migration_backfill.py"
+        - "nicolify/backend/tests/modules/nicolify/abel/infrastructure/test_icp_buyer_repository.py"   # real-DB (conftest db_engine)
+    - seam: "FE↔BE (attach/detach/directory/set-primary contrato)"
+      test_type: contract
+      why: "los mappers FE (RawBuyer→Buyer con attached_icps, setPrimary body {icp_id}) deben matchear el DTO BE real — anti [[embudo-imagined-contract]]. schemathesis sobre los endpoints nuevos + contract tests del api layer"
+      covered_by:
+        - "nicolify/backend/tests/modules/nicolify/abel/api/test_buyer_multi_icp_api.py"
+        - "nicolify/frontend/src/features/abel/api/buyer-api.test.ts"
+    - seam: "componente↔shell (sub-tab buyers reachable)"
+      test_type: e2e-live
+      why: "la sub-tab nueva se navega en el shell real (Ribbon→abel→buyers); un unit no ejerce el registro shell-routes+SubTabContent"
+      covered_by:
+        - "nicolify/frontend/e2e/regression/nicolify-r1-abel-buyer-multi-icp/buyers-directory.spec.ts"
+    - seam: "código↔auth (tenant isolation attach/detach)"
+      test_type: live-verify
+      why: "SC-5 cross-tenant 404 sin leak — la costura auth/tenant es la live-verify (#37), no unit-testeable con mock"
+      covered_by:
+        - "dev_app_verified.evidence (attach cross-tenant real → 404)"
+
+# ═══════════════════════════════════════════════════════════════
+# SCENARIO COVERAGE (SC-1..SC-15 · 01-spec.md v2 — 0 huecos)
+# ═══════════════════════════════════════════════════════════════
+scenario_coverage:
+  - scenario_id: SC-1
+    name: attach-existing-buyer
+    type: happy
+    tests:
+      - "nicolify/backend/tests/modules/nicolify/abel/api/test_buyer_multi_icp_api.py::test_attach_existing_buyer_creates_join_row_not_duplicate"
+      - "nicolify/frontend/e2e/regression/nicolify-r1-abel-buyer-multi-icp/attach-existing.spec.ts"
+  - scenario_id: SC-2
+    name: attach-already-attached-rejected
+    type: negative
+    tests:
+      - "nicolify/backend/tests/modules/nicolify/abel/api/test_buyer_multi_icp_api.py::test_attach_duplicate_rejected"
+      - "nicolify/frontend/src/features/abel/components/icp/AddBuyerSheet.test.tsx"   # v2 — toast 409 + refresh lista stale
+  - scenario_id: SC-3
+    name: detach-keeps-buyer-alive
+    type: edge
+    tests:
+      - "nicolify/backend/tests/modules/nicolify/abel/application/test_buyer_service.py::test_detach_with_remaining_attachment_keeps_buyer_alive"
+  - scenario_id: SC-3b
+    name: detach-to-zero-soft-deletes
+    type: edge
+    tests: ["nicolify/backend/tests/modules/nicolify/abel/application/test_buyer_service.py::test_detach_last_icp_soft_deletes_buyer"]
+  - scenario_id: SC-4
+    name: edit-propagates-cross-icp
+    type: happy
+    tests: ["nicolify/frontend/e2e/regression/nicolify-r1-abel-buyer-multi-icp/edit-propagates.spec.ts::test_edit_from_one_icp_visible_in_other"]
+  - scenario_id: SC-5
+    name: cross-tenant-attach-blocked
+    type: adversarial
+    tests: ["nicolify/backend/tests/modules/nicolify/abel/api/test_buyer_multi_icp_api.py::test_attach_cross_tenant_buyer_returns_404_no_leak"]
+  - scenario_id: SC-6
+    name: race-condition-attach
+    type: edge
+    sub: race_condition
+    tests: ["nicolify/backend/tests/modules/nicolify/abel/infrastructure/test_icp_buyer_repository.py::test_concurrent_attach_only_one_wins"]
+  - scenario_id: SC-7
+    name: race-condition-set-primary
+    type: edge
+    sub: race_condition
+    tests: ["nicolify/backend/tests/modules/nicolify/abel/infrastructure/test_icp_buyer_repository.py::test_concurrent_set_primary_only_one_wins"]
+  - scenario_id: SC-8
+    name: migration-backfill-no-data-loss
+    type: edge
+    sub: data_migration
+    tests: ["nicolify/backend/tests/integration/test_abel_icp_buyer_migration_backfill.py"]
+  - scenario_id: SC-9
+    name: network-failure
+    type: edge
+    sub: network_failure
+    tests: ["nicolify/frontend/e2e/regression/nicolify-r1-abel-buyer-multi-icp/buyers-directory.spec.ts::test_buyers_directory_network_failure_retry"]
+  - scenario_id: SC-10
+    name: empty-state
+    type: edge
+    sub: empty_state
+    tests: ["nicolify/frontend/e2e/regression/nicolify-r1-abel-buyer-multi-icp/buyers-directory.spec.ts::test_buyers_directory_empty_state"]
+  - scenario_id: SC-11
+    name: accessibility
+    type: edge
+    sub: accessibility
+    tests: ["nicolify/frontend/e2e/regression/nicolify-r1-abel-buyer-multi-icp/buyers-directory.spec.ts::test_buyers_directory_a11y"]
+  - scenario_id: SC-12                        # v2 — RN-11
+    name: icp-delete-cascade
+    type: edge
+    tests:
+      - "nicolify/backend/tests/modules/nicolify/abel/application/test_icp_service.py::test_delete_icp_cascades_detach_and_soft_deletes_orphans"
+      - "nicolify/backend/tests/modules/nicolify/abel/application/test_icp_service.py::test_delete_icp_not_found_no_cascade"
+      - "nicolify/frontend/src/features/abel/components/icp/IcpWorkspaceView.test.tsx"   # copy cascade en confirm
+  - scenario_id: SC-13                        # v2 — RN-12
+    name: attach-first-auto-primary
+    type: edge
+    sub: race_condition
+    tests:
+      - "nicolify/backend/tests/modules/nicolify/abel/application/test_buyer_service.py::test_attach_first_buyer_becomes_primary"
+      - "nicolify/backend/tests/modules/nicolify/abel/application/test_buyer_service.py::test_attach_second_buyer_not_primary"
+      - "nicolify/backend/tests/modules/nicolify/abel/application/test_buyer_service.py::test_create_first_buyer_becomes_primary"
+      - "nicolify/backend/tests/modules/nicolify/abel/application/test_buyer_service.py::test_detach_primary_does_not_repromote"
+      - "nicolify/backend/tests/modules/nicolify/abel/infrastructure/test_icp_buyer_repository.py::test_concurrent_first_attach_two_buyers_exactly_one_primary"
+  - scenario_id: SC-14                        # v2 — RN-5 destructive UX
+    name: last-detach-confirm
+    type: edge
+    tests:
+      - "nicolify/frontend/src/features/abel/components/icp/BuyerLeafForm.test.tsx"   # confirm ×2 variantes, cancelar no llama detach
+      - "nicolify/frontend/e2e/regression/nicolify-r1-abel-buyer-multi-icp/detach-last-confirm.spec.ts"
+  - scenario_id: SC-15                        # v2
+    name: picker-empty-states
+    type: edge
+    sub: empty_state
+    tests:
+      - "nicolify/frontend/src/features/abel/components/icp/AddBuyerSheet.test.tsx"   # sin buyers → CTA Crear nuevo · todos attached → mensaje
+
+# ═══════════════════════════════════════════════════════════════
+# VALIDATORS (5 categories)
+# ═══════════════════════════════════════════════════════════════
+validators:
+  # ── NON-FUNCTIONAL ──────────────────────────────────────────
+  - id: be_arch_fitness
+    category: non_functional
+    type: pytest
+    cmd: "cd nicolify/backend && ${WS}/.venv/bin/pytest tests/architecture/ -x -q --override-ini='addopts='"
+    must_pass: true
+    timeout_sec: 120
+    description: "migraciones idempotentes (003 raw SQL), response_model en cada route, no cross-brand, growth_studio no-PII, main app config"
+
+  - id: be_lint
+    category: non_functional
+    type: shell
+    cmd: "cd nicolify/backend && ${WS}/.venv/bin/ruff check src/modules/nicolify/abel/ tests/modules/nicolify/abel/ tests/integration/ --no-cache"
+    must_pass: true
+    timeout_sec: 30
+
+  - id: be_format
+    category: non_functional
+    type: shell
+    cmd: "cd nicolify/backend && ${WS}/.venv/bin/ruff format --check src/modules/nicolify/abel/ tests/modules/nicolify/abel/"
+    must_pass: true
+    timeout_sec: 30
+
+  - id: fe_typecheck
+    category: non_functional
+    type: shell
+    cmd: "cd nicolify/frontend && npx tsc --noEmit"
+    must_pass: true
+    timeout_sec: 90
+
+  - id: fe_lint
+    category: non_functional
+    type: shell
+    cmd: "cd nicolify/frontend && npx eslint src/features/abel src/lib/routing/shell-routes.ts src/components/shared/shell-organism/SubTabContent.tsx --max-warnings 0 --cache"
+    must_pass: true
+    timeout_sec: 60
+    description: "incluye no-arbitrary-value (DS gate) — cero arbitrary spacing/radius/color"
+
+  # ── FUNCTIONAL ──────────────────────────────────────────────
+  - id: be_abel_unit
+    category: functional
+    type: pytest
+    cmd: "cd nicolify/backend && ${WS}/.venv/bin/pytest tests/modules/nicolify/abel/ -x -q"
+    must_pass: true
+    timeout_sec: 180
+    description: "domain + repo (join) + service (attach/detach/set-primary/directory) + api (SC-1,2,3,3b,5,6,7)"
+
+  - id: be_migration_backfill
+    category: functional
+    type: pytest
+    cmd: "cd nicolify/backend && ${WS}/.venv/bin/pytest tests/integration/test_abel_icp_buyer_migration_backfill.py -x -q"
+    must_pass: true
+    timeout_sec: 120
+    description: "SC-8 — migración real sobre DB con filas: count preservado + idempotencia (2º run no-op) + is_primary preservado"
+
+  - id: fe_abel_unit
+    category: functional
+    type: shell
+    cmd: "cd nicolify/frontend && npx vitest run src/features/abel"
+    must_pass: true
+    timeout_sec: 120
+    description: "api/hooks/components (attach/detach/directory + BuyerLeafForm directory-mode)"
+
+  - id: e2e_buyer_multi_icp
+    category: functional
+    type: shell
+    cmd: "cd nicolify/frontend && E2E_BASE_URL=http://localhost:3001 npx playwright test e2e/regression/nicolify-r1-abel-buyer-multi-icp/ --project=regression"
+    must_pass: true
+    timeout_sec: 300
+    description: "SC-1 attach, SC-4 edit-propagates, SC-9 network, SC-10 empty, SC-11 a11y — real backend"
+
+  # ── VISUAL ──────────────────────────────────────────────────
+  - id: fe_visual_scope
+    category: visual
+    type: shell
+    cmd: "cd nicolify/frontend && npx playwright test e2e/regression/nicolify-r1-abel-buyer-multi-icp/buyers-directory.spec.ts --project=regression"
+    must_pass: true
+    timeout_sec: 180
+    description: "composición reuse-only (átomos @luana/ui-kit) — bounded locators, assertShellMounted antes de axe (HB-68)"
+
+  # ── AGENTIC_EVAL ────────────────────────────────────────────
+  - id: agentic_eval
+    category: agentic_eval
+    type: none
+    must_pass: true
+    not_applicable: true
+    not_applicable_reason: "sin superficie agentic (copilot/sales_agent). Story service+FE."
+
+  # ── ARCHITECTURAL_VALIDATION ────────────────────────────────
+  - id: arch_no_new_layer
+    category: architectural_validation
+    type: shell
+    cmd: "grep -rn 'from luana_core_' nicolify/backend/src/modules/nicolify/abel/ | grep -v 'base_entity\\|BaseEntity' || true"
+    must_pass: true
+    timeout_sec: 20
+    description: "EXTEND no NEW: cero import nuevo de engine salvo Base/BaseEntity; join table es dominio del módulo (no capa)"
+
+  - id: arch_tenant_isolation_join
+    category: architectural_validation
+    type: shell
+    cmd: "grep -n 'tenant_id' nicolify/backend/src/modules/nicolify/abel/infrastructure/repositories/icp_buyer_repository.py"
+    must_pass: true
+    timeout_sec: 20
+    description: "RN-1: toda query de abel_icp_buyers filtra tenant_id (grep confirma presencia; test funcional SC-5 lo ejerce)"
+
+  - id: arch_no_cross_brand
+    category: architectural_validation
+    type: pytest
+    cmd: "cd nicolify/backend && ${WS}/.venv/bin/pytest tests/architecture/test_no_cross_brand_imports.py -x -q --override-ini='addopts='"
+    must_pass: true
+    timeout_sec: 60
+    description: "cero mirror cross-brand, cero core/ edit"
